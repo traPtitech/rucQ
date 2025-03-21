@@ -1,0 +1,5 @@
+package: handler
+output: backend/handler/api.gen.go
+generate:
+  echo-server: true
+  models: true

@@ -1,0 +1,25 @@
+services:
+  mariadb:
+    container_name: rucQ_mariadb
+    image: mariadb:11.6.2-noble
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./.env
+    healthcheck:
+      test: mariadb-admin ping -h 127.0.0.1 -u root -p$$MARIADB_ROOT_PASSWORD
+      interval: 1s
+      timeout: 10s
+      retries: 10
+
+  swagger:
+    container_name: rucQ_swagger
+    image: swaggerapi/swagger-ui:v5.18.2
+    ports:
+      - "8081:8080"
+    environment:
+      SWAGGER_JSON: /openapi/openapi.yaml
+    volumes:
+      - type: bind
+        source: ./
+        target: /openapi/

@@ -1,0 +1,1463 @@
+---
+openapi: 3.0.3
+
+info:
+  title: rucQ API
+  version: 0.1.0
+  description: rucQ API
+
+servers:
+  - url: http://localhost:8080
+    description: 開発環境
+
+paths:
+  /api/camps:
+    get:
+      summary: 合宿の一覧を取得
+      tags:
+        - Camps
+      operationId: getCamps
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Camp"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: 合宿を作成
+      tags:
+        - Camps
+      operationId: postCamp
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostCampRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostCampRequest"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/camps/default:
+    get:
+      summary: デフォルトの合宿を取得
+      tags:
+        - Camps
+      operationId: getDefaultCamp
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Camp"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/camps/{camp_id}:
+    get:
+      summary: 合宿の詳細を取得
+      tags:
+        - Camps
+      operationId: getCamp
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Camp"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: 合宿を更新
+      tags:
+        - Camps
+      operationId: putCamp
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostCampRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Camp"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/events:
+    get:
+      summary: イベントの一覧を取得
+      tags:
+        - Events
+      operationId: getEvents
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: イベントを作成
+      tags:
+        - Events
+      operationId: postEvent
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostEventRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/events/{event_id}:
+    get:
+      summary: イベントの詳細を取得
+      tags:
+        - Events
+      operationId: getEvent
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: イベントを更新
+      tags:
+        - Events
+      operationId: putEvent
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostEventRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: イベントを削除
+      tags:
+        - Events
+      operationId: deleteEvent
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/events/{event_id}/register:
+    post:
+      summary: イベントに参加
+      tags:
+        - Events
+      operationId: registerEvent
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: イベントへの参加をキャンセル
+      tags:
+        - Events
+      operationId: unregisterEvent
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/events/{event_id}/participants:
+    get:
+      summary: イベントの参加者一覧を取得
+      tags:
+        - Events
+      operationId: getParticipants
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/me:
+    get:
+      summary: 自分の情報を取得
+      tags:
+        - Users
+      operationId: getMe
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/question_groups:
+    get:
+      summary: 質問グループの一覧を取得
+      tags:
+        - Questions
+      operationId: getQuestionGroups
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuestionGroup"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: 質問グループを作成
+      tags:
+        - Questions
+      operationId: postQuestionGroup
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostQuestionGroupRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionGroup"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/question_groups/{question_group_id}:
+    get:
+      summary: 質問グループの詳細を取得
+      tags:
+        - Questions
+      operationId: getQuestionGroup
+      parameters:
+        - $ref: "#/components/parameters/QuestionGroupId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionGroup"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: 質問グループを更新
+      tags:
+        - Questions
+      operationId: putQuestionGroup
+      parameters:
+        - $ref: "#/components/parameters/QuestionGroupId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostQuestionGroupRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionGroup"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: 質問グループを削除
+      tags:
+        - Questions
+      operationId: deleteQuestionGroup
+      parameters:
+        - $ref: "#/components/parameters/QuestionGroupId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/questions:
+    get:
+      summary: 質問の一覧を取得
+      tags:
+        - Questions
+      operationId: getQuestions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Question"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: 質問を作成
+      tags:
+        - Questions
+      operationId: postQuestion
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostQuestionRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/questions/{question_id}:
+    get:
+      summary: 質問の詳細を取得
+      tags:
+        - Questions
+      operationId: getQuestion
+      parameters:
+        - $ref: "#/components/parameters/QuestionId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: 質問を更新
+      tags:
+        - Questions
+      operationId: putQuestion
+      parameters:
+        - $ref: "#/components/parameters/QuestionId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostQuestionRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: 質問を削除
+      tags:
+        - Questions
+      operationId: deleteQuestion
+      parameters:
+        - $ref: "#/components/parameters/QuestionId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/options:
+    post:
+      summary: 選択肢を作成
+      tags:
+        - Questions
+      operationId: postOption
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostOptionRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Option"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/options/{option_id}:
+    put:
+      summary: 選択肢を更新
+      tags:
+        - Questions
+      operationId: putOption
+      parameters:
+        - $ref: "#/components/parameters/OptionId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostOptionRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Option"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/me/answers/{question_id}:
+    get:
+      summary: 自分の回答を取得
+      tags:
+        - Questions
+      operationId: getMyAnswer
+      parameters:
+        - $ref: "#/components/parameters/QuestionId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: 回答を更新
+      tags:
+        - Questions
+      operationId: putAnswer
+      parameters:
+        - $ref: "#/components/parameters/QuestionId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutAnswerRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/users/{traq_id}/answers/{question_id}:
+    get:
+      summary: ユーザーの回答を取得
+      tags:
+        - Questions
+      operationId: getUserAnswer
+      parameters:
+        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/QuestionId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: 回答を更新
+      tags:
+        - Questions
+      operationId: putUserAnswer
+      parameters:
+        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/QuestionId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutAnswerRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/me/budgets:
+    get:
+      summary: 自分の予算を取得
+      tags:
+        - Budgets
+      operationId: getMyBudget
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Budget"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/users/{traq_id}/budgets:
+    get:
+      summary: ユーザーの予算を取得
+      tags:
+        - Budgets
+      operationId: getUserBudget
+      parameters:
+        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Budget"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: ユーザーの予算を設定
+      tags:
+        - Budgets
+      operationId: postUserBudget
+      parameters:
+        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostBudgetRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Budget"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      summary: ユーザーの予算を更新
+      tags:
+        - Budgets
+      operationId: putUserBudget
+      parameters:
+        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostBudgetRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Budget"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/budgets:
+    get:
+      summary: 支払い情報の一覧を取得
+      tags:
+        - Budgets
+      operationId: getBudgets
+      parameters:
+        - $ref: "#/components/parameters/CampIdQuery"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Budget"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/rooms:
+    get:
+      summary: 部屋の一覧を取得
+      tags:
+        - Rooms
+      operationId: getRooms
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: 部屋を作成
+      tags:
+        - Rooms
+      operationId: postRoom
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRoomRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/rooms/{room_id}:
+    put:
+      summary: 部屋を更新
+      tags:
+        - Rooms
+      operationId: putRoom
+      parameters:
+        - $ref: "#/components/parameters/RoomId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRoomRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/staffs:
+    get:
+      summary: 合宿係の一覧を取得
+      tags:
+        - Staffs
+      operationId: getStaffs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: 合宿係を追加
+      tags:
+        - Staffs
+      operationId: postStaff
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostStaffRequest"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: 合宿係を削除
+      tags:
+        - Staffs
+      operationId: deleteStaff
+      parameters:
+        - $ref: "#/components/parameters/StaffId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/dm:
+    post:
+      summary: DMを送信
+      tags:
+        - DM
+      operationId: postDirectMessage
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostDMRequest"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  parameters:
+    X-Forwarded-User:
+      name: X-Forwarded-User
+      in: header
+      description: ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+      schema:
+        type: string
+    TraqId:
+      name: traq_id
+      in: path
+      description: traQ ID
+      required: true
+      schema:
+        type: string
+    CampId:
+      name: camp_id
+      in: path
+      description: 合宿ID
+      required: true
+      schema:
+        type: integer
+    CampIdQuery:
+      name: camp_id
+      in: query
+      description: 合宿ID
+      schema:
+        type: integer
+    EventId:
+      name: event_id
+      in: path
+      description: イベントID
+      required: true
+      schema:
+        type: integer
+    QuestionGroupId:
+      name: question_group_id
+      in: path
+      description: 質問グループのID
+      required: true
+      schema:
+        type: integer
+    QuestionId:
+      name: question_id
+      in: path
+      description: 質問ID
+      required: true
+      schema:
+        type: integer
+    OptionId:
+      name: option_id
+      in: path
+      description: 選択肢ID
+      required: true
+      schema:
+        type: integer
+    AnswerId:
+      name: answer_id
+      in: path
+      description: 回答ID
+      required: true
+      schema:
+        type: integer
+    RoomId:
+      name: room_id
+      in: path
+      description: 部屋ID
+      required: true
+      schema:
+        type: integer
+    StaffId:
+      name: staff_id
+      in: query
+      description: 合宿係のtraQ ID
+      required: true
+      schema:
+        type: string
+  responses:
+    NoContent:
+      description: No Content
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Internal server error
+  schemas:
+    Camp:
+      type: object
+      properties:
+        id:
+          type: integer
+        display_id:
+          type: string
+        name:
+          type: string
+        is_draft:
+          type: boolean
+        description:
+          type: string
+      required:
+        - id
+        - display_id
+        - name
+        - is_draft
+        - description
+    PostCampRequest:
+      type: object
+      properties:
+        display_id:
+          type: string
+        name:
+          type: string
+        is_draft:
+          type: boolean
+        description:
+          type: string
+      required:
+        - display_id
+        - name
+        - is_draft
+        - description
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        time_start:
+          type: string
+          format: date-time
+        time_end:
+          type: string
+          format: date-time
+        camp_id:
+          type: integer
+        organizer_traq_id:
+          type: string
+        by_staff:
+          type: boolean
+        display_color:
+          type: string
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+      required:
+        - id
+        - name
+        - description
+        - location
+        - time_start
+        - time_end
+        - camp_id
+        - organizer_traq_id
+        - by_staff
+        - display_color
+        - participants
+    PostEventRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        time_start:
+          type: string
+          format: date-time
+        time_end:
+          type: string
+          format: date-time
+        camp_id:
+          type: integer
+        create_as_staff:
+          type: boolean
+        display_color:
+          type: string
+      required:
+        - name
+        - description
+        - location
+        - time_start
+        - time_end
+        - camp_id
+        - create_as_staff
+        - display_color
+    User:
+      type: object
+      properties:
+        traq_id:
+          type: string
+        is_staff:
+          type: boolean
+      required:
+        - traq_id
+        - is_staff
+    QuestionGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        due:
+          type: string
+          format: date-time
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Question"
+        camp_id:
+          type: integer
+      required:
+        - id
+        - name
+        - description
+        - due
+        - questions
+        - camp_id
+    PostQuestionGroupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        due:
+          type: string
+          format: date-time
+        camp_id:
+          type: integer
+      required:
+        - name
+        - description
+        - due
+        - camp_id
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+        question_group_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum:
+            - single
+            - multiple
+            - free_text
+            - free_number
+        is_public:
+          type: boolean
+        is_open:
+          type: boolean
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/Option"
+          nullable: true
+      required:
+        - id
+        - question_group_id
+        - title
+        - description
+        - type
+        - is_public
+        - is_open
+    PostQuestionRequest:
+      type: object
+      properties:
+        question_group_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum:
+            - single
+            - multiple
+            - free_text
+            - free_number
+        is_public:
+          type: boolean
+        is_open:
+          type: boolean
+      required:
+        - question_group_id
+        - title
+        - description
+        - type
+        - is_public
+        - is_open
+    Option:
+      type: object
+      properties:
+        id:
+          type: integer
+        question_id:
+          type: integer
+        content:
+          type: string
+      required:
+        - id
+        - question_id
+        - content
+    PostOptionRequest:
+      type: object
+      properties:
+        question_id:
+          type: integer
+        content:
+          type: string
+      required:
+        - question_id
+        - content
+    Answer:
+      type: object
+      properties:
+        id:
+          type: integer
+        question_id:
+          type: integer
+        user_traq_id:
+          type: string
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          nullable: true
+      required:
+        - id
+        - question_id
+        - user_traq_id
+    PutAnswerRequest:
+      type: object
+      properties:
+        content:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          nullable: true
+    Budget:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_traq_id:
+          type: string
+        camp_id:
+          type: integer
+        amount:
+          type: integer
+          nullable: true
+        amount_paid:
+          type: integer
+      required:
+        - id
+        - user_traq_id
+        - camp_id
+        - amount_paid
+    PostBudgetRequest:
+      type: object
+      properties:
+        camp_id:
+          type: integer
+        amount:
+          type: integer
+          nullable: true
+        amount_paid:
+          type: integer
+      required:
+        - camp_id
+        - amount_paid
+    Room:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        camp_id:
+          type: integer
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+      required:
+        - id
+        - name
+        - camp_id
+        - members
+    PostRoomRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        camp_id:
+          type: integer
+        members:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - camp_id
+        - members
+    PostStaffRequest:
+      type: object
+      properties:
+        traq_id:
+          type: string
+      required:
+        - traq_id
+    PostDMRequest:
+      type: object
+      properties:
+        target_user:
+          type: string
+        content:
+          type: string
+        sendtime:
+          type: string
+          format: date-time
+      required:
+        - target_user
+        - content
+
+tags:
+  - name: Camps
+    description: Camp API
+  - name: Events
+    description: Event API
+  - name: Users
+    description: User API
+  - name: Questions
+    description: Question API
+  - name: Budgets
+    description: Budget API
+  - name: Rooms
+    description: Room API
+  - name: Staffs
+    description: Staff API
