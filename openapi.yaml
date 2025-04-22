@@ -302,6 +302,53 @@ paths:
                 $ref: "#/components/schemas/User"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/staffs:
+    get:
+      summary: 合宿係の一覧を取得
+      tags:
+        - Users
+      operationId: getStaffs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/users/{traq_id}:
+    put:
+      summary: ユーザーの情報を更新（主に合宿係の権限管理用）
+      tags:
+        - Users
+      operationId: putUser
+      parameters:
+        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutUserRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /api/question_groups:
     get:
       summary: 質問グループの一覧を取得
@@ -871,66 +918,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/staffs:
-    get:
-      summary: 合宿係の一覧を取得
-      tags:
-        - Staffs
-      operationId: getStaffs
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/User"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-    post:
-      summary: 合宿係を追加
-      tags:
-        - Staffs
-      operationId: postStaff
-      parameters:
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PostStaffRequest"
-      responses:
-        "204":
-          $ref: "#/components/responses/NoContent"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-    delete:
-      summary: 合宿係を削除
-      tags:
-        - Staffs
-      operationId: deleteStaff
-      parameters:
-        - $ref: "#/components/parameters/StaffId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      responses:
-        "204":
-          $ref: "#/components/responses/NoContent"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
   /api/dm:
     post:
       summary: DMを送信
@@ -1200,6 +1187,13 @@ components:
       required:
         - traq_id
         - is_staff
+    PutUserRequest:
+      type: object
+      properties:
+        is_staff:
+          type: boolean
+      required:
+        - is_staff
     QuestionGroup:
       type: object
       properties:
@@ -1425,13 +1419,6 @@ components:
         - name
         - camp_id
         - members
-    PostStaffRequest:
-      type: object
-      properties:
-        traq_id:
-          type: string
-      required:
-        - traq_id
     PostDMRequest:
       type: object
       properties:
@@ -1459,5 +1446,3 @@ tags:
     description: Payment API
   - name: Rooms
     description: Room API
-  - name: Staffs
-    description: Staff API
