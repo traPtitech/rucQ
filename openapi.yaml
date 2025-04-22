@@ -1140,7 +1140,7 @@ components:
           type: integer
         organizer_traq_id:
           type: string
-        by_staff:
+        is_official:
           type: boolean
         display_color:
           type: string
@@ -1157,7 +1157,7 @@ components:
         - time_end
         - camp_id
         - organizer_traq_id
-        - by_staff
+        - is_official
         - display_color
         - participants
     PostEventRequest:
