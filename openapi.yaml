@@ -679,12 +679,12 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/me/budgets:
+  /api/me/payments:
     get:
       summary: 自分の予算を取得
       tags:
-        - Budgets
-      operationId: getMyBudget
+        - Payments
+      operationId: getMyPayment
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
       responses:
@@ -693,15 +693,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Budget"
+                $ref: "#/components/schemas/Payment"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/users/{traq_id}/budgets:
+  /api/users/{traq_id}/payments:
     get:
       summary: ユーザーの予算を取得
       tags:
-        - Budgets
-      operationId: getUserBudget
+        - Payments
+      operationId: getUserPayment
       parameters:
         - $ref: "#/components/parameters/TraqId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -711,7 +711,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Budget"
+                $ref: "#/components/schemas/Payment"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -721,8 +721,8 @@ paths:
     post:
       summary: ユーザーの予算を設定
       tags:
-        - Budgets
-      operationId: postUserBudget
+        - Payments
+      operationId: postUserPayment
       parameters:
         - $ref: "#/components/parameters/TraqId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -731,14 +731,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostBudgetRequest"
+              $ref: "#/components/schemas/PostPaymentRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Budget"
+                $ref: "#/components/schemas/Payment"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -750,8 +750,8 @@ paths:
     put:
       summary: ユーザーの予算を更新
       tags:
-        - Budgets
-      operationId: putUserBudget
+        - Payments
+      operationId: putUserPayment
       parameters:
         - $ref: "#/components/parameters/TraqId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -760,14 +760,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostBudgetRequest"
+              $ref: "#/components/schemas/PostPaymentRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Budget"
+                $ref: "#/components/schemas/Payment"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -776,12 +776,12 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/budgets:
+  /api/payments:
     get:
       summary: 支払い情報の一覧を取得
       tags:
-        - Budgets
-      operationId: getBudgets
+        - Payments
+      operationId: getPayments
       parameters:
         - $ref: "#/components/parameters/CampIdQuery"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -793,7 +793,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Budget"
+                  $ref: "#/components/schemas/Payment"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/rooms:
@@ -1360,7 +1360,7 @@ components:
               items:
                 type: string
           nullable: true
-    Budget:
+    Payment:
       type: object
       properties:
         id:
@@ -1379,7 +1379,7 @@ components:
         - user_traq_id
         - camp_id
         - amount_paid
-    PostBudgetRequest:
+    PostPaymentRequest:
       type: object
       properties:
         camp_id:
@@ -1455,8 +1455,8 @@ tags:
     description: User API
   - name: Questions
     description: Question API
-  - name: Budgets
-    description: Budget API
+  - name: Payments
+    description: Payment API
   - name: Rooms
     description: Room API
   - name: Staffs
