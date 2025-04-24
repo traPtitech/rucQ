@@ -1165,7 +1165,7 @@ components:
           format: date-time
         camp_id:
           type: integer
-        create_as_staff:
+        is_official:
           type: boolean
         display_color:
           type: string
@@ -1176,7 +1176,7 @@ components:
         - time_start
         - time_end
         - camp_id
-        - create_as_staff
+        - is_official
         - display_color
     User:
       type: object
