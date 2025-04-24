@@ -1053,7 +1053,6 @@ components:
           type: integer
         organizerId:
           type: string
-          readOnly: true
         isOfficial:
           type: boolean
         displayColor:
