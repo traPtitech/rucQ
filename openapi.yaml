@@ -349,6 +349,32 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/users/{traq_id}/messages:
+    post:
+      summary: ユーザーにDMを送信
+      tags:
+        - Users
+      operationId: postMessage
+      parameters:
+        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostMessageRequest"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /api/question_groups:
     get:
       summary: 質問グループの一覧を取得
@@ -918,31 +944,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/dm:
-    post:
-      summary: DMを送信
-      tags:
-        - DM
-      operationId: postDirectMessage
-      parameters:
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PostDMRequest"
-      responses:
-        "204":
-          $ref: "#/components/responses/NoContent"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
 
 components:
   parameters:
@@ -1194,6 +1195,17 @@ components:
           type: boolean
       required:
         - is_staff
+    PostMessageRequest:
+      type: object
+      properties:
+        content:
+          type: string
+        send_at:
+          type: string
+          format: date-time
+      required:
+        - content
+        - send_at
     QuestionGroup:
       type: object
       properties:
@@ -1419,19 +1431,6 @@ components:
         - name
         - camp_id
         - members
-    PostDMRequest:
-      type: object
-      properties:
-        target_user:
-          type: string
-        content:
-          type: string
-        sendtime:
-          type: string
-          format: date-time
-      required:
-        - target_user
-        - content
 
 tags:
   - name: Camps
