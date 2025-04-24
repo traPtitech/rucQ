@@ -788,12 +788,14 @@ paths:
                   $ref: "#/components/schemas/Payment"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/rooms:
+  /api/camps/{campId}/room-groups:
     get:
-      summary: 部屋の一覧を取得
+      summary: 部屋グループの一覧を取得
       tags:
         - Rooms
-      operationId: getRooms
+      operationId: getRoomGroups
+      parameters:
+        - $ref: "#/components/parameters/CampId"
       responses:
         "200":
           description: OK
@@ -802,9 +804,67 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Room"
+                  $ref: "#/components/schemas/RoomGroup"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/room-groups:
+    post:
+      summary: 部屋グループを作成
+      tags:
+        - Rooms
+      operationId: postRoomGroup
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomGroup"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomGroup"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/room-groups/{roomGroupId}:
+    put:
+      summary: 部屋グループを更新
+      tags:
+        - Rooms
+      operationId: putRoomGroup
+      parameters:
+        - $ref: "#/components/parameters/RoomGroupId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomGroup"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomGroup"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/rooms:
     post:
       summary: 部屋を作成
       tags:
@@ -930,6 +990,13 @@ components:
       name: answerId
       in: path
       description: 回答ID
+      required: true
+      schema:
+        type: integer
+    RoomGroupId:
+      name: roomGroupId
+      in: path
+      description: 部屋グループID
       required: true
       schema:
         type: integer
@@ -1193,6 +1260,26 @@ components:
         - userId
         - campId
         - amountPaid
+    RoomGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        campId:
+          type: integer
+        rooms:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/Room"
+      required:
+        - id
+        - name
+        - campId
+        - rooms
     Room:
       type: object
       properties:
@@ -1200,8 +1287,6 @@ components:
           type: integer
         name:
           type: string
-        campId:
-          type: integer
         members:
           type: array
           items:
@@ -1209,7 +1294,6 @@ components:
       required:
         - id
         - name
-        - campId
         - members
     PostRoomRequest:
       type: object
