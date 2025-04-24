@@ -305,14 +305,14 @@ paths:
                   $ref: "#/components/schemas/User"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/users/{traqId}:
+  /api/users/{userId}:
     put:
       summary: ユーザーの情報を更新（主に合宿係の権限管理用）
       tags:
         - Users
       operationId: putUser
       parameters:
-        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
         required: true
@@ -335,14 +335,14 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/users/{traqId}/messages:
+  /api/users/{userId}/messages:
     post:
       summary: ユーザーにDMを送信
       tags:
         - Users
       operationId: postMessage
       parameters:
-        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
         required: true
@@ -649,7 +649,7 @@ paths:
       operationId: getAnswers
       parameters:
         - $ref: "#/components/parameters/QuestionId"
-        - $ref: "#/components/parameters/TraqIdInQuery"
+        - $ref: "#/components/parameters/UserIdInQuery"
         - $ref: "#/components/parameters/X-Forwarded-User"
       responses:
         "200":
@@ -709,14 +709,14 @@ paths:
                 $ref: "#/components/schemas/Payment"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/users/{traqId}/payments:
+  /api/users/{userId}/payments:
     get:
       summary: ユーザーの予算を取得
       tags:
         - Payments
       operationId: getUserPayment
       parameters:
-        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       responses:
         "200":
@@ -737,7 +737,7 @@ paths:
         - Payments
       operationId: postUserPayment
       parameters:
-        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
         required: true
@@ -766,7 +766,7 @@ paths:
         - Payments
       operationId: putUserPayment
       parameters:
-        - $ref: "#/components/parameters/TraqId"
+        - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
         required: true
@@ -893,17 +893,17 @@ components:
       description: ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
       schema:
         type: string
-    TraqId:
-      name: traqId
+    UserId:
+      name: userId
       in: path
-      description: traQ ID
+      description: User ID
       required: true
       schema:
         type: string
-    TraqIdInQuery:
+    UserIdInQuery:
       name: traq_id
       in: query
-      description: traQ ID
+      description: User ID
       schema:
         type: string
     CampId:
@@ -1051,7 +1051,7 @@ components:
           format: date-time
         campId:
           type: integer
-        organizerTraqId:
+        organizerId:
           type: string
           readOnly: true
         isOfficial:
@@ -1071,20 +1071,20 @@ components:
         - timeStart
         - timeEnd
         - campId
-        - organizerTraqId
+        - organizerId
         - isOfficial
         - displayColor
         - participants
     User:
       type: object
       properties:
-        traqId:
+        id:
           type: string
           readOnly: true
         isStaff:
           type: boolean
       required:
-        - traqId
+        - id
         - isStaff
     Message:
       type: object
@@ -1186,7 +1186,7 @@ components:
         questionId:
           type: integer
           readOnly: true
-        userTraqId:
+        userId:
           type: string
           readOnly: true
         content:
@@ -1199,14 +1199,14 @@ components:
       required:
         - id
         - questionId
-        - userTraqId
+        - userId
     Payment:
       type: object
       properties:
         id:
           type: integer
           readOnly: true
-        userTraqId:
+        userId:
           type: string
           readOnly: true
         campId:
@@ -1218,7 +1218,7 @@ components:
           type: integer
       required:
         - id
-        - userTraqId
+        - userId
         - campId
         - amountPaid
     Room:
