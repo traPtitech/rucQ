@@ -679,6 +679,7 @@ paths:
       operationId: getMyPayment
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
+        - $ref: "#/components/parameters/CampIdInQuery"
       responses:
         "200":
           description: OK
@@ -697,6 +698,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/X-Forwarded-User"
+        - $ref: "#/components/parameters/CampIdInQuery"
       responses:
         "200":
           description: OK
@@ -950,6 +952,12 @@ components:
       in: path
       description: 合宿ID
       required: true
+      schema:
+        type: integer
+    CampIdInQuery:
+      name: campId
+      in: query
+      description: 合宿ID
       schema:
         type: integer
     EventId:
