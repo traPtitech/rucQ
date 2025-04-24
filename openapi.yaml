@@ -641,14 +641,15 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/me/answers/{questionId}:
+  /api/questions/{questionId}/answers:
     get:
-      summary: 自分の回答を取得
+      summary: 質問の回答を取得
       tags:
         - Questions
-      operationId: getMyAnswer
+      operationId: getAnswers
       parameters:
         - $ref: "#/components/parameters/QuestionId"
+        - $ref: "#/components/parameters/TraqIdInQuery"
         - $ref: "#/components/parameters/X-Forwarded-User"
       responses:
         "200":
@@ -656,69 +657,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Answer"
+                type: array
+                items:
+                  $ref: "#/components/schemas/Answer"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/answers/{answerId}:
     put:
-      summary: 回答を更新
+      summary: 自分の回答を、または合宿係が他のユーザーの回答を更新
       tags:
         - Questions
       operationId: putAnswer
       parameters:
-        - $ref: "#/components/parameters/QuestionId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Answer"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Answer"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-  /api/users/{traqId}/answers/{questionId}:
-    get:
-      summary: ユーザーの回答を取得
-      tags:
-        - Questions
-      operationId: getUserAnswer
-      parameters:
-        - $ref: "#/components/parameters/TraqId"
-        - $ref: "#/components/parameters/QuestionId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Answer"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-    put:
-      summary: 回答を更新
-      tags:
-        - Questions
-      operationId: putUserAnswer
-      parameters:
-        - $ref: "#/components/parameters/TraqId"
-        - $ref: "#/components/parameters/QuestionId"
+        - $ref: "#/components/parameters/AnswerId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
         required: true
@@ -845,7 +796,7 @@ paths:
         - Payments
       operationId: getPayments
       parameters:
-        - $ref: "#/components/parameters/CampIdQuery"
+        - $ref: "#/components/parameters/CampIdInQuery"
         - $ref: "#/components/parameters/X-Forwarded-User"
       responses:
         "200":
@@ -949,6 +900,12 @@ components:
       required: true
       schema:
         type: string
+    TraqIdInQuery:
+      name: traq_id
+      in: query
+      description: traQ ID
+      schema:
+        type: string
     CampId:
       name: campId
       in: path
@@ -956,7 +913,7 @@ components:
       required: true
       schema:
         type: integer
-    CampIdQuery:
+    CampIdInQuery:
       name: camp_id
       in: query
       description: 合宿ID
@@ -987,6 +944,13 @@ components:
       name: optionId
       in: path
       description: 選択肢ID
+      required: true
+      schema:
+        type: integer
+    AnswerId:
+      name: answerId
+      in: path
+      description: 回答ID
       required: true
       schema:
         type: integer
