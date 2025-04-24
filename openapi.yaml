@@ -104,12 +104,14 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/events:
+  /api/camps/{campId}/events:
     get:
       summary: イベントの一覧を取得
       tags:
         - Events
       operationId: getEvents
+      parameters:
+        - $ref: "#/components/parameters/CampId"
       responses:
         "200":
           description: OK
@@ -121,6 +123,7 @@ paths:
                   $ref: "#/components/schemas/Event"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/events:
     post:
       summary: イベントを作成
       tags:
@@ -358,12 +361,14 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/question-groups:
+  /api/camps/{campId}/question-groups:
     get:
       summary: 質問グループの一覧を取得
       tags:
         - Questions
       operationId: getQuestionGroups
+      parameters:
+        - $ref: "#/components/parameters/CampId"
       responses:
         "200":
           description: OK
@@ -375,6 +380,7 @@ paths:
                   $ref: "#/components/schemas/QuestionGroup"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/question-groups:
     post:
       summary: 質問グループを作成
       tags:
