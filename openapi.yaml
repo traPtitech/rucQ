@@ -925,6 +925,33 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/roll-calls:
+    post:
+      summary: 点呼を作成
+      tags:
+        - RollCalls
+      operationId: postRollCall
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RollCall"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollCall"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
 components:
   parameters:
@@ -1312,6 +1339,34 @@ components:
         - name
         - campId
         - members
+    RollCall:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        campId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        subjects:
+          type: array
+          writeOnly: true
+          items:
+            type: string
+      required:
+        - id
+        - campId
+        - name
+        - description
+        - options
+        - subjects
 
 tags:
   - name: Camps
@@ -1326,3 +1381,5 @@ tags:
     description: Payment API
   - name: Rooms
     description: Room API
+  - name: RollCalls
+    description: Roll Call API
