@@ -1064,19 +1064,19 @@ components:
         id:
           type: integer
           readOnly: true
-        display_id:
+        displayId:
           type: string
         name:
           type: string
-        is_draft:
+        isDraft:
           type: boolean
         description:
           type: string
       required:
         - id
-        - display_id
+        - displayId
         - name
-        - is_draft
+        - isDraft
         - description
     Event:
       type: object
@@ -1090,20 +1090,20 @@ components:
           type: string
         location:
           type: string
-        time_start:
+        timeStart:
           type: string
           format: date-time
-        time_end:
+        timeEnd:
           type: string
           format: date-time
-        camp_id:
+        campId:
           type: integer
-        organizer_traq_id:
+        organizerTraqId:
           type: string
           readOnly: true
-        is_official:
+        isOfficial:
           type: boolean
-        display_color:
+        displayColor:
           type: string
         participants:
           type: array
@@ -1115,35 +1115,35 @@ components:
         - name
         - description
         - location
-        - time_start
-        - time_end
-        - camp_id
-        - organizer_traq_id
-        - is_official
-        - display_color
+        - timeStart
+        - timeEnd
+        - campId
+        - organizerTraqId
+        - isOfficial
+        - displayColor
         - participants
     User:
       type: object
       properties:
-        traq_id:
+        traqId:
           type: string
           readOnly: true
-        is_staff:
+        isStaff:
           type: boolean
       required:
-        - traq_id
-        - is_staff
+        - traqId
+        - isStaff
     Message:
       type: object
       properties:
         content:
           type: string
-        send_at:
+        sendAt:
           type: string
           format: date-time
       required:
         - content
-        - send_at
+        - sendAt
     QuestionGroup:
       type: object
       properties:
@@ -1163,7 +1163,7 @@ components:
           readOnly: true
           items:
             $ref: "#/components/schemas/Question"
-        camp_id:
+        campId:
           type: integer
       required:
         - id
@@ -1171,14 +1171,14 @@ components:
         - description
         - due
         - questions
-        - camp_id
+        - campId
     Question:
       type: object
       properties:
         id:
           type: integer
           readOnly: true
-        question_group_id:
+        questionGroupId:
           type: integer
         title:
           type: string
@@ -1192,9 +1192,9 @@ components:
             - multiple
             - free_text
             - free_number
-        is_public:
+        isPublic:
           type: boolean
-        is_open:
+        isOpen:
           type: boolean
         options:
           type: array
@@ -1204,25 +1204,25 @@ components:
           nullable: true
       required:
         - id
-        - question_group_id
+        - questionGroupId
         - title
         - description
         - type
-        - is_public
-        - is_open
+        - isPublic
+        - isOpen
     Option:
       type: object
       properties:
         id:
           type: integer
           readOnly: true
-        question_id:
+        questionId:
           type: integer
         content:
           type: string
       required:
         - id
-        - question_id
+        - questionId
         - content
     Answer:
       type: object
@@ -1230,10 +1230,10 @@ components:
         id:
           type: integer
           readOnly: true
-        question_id:
+        questionId:
           type: integer
           readOnly: true
-        user_traq_id:
+        userTraqId:
           type: string
           readOnly: true
         content:
@@ -1245,29 +1245,29 @@ components:
           nullable: true
       required:
         - id
-        - question_id
-        - user_traq_id
+        - questionId
+        - userTraqId
     Payment:
       type: object
       properties:
         id:
           type: integer
           readOnly: true
-        user_traq_id:
+        userTraqId:
           type: string
           readOnly: true
-        camp_id:
+        campId:
           type: integer
         amount:
           type: integer
           nullable: true
-        amount_paid:
+        amountPaid:
           type: integer
       required:
         - id
-        - user_traq_id
-        - camp_id
-        - amount_paid
+        - userTraqId
+        - campId
+        - amountPaid
     Room:
       type: object
       properties:
@@ -1275,7 +1275,7 @@ components:
           type: integer
         name:
           type: string
-        camp_id:
+        campId:
           type: integer
         members:
           type: array
@@ -1284,14 +1284,14 @@ components:
       required:
         - id
         - name
-        - camp_id
+        - campId
         - members
     PostRoomRequest:
       type: object
       properties:
         name:
           type: string
-        camp_id:
+        campId:
           type: integer
         members:
           type: array
@@ -1299,7 +1299,7 @@ components:
             type: string
       required:
         - name
-        - camp_id
+        - campId
         - members
 
 tags:
