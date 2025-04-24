@@ -250,27 +250,6 @@ paths:
           $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/events/{eventId}/participants:
-    get:
-      summary: イベントの参加者一覧を取得
-      tags:
-        - Events
-      operationId: getParticipants
-      parameters:
-        - $ref: "#/components/parameters/EventId"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/User"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
   /api/me:
     get:
       summary: 自分の情報を取得
@@ -1057,11 +1036,6 @@ components:
           type: boolean
         displayColor:
           type: string
-        participants:
-          type: array
-          readOnly: true
-          items:
-            $ref: "#/components/schemas/User"
       required:
         - id
         - name
@@ -1073,7 +1047,6 @@ components:
         - organizerId
         - isOfficial
         - displayColor
-        - participants
     User:
       type: object
       properties:
