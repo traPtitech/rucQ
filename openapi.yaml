@@ -40,14 +40,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostCampRequest"
+              $ref: "#/components/schemas/Camp"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PostCampRequest"
+                $ref: "#/components/schemas/Camp"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -105,7 +105,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostCampRequest"
+              $ref: "#/components/schemas/Camp"
       responses:
         "200":
           description: OK
@@ -150,7 +150,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostEventRequest"
+              $ref: "#/components/schemas/Event"
       responses:
         "201":
           description: Created
@@ -194,7 +194,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostEventRequest"
+              $ref: "#/components/schemas/Event"
       responses:
         "200":
           description: OK
@@ -333,7 +333,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PutUserRequest"
+              $ref: "#/components/schemas/User"
       responses:
         "200":
           description: OK
@@ -363,7 +363,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostMessageRequest"
+              $ref: "#/components/schemas/Message"
       responses:
         "204":
           $ref: "#/components/responses/NoContent"
@@ -404,7 +404,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostQuestionGroupRequest"
+              $ref: "#/components/schemas/QuestionGroup"
       responses:
         "201":
           description: Created
@@ -450,7 +450,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostQuestionGroupRequest"
+              $ref: "#/components/schemas/QuestionGroup"
       responses:
         "200":
           description: OK
@@ -514,7 +514,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostQuestionRequest"
+              $ref: "#/components/schemas/Question"
       responses:
         "201":
           description: Created
@@ -560,7 +560,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostQuestionRequest"
+              $ref: "#/components/schemas/Question"
       responses:
         "200":
           description: OK
@@ -608,7 +608,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostOptionRequest"
+              $ref: "#/components/schemas/Option"
       responses:
         "201":
           description: Created
@@ -636,7 +636,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostOptionRequest"
+              $ref: "#/components/schemas/Option"
       responses:
         "200":
           description: OK
@@ -683,7 +683,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PutAnswerRequest"
+              $ref: "#/components/schemas/Answer"
       responses:
         "200":
           description: OK
@@ -736,7 +736,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PutAnswerRequest"
+              $ref: "#/components/schemas/Answer"
       responses:
         "200":
           description: OK
@@ -804,7 +804,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostPaymentRequest"
+              $ref: "#/components/schemas/Payment"
       responses:
         "201":
           description: Created
@@ -833,7 +833,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostPaymentRequest"
+              $ref: "#/components/schemas/Payment"
       responses:
         "200":
           description: OK
@@ -1077,6 +1077,7 @@ components:
       properties:
         id:
           type: integer
+          readOnly: true
         display_id:
           type: string
         name:
@@ -1091,27 +1092,12 @@ components:
         - name
         - is_draft
         - description
-    PostCampRequest:
-      type: object
-      properties:
-        display_id:
-          type: string
-        name:
-          type: string
-        is_draft:
-          type: boolean
-        description:
-          type: string
-      required:
-        - display_id
-        - name
-        - is_draft
-        - description
     Event:
       type: object
       properties:
         id:
           type: integer
+          readOnly: true
         name:
           type: string
         description:
@@ -1128,12 +1114,14 @@ components:
           type: integer
         organizer_traq_id:
           type: string
+          readOnly: true
         is_official:
           type: boolean
         display_color:
           type: string
         participants:
           type: array
+          readOnly: true
           items:
             $ref: "#/components/schemas/User"
       required:
@@ -1148,54 +1136,18 @@ components:
         - is_official
         - display_color
         - participants
-    PostEventRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        location:
-          type: string
-        time_start:
-          type: string
-          format: date-time
-        time_end:
-          type: string
-          format: date-time
-        camp_id:
-          type: integer
-        is_official:
-          type: boolean
-        display_color:
-          type: string
-      required:
-        - name
-        - description
-        - location
-        - time_start
-        - time_end
-        - camp_id
-        - is_official
-        - display_color
     User:
       type: object
       properties:
         traq_id:
           type: string
+          readOnly: true
         is_staff:
           type: boolean
       required:
         - traq_id
         - is_staff
-    PutUserRequest:
-      type: object
-      properties:
-        is_staff:
-          type: boolean
-      required:
-        - is_staff
-    PostMessageRequest:
+    Message:
       type: object
       properties:
         content:
@@ -1211,6 +1163,7 @@ components:
       properties:
         id:
           type: integer
+          readOnly: true
         name:
           type: string
         description:
@@ -1221,6 +1174,7 @@ components:
           format: date-time
         questions:
           type: array
+          readOnly: true
           items:
             $ref: "#/components/schemas/Question"
         camp_id:
@@ -1232,29 +1186,12 @@ components:
         - due
         - questions
         - camp_id
-    PostQuestionGroupRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        due:
-          type: string
-          format: date-time
-        camp_id:
-          type: integer
-      required:
-        - name
-        - description
-        - due
-        - camp_id
     Question:
       type: object
       properties:
         id:
           type: integer
+          readOnly: true
         question_group_id:
           type: integer
         title:
@@ -1275,6 +1212,7 @@ components:
           type: boolean
         options:
           type: array
+          readOnly: true
           items:
             $ref: "#/components/schemas/Option"
           nullable: true
@@ -1286,54 +1224,18 @@ components:
         - type
         - is_public
         - is_open
-    PostQuestionRequest:
-      type: object
-      properties:
-        question_group_id:
-          type: integer
-        title:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum:
-            - single
-            - multiple
-            - free_text
-            - free_number
-        is_public:
-          type: boolean
-        is_open:
-          type: boolean
-      required:
-        - question_group_id
-        - title
-        - description
-        - type
-        - is_public
-        - is_open
     Option:
       type: object
       properties:
         id:
           type: integer
+          readOnly: true
         question_id:
           type: integer
         content:
           type: string
       required:
         - id
-        - question_id
-        - content
-    PostOptionRequest:
-      type: object
-      properties:
-        question_id:
-          type: integer
-        content:
-          type: string
-      required:
         - question_id
         - content
     Answer:
@@ -1341,10 +1243,13 @@ components:
       properties:
         id:
           type: integer
+          readOnly: true
         question_id:
           type: integer
+          readOnly: true
         user_traq_id:
           type: string
+          readOnly: true
         content:
           oneOf:
             - type: string
@@ -1356,23 +1261,15 @@ components:
         - id
         - question_id
         - user_traq_id
-    PutAnswerRequest:
-      type: object
-      properties:
-        content:
-          oneOf:
-            - type: string
-            - type: array
-              items:
-                type: string
-          nullable: true
     Payment:
       type: object
       properties:
         id:
           type: integer
+          readOnly: true
         user_traq_id:
           type: string
+          readOnly: true
         camp_id:
           type: integer
         amount:
@@ -1383,19 +1280,6 @@ components:
       required:
         - id
         - user_traq_id
-        - camp_id
-        - amount_paid
-    PostPaymentRequest:
-      type: object
-      properties:
-        camp_id:
-          type: integer
-        amount:
-          type: integer
-          nullable: true
-        amount_paid:
-          type: integer
-      required:
         - camp_id
         - amount_paid
     Room:
