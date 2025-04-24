@@ -375,7 +375,7 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/question_groups:
+  /api/question-groups:
     get:
       summary: 質問グループの一覧を取得
       tags:
@@ -418,7 +418,7 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/question_groups/{question_group_id}:
+  /api/question-groups/{question_group_id}:
     get:
       summary: 質問グループの詳細を取得
       tags:
