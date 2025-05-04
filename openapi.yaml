@@ -1151,6 +1151,7 @@ components:
           readOnly: true
         isStaff:
           type: boolean
+          writeOnly: true
       required:
         - id
         - isStaff
