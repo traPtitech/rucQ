@@ -925,6 +925,99 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/camps/{campId}/map-images:
+    get:
+      summary: 館内図の一覧を取得
+      tags:
+        - Rooms
+      operationId: getMapImages
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MapImage"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: 館内図をアップロード
+      tags:
+        - Rooms
+      operationId: postMapImage
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MapImage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/map-images/{mapImageId}:
+    get:
+      summary: 館内図の画像を取得
+      tags:
+        - Rooms
+      operationId: getMapImage
+      parameters:
+        - $ref: "#/components/parameters/MapImageId"
+      responses:
+        "200":
+          description: OK
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: 館内図を削除
+      tags:
+        - Rooms
+      operationId: deleteMapImage
+      parameters:
+        - $ref: "#/components/parameters/MapImageId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /api/roll-calls:
     post:
       summary: 点呼を作成
@@ -1033,6 +1126,13 @@ components:
       name: roomId
       in: path
       description: 部屋ID
+      required: true
+      schema:
+        type: integer
+    MapImageId:
+      name: mapImageId
+      in: path
+      description: 館内図ID
       required: true
       schema:
         type: integer
@@ -1340,6 +1440,14 @@ components:
         - name
         - campId
         - members
+    MapImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+      required:
+        - id
     RollCall:
       type: object
       properties:
