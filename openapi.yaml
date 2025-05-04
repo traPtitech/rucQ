@@ -1207,6 +1207,10 @@ components:
         - isDraft
         - description
     Event:
+      oneOf:
+        - $ref: "#/components/schemas/DurationEvent"
+        - $ref: "#/components/schemas/MomentEvent"
+    DurationEvent:
       type: object
       properties:
         id:
@@ -1243,6 +1247,24 @@ components:
         - organizerId
         - isOfficial
         - displayColor
+    MomentEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        timeStart:
+          type: string
+          format: date-time
+        campId:
+          type: integer
+      required:
+        - id
+        - name
+        - timeStart
+        - campId
     User:
       type: object
       properties:
