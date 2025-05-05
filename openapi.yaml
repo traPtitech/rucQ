@@ -104,6 +104,84 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/camps/{campId}/register:
+    post:
+      summary: 合宿に参加登録
+      tags:
+        - Camps
+      operationId: postCampRegister
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: 合宿の参加登録を解除
+      tags:
+        - Camps
+      operationId: deleteCampRegister
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/camps/{campId}/participants:
+    get:
+      summary: 合宿の参加者一覧を取得
+      tags:
+        - Camps
+      operationId: getCampParticipants
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/camps/{campId}/me:
+    get:
+      summary: 自分の合宿参加情報を取得
+      tags:
+        - Camps
+      operationId: getMyCamp
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampMember"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /api/camps/{campId}/events:
     get:
       summary: イベントの一覧を取得
@@ -634,24 +712,6 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-  /api/me/payments:
-    get:
-      summary: 自分の支払い情報を取得
-      tags:
-        - Payments
-      operationId: getMyPayment
-      parameters:
-        - $ref: "#/components/parameters/X-Forwarded-User"
-        - $ref: "#/components/parameters/CampIdInQuery"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Payment"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/users/{userId}/payments:
@@ -1242,6 +1302,18 @@ components:
       required:
         - id
         - isStaff
+    CampMember:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        payment:
+          $ref: "#/components/schemas/Payment"
+        room:
+          $ref: "#/components/schemas/Room"
+      required:
+        - id
     Message:
       type: object
       properties:
