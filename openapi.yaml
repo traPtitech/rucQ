@@ -1441,7 +1441,6 @@ components:
           type: integer
         amount:
           type: integer
-          nullable: true
         amountPaid:
           type: integer
       required:
