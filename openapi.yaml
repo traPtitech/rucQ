@@ -181,7 +181,6 @@ paths:
                   $ref: "#/components/schemas/Event"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/events:
     post:
       summary: イベントを作成
       tags:
@@ -189,6 +188,7 @@ paths:
       operationId: postEvent
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
+        - $ref: "#/components/parameters/CampId"
       requestBody:
         required: true
         content:
@@ -402,7 +402,6 @@ paths:
                   $ref: "#/components/schemas/QuestionGroup"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/question-groups:
     post:
       summary: 質問グループを作成
       tags:
@@ -410,6 +409,7 @@ paths:
       operationId: postQuestionGroup
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
+        - $ref: "#/components/parameters/CampId"
       requestBody:
         required: true
         content:
@@ -834,7 +834,6 @@ paths:
                   $ref: "#/components/schemas/RoomGroup"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/room-groups:
     post:
       summary: 部屋グループを作成
       tags:
@@ -842,6 +841,7 @@ paths:
       operationId: postRoomGroup
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
+        - $ref: "#/components/parameters/CampId"
       requestBody:
         required: true
         content:
@@ -1062,7 +1062,6 @@ paths:
                   $ref: "#/components/schemas/RollCall"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/roll-calls:
     post:
       summary: 点呼を作成
       tags:
@@ -1070,6 +1069,7 @@ paths:
       operationId: postRollCall
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
+        - $ref: "#/components/parameters/CampId"
       requestBody:
         required: true
         content:
@@ -1368,8 +1368,6 @@ components:
         timeEnd:
           type: string
           format: date-time
-        campId:
-          type: integer
         organizerId:
           type: string
         isOfficial:
@@ -1383,7 +1381,6 @@ components:
         - location
         - timeStart
         - timeEnd
-        - campId
         - organizerId
         - isOfficial
         - displayColor
@@ -1398,13 +1395,10 @@ components:
         timeStart:
           type: string
           format: date-time
-        campId:
-          type: integer
       required:
         - id
         - name
         - timeStart
-        - campId
     User:
       type: object
       properties:
@@ -1459,15 +1453,12 @@ components:
           readOnly: true
           items:
             $ref: "#/components/schemas/Question"
-        campId:
-          type: integer
       required:
         - id
         - name
         - description
         - due
         - questions
-        - campId
     Question:
       type: object
       properties:
@@ -1571,8 +1562,6 @@ components:
           readOnly: true
         name:
           type: string
-        campId:
-          type: integer
         rooms:
           type: array
           readOnly: true
@@ -1581,7 +1570,6 @@ components:
       required:
         - id
         - name
-        - campId
         - rooms
     Room:
       type: object
@@ -1603,7 +1591,7 @@ components:
       properties:
         name:
           type: string
-        campId:
+        roomGroupId:
           type: integer
         members:
           type: array
@@ -1611,7 +1599,7 @@ components:
             type: string
       required:
         - name
-        - campId
+        - roomGroupId
         - members
     MapImage:
       type: object
@@ -1641,8 +1629,6 @@ components:
         id:
           type: integer
           readOnly: true
-        campId:
-          type: integer
         name:
           type: string
         description:
@@ -1668,7 +1654,6 @@ components:
             $ref: "#/components/schemas/RollCallAnswer"
       required:
         - id
-        - campId
         - name
         - description
         - options
