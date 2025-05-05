@@ -1221,16 +1221,22 @@ components:
           type: string
         name:
           type: string
-        isDraft:
-          type: boolean
         description:
           type: string
+        isDraft:
+          type: boolean
+        isRegisterationOpen:
+          type: boolean
+        isPaymentOpen:
+          type: boolean
       required:
         - id
         - displayId
         - name
-        - isDraft
         - description
+        - isDraft
+        - isRegisterationOpen
+        - isPaymentOpen
     Event:
       oneOf:
         - $ref: "#/components/schemas/DurationEvent"
