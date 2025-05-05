@@ -162,26 +162,6 @@ paths:
                   $ref: "#/components/schemas/User"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/camps/{campId}/me:
-    get:
-      summary: 自分の合宿参加情報を取得
-      tags:
-        - Camps
-      operationId: getMyCamp
-      parameters:
-        - $ref: "#/components/parameters/CampId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CampMember"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
   /api/camps/{campId}/events:
     get:
       summary: イベントの一覧を取得
@@ -308,6 +288,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/camps/{campId}/me:
+    get:
+      summary: 自分の合宿参加情報を取得
+      tags:
+        - Users
+      operationId: getMyCamp
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampMember"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/staffs:
@@ -1538,16 +1538,16 @@ components:
 
 tags:
   - name: Camps
-    description: Camp API
+    description: 合宿に関する操作
   - name: Events
-    description: Event API
+    description: イベントに関する操作
   - name: Users
-    description: User API
+    description: ユーザーに関する操作
   - name: Questions
-    description: Question API
+    description: 質問に関する操作
   - name: Payments
-    description: Payment API
+    description: 支払いに関する操作（admin向け）
   - name: Rooms
-    description: Room API
+    description: 部屋に関する操作
   - name: RollCalls
-    description: Roll Call API
+    description: 点呼に関する操作
