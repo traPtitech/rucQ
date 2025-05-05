@@ -1172,6 +1172,26 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/roll-calls/{rollCallId}/stream:
+    get:
+      summary: 新たに作成された回答をストリームで取得
+      tags:
+        - RollCalls
+      operationId: streamRollCallAnswer
+      parameters:
+        - $ref: "#/components/parameters/RollCallId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/RollCallAnswer"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
 components:
   parameters:
