@@ -1043,6 +1043,25 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/camps/{campId}/roll-calls:
+    get:
+      summary: 点呼の一覧を取得
+      tags:
+        - RollCalls
+      operationId: getRollCalls
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RollCall"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /api/roll-calls:
     post:
       summary: 点呼を作成
@@ -1056,18 +1075,37 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RollCall"
+              $ref: "#/components/schemas/RollCallDetail"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RollCall"
+                $ref: "#/components/schemas/RollCallDetail"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/roll-calls/{rollCallId}:
+    get:
+      summary: 点呼の詳細を取得
+      tags:
+        - RollCalls
+      operationId: getRollCall
+      parameters:
+        - $ref: "#/components/parameters/RollCallId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollCallDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -1158,6 +1196,13 @@ components:
       name: mapImageId
       in: path
       description: 館内図ID
+      required: true
+      schema:
+        type: integer
+    RollCallId:
+      name: rollCallId
+      in: path
+      description: 点呼ID
       required: true
       schema:
         type: integer
@@ -1518,6 +1563,20 @@ components:
         id:
           type: integer
           readOnly: true
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - id
+        - name
+        - description
+    RollCallDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
         campId:
           type: integer
         name:
@@ -1533,6 +1592,16 @@ components:
           writeOnly: true
           items:
             type: string
+        unansweredSubjects:
+          type: array
+          readOnly: true
+          items:
+            type: string
+        answers:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/RollCallAnswer"
       required:
         - id
         - campId
@@ -1540,6 +1609,19 @@ components:
         - description
         - options
         - subjects
+        - unansweredSubjects
+        - answers
+    RollCallAnswer:
+      type: object
+      properties:
+        userId:
+          type: string
+          readOnly: true
+        content:
+          type: string
+      required:
+        - rollCallId
+        - userId
 
 tags:
   - name: Camps
