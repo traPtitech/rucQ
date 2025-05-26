@@ -1313,70 +1313,7 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/roll-calls/{rollCallId}/my-answer:
-    get:
-      summary: 自分の点呼の回答を取得
-      tags:
-        - RollCalls
-      operationId: getMyRollCallAnswer
-      parameters:
-        - $ref: "#/components/parameters/RollCallId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RollCallReaction"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-    put:
-      summary: 点呼の回答を作成・更新
-      tags:
-        - RollCalls
-      operationId: putRollCallAnswer
-      parameters:
-        - $ref: "#/components/parameters/RollCallId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RollCallReaction"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RollCallReaction"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-    delete:
-      summary: 点呼の回答を削除
-      tags:
-        - RollCalls
-      operationId: deleteRollCallAnswer
-      parameters:
-        - $ref: "#/components/parameters/RollCallId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      responses:
-        "204":
-          $ref: "#/components/responses/NoContent"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
+
   /api/roll-calls/{rollCallId}/stream:
     get:
       summary: 新たに作成された回答をストリームで取得
