@@ -734,10 +734,40 @@ paths:
           $ref: "#/components/responses/InternalServerError"
   /api/answers/{answerId}:
     put:
-      summary: 自分の回答を、または合宿係が他のユーザーの回答を更新
+      summary: 自分の回答を更新
       tags:
         - Questions
       operationId: putAnswer
+      parameters:
+        - $ref: "#/components/parameters/AnswerId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Answer"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/admin/answers/{answerId}:
+    put:
+      summary: 管理者が回答を更新
+      tags:
+        - Questions
+      operationId: adminPutAnswer
       parameters:
         - $ref: "#/components/parameters/AnswerId"
         - $ref: "#/components/parameters/X-Forwarded-User"
