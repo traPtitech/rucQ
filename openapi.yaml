@@ -326,7 +326,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CampMember"
+                $ref: "#/components/schemas/Dashboard"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -755,6 +755,79 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/questions/{questionId}/answers:
+    get:
+      summary: 質問の回答一覧を取得
+      tags:
+        - Questions
+      operationId: getAnswers
+      parameters:
+        - $ref: "#/components/parameters/QuestionId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Answer"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/me/question-groups/{questionGroupId}/answers:
+    get:
+      summary: ある質問グループに対する自分の回答を取得
+      tags:
+        - Questions
+      operationId: getMyAnswers
+      parameters:
+        - $ref: "#/components/parameters/QuestionGroupId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Answer"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/answers:
+    post:
+      summary: 質問に回答する
+      tags:
+        - Questions
+      operationId: postAnswer
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Answer"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/answers/{answerId}:
     put:
       summary: 自分の回答を、または合宿係が他のユーザーの回答を更新
@@ -1043,12 +1116,12 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/camps/{campId}/map-images:
+  /api/camps/{campId}/images:
     get:
-      summary: 館内図の一覧を取得
+      summary: 画像の一覧を取得
       tags:
-        - Rooms
-      operationId: getMapImages
+        - Images
+      operationId: getImages
       parameters:
         - $ref: "#/components/parameters/CampId"
       responses:
@@ -1059,16 +1132,16 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/MapImage"
+                  $ref: "#/components/schemas/Image"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
-  /api/admin/camps/{campId}/map-images:
+  /api/admin/camps/{campId}/images:
     post:
-      summary: 館内図をアップロード（管理者用）
+      summary: 画像をアップロード（管理者用）
       tags:
-        - Rooms
-      operationId: adminPostMapImage
+        - Images
+      operationId: adminPostImage
       parameters:
         - $ref: "#/components/parameters/CampId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -1092,21 +1165,21 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/MapImage"
+                  $ref: "#/components/schemas/Image"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/map-images/{mapImageId}:
+  /api/images/{imageId}:
     get:
-      summary: 館内図の画像を取得
+      summary: 画像を取得
       tags:
-        - Rooms
-      operationId: getMapImage
+        - Images
+      operationId: getImage
       parameters:
-        - $ref: "#/components/parameters/MapImageId"
+        - $ref: "#/components/parameters/ImageId"
       responses:
         "200":
           description: OK
@@ -1120,14 +1193,14 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
-  /api/admin/map-images/{mapImageId}:
+  /api/admin/images/{imageId}:
     put:
-      summary: 館内図を更新（管理者用）
+      summary: 画像を更新（管理者用）
       tags:
-        - Rooms
-      operationId: adminPutMapImage
+        - Images
+      operationId: adminPutImage
       parameters:
-        - $ref: "#/components/parameters/MapImageId"
+        - $ref: "#/components/parameters/ImageId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
         required: true
@@ -1145,7 +1218,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MapImage"
+                $ref: "#/components/schemas/Image"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -1155,12 +1228,12 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
     delete:
-      summary: 館内図を削除（管理者用）
+      summary: 画像を削除（管理者用）
       tags:
-        - Rooms
-      operationId: adminDeleteMapImage
+        - Images
+      operationId: adminDeleteImage
       parameters:
-        - $ref: "#/components/parameters/MapImageId"
+        - $ref: "#/components/parameters/ImageId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       responses:
         "204":
@@ -1325,6 +1398,125 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
+  /api/roll-calls/{rollCallId}/reactions:
+    get:
+      summary: 点呼のリアクション一覧を取得
+      tags:
+        - RollCalls
+      operationId: getRollCallReactions
+      parameters:
+        - $ref: "#/components/parameters/RollCallId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RollCallReaction"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: 点呼にリアクションを追加
+      tags:
+        - RollCalls
+      operationId: postRollCallReaction
+      parameters:
+        - $ref: "#/components/parameters/RollCallId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RollCallReaction"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollCallReaction"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/roll-calls/{rollCallId}/reactions/stream:
+    get:
+      summary: 新たに作成されたリアクションをストリームで取得
+      tags:
+        - RollCalls
+      operationId: streamRollCallReactions
+      parameters:
+        - $ref: "#/components/parameters/RollCallId"
+      responses:
+        "200":
+          description: OK
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/RollCallReaction"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/reactions/{reactionId}:
+    put:
+      summary: リアクションを更新
+      tags:
+        - RollCalls
+      operationId: putReaction
+      parameters:
+        - $ref: "#/components/parameters/ReactionId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RollCallReaction"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollCallReaction"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: リアクションを削除
+      tags:
+        - RollCalls
+      operationId: deleteReaction
+      parameters:
+        - $ref: "#/components/parameters/ReactionId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
 components:
   parameters:
     X-Forwarded-User:
@@ -1408,10 +1600,10 @@ components:
       required: true
       schema:
         type: integer
-    MapImageId:
-      name: mapImageId
+    ImageId:
+      name: imageId
       in: path
-      description: 館内図ID
+      description: 画像ID
       required: true
       schema:
         type: integer
@@ -1419,6 +1611,13 @@ components:
       name: rollCallId
       in: path
       description: 点呼ID
+      required: true
+      schema:
+        type: integer
+    ReactionId:
+      name: reactionId
+      in: path
+      description: リアクションID
       required: true
       schema:
         type: integer
@@ -1501,6 +1700,7 @@ components:
     Event:
       oneOf:
         - $ref: "#/components/schemas/DurationEvent"
+        - $ref: "#/components/schemas/OfficialEvent"
         - $ref: "#/components/schemas/MomentEvent"
     DurationEvent:
       type: object
@@ -1508,6 +1708,10 @@ components:
         id:
           type: integer
           readOnly: true
+        type:
+          type: string
+          enum:
+            - duration
         name:
           type: string
         description:
@@ -1522,35 +1726,81 @@ components:
           format: date-time
         organizerId:
           type: string
-        isOfficial:
-          type: boolean
         displayColor:
           type: string
+          enum:
+            - orange
+            - green
+            - red
+            - blue
+            - purple
+            - pink
       required:
         - id
+        - type
         - name
         - description
         - location
         - timeStart
         - timeEnd
         - organizerId
-        - isOfficial
         - displayColor
+    OfficialEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        type:
+          type: string
+          enum:
+            - official
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        timeStart:
+          type: string
+          format: date-time
+        timeEnd:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - name
+        - description
+        - location
+        - timeStart
+        - timeEnd
     MomentEvent:
       type: object
       properties:
         id:
           type: integer
           readOnly: true
+        type:
+          type: string
+          enum:
+            - moment
         name:
           type: string
-        timeStart:
+        description:
+          type: string
+        location:
+          type: string
+        time:
           type: string
           format: date-time
       required:
         - id
+        - type
         - name
-        - timeStart
+        - description
+        - location
+        - time
     User:
       type: object
       properties:
@@ -1563,7 +1813,7 @@ components:
       required:
         - id
         - isStaff
-    CampMember:
+    Dashboard:
       type: object
       properties:
         id:
@@ -1575,6 +1825,8 @@ components:
           $ref: "#/components/schemas/Room"
       required:
         - id
+        - payment
+        - room
     Message:
       type: object
       properties:
@@ -1612,6 +1864,73 @@ components:
         - due
         - questions
     Question:
+      oneOf:
+        - $ref: "#/components/schemas/FreeTextQuestion"
+        - $ref: "#/components/schemas/FreeNumberQuestion"
+        - $ref: "#/components/schemas/SingleChoiceQuestion"
+        - $ref: "#/components/schemas/MultipleChoiceQuestion"
+
+    FreeTextQuestion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        questionGroupId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum:
+            - free_text
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
+      required:
+        - id
+        - questionGroupId
+        - title
+        - description
+        - type
+        - isPublic
+        - isOpen
+
+    FreeNumberQuestion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        questionGroupId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum:
+            - free_number
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
+      required:
+        - id
+        - questionGroupId
+        - title
+        - description
+        - type
+        - isPublic
+        - isOpen
+
+    SingleChoiceQuestion:
       type: object
       properties:
         id:
@@ -1628,9 +1947,6 @@ components:
           type: string
           enum:
             - single
-            - multiple
-            - free_text
-            - free_number
         isPublic:
           type: boolean
         isOpen:
@@ -1640,7 +1956,6 @@ components:
           readOnly: true
           items:
             $ref: "#/components/schemas/Option"
-          nullable: true
       required:
         - id
         - questionGroupId
@@ -1649,6 +1964,43 @@ components:
         - type
         - isPublic
         - isOpen
+        - options
+
+    MultipleChoiceQuestion:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        questionGroupId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum:
+            - multiple
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
+        options:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/Option"
+      required:
+        - id
+        - questionGroupId
+        - title
+        - description
+        - type
+        - isPublic
+        - isOpen
+        - options
     Option:
       type: object
       properties:
@@ -1664,6 +2016,13 @@ components:
         - questionId
         - content
     Answer:
+      oneOf:
+        - $ref: "#/components/schemas/FreeTextAnswer"
+        - $ref: "#/components/schemas/FreeNumberAnswer"
+        - $ref: "#/components/schemas/SingleChoiceAnswer"
+        - $ref: "#/components/schemas/MultipleChoiceAnswer"
+
+    FreeTextAnswer:
       type: object
       properties:
         id:
@@ -1671,21 +2030,79 @@ components:
           readOnly: true
         questionId:
           type: integer
-          readOnly: true
+          writeOnly: true
         userId:
           type: string
           readOnly: true
         content:
-          oneOf:
-            - type: string
-            - type: array
-              items:
-                type: string
-          nullable: true
+          type: string
       required:
         - id
         - questionId
         - userId
+        - content
+
+    FreeNumberAnswer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        questionId:
+          type: integer
+          writeOnly: true
+        userId:
+          type: string
+          readOnly: true
+        content:
+          type: number
+      required:
+        - id
+        - questionId
+        - userId
+        - content
+
+    SingleChoiceAnswer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        questionId:
+          type: integer
+          writeOnly: true
+        userId:
+          type: string
+          readOnly: true
+        content:
+          $ref: "#/components/schemas/Option"
+      required:
+        - id
+        - questionId
+        - userId
+        - content
+
+    MultipleChoiceAnswer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        questionId:
+          type: integer
+          writeOnly: true
+        userId:
+          type: string
+          readOnly: true
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/Option"
+      required:
+        - id
+        - questionId
+        - userId
+        - content
     Payment:
       type: object
       properties:
@@ -1753,7 +2170,7 @@ components:
         - name
         - roomGroupId
         - members
-    MapImage:
+    Image:
       type: object
       properties:
         id:
@@ -1824,6 +2241,22 @@ components:
         - userId
         - content
 
+    RollCallReaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        userId:
+          type: string
+          readOnly: true
+        content:
+          type: string
+      required:
+        - id
+        - userId
+        - content
+
 tags:
   - name: Camps
     description: 合宿に関する操作
@@ -1837,5 +2270,7 @@ tags:
     description: 支払いに関する操作（admin向け）
   - name: Rooms
     description: 部屋に関する操作
+  - name: Images
+    description: 画像に関する操作
   - name: RollCalls
     description: 点呼に関する操作
