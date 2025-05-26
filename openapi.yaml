@@ -210,24 +210,6 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/events/{eventId}:
-    get:
-      summary: イベントの詳細を取得
-      tags:
-        - Events
-      operationId: getEvent
-      parameters:
-        - $ref: "#/components/parameters/EventId"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Event"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
     put:
       summary: イベントを更新
       tags:
@@ -455,26 +437,6 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/question-groups/{questionGroupId}:
-    get:
-      summary: 質問グループの詳細を取得
-      tags:
-        - Questions
-      operationId: getQuestionGroup
-      parameters:
-        - $ref: "#/components/parameters/QuestionGroupId"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QuestionGroup"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-
   /api/admin/question-groups/{questionGroupId}:
     put:
       summary: 質問グループを更新（管理者用）
@@ -524,24 +486,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/questions:
-    get:
-      summary: 質問の一覧を取得
-      tags:
-        - Questions
-      operationId: getQuestions
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Question"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-
   /api/admin/questions:
     post:
       summary: 質問を作成（管理者用）
@@ -569,26 +513,6 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/questions/{questionId}:
-    get:
-      summary: 質問の詳細を取得
-      tags:
-        - Questions
-      operationId: getQuestion
-      parameters:
-        - $ref: "#/components/parameters/QuestionId"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Question"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-
   /api/admin/questions/{questionId}:
     put:
       summary: 質問を更新（管理者用）
@@ -759,7 +683,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-
   /api/me/question-groups/{questionGroupId}/answers:
     get:
       summary: ある質問グループに対する自分の回答を取得
@@ -809,7 +732,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-
   /api/answers/{answerId}:
     put:
       summary: 自分の回答を、または合宿係が他のユーザーの回答を更新
@@ -891,7 +813,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-
   /api/admin/payments/{paymentId}:
     put:
       summary: 支払い情報を更新（管理者用）
@@ -922,7 +843,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-
   /api/camps/{campId}/room-groups:
     get:
       summary: 部屋グループの一覧を取得
@@ -942,7 +862,6 @@ paths:
                   $ref: "#/components/schemas/RoomGroup"
         "500":
           $ref: "#/components/responses/InternalServerError"
-
   /api/admin/camps/{campId}/room-groups:
     post:
       summary: 部屋グループを作成（管理者用）
@@ -1295,7 +1214,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-
   /api/roll-calls/{rollCallId}/stream:
     get:
       summary: 新たに作成された回答をストリームで取得
@@ -1316,7 +1234,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-
   /api/roll-calls/{rollCallId}/reactions:
     get:
       summary: 点呼のリアクション一覧を取得
@@ -1365,7 +1282,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-
   /api/roll-calls/{rollCallId}/reactions/stream:
     get:
       summary: 新たに作成されたリアクションをストリームで取得
@@ -1385,7 +1301,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-
   /api/reactions/{reactionId}:
     put:
       summary: リアクションを更新
