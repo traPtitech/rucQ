@@ -1313,7 +1313,7 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/roll-calls/{rollCallId}/my-answers:
+  /api/roll-calls/{rollCallId}/my-answer:
     get:
       summary: 自分の点呼の回答を取得
       tags:
@@ -1328,7 +1328,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RollCallAnswer"
+                $ref: "#/components/schemas/RollCallReaction"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1337,7 +1337,7 @@ paths:
       summary: 点呼の回答を作成・更新
       tags:
         - RollCalls
-      operationId: postRollCallAnswer
+      operationId: putRollCallAnswer
       parameters:
         - $ref: "#/components/parameters/RollCallId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -1346,14 +1346,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RollCallAnswer"
+              $ref: "#/components/schemas/RollCallReaction"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RollCallAnswer"
+                $ref: "#/components/schemas/RollCallReaction"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -1685,7 +1685,7 @@ components:
           type: string
         isDraft:
           type: boolean
-        isRegisterationOpen:
+        isRegistrationOpen:
           type: boolean
         isPaymentOpen:
           type: boolean
@@ -1695,7 +1695,7 @@ components:
         - name
         - description
         - isDraft
-        - isRegisterationOpen
+        - isRegistrationOpen
         - isPaymentOpen
     Event:
       oneOf:
@@ -2162,14 +2162,14 @@ components:
           type: string
         roomGroupId:
           type: integer
-        members:
+        memberIds:
           type: array
           items:
             type: string
       required:
         - name
         - roomGroupId
-        - members
+        - memberIds
     Image:
       type: object
       properties:
@@ -2216,11 +2216,11 @@ components:
           readOnly: true
           items:
             type: string
-        answers:
+        reactions:
           type: array
           readOnly: true
           items:
-            $ref: "#/components/schemas/RollCallAnswer"
+            $ref: "#/components/schemas/RollCallReaction"
       required:
         - id
         - name
@@ -2228,18 +2228,7 @@ components:
         - options
         - subjects
         - unansweredSubjects
-        - answers
-    RollCallAnswer:
-      type: object
-      properties:
-        userId:
-          type: string
-          readOnly: true
-        content:
-          type: string
-      required:
-        - userId
-        - content
+        - reactions
 
     RollCallReaction:
       type: object
