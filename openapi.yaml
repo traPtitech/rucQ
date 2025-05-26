@@ -28,11 +28,13 @@ paths:
                   $ref: "#/components/schemas/Camp"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/camps:
     post:
-      summary: 合宿を作成
+      summary: 合宿を作成（管理者用）
       tags:
         - Camps
-      operationId: postCamp
+      operationId: adminPostCamp
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
@@ -71,35 +73,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Camp"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-    put:
-      summary: 合宿を更新
-      tags:
-        - Camps
-      operationId: putCamp
-      parameters:
-        - $ref: "#/components/parameters/CampId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Camp"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Camp"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -143,6 +116,54 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/admin/camps/{campId}:
+    put:
+      summary: 合宿を更新（管理者用）
+      tags:
+        - Camps
+      operationId: adminPutCamp
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Camp"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Camp"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: 合宿を削除（管理者用）
+      tags:
+        - Camps
+      operationId: adminDeleteCamp
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/camps/{campId}/participants:
     get:
       summary: 合宿の参加者一覧を取得
@@ -327,12 +348,33 @@ paths:
                   $ref: "#/components/schemas/User"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/users/{userId}:
+  /api/admin/users/{userId}:
+    get:
+      summary: ユーザー情報を取得（管理者用）
+      tags:
+        - Users
+      operationId: adminGetUser
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     put:
       summary: ユーザーの情報を更新（主に合宿係の権限管理用）
       tags:
         - Users
-      operationId: putUser
+      operationId: adminPutUser
       parameters:
         - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -357,12 +399,12 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/users/{userId}/messages:
+  /api/admin/users/{userId}/messages:
     post:
-      summary: ユーザーにDMを送信
+      summary: ユーザーにDMを送信（管理者用）
       tags:
         - Users
-      operationId: postMessage
+      operationId: adminPostMessage
       parameters:
         - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -402,11 +444,13 @@ paths:
                   $ref: "#/components/schemas/QuestionGroup"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/camps/{campId}/question-groups:
     post:
-      summary: 質問グループを作成
+      summary: 質問グループを作成（管理者用）
       tags:
         - Questions
-      operationId: postQuestionGroup
+      operationId: adminPostQuestionGroup
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
         - $ref: "#/components/parameters/CampId"
@@ -448,11 +492,13 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/question-groups/{questionGroupId}:
     put:
-      summary: 質問グループを更新
+      summary: 質問グループを更新（管理者用）
       tags:
         - Questions
-      operationId: putQuestionGroup
+      operationId: adminPutQuestionGroup
       parameters:
         - $ref: "#/components/parameters/QuestionGroupId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -478,10 +524,10 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
     delete:
-      summary: 質問グループを削除
+      summary: 質問グループを削除（管理者用）
       tags:
         - Questions
-      operationId: deleteQuestionGroup
+      operationId: adminDeleteQuestionGroup
       parameters:
         - $ref: "#/components/parameters/QuestionGroupId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -513,11 +559,13 @@ paths:
                   $ref: "#/components/schemas/Question"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/questions:
     post:
-      summary: 質問を作成
+      summary: 質問を作成（管理者用）
       tags:
         - Questions
-      operationId: postQuestion
+      operationId: adminPostQuestion
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
@@ -558,11 +606,13 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/questions/{questionId}:
     put:
-      summary: 質問を更新
+      summary: 質問を更新（管理者用）
       tags:
         - Questions
-      operationId: putQuestion
+      operationId: adminPutQuestion
       parameters:
         - $ref: "#/components/parameters/QuestionId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -588,10 +638,10 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
     delete:
-      summary: 質問を削除
+      summary: 質問を削除（管理者用）
       tags:
         - Questions
-      operationId: deleteQuestion
+      operationId: adminDeleteQuestion
       parameters:
         - $ref: "#/components/parameters/QuestionId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -606,12 +656,12 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/options:
+  /api/admin/options:
     post:
-      summary: 選択肢を作成
+      summary: 選択肢を作成（管理者用）
       tags:
         - Questions
-      operationId: postOption
+      operationId: adminPostOption
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
@@ -633,12 +683,12 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/options/{optionId}:
+  /api/admin/options/{optionId}:
     put:
-      summary: 選択肢を更新
+      summary: 選択肢を更新（管理者用）
       tags:
         - Questions
-      operationId: putOption
+      operationId: adminPutOption
       parameters:
         - $ref: "#/components/parameters/OptionId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -663,12 +713,31 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/questions/{questionId}/answers:
-    get:
-      summary: 質問の回答を取得
+    delete:
+      summary: 選択肢を削除（管理者用）
       tags:
         - Questions
-      operationId: getAnswers
+      operationId: adminDeleteOption
+      parameters:
+        - $ref: "#/components/parameters/OptionId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/admin/questions/{questionId}/answers:
+    get:
+      summary: 質問の回答を取得（管理者用）
+      tags:
+        - Questions
+      operationId: adminGetAnswers
       parameters:
         - $ref: "#/components/parameters/QuestionId"
         - $ref: "#/components/parameters/UserIdInQuery"
@@ -682,6 +751,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Answer"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/answers/{answerId}:
@@ -714,36 +785,35 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/users/{userId}/payments:
+  /api/admin/camps/{campId}/payments:
     get:
-      summary: ユーザーの支払い情報を取得
+      summary: 支払い情報の一覧を取得（管理者用）
       tags:
         - Payments
-      operationId: getUserPayment
+      operationId: adminGetPayments
       parameters:
-        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/CampId"
         - $ref: "#/components/parameters/X-Forwarded-User"
-        - $ref: "#/components/parameters/CampIdInQuery"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Payment"
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
         "403":
           $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
     post:
-      summary: ユーザーの支払い情報を設定
+      summary: 支払い情報を作成（管理者用）
       tags:
         - Payments
-      operationId: postUserPayment
+      operationId: adminPostPayment
       parameters:
-        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/CampId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
         required: true
@@ -766,13 +836,15 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/payments/{paymentId}:
     put:
-      summary: ユーザーの支払い情報を更新
+      summary: 支払い情報を更新（管理者用）
       tags:
         - Payments
-      operationId: putUserPayment
+      operationId: adminPutPayment
       parameters:
-        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/PaymentId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
         required: true
@@ -795,26 +867,7 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/camps/{campId}/payments:
-    get:
-      summary: 支払い情報の一覧を取得（admin向け）
-      tags:
-        - Payments
-      operationId: getPayments
-      parameters:
-        - $ref: "#/components/parameters/CampId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Payment"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
+
   /api/camps/{campId}/room-groups:
     get:
       summary: 部屋グループの一覧を取得
@@ -834,11 +887,13 @@ paths:
                   $ref: "#/components/schemas/RoomGroup"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/camps/{campId}/room-groups:
     post:
-      summary: 部屋グループを作成
+      summary: 部屋グループを作成（管理者用）
       tags:
         - Rooms
-      operationId: postRoomGroup
+      operationId: adminPostRoomGroup
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
         - $ref: "#/components/parameters/CampId"
@@ -861,12 +916,12 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/room-groups/{roomGroupId}:
+  /api/admin/room-groups/{roomGroupId}:
     put:
-      summary: 部屋グループを更新
+      summary: 部屋グループを更新（管理者用）
       tags:
         - Rooms
-      operationId: putRoomGroup
+      operationId: adminPutRoomGroup
       parameters:
         - $ref: "#/components/parameters/RoomGroupId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -891,12 +946,31 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/rooms:
-    post:
-      summary: 部屋を作成
+    delete:
+      summary: 部屋グループを削除（管理者用）
       tags:
         - Rooms
-      operationId: postRoom
+      operationId: adminDeleteRoomGroup
+      parameters:
+        - $ref: "#/components/parameters/RoomGroupId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/admin/rooms:
+    post:
+      summary: 部屋を作成（管理者用）
+      tags:
+        - Rooms
+      operationId: adminPostRoom
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
       requestBody:
@@ -920,12 +994,12 @@ paths:
           $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/rooms/{roomId}:
+  /api/admin/rooms/{roomId}:
     put:
-      summary: 部屋を更新
+      summary: 部屋を更新（管理者用）
       tags:
         - Rooms
-      operationId: putRoom
+      operationId: adminPutRoom
       parameters:
         - $ref: "#/components/parameters/RoomId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -942,6 +1016,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Room"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: 部屋を削除（管理者用）
+      tags:
+        - Rooms
+      operationId: adminDeleteRoom
+      parameters:
+        - $ref: "#/components/parameters/RoomId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -969,11 +1062,13 @@ paths:
                   $ref: "#/components/schemas/MapImage"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/camps/{campId}/map-images:
     post:
-      summary: 館内図をアップロード
+      summary: 館内図をアップロード（管理者用）
       tags:
         - Rooms
-      operationId: postMapImage
+      operationId: adminPostMapImage
       parameters:
         - $ref: "#/components/parameters/CampId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -1024,11 +1119,46 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-    delete:
-      summary: 館内図を削除
+
+  /api/admin/map-images/{mapImageId}:
+    put:
+      summary: 館内図を更新（管理者用）
       tags:
         - Rooms
-      operationId: deleteMapImage
+      operationId: adminPutMapImage
+      parameters:
+        - $ref: "#/components/parameters/MapImageId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MapImage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      summary: 館内図を削除（管理者用）
+      tags:
+        - Rooms
+      operationId: adminDeleteMapImage
       parameters:
         - $ref: "#/components/parameters/MapImageId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -1062,11 +1192,13 @@ paths:
                   $ref: "#/components/schemas/RollCall"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/camps/{campId}/roll-calls:
     post:
-      summary: 点呼を作成
+      summary: 点呼を作成（管理者用）
       tags:
         - RollCalls
-      operationId: postRollCall
+      operationId: adminPostRollCall
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
         - $ref: "#/components/parameters/CampId"
