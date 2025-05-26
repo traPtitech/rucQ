@@ -1986,6 +1986,7 @@ components:
         - id
         - userId
         - campId
+        - amount
         - amountPaid
     RoomGroup:
       type: object
