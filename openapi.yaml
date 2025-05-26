@@ -1211,57 +1211,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RollCallDetail"
+              $ref: "#/components/schemas/RollCall"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RollCallDetail"
+                $ref: "#/components/schemas/RollCall"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
           $ref: "#/components/responses/Forbidden"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-  /api/roll-calls/{rollCallId}:
-    get:
-      summary: 点呼の詳細を取得
-      tags:
-        - RollCalls
-      operationId: getRollCall
-      parameters:
-        - $ref: "#/components/parameters/RollCallId"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RollCallDetail"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-  /api/roll-calls/{rollCallId}/stream:
-    get:
-      summary: 新たに作成された回答をストリームで取得
-      tags:
-        - RollCalls
-      operationId: streamRollCallAnswer
-      parameters:
-        - $ref: "#/components/parameters/RollCallId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      responses:
-        "200":
-          description: OK
-          content:
-            text/event-stream:
-              schema:
-                $ref: "#/components/schemas/RollCallAnswer"
-        "404":
-          $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/roll-calls/{rollCallId}/reactions:
@@ -2053,47 +2014,20 @@ components:
           type: string
         description:
           type: string
-      required:
-        - id
-        - name
-        - description
-    RollCallDetail:
-      type: object
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-        description:
-          type: string
         options:
           type: array
           items:
             type: string
         subjects:
           type: array
-          writeOnly: true
           items:
             type: string
-        unansweredSubjects:
-          type: array
-          readOnly: true
-          items:
-            type: string
-        reactions:
-          type: array
-          readOnly: true
-          items:
-            $ref: "#/components/schemas/RollCallReaction"
       required:
         - id
         - name
         - description
         - options
         - subjects
-        - unansweredSubjects
-        - reactions
 
     RollCallReaction:
       type: object
