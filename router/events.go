@@ -1,4 +1,4 @@
-package handler
+package router
 
 import (
 	"net/http"
@@ -49,23 +49,23 @@ func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams
 
 	// TODO: req.CreateAsStaff is not available in new Event structure
 	/*
-	if req.CreateAsStaff {
-		user, err := s.repo.GetOrCreateUser(*organizerTraqID)
+		if req.CreateAsStaff {
+			user, err := s.repo.GetOrCreateUser(*organizerTraqID)
 
-		if err != nil {
-			e.Logger().Errorf("failed to get or create user: %v", err)
+			if err != nil {
+				e.Logger().Errorf("failed to get or create user: %v", err)
 
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			}
+
+			if !user.IsStaff {
+				return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+			}
+
+			trapTraqID := "traP"
+			organizerTraqID = &trapTraqID
+			eventModel.ByStaff = true
 		}
-
-		if !user.IsStaff {
-			return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
-		}
-
-		trapTraqID := "traP"
-		organizerTraqID = &trapTraqID
-		eventModel.ByStaff = true
-	}
 	*/
 
 	eventModel.OrganizerTraqID = *organizerTraqID

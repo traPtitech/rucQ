@@ -1,4 +1,4 @@
-package handler
+package router
 
 import (
 	"errors"
@@ -120,7 +120,7 @@ func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId QuestionG
 	}
 
 	updateQuestionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupId))
-	
+
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Not found")
