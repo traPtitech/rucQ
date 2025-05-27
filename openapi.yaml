@@ -1411,6 +1411,13 @@ components:
       required: true
       schema:
         type: integer
+    PaymentId:
+      name: paymentId
+      in: path
+      description: 支払いID
+      required: true
+      schema:
+        type: integer
     RoomGroupId:
       name: roomGroupId
       in: path
