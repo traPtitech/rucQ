@@ -11,222 +11,319 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Defines values for PostQuestionRequestType.
+// Defines values for DurationEventDisplayColor.
 const (
-	PostQuestionRequestTypeFreeNumber PostQuestionRequestType = "free_number"
-	PostQuestionRequestTypeFreeText   PostQuestionRequestType = "free_text"
-	PostQuestionRequestTypeMultiple   PostQuestionRequestType = "multiple"
-	PostQuestionRequestTypeSingle     PostQuestionRequestType = "single"
+	Blue   DurationEventDisplayColor = "blue"
+	Green  DurationEventDisplayColor = "green"
+	Orange DurationEventDisplayColor = "orange"
+	Pink   DurationEventDisplayColor = "pink"
+	Purple DurationEventDisplayColor = "purple"
+	Red    DurationEventDisplayColor = "red"
 )
 
-// Defines values for QuestionType.
+// Defines values for DurationEventType.
 const (
-	QuestionTypeFreeNumber QuestionType = "free_number"
-	QuestionTypeFreeText   QuestionType = "free_text"
-	QuestionTypeMultiple   QuestionType = "multiple"
-	QuestionTypeSingle     QuestionType = "single"
+	Duration DurationEventType = "duration"
+)
+
+// Defines values for FreeNumberQuestionType.
+const (
+	FreeNumber FreeNumberQuestionType = "free_number"
+)
+
+// Defines values for FreeTextQuestionType.
+const (
+	FreeText FreeTextQuestionType = "free_text"
+)
+
+// Defines values for MomentEventType.
+const (
+	Moment MomentEventType = "moment"
+)
+
+// Defines values for MultipleChoiceQuestionType.
+const (
+	Multiple MultipleChoiceQuestionType = "multiple"
+)
+
+// Defines values for OfficialEventType.
+const (
+	Official OfficialEventType = "official"
+)
+
+// Defines values for SingleChoiceQuestionType.
+const (
+	Single SingleChoiceQuestionType = "single"
 )
 
 // Answer defines model for Answer.
 type Answer struct {
-	Content    *Answer_Content `json:"content"`
-	Id         int             `json:"id"`
-	QuestionId int             `json:"question_id"`
-	UserTraqId string          `json:"user_traq_id"`
-}
-
-// AnswerContent0 defines model for .
-type AnswerContent0 = string
-
-// AnswerContent1 defines model for .
-type AnswerContent1 = []string
-
-// Answer_Content defines model for Answer.Content.
-type Answer_Content struct {
 	union json.RawMessage
-}
-
-// Budget defines model for Budget.
-type Budget struct {
-	Amount     *int   `json:"amount"`
-	AmountPaid int    `json:"amount_paid"`
-	CampId     int    `json:"camp_id"`
-	Id         int    `json:"id"`
-	UserTraqId string `json:"user_traq_id"`
 }
 
 // Camp defines model for Camp.
 type Camp struct {
-	Description string `json:"description"`
-	DisplayId   string `json:"display_id"`
-	Id          int    `json:"id"`
-	IsDraft     bool   `json:"is_draft"`
-	Name        string `json:"name"`
+	Description        string `json:"description"`
+	DisplayId          string `json:"displayId"`
+	Id                 *int   `json:"id,omitempty"`
+	IsDraft            bool   `json:"isDraft"`
+	IsPaymentOpen      bool   `json:"isPaymentOpen"`
+	IsRegistrationOpen bool   `json:"isRegistrationOpen"`
+	Name               string `json:"name"`
 }
+
+// Dashboard defines model for Dashboard.
+type Dashboard struct {
+	Id      *string `json:"id,omitempty"`
+	Payment Payment `json:"payment"`
+	Room    Room    `json:"room"`
+}
+
+// DurationEvent defines model for DurationEvent.
+type DurationEvent struct {
+	Description  string                    `json:"description"`
+	DisplayColor DurationEventDisplayColor `json:"displayColor"`
+	Id           *int                      `json:"id,omitempty"`
+	Location     string                    `json:"location"`
+	Name         string                    `json:"name"`
+	OrganizerId  string                    `json:"organizerId"`
+	TimeEnd      time.Time                 `json:"timeEnd"`
+	TimeStart    time.Time                 `json:"timeStart"`
+	Type         DurationEventType         `json:"type"`
+}
+
+// DurationEventDisplayColor defines model for DurationEvent.DisplayColor.
+type DurationEventDisplayColor string
+
+// DurationEventType defines model for DurationEvent.Type.
+type DurationEventType string
 
 // Event defines model for Event.
 type Event struct {
-	ByStaff         bool      `json:"by_staff"`
-	CampId          int       `json:"camp_id"`
-	Description     string    `json:"description"`
-	DisplayColor    string    `json:"display_color"`
-	Id              int       `json:"id"`
-	Location        string    `json:"location"`
-	Name            string    `json:"name"`
-	OrganizerTraqId string    `json:"organizer_traq_id"`
-	Participants    []User    `json:"participants"`
-	TimeEnd         time.Time `json:"time_end"`
-	TimeStart       time.Time `json:"time_start"`
+	union json.RawMessage
 }
+
+// FreeNumberAnswer defines model for FreeNumberAnswer.
+type FreeNumberAnswer struct {
+	Content    float32 `json:"content"`
+	Id         *int    `json:"id,omitempty"`
+	QuestionId *int    `json:"questionId,omitempty"`
+	UserId     *string `json:"userId,omitempty"`
+}
+
+// FreeNumberQuestion defines model for FreeNumberQuestion.
+type FreeNumberQuestion struct {
+	Description     *string                `json:"description"`
+	Id              *int                   `json:"id,omitempty"`
+	IsOpen          bool                   `json:"isOpen"`
+	IsPublic        bool                   `json:"isPublic"`
+	QuestionGroupId int                    `json:"questionGroupId"`
+	Title           string                 `json:"title"`
+	Type            FreeNumberQuestionType `json:"type"`
+}
+
+// FreeNumberQuestionType defines model for FreeNumberQuestion.Type.
+type FreeNumberQuestionType string
+
+// FreeTextAnswer defines model for FreeTextAnswer.
+type FreeTextAnswer struct {
+	Content    string  `json:"content"`
+	Id         *int    `json:"id,omitempty"`
+	QuestionId *int    `json:"questionId,omitempty"`
+	UserId     *string `json:"userId,omitempty"`
+}
+
+// FreeTextQuestion defines model for FreeTextQuestion.
+type FreeTextQuestion struct {
+	Description     *string              `json:"description"`
+	Id              *int                 `json:"id,omitempty"`
+	IsOpen          bool                 `json:"isOpen"`
+	IsPublic        bool                 `json:"isPublic"`
+	QuestionGroupId int                  `json:"questionGroupId"`
+	Title           string               `json:"title"`
+	Type            FreeTextQuestionType `json:"type"`
+}
+
+// FreeTextQuestionType defines model for FreeTextQuestion.Type.
+type FreeTextQuestionType string
+
+// Image defines model for Image.
+type Image struct {
+	Id *int `json:"id,omitempty"`
+}
+
+// Message defines model for Message.
+type Message struct {
+	Content string    `json:"content"`
+	SendAt  time.Time `json:"sendAt"`
+}
+
+// MomentEvent defines model for MomentEvent.
+type MomentEvent struct {
+	Description string          `json:"description"`
+	Id          *int            `json:"id,omitempty"`
+	Location    string          `json:"location"`
+	Name        string          `json:"name"`
+	Time        time.Time       `json:"time"`
+	Type        MomentEventType `json:"type"`
+}
+
+// MomentEventType defines model for MomentEvent.Type.
+type MomentEventType string
+
+// MultipleChoiceAnswer defines model for MultipleChoiceAnswer.
+type MultipleChoiceAnswer struct {
+	Content    []Option `json:"content"`
+	Id         *int     `json:"id,omitempty"`
+	QuestionId *int     `json:"questionId,omitempty"`
+	UserId     *string  `json:"userId,omitempty"`
+}
+
+// MultipleChoiceQuestion defines model for MultipleChoiceQuestion.
+type MultipleChoiceQuestion struct {
+	Description     *string                    `json:"description"`
+	Id              *int                       `json:"id,omitempty"`
+	IsOpen          bool                       `json:"isOpen"`
+	IsPublic        bool                       `json:"isPublic"`
+	Options         *[]Option                  `json:"options,omitempty"`
+	QuestionGroupId int                        `json:"questionGroupId"`
+	Title           string                     `json:"title"`
+	Type            MultipleChoiceQuestionType `json:"type"`
+}
+
+// MultipleChoiceQuestionType defines model for MultipleChoiceQuestion.Type.
+type MultipleChoiceQuestionType string
+
+// OfficialEvent defines model for OfficialEvent.
+type OfficialEvent struct {
+	Description string            `json:"description"`
+	Id          *int              `json:"id,omitempty"`
+	Location    string            `json:"location"`
+	Name        string            `json:"name"`
+	TimeEnd     time.Time         `json:"timeEnd"`
+	TimeStart   time.Time         `json:"timeStart"`
+	Type        OfficialEventType `json:"type"`
+}
+
+// OfficialEventType defines model for OfficialEvent.Type.
+type OfficialEventType string
 
 // Option defines model for Option.
 type Option struct {
 	Content    string `json:"content"`
-	Id         int    `json:"id"`
-	QuestionId int    `json:"question_id"`
+	Id         *int   `json:"id,omitempty"`
+	QuestionId int    `json:"questionId"`
 }
 
-// PostBudgetRequest defines model for PostBudgetRequest.
-type PostBudgetRequest struct {
-	Amount     *int `json:"amount"`
-	AmountPaid int  `json:"amount_paid"`
-	CampId     int  `json:"camp_id"`
+// Payment defines model for Payment.
+type Payment struct {
+	Amount     int     `json:"amount"`
+	AmountPaid int     `json:"amountPaid"`
+	CampId     int     `json:"campId"`
+	Id         *int    `json:"id,omitempty"`
+	UserId     *string `json:"userId,omitempty"`
 }
-
-// PostCampRequest defines model for PostCampRequest.
-type PostCampRequest struct {
-	Description string `json:"description"`
-	DisplayId   string `json:"display_id"`
-	IsDraft     bool   `json:"is_draft"`
-	Name        string `json:"name"`
-}
-
-// PostDMRequest defines model for PostDMRequest.
-type PostDMRequest struct {
-	Content    string     `json:"content"`
-	Sendtime   *time.Time `json:"sendtime,omitempty"`
-	TargetUser string     `json:"target_user"`
-}
-
-// PostEventRequest defines model for PostEventRequest.
-type PostEventRequest struct {
-	CampId        int       `json:"camp_id"`
-	CreateAsStaff bool      `json:"create_as_staff"`
-	Description   string    `json:"description"`
-	DisplayColor  string    `json:"display_color"`
-	Location      string    `json:"location"`
-	Name          string    `json:"name"`
-	TimeEnd       time.Time `json:"time_end"`
-	TimeStart     time.Time `json:"time_start"`
-}
-
-// PostOptionRequest defines model for PostOptionRequest.
-type PostOptionRequest struct {
-	Content    string `json:"content"`
-	QuestionId int    `json:"question_id"`
-}
-
-// PostQuestionGroupRequest defines model for PostQuestionGroupRequest.
-type PostQuestionGroupRequest struct {
-	CampId      int       `json:"camp_id"`
-	Description *string   `json:"description"`
-	Due         time.Time `json:"due"`
-	Name        string    `json:"name"`
-}
-
-// PostQuestionRequest defines model for PostQuestionRequest.
-type PostQuestionRequest struct {
-	Description     string                  `json:"description"`
-	IsOpen          bool                    `json:"is_open"`
-	IsPublic        bool                    `json:"is_public"`
-	QuestionGroupId int                     `json:"question_group_id"`
-	Title           string                  `json:"title"`
-	Type            PostQuestionRequestType `json:"type"`
-}
-
-// PostQuestionRequestType defines model for PostQuestionRequest.Type.
-type PostQuestionRequestType string
 
 // PostRoomRequest defines model for PostRoomRequest.
 type PostRoomRequest struct {
-	CampId  int      `json:"camp_id"`
-	Members []string `json:"members"`
-	Name    string   `json:"name"`
-}
-
-// PostStaffRequest defines model for PostStaffRequest.
-type PostStaffRequest struct {
-	TraqId string `json:"traq_id"`
-}
-
-// PutAnswerRequest defines model for PutAnswerRequest.
-type PutAnswerRequest struct {
-	Content *PutAnswerRequest_Content `json:"content"`
-}
-
-// PutAnswerRequestContent0 defines model for .
-type PutAnswerRequestContent0 = string
-
-// PutAnswerRequestContent1 defines model for .
-type PutAnswerRequestContent1 = []string
-
-// PutAnswerRequest_Content defines model for PutAnswerRequest.Content.
-type PutAnswerRequest_Content struct {
-	union json.RawMessage
+	MemberIds   []string `json:"memberIds"`
+	Name        string   `json:"name"`
+	RoomGroupId int      `json:"roomGroupId"`
 }
 
 // Question defines model for Question.
 type Question struct {
-	Description     *string      `json:"description"`
-	Id              int          `json:"id"`
-	IsOpen          bool         `json:"is_open"`
-	IsPublic        bool         `json:"is_public"`
-	Options         *[]Option    `json:"options"`
-	QuestionGroupId int          `json:"question_group_id"`
-	Title           string       `json:"title"`
-	Type            QuestionType `json:"type"`
+	union json.RawMessage
 }
-
-// QuestionType defines model for Question.Type.
-type QuestionType string
 
 // QuestionGroup defines model for QuestionGroup.
 type QuestionGroup struct {
-	CampId      int        `json:"camp_id"`
-	Description *string    `json:"description"`
-	Due         time.Time  `json:"due"`
-	Id          int        `json:"id"`
-	Name        string     `json:"name"`
-	Questions   []Question `json:"questions"`
+	Description *string     `json:"description"`
+	Due         time.Time   `json:"due"`
+	Id          *int        `json:"id,omitempty"`
+	Name        string      `json:"name"`
+	Questions   *[]Question `json:"questions,omitempty"`
+}
+
+// RollCall defines model for RollCall.
+type RollCall struct {
+	Description string   `json:"description"`
+	Id          *int     `json:"id,omitempty"`
+	Name        string   `json:"name"`
+	Options     []string `json:"options"`
+	Subjects    []string `json:"subjects"`
+}
+
+// RollCallReaction defines model for RollCallReaction.
+type RollCallReaction struct {
+	Content string  `json:"content"`
+	Id      *int    `json:"id,omitempty"`
+	UserId  *string `json:"userId,omitempty"`
 }
 
 // Room defines model for Room.
 type Room struct {
-	CampId  int    `json:"camp_id"`
 	Id      int    `json:"id"`
 	Members []User `json:"members"`
 	Name    string `json:"name"`
 }
 
+// RoomGroup defines model for RoomGroup.
+type RoomGroup struct {
+	Id    *int    `json:"id,omitempty"`
+	Name  string  `json:"name"`
+	Rooms *[]Room `json:"rooms,omitempty"`
+}
+
+// SingleChoiceAnswer defines model for SingleChoiceAnswer.
+type SingleChoiceAnswer struct {
+	Content    Option  `json:"content"`
+	Id         *int    `json:"id,omitempty"`
+	QuestionId *int    `json:"questionId,omitempty"`
+	UserId     *string `json:"userId,omitempty"`
+}
+
+// SingleChoiceQuestion defines model for SingleChoiceQuestion.
+type SingleChoiceQuestion struct {
+	Description     *string                  `json:"description"`
+	Id              *int                     `json:"id,omitempty"`
+	IsOpen          bool                     `json:"isOpen"`
+	IsPublic        bool                     `json:"isPublic"`
+	Options         *[]Option                `json:"options,omitempty"`
+	QuestionGroupId int                      `json:"questionGroupId"`
+	Title           string                   `json:"title"`
+	Type            SingleChoiceQuestionType `json:"type"`
+}
+
+// SingleChoiceQuestionType defines model for SingleChoiceQuestion.Type.
+type SingleChoiceQuestionType string
+
 // User defines model for User.
 type User struct {
-	IsStaff bool   `json:"is_staff"`
-	TraqId  string `json:"traq_id"`
+	Id      *string `json:"id,omitempty"`
+	IsStaff *bool   `json:"isStaff,omitempty"`
 }
+
+// AnswerId defines model for AnswerId.
+type AnswerId = int
 
 // CampId defines model for CampId.
 type CampId = int
 
-// CampIdQuery defines model for CampIdQuery.
-type CampIdQuery = int
-
 // EventId defines model for EventId.
 type EventId = int
 
+// ImageId defines model for ImageId.
+type ImageId = int
+
 // OptionId defines model for OptionId.
 type OptionId = int
+
+// PaymentId defines model for PaymentId.
+type PaymentId = int
 
 // QuestionGroupId defines model for QuestionGroupId.
 type QuestionGroupId = int
@@ -234,14 +331,23 @@ type QuestionGroupId = int
 // QuestionId defines model for QuestionId.
 type QuestionId = int
 
+// ReactionId defines model for ReactionId.
+type ReactionId = int
+
+// RollCallId defines model for RollCallId.
+type RollCallId = int
+
+// RoomGroupId defines model for RoomGroupId.
+type RoomGroupId = int
+
 // RoomId defines model for RoomId.
 type RoomId = int
 
-// StaffId defines model for StaffId.
-type StaffId = string
+// UserId defines model for UserId.
+type UserId = string
 
-// TraqId defines model for TraqId.
-type TraqId = string
+// UserIdInQuery defines model for UserIdInQuery.
+type UserIdInQuery = string
 
 // XForwardedUser defines model for X-Forwarded-User.
 type XForwardedUser = string
@@ -271,35 +377,231 @@ type NotFound struct {
 	Message *string `json:"message,omitempty"`
 }
 
-// GetBudgetsParams defines parameters for GetBudgets.
-type GetBudgetsParams struct {
-	// CampId 合宿ID
-	CampId *CampIdQuery `form:"camp_id,omitempty" json:"camp_id,omitempty"`
+// AdminPutAnswerParams defines parameters for AdminPutAnswer.
+type AdminPutAnswerParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostCampParams defines parameters for AdminPostCamp.
+type AdminPostCampParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminDeleteCampParams defines parameters for AdminDeleteCamp.
+type AdminDeleteCampParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPutCampParams defines parameters for AdminPutCamp.
+type AdminPutCampParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostImageMultipartBody defines parameters for AdminPostImage.
+type AdminPostImageMultipartBody struct {
+	File *[]openapi_types.File `json:"file,omitempty"`
+}
+
+// AdminPostImageParams defines parameters for AdminPostImage.
+type AdminPostImageParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminGetPaymentsParams defines parameters for AdminGetPayments.
+type AdminGetPaymentsParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostPaymentParams defines parameters for AdminPostPayment.
+type AdminPostPaymentParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostQuestionGroupParams defines parameters for AdminPostQuestionGroup.
+type AdminPostQuestionGroupParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostRollCallParams defines parameters for AdminPostRollCall.
+type AdminPostRollCallParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostRoomGroupParams defines parameters for AdminPostRoomGroup.
+type AdminPostRoomGroupParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminDeleteImageParams defines parameters for AdminDeleteImage.
+type AdminDeleteImageParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPutImageMultipartBody defines parameters for AdminPutImage.
+type AdminPutImageMultipartBody struct {
+	File *openapi_types.File `json:"file,omitempty"`
+}
+
+// AdminPutImageParams defines parameters for AdminPutImage.
+type AdminPutImageParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostOptionParams defines parameters for AdminPostOption.
+type AdminPostOptionParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminDeleteOptionParams defines parameters for AdminDeleteOption.
+type AdminDeleteOptionParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPutOptionParams defines parameters for AdminPutOption.
+type AdminPutOptionParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPutPaymentParams defines parameters for AdminPutPayment.
+type AdminPutPaymentParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminDeleteQuestionGroupParams defines parameters for AdminDeleteQuestionGroup.
+type AdminDeleteQuestionGroupParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPutQuestionGroupParams defines parameters for AdminPutQuestionGroup.
+type AdminPutQuestionGroupParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostQuestionParams defines parameters for AdminPostQuestion.
+type AdminPostQuestionParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminDeleteQuestionParams defines parameters for AdminDeleteQuestion.
+type AdminDeleteQuestionParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPutQuestionParams defines parameters for AdminPutQuestion.
+type AdminPutQuestionParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminGetAnswersParams defines parameters for AdminGetAnswers.
+type AdminGetAnswersParams struct {
+	// UserId User ID
+	UserId *UserIdInQuery `form:"userId,omitempty" json:"userId,omitempty"`
 
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// PostCampParams defines parameters for PostCamp.
-type PostCampParams struct {
+// AdminDeleteRoomGroupParams defines parameters for AdminDeleteRoomGroup.
+type AdminDeleteRoomGroupParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// PutCampParams defines parameters for PutCamp.
-type PutCampParams struct {
+// AdminPutRoomGroupParams defines parameters for AdminPutRoomGroup.
+type AdminPutRoomGroupParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// PostDirectMessageParams defines parameters for PostDirectMessage.
-type PostDirectMessageParams struct {
+// AdminPostRoomParams defines parameters for AdminPostRoom.
+type AdminPostRoomParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminDeleteRoomParams defines parameters for AdminDeleteRoom.
+type AdminDeleteRoomParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPutRoomParams defines parameters for AdminPutRoom.
+type AdminPutRoomParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminGetUserParams defines parameters for AdminGetUser.
+type AdminGetUserParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPutUserParams defines parameters for AdminPutUser.
+type AdminPutUserParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostMessageParams defines parameters for AdminPostMessage.
+type AdminPostMessageParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// PostAnswerParams defines parameters for PostAnswer.
+type PostAnswerParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// PutAnswerParams defines parameters for PutAnswer.
+type PutAnswerParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
 // PostEventParams defines parameters for PostEvent.
 type PostEventParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// GetMyCampParams defines parameters for GetMyCamp.
+type GetMyCampParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// DeleteCampRegisterParams defines parameters for DeleteCampRegister.
+type DeleteCampRegisterParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// PostCampRegisterParams defines parameters for PostCampRegister.
+type PostCampRegisterParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
@@ -316,217 +618,130 @@ type PutEventParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// UnregisterEventParams defines parameters for UnregisterEvent.
-type UnregisterEventParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
-// RegisterEventParams defines parameters for RegisterEvent.
-type RegisterEventParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
 // GetMeParams defines parameters for GetMe.
 type GetMeParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// GetMyAnswerParams defines parameters for GetMyAnswer.
-type GetMyAnswerParams struct {
+// GetMyAnswersParams defines parameters for GetMyAnswers.
+type GetMyAnswersParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// PutAnswerParams defines parameters for PutAnswer.
-type PutAnswerParams struct {
+// DeleteReactionParams defines parameters for DeleteReaction.
+type DeleteReactionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// GetMyBudgetParams defines parameters for GetMyBudget.
-type GetMyBudgetParams struct {
+// PutReactionParams defines parameters for PutReaction.
+type PutReactionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// PostOptionParams defines parameters for PostOption.
-type PostOptionParams struct {
+// PostRollCallReactionParams defines parameters for PostRollCallReaction.
+type PostRollCallReactionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// PutOptionParams defines parameters for PutOption.
-type PutOptionParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPutAnswerJSONRequestBody defines body for AdminPutAnswer for application/json ContentType.
+type AdminPutAnswerJSONRequestBody = Answer
 
-// PostQuestionGroupParams defines parameters for PostQuestionGroup.
-type PostQuestionGroupParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPostCampJSONRequestBody defines body for AdminPostCamp for application/json ContentType.
+type AdminPostCampJSONRequestBody = Camp
 
-// DeleteQuestionGroupParams defines parameters for DeleteQuestionGroup.
-type DeleteQuestionGroupParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPutCampJSONRequestBody defines body for AdminPutCamp for application/json ContentType.
+type AdminPutCampJSONRequestBody = Camp
 
-// PutQuestionGroupParams defines parameters for PutQuestionGroup.
-type PutQuestionGroupParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPostImageMultipartRequestBody defines body for AdminPostImage for multipart/form-data ContentType.
+type AdminPostImageMultipartRequestBody AdminPostImageMultipartBody
 
-// PostQuestionParams defines parameters for PostQuestion.
-type PostQuestionParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPostPaymentJSONRequestBody defines body for AdminPostPayment for application/json ContentType.
+type AdminPostPaymentJSONRequestBody = Payment
 
-// DeleteQuestionParams defines parameters for DeleteQuestion.
-type DeleteQuestionParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPostQuestionGroupJSONRequestBody defines body for AdminPostQuestionGroup for application/json ContentType.
+type AdminPostQuestionGroupJSONRequestBody = QuestionGroup
 
-// PutQuestionParams defines parameters for PutQuestion.
-type PutQuestionParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPostRollCallJSONRequestBody defines body for AdminPostRollCall for application/json ContentType.
+type AdminPostRollCallJSONRequestBody = RollCall
 
-// PostRoomParams defines parameters for PostRoom.
-type PostRoomParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPostRoomGroupJSONRequestBody defines body for AdminPostRoomGroup for application/json ContentType.
+type AdminPostRoomGroupJSONRequestBody = RoomGroup
 
-// PutRoomParams defines parameters for PutRoom.
-type PutRoomParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPutImageMultipartRequestBody defines body for AdminPutImage for multipart/form-data ContentType.
+type AdminPutImageMultipartRequestBody AdminPutImageMultipartBody
 
-// DeleteStaffParams defines parameters for DeleteStaff.
-type DeleteStaffParams struct {
-	// StaffId 合宿係のtraQ ID
-	StaffId StaffId `form:"staff_id" json:"staff_id"`
+// AdminPostOptionJSONRequestBody defines body for AdminPostOption for application/json ContentType.
+type AdminPostOptionJSONRequestBody = Option
 
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPutOptionJSONRequestBody defines body for AdminPutOption for application/json ContentType.
+type AdminPutOptionJSONRequestBody = Option
 
-// PostStaffParams defines parameters for PostStaff.
-type PostStaffParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPutPaymentJSONRequestBody defines body for AdminPutPayment for application/json ContentType.
+type AdminPutPaymentJSONRequestBody = Payment
 
-// GetUserAnswerParams defines parameters for GetUserAnswer.
-type GetUserAnswerParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPutQuestionGroupJSONRequestBody defines body for AdminPutQuestionGroup for application/json ContentType.
+type AdminPutQuestionGroupJSONRequestBody = QuestionGroup
 
-// PutUserAnswerParams defines parameters for PutUserAnswer.
-type PutUserAnswerParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPostQuestionJSONRequestBody defines body for AdminPostQuestion for application/json ContentType.
+type AdminPostQuestionJSONRequestBody = Question
 
-// GetUserBudgetParams defines parameters for GetUserBudget.
-type GetUserBudgetParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPutQuestionJSONRequestBody defines body for AdminPutQuestion for application/json ContentType.
+type AdminPutQuestionJSONRequestBody = Question
 
-// PostUserBudgetParams defines parameters for PostUserBudget.
-type PostUserBudgetParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPutRoomGroupJSONRequestBody defines body for AdminPutRoomGroup for application/json ContentType.
+type AdminPutRoomGroupJSONRequestBody = RoomGroup
 
-// PutUserBudgetParams defines parameters for PutUserBudget.
-type PutUserBudgetParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
+// AdminPostRoomJSONRequestBody defines body for AdminPostRoom for application/json ContentType.
+type AdminPostRoomJSONRequestBody = PostRoomRequest
 
-// PostCampJSONRequestBody defines body for PostCamp for application/json ContentType.
-type PostCampJSONRequestBody = PostCampRequest
+// AdminPutRoomJSONRequestBody defines body for AdminPutRoom for application/json ContentType.
+type AdminPutRoomJSONRequestBody = PostRoomRequest
 
-// PutCampJSONRequestBody defines body for PutCamp for application/json ContentType.
-type PutCampJSONRequestBody = PostCampRequest
+// AdminPutUserJSONRequestBody defines body for AdminPutUser for application/json ContentType.
+type AdminPutUserJSONRequestBody = User
 
-// PostDirectMessageJSONRequestBody defines body for PostDirectMessage for application/json ContentType.
-type PostDirectMessageJSONRequestBody = PostDMRequest
+// AdminPostMessageJSONRequestBody defines body for AdminPostMessage for application/json ContentType.
+type AdminPostMessageJSONRequestBody = Message
 
-// PostEventJSONRequestBody defines body for PostEvent for application/json ContentType.
-type PostEventJSONRequestBody = PostEventRequest
-
-// PutEventJSONRequestBody defines body for PutEvent for application/json ContentType.
-type PutEventJSONRequestBody = PostEventRequest
+// PostAnswerJSONRequestBody defines body for PostAnswer for application/json ContentType.
+type PostAnswerJSONRequestBody = Answer
 
 // PutAnswerJSONRequestBody defines body for PutAnswer for application/json ContentType.
-type PutAnswerJSONRequestBody = PutAnswerRequest
+type PutAnswerJSONRequestBody = Answer
 
-// PostOptionJSONRequestBody defines body for PostOption for application/json ContentType.
-type PostOptionJSONRequestBody = PostOptionRequest
+// PostEventJSONRequestBody defines body for PostEvent for application/json ContentType.
+type PostEventJSONRequestBody = Event
 
-// PutOptionJSONRequestBody defines body for PutOption for application/json ContentType.
-type PutOptionJSONRequestBody = PostOptionRequest
+// PutEventJSONRequestBody defines body for PutEvent for application/json ContentType.
+type PutEventJSONRequestBody = Event
 
-// PostQuestionGroupJSONRequestBody defines body for PostQuestionGroup for application/json ContentType.
-type PostQuestionGroupJSONRequestBody = PostQuestionGroupRequest
+// PutReactionJSONRequestBody defines body for PutReaction for application/json ContentType.
+type PutReactionJSONRequestBody = RollCallReaction
 
-// PutQuestionGroupJSONRequestBody defines body for PutQuestionGroup for application/json ContentType.
-type PutQuestionGroupJSONRequestBody = PostQuestionGroupRequest
+// PostRollCallReactionJSONRequestBody defines body for PostRollCallReaction for application/json ContentType.
+type PostRollCallReactionJSONRequestBody = RollCallReaction
 
-// PostQuestionJSONRequestBody defines body for PostQuestion for application/json ContentType.
-type PostQuestionJSONRequestBody = PostQuestionRequest
-
-// PutQuestionJSONRequestBody defines body for PutQuestion for application/json ContentType.
-type PutQuestionJSONRequestBody = PostQuestionRequest
-
-// PostRoomJSONRequestBody defines body for PostRoom for application/json ContentType.
-type PostRoomJSONRequestBody = PostRoomRequest
-
-// PutRoomJSONRequestBody defines body for PutRoom for application/json ContentType.
-type PutRoomJSONRequestBody = PostRoomRequest
-
-// PostStaffJSONRequestBody defines body for PostStaff for application/json ContentType.
-type PostStaffJSONRequestBody = PostStaffRequest
-
-// PutUserAnswerJSONRequestBody defines body for PutUserAnswer for application/json ContentType.
-type PutUserAnswerJSONRequestBody = PutAnswerRequest
-
-// PostUserBudgetJSONRequestBody defines body for PostUserBudget for application/json ContentType.
-type PostUserBudgetJSONRequestBody = PostBudgetRequest
-
-// PutUserBudgetJSONRequestBody defines body for PutUserBudget for application/json ContentType.
-type PutUserBudgetJSONRequestBody = PostBudgetRequest
-
-// AsAnswerContent0 returns the union data inside the Answer_Content as a AnswerContent0
-func (t Answer_Content) AsAnswerContent0() (AnswerContent0, error) {
-	var body AnswerContent0
+// AsFreeTextAnswer returns the union data inside the Answer as a FreeTextAnswer
+func (t Answer) AsFreeTextAnswer() (FreeTextAnswer, error) {
+	var body FreeTextAnswer
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromAnswerContent0 overwrites any union data inside the Answer_Content as the provided AnswerContent0
-func (t *Answer_Content) FromAnswerContent0(v AnswerContent0) error {
+// FromFreeTextAnswer overwrites any union data inside the Answer as the provided FreeTextAnswer
+func (t *Answer) FromFreeTextAnswer(v FreeTextAnswer) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeAnswerContent0 performs a merge with any union data inside the Answer_Content, using the provided AnswerContent0
-func (t *Answer_Content) MergeAnswerContent0(v AnswerContent0) error {
+// MergeFreeTextAnswer performs a merge with any union data inside the Answer, using the provided FreeTextAnswer
+func (t *Answer) MergeFreeTextAnswer(v FreeTextAnswer) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -537,22 +752,22 @@ func (t *Answer_Content) MergeAnswerContent0(v AnswerContent0) error {
 	return err
 }
 
-// AsAnswerContent1 returns the union data inside the Answer_Content as a AnswerContent1
-func (t Answer_Content) AsAnswerContent1() (AnswerContent1, error) {
-	var body AnswerContent1
+// AsFreeNumberAnswer returns the union data inside the Answer as a FreeNumberAnswer
+func (t Answer) AsFreeNumberAnswer() (FreeNumberAnswer, error) {
+	var body FreeNumberAnswer
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromAnswerContent1 overwrites any union data inside the Answer_Content as the provided AnswerContent1
-func (t *Answer_Content) FromAnswerContent1(v AnswerContent1) error {
+// FromFreeNumberAnswer overwrites any union data inside the Answer as the provided FreeNumberAnswer
+func (t *Answer) FromFreeNumberAnswer(v FreeNumberAnswer) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeAnswerContent1 performs a merge with any union data inside the Answer_Content, using the provided AnswerContent1
-func (t *Answer_Content) MergeAnswerContent1(v AnswerContent1) error {
+// MergeFreeNumberAnswer performs a merge with any union data inside the Answer, using the provided FreeNumberAnswer
+func (t *Answer) MergeFreeNumberAnswer(v FreeNumberAnswer) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -563,32 +778,84 @@ func (t *Answer_Content) MergeAnswerContent1(v AnswerContent1) error {
 	return err
 }
 
-func (t Answer_Content) MarshalJSON() ([]byte, error) {
+// AsSingleChoiceAnswer returns the union data inside the Answer as a SingleChoiceAnswer
+func (t Answer) AsSingleChoiceAnswer() (SingleChoiceAnswer, error) {
+	var body SingleChoiceAnswer
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSingleChoiceAnswer overwrites any union data inside the Answer as the provided SingleChoiceAnswer
+func (t *Answer) FromSingleChoiceAnswer(v SingleChoiceAnswer) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSingleChoiceAnswer performs a merge with any union data inside the Answer, using the provided SingleChoiceAnswer
+func (t *Answer) MergeSingleChoiceAnswer(v SingleChoiceAnswer) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsMultipleChoiceAnswer returns the union data inside the Answer as a MultipleChoiceAnswer
+func (t Answer) AsMultipleChoiceAnswer() (MultipleChoiceAnswer, error) {
+	var body MultipleChoiceAnswer
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMultipleChoiceAnswer overwrites any union data inside the Answer as the provided MultipleChoiceAnswer
+func (t *Answer) FromMultipleChoiceAnswer(v MultipleChoiceAnswer) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMultipleChoiceAnswer performs a merge with any union data inside the Answer, using the provided MultipleChoiceAnswer
+func (t *Answer) MergeMultipleChoiceAnswer(v MultipleChoiceAnswer) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Answer) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *Answer_Content) UnmarshalJSON(b []byte) error {
+func (t *Answer) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
 
-// AsPutAnswerRequestContent0 returns the union data inside the PutAnswerRequest_Content as a PutAnswerRequestContent0
-func (t PutAnswerRequest_Content) AsPutAnswerRequestContent0() (PutAnswerRequestContent0, error) {
-	var body PutAnswerRequestContent0
+// AsDurationEvent returns the union data inside the Event as a DurationEvent
+func (t Event) AsDurationEvent() (DurationEvent, error) {
+	var body DurationEvent
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromPutAnswerRequestContent0 overwrites any union data inside the PutAnswerRequest_Content as the provided PutAnswerRequestContent0
-func (t *PutAnswerRequest_Content) FromPutAnswerRequestContent0(v PutAnswerRequestContent0) error {
+// FromDurationEvent overwrites any union data inside the Event as the provided DurationEvent
+func (t *Event) FromDurationEvent(v DurationEvent) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergePutAnswerRequestContent0 performs a merge with any union data inside the PutAnswerRequest_Content, using the provided PutAnswerRequestContent0
-func (t *PutAnswerRequest_Content) MergePutAnswerRequestContent0(v PutAnswerRequestContent0) error {
+// MergeDurationEvent performs a merge with any union data inside the Event, using the provided DurationEvent
+func (t *Event) MergeDurationEvent(v DurationEvent) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -599,22 +866,22 @@ func (t *PutAnswerRequest_Content) MergePutAnswerRequestContent0(v PutAnswerRequ
 	return err
 }
 
-// AsPutAnswerRequestContent1 returns the union data inside the PutAnswerRequest_Content as a PutAnswerRequestContent1
-func (t PutAnswerRequest_Content) AsPutAnswerRequestContent1() (PutAnswerRequestContent1, error) {
-	var body PutAnswerRequestContent1
+// AsOfficialEvent returns the union data inside the Event as a OfficialEvent
+func (t Event) AsOfficialEvent() (OfficialEvent, error) {
+	var body OfficialEvent
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromPutAnswerRequestContent1 overwrites any union data inside the PutAnswerRequest_Content as the provided PutAnswerRequestContent1
-func (t *PutAnswerRequest_Content) FromPutAnswerRequestContent1(v PutAnswerRequestContent1) error {
+// FromOfficialEvent overwrites any union data inside the Event as the provided OfficialEvent
+func (t *Event) FromOfficialEvent(v OfficialEvent) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergePutAnswerRequestContent1 performs a merge with any union data inside the PutAnswerRequest_Content, using the provided PutAnswerRequestContent1
-func (t *PutAnswerRequest_Content) MergePutAnswerRequestContent1(v PutAnswerRequestContent1) error {
+// MergeOfficialEvent performs a merge with any union data inside the Event, using the provided OfficialEvent
+func (t *Event) MergeOfficialEvent(v OfficialEvent) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -625,144 +892,323 @@ func (t *PutAnswerRequest_Content) MergePutAnswerRequestContent1(v PutAnswerRequ
 	return err
 }
 
-func (t PutAnswerRequest_Content) MarshalJSON() ([]byte, error) {
+// AsMomentEvent returns the union data inside the Event as a MomentEvent
+func (t Event) AsMomentEvent() (MomentEvent, error) {
+	var body MomentEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMomentEvent overwrites any union data inside the Event as the provided MomentEvent
+func (t *Event) FromMomentEvent(v MomentEvent) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMomentEvent performs a merge with any union data inside the Event, using the provided MomentEvent
+func (t *Event) MergeMomentEvent(v MomentEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Event) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *PutAnswerRequest_Content) UnmarshalJSON(b []byte) error {
+func (t *Event) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsFreeTextQuestion returns the union data inside the Question as a FreeTextQuestion
+func (t Question) AsFreeTextQuestion() (FreeTextQuestion, error) {
+	var body FreeTextQuestion
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFreeTextQuestion overwrites any union data inside the Question as the provided FreeTextQuestion
+func (t *Question) FromFreeTextQuestion(v FreeTextQuestion) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFreeTextQuestion performs a merge with any union data inside the Question, using the provided FreeTextQuestion
+func (t *Question) MergeFreeTextQuestion(v FreeTextQuestion) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFreeNumberQuestion returns the union data inside the Question as a FreeNumberQuestion
+func (t Question) AsFreeNumberQuestion() (FreeNumberQuestion, error) {
+	var body FreeNumberQuestion
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFreeNumberQuestion overwrites any union data inside the Question as the provided FreeNumberQuestion
+func (t *Question) FromFreeNumberQuestion(v FreeNumberQuestion) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFreeNumberQuestion performs a merge with any union data inside the Question, using the provided FreeNumberQuestion
+func (t *Question) MergeFreeNumberQuestion(v FreeNumberQuestion) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSingleChoiceQuestion returns the union data inside the Question as a SingleChoiceQuestion
+func (t Question) AsSingleChoiceQuestion() (SingleChoiceQuestion, error) {
+	var body SingleChoiceQuestion
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSingleChoiceQuestion overwrites any union data inside the Question as the provided SingleChoiceQuestion
+func (t *Question) FromSingleChoiceQuestion(v SingleChoiceQuestion) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSingleChoiceQuestion performs a merge with any union data inside the Question, using the provided SingleChoiceQuestion
+func (t *Question) MergeSingleChoiceQuestion(v SingleChoiceQuestion) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsMultipleChoiceQuestion returns the union data inside the Question as a MultipleChoiceQuestion
+func (t Question) AsMultipleChoiceQuestion() (MultipleChoiceQuestion, error) {
+	var body MultipleChoiceQuestion
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMultipleChoiceQuestion overwrites any union data inside the Question as the provided MultipleChoiceQuestion
+func (t *Question) FromMultipleChoiceQuestion(v MultipleChoiceQuestion) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMultipleChoiceQuestion performs a merge with any union data inside the Question, using the provided MultipleChoiceQuestion
+func (t *Question) MergeMultipleChoiceQuestion(v MultipleChoiceQuestion) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Question) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Question) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// 支払い情報の一覧を取得
-	// (GET /api/budgets)
-	GetBudgets(ctx echo.Context, params GetBudgetsParams) error
+	// 管理者が回答を更新
+	// (PUT /api/admin/answers/{answerId})
+	AdminPutAnswer(ctx echo.Context, answerId AnswerId, params AdminPutAnswerParams) error
+	// 合宿を作成（管理者用）
+	// (POST /api/admin/camps)
+	AdminPostCamp(ctx echo.Context, params AdminPostCampParams) error
+	// 合宿を削除（管理者用）
+	// (DELETE /api/admin/camps/{campId})
+	AdminDeleteCamp(ctx echo.Context, campId CampId, params AdminDeleteCampParams) error
+	// 合宿を更新（管理者用）
+	// (PUT /api/admin/camps/{campId})
+	AdminPutCamp(ctx echo.Context, campId CampId, params AdminPutCampParams) error
+	// 画像をアップロード（管理者用）
+	// (POST /api/admin/camps/{campId}/images)
+	AdminPostImage(ctx echo.Context, campId CampId, params AdminPostImageParams) error
+	// 支払い情報の一覧を取得（管理者用）
+	// (GET /api/admin/camps/{campId}/payments)
+	AdminGetPayments(ctx echo.Context, campId CampId, params AdminGetPaymentsParams) error
+	// 支払い情報を作成（管理者用）
+	// (POST /api/admin/camps/{campId}/payments)
+	AdminPostPayment(ctx echo.Context, campId CampId, params AdminPostPaymentParams) error
+	// 質問グループを作成（管理者用）
+	// (POST /api/admin/camps/{campId}/question-groups)
+	AdminPostQuestionGroup(ctx echo.Context, campId CampId, params AdminPostQuestionGroupParams) error
+	// 点呼を作成（管理者用）
+	// (POST /api/admin/camps/{campId}/roll-calls)
+	AdminPostRollCall(ctx echo.Context, campId CampId, params AdminPostRollCallParams) error
+	// 部屋グループを作成（管理者用）
+	// (POST /api/admin/camps/{campId}/room-groups)
+	AdminPostRoomGroup(ctx echo.Context, campId CampId, params AdminPostRoomGroupParams) error
+	// 画像を削除（管理者用）
+	// (DELETE /api/admin/images/{imageId})
+	AdminDeleteImage(ctx echo.Context, imageId ImageId, params AdminDeleteImageParams) error
+	// 画像を更新（管理者用）
+	// (PUT /api/admin/images/{imageId})
+	AdminPutImage(ctx echo.Context, imageId ImageId, params AdminPutImageParams) error
+	// 選択肢を作成（管理者用）
+	// (POST /api/admin/options)
+	AdminPostOption(ctx echo.Context, params AdminPostOptionParams) error
+	// 選択肢を削除（管理者用）
+	// (DELETE /api/admin/options/{optionId})
+	AdminDeleteOption(ctx echo.Context, optionId OptionId, params AdminDeleteOptionParams) error
+	// 選択肢を更新（管理者用）
+	// (PUT /api/admin/options/{optionId})
+	AdminPutOption(ctx echo.Context, optionId OptionId, params AdminPutOptionParams) error
+	// 支払い情報を更新（管理者用）
+	// (PUT /api/admin/payments/{paymentId})
+	AdminPutPayment(ctx echo.Context, paymentId PaymentId, params AdminPutPaymentParams) error
+	// 質問グループを削除（管理者用）
+	// (DELETE /api/admin/question-groups/{questionGroupId})
+	AdminDeleteQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params AdminDeleteQuestionGroupParams) error
+	// 質問グループを更新（管理者用）
+	// (PUT /api/admin/question-groups/{questionGroupId})
+	AdminPutQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupParams) error
+	// 質問を作成（管理者用）
+	// (POST /api/admin/questions)
+	AdminPostQuestion(ctx echo.Context, params AdminPostQuestionParams) error
+	// 質問を削除（管理者用）
+	// (DELETE /api/admin/questions/{questionId})
+	AdminDeleteQuestion(ctx echo.Context, questionId QuestionId, params AdminDeleteQuestionParams) error
+	// 質問を更新（管理者用）
+	// (PUT /api/admin/questions/{questionId})
+	AdminPutQuestion(ctx echo.Context, questionId QuestionId, params AdminPutQuestionParams) error
+	// 質問の回答を取得（管理者用）
+	// (GET /api/admin/questions/{questionId}/answers)
+	AdminGetAnswers(ctx echo.Context, questionId QuestionId, params AdminGetAnswersParams) error
+	// 部屋グループを削除（管理者用）
+	// (DELETE /api/admin/room-groups/{roomGroupId})
+	AdminDeleteRoomGroup(ctx echo.Context, roomGroupId RoomGroupId, params AdminDeleteRoomGroupParams) error
+	// 部屋グループを更新（管理者用）
+	// (PUT /api/admin/room-groups/{roomGroupId})
+	AdminPutRoomGroup(ctx echo.Context, roomGroupId RoomGroupId, params AdminPutRoomGroupParams) error
+	// 部屋を作成（管理者用）
+	// (POST /api/admin/rooms)
+	AdminPostRoom(ctx echo.Context, params AdminPostRoomParams) error
+	// 部屋を削除（管理者用）
+	// (DELETE /api/admin/rooms/{roomId})
+	AdminDeleteRoom(ctx echo.Context, roomId RoomId, params AdminDeleteRoomParams) error
+	// 部屋を更新（管理者用）
+	// (PUT /api/admin/rooms/{roomId})
+	AdminPutRoom(ctx echo.Context, roomId RoomId, params AdminPutRoomParams) error
+	// ユーザー情報を取得（管理者用）
+	// (GET /api/admin/users/{userId})
+	AdminGetUser(ctx echo.Context, userId UserId, params AdminGetUserParams) error
+	// ユーザーの情報を更新（主に合宿係の権限管理用）
+	// (PUT /api/admin/users/{userId})
+	AdminPutUser(ctx echo.Context, userId UserId, params AdminPutUserParams) error
+	// ユーザーにDMを送信（管理者用）
+	// (POST /api/admin/users/{userId}/messages)
+	AdminPostMessage(ctx echo.Context, userId UserId, params AdminPostMessageParams) error
+	// 質問に回答する
+	// (POST /api/answers)
+	PostAnswer(ctx echo.Context, params PostAnswerParams) error
+	// 自分の回答を更新
+	// (PUT /api/answers/{answerId})
+	PutAnswer(ctx echo.Context, answerId AnswerId, params PutAnswerParams) error
 	// 合宿の一覧を取得
 	// (GET /api/camps)
 	GetCamps(ctx echo.Context) error
-	// 合宿を作成
-	// (POST /api/camps)
-	PostCamp(ctx echo.Context, params PostCampParams) error
-	// デフォルトの合宿を取得
-	// (GET /api/camps/default)
-	GetDefaultCamp(ctx echo.Context) error
-	// 合宿の詳細を取得
-	// (GET /api/camps/{camp_id})
-	GetCamp(ctx echo.Context, campId CampId) error
-	// 合宿を更新
-	// (PUT /api/camps/{camp_id})
-	PutCamp(ctx echo.Context, campId CampId, params PutCampParams) error
-	// DMを送信
-	// (POST /api/dm)
-	PostDirectMessage(ctx echo.Context, params PostDirectMessageParams) error
 	// イベントの一覧を取得
-	// (GET /api/events)
-	GetEvents(ctx echo.Context) error
+	// (GET /api/camps/{campId}/events)
+	GetEvents(ctx echo.Context, campId CampId) error
 	// イベントを作成
-	// (POST /api/events)
-	PostEvent(ctx echo.Context, params PostEventParams) error
+	// (POST /api/camps/{campId}/events)
+	PostEvent(ctx echo.Context, campId CampId, params PostEventParams) error
+	// 画像の一覧を取得
+	// (GET /api/camps/{campId}/images)
+	GetImages(ctx echo.Context, campId CampId) error
+	// 自分の合宿参加情報を取得
+	// (GET /api/camps/{campId}/me)
+	GetMyCamp(ctx echo.Context, campId CampId, params GetMyCampParams) error
+	// 合宿の参加者一覧を取得
+	// (GET /api/camps/{campId}/participants)
+	GetCampParticipants(ctx echo.Context, campId CampId) error
+	// 質問グループの一覧を取得
+	// (GET /api/camps/{campId}/question-groups)
+	GetQuestionGroups(ctx echo.Context, campId CampId) error
+	// 合宿の参加登録を解除
+	// (DELETE /api/camps/{campId}/register)
+	DeleteCampRegister(ctx echo.Context, campId CampId, params DeleteCampRegisterParams) error
+	// 合宿に参加登録
+	// (POST /api/camps/{campId}/register)
+	PostCampRegister(ctx echo.Context, campId CampId, params PostCampRegisterParams) error
+	// 点呼の一覧を取得
+	// (GET /api/camps/{campId}/roll-calls)
+	GetRollCalls(ctx echo.Context, campId CampId) error
+	// 部屋グループの一覧を取得
+	// (GET /api/camps/{campId}/room-groups)
+	GetRoomGroups(ctx echo.Context, campId CampId) error
 	// イベントを削除
-	// (DELETE /api/events/{event_id})
+	// (DELETE /api/events/{eventId})
 	DeleteEvent(ctx echo.Context, eventId EventId, params DeleteEventParams) error
-	// イベントの詳細を取得
-	// (GET /api/events/{event_id})
-	GetEvent(ctx echo.Context, eventId EventId) error
 	// イベントを更新
-	// (PUT /api/events/{event_id})
+	// (PUT /api/events/{eventId})
 	PutEvent(ctx echo.Context, eventId EventId, params PutEventParams) error
-	// イベントの参加者一覧を取得
-	// (GET /api/events/{event_id}/participants)
-	GetParticipants(ctx echo.Context, eventId EventId) error
-	// イベントへの参加をキャンセル
-	// (DELETE /api/events/{event_id}/register)
-	UnregisterEvent(ctx echo.Context, eventId EventId, params UnregisterEventParams) error
-	// イベントに参加
-	// (POST /api/events/{event_id}/register)
-	RegisterEvent(ctx echo.Context, eventId EventId, params RegisterEventParams) error
+	// 画像を取得
+	// (GET /api/images/{imageId})
+	GetImage(ctx echo.Context, imageId ImageId) error
 	// 自分の情報を取得
 	// (GET /api/me)
 	GetMe(ctx echo.Context, params GetMeParams) error
-	// 自分の回答を取得
-	// (GET /api/me/answers/{question_id})
-	GetMyAnswer(ctx echo.Context, questionId QuestionId, params GetMyAnswerParams) error
-	// 回答を更新
-	// (PUT /api/me/answers/{question_id})
-	PutAnswer(ctx echo.Context, questionId QuestionId, params PutAnswerParams) error
-	// 自分の予算を取得
-	// (GET /api/me/budgets)
-	GetMyBudget(ctx echo.Context, params GetMyBudgetParams) error
-	// 選択肢を作成
-	// (POST /api/options)
-	PostOption(ctx echo.Context, params PostOptionParams) error
-	// 選択肢を更新
-	// (PUT /api/options/{option_id})
-	PutOption(ctx echo.Context, optionId OptionId, params PutOptionParams) error
-	// 質問グループの一覧を取得
-	// (GET /api/question_groups)
-	GetQuestionGroups(ctx echo.Context) error
-	// 質問グループを作成
-	// (POST /api/question_groups)
-	PostQuestionGroup(ctx echo.Context, params PostQuestionGroupParams) error
-	// 質問グループを削除
-	// (DELETE /api/question_groups/{question_group_id})
-	DeleteQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params DeleteQuestionGroupParams) error
-	// 質問グループの詳細を取得
-	// (GET /api/question_groups/{question_group_id})
-	GetQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId) error
-	// 質問グループを更新
-	// (PUT /api/question_groups/{question_group_id})
-	PutQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params PutQuestionGroupParams) error
-	// 質問の一覧を取得
-	// (GET /api/questions)
-	GetQuestions(ctx echo.Context) error
-	// 質問を作成
-	// (POST /api/questions)
-	PostQuestion(ctx echo.Context, params PostQuestionParams) error
-	// 質問を削除
-	// (DELETE /api/questions/{question_id})
-	DeleteQuestion(ctx echo.Context, questionId QuestionId, params DeleteQuestionParams) error
-	// 質問の詳細を取得
-	// (GET /api/questions/{question_id})
-	GetQuestion(ctx echo.Context, questionId QuestionId) error
-	// 質問を更新
-	// (PUT /api/questions/{question_id})
-	PutQuestion(ctx echo.Context, questionId QuestionId, params PutQuestionParams) error
-	// 部屋の一覧を取得
-	// (GET /api/rooms)
-	GetRooms(ctx echo.Context) error
-	// 部屋を作成
-	// (POST /api/rooms)
-	PostRoom(ctx echo.Context, params PostRoomParams) error
-	// 部屋を更新
-	// (PUT /api/rooms/{room_id})
-	PutRoom(ctx echo.Context, roomId RoomId, params PutRoomParams) error
-	// 合宿係を削除
-	// (DELETE /api/staffs)
-	DeleteStaff(ctx echo.Context, params DeleteStaffParams) error
+	// ある質問グループに対する自分の回答を取得
+	// (GET /api/me/question-groups/{questionGroupId}/answers)
+	GetMyAnswers(ctx echo.Context, questionGroupId QuestionGroupId, params GetMyAnswersParams) error
+	// 質問の回答一覧を取得
+	// (GET /api/questions/{questionId}/answers)
+	GetAnswers(ctx echo.Context, questionId QuestionId) error
+	// リアクションを削除
+	// (DELETE /api/reactions/{reactionId})
+	DeleteReaction(ctx echo.Context, reactionId ReactionId, params DeleteReactionParams) error
+	// リアクションを更新
+	// (PUT /api/reactions/{reactionId})
+	PutReaction(ctx echo.Context, reactionId ReactionId, params PutReactionParams) error
+	// 点呼のリアクション一覧を取得
+	// (GET /api/roll-calls/{rollCallId}/reactions)
+	GetRollCallReactions(ctx echo.Context, rollCallId RollCallId) error
+	// 点呼にリアクションを追加
+	// (POST /api/roll-calls/{rollCallId}/reactions)
+	PostRollCallReaction(ctx echo.Context, rollCallId RollCallId, params PostRollCallReactionParams) error
+	// 新たに作成されたリアクションをストリームで取得
+	// (GET /api/roll-calls/{rollCallId}/reactions/stream)
+	StreamRollCallReactions(ctx echo.Context, rollCallId RollCallId) error
 	// 合宿係の一覧を取得
 	// (GET /api/staffs)
 	GetStaffs(ctx echo.Context) error
-	// 合宿係を追加
-	// (POST /api/staffs)
-	PostStaff(ctx echo.Context, params PostStaffParams) error
-	// ユーザーの回答を取得
-	// (GET /api/users/{traq_id}/answers/{question_id})
-	GetUserAnswer(ctx echo.Context, traqId TraqId, questionId QuestionId, params GetUserAnswerParams) error
-	// 回答を更新
-	// (PUT /api/users/{traq_id}/answers/{question_id})
-	PutUserAnswer(ctx echo.Context, traqId TraqId, questionId QuestionId, params PutUserAnswerParams) error
-	// ユーザーの予算を取得
-	// (GET /api/users/{traq_id}/budgets)
-	GetUserBudget(ctx echo.Context, traqId TraqId, params GetUserBudgetParams) error
-	// ユーザーの予算を設定
-	// (POST /api/users/{traq_id}/budgets)
-	PostUserBudget(ctx echo.Context, traqId TraqId, params PostUserBudgetParams) error
-	// ユーザーの予算を更新
-	// (PUT /api/users/{traq_id}/budgets)
-	PutUserBudget(ctx echo.Context, traqId TraqId, params PutUserBudgetParams) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -770,17 +1216,759 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
-// GetBudgets converts echo context to params.
-func (w *ServerInterfaceWrapper) GetBudgets(ctx echo.Context) error {
+// AdminPutAnswer converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutAnswer(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "answerId" -------------
+	var answerId AnswerId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "answerId", ctx.Param("answerId"), &answerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter answerId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPutAnswerParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPutAnswer(ctx, answerId, params)
+	return err
+}
+
+// AdminPostCamp converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostCamp(ctx echo.Context) error {
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetBudgetsParams
-	// ------------- Optional query parameter "camp_id" -------------
+	var params AdminPostCampParams
 
-	err = runtime.BindQueryParameter("form", true, false, "camp_id", ctx.QueryParams(), &params.CampId)
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostCamp(ctx, params)
+	return err
+}
+
+// AdminDeleteCamp converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminDeleteCamp(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter camp_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminDeleteCampParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminDeleteCamp(ctx, campId, params)
+	return err
+}
+
+// AdminPutCamp converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutCamp(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPutCampParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPutCamp(ctx, campId, params)
+	return err
+}
+
+// AdminPostImage converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostImage(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostImageParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostImage(ctx, campId, params)
+	return err
+}
+
+// AdminGetPayments converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminGetPayments(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminGetPaymentsParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminGetPayments(ctx, campId, params)
+	return err
+}
+
+// AdminPostPayment converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostPayment(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostPaymentParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostPayment(ctx, campId, params)
+	return err
+}
+
+// AdminPostQuestionGroup converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostQuestionGroup(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostQuestionGroupParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostQuestionGroup(ctx, campId, params)
+	return err
+}
+
+// AdminPostRollCall converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostRollCall(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostRollCallParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostRollCall(ctx, campId, params)
+	return err
+}
+
+// AdminPostRoomGroup converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostRoomGroup(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostRoomGroupParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostRoomGroup(ctx, campId, params)
+	return err
+}
+
+// AdminDeleteImage converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminDeleteImage(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "imageId" -------------
+	var imageId ImageId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "imageId", ctx.Param("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter imageId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminDeleteImageParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminDeleteImage(ctx, imageId, params)
+	return err
+}
+
+// AdminPutImage converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutImage(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "imageId" -------------
+	var imageId ImageId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "imageId", ctx.Param("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter imageId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPutImageParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPutImage(ctx, imageId, params)
+	return err
+}
+
+// AdminPostOption converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostOption(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostOptionParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostOption(ctx, params)
+	return err
+}
+
+// AdminDeleteOption converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminDeleteOption(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "optionId" -------------
+	var optionId OptionId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "optionId", ctx.Param("optionId"), &optionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter optionId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminDeleteOptionParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminDeleteOption(ctx, optionId, params)
+	return err
+}
+
+// AdminPutOption converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutOption(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "optionId" -------------
+	var optionId OptionId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "optionId", ctx.Param("optionId"), &optionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter optionId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPutOptionParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPutOption(ctx, optionId, params)
+	return err
+}
+
+// AdminPutPayment converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutPayment(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "paymentId" -------------
+	var paymentId PaymentId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "paymentId", ctx.Param("paymentId"), &paymentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter paymentId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPutPaymentParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPutPayment(ctx, paymentId, params)
+	return err
+}
+
+// AdminDeleteQuestionGroup converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminDeleteQuestionGroup(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionGroupId" -------------
+	var questionGroupId QuestionGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminDeleteQuestionGroupParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminDeleteQuestionGroup(ctx, questionGroupId, params)
+	return err
+}
+
+// AdminPutQuestionGroup converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutQuestionGroup(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionGroupId" -------------
+	var questionGroupId QuestionGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPutQuestionGroupParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPutQuestionGroup(ctx, questionGroupId, params)
+	return err
+}
+
+// AdminPostQuestion converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostQuestion(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostQuestionParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostQuestion(ctx, params)
+	return err
+}
+
+// AdminDeleteQuestion converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminDeleteQuestion(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionId" -------------
+	var questionId QuestionId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionId", ctx.Param("questionId"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminDeleteQuestionParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminDeleteQuestion(ctx, questionId, params)
+	return err
+}
+
+// AdminPutQuestion converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutQuestion(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionId" -------------
+	var questionId QuestionId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionId", ctx.Param("questionId"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPutQuestionParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPutQuestion(ctx, questionId, params)
+	return err
+}
+
+// AdminGetAnswers converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminGetAnswers(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionId" -------------
+	var questionId QuestionId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionId", ctx.Param("questionId"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminGetAnswersParams
+	// ------------- Optional query parameter "userId" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "userId", ctx.QueryParams(), &params.UserId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
 	}
 
 	headers := ctx.Request().Header
@@ -801,7 +1989,353 @@ func (w *ServerInterfaceWrapper) GetBudgets(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetBudgets(ctx, params)
+	err = w.Handler.AdminGetAnswers(ctx, questionId, params)
+	return err
+}
+
+// AdminDeleteRoomGroup converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminDeleteRoomGroup(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "roomGroupId" -------------
+	var roomGroupId RoomGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "roomGroupId", ctx.Param("roomGroupId"), &roomGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter roomGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminDeleteRoomGroupParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminDeleteRoomGroup(ctx, roomGroupId, params)
+	return err
+}
+
+// AdminPutRoomGroup converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutRoomGroup(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "roomGroupId" -------------
+	var roomGroupId RoomGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "roomGroupId", ctx.Param("roomGroupId"), &roomGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter roomGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPutRoomGroupParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPutRoomGroup(ctx, roomGroupId, params)
+	return err
+}
+
+// AdminPostRoom converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostRoom(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostRoomParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostRoom(ctx, params)
+	return err
+}
+
+// AdminDeleteRoom converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminDeleteRoom(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "roomId" -------------
+	var roomId RoomId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "roomId", ctx.Param("roomId"), &roomId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter roomId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminDeleteRoomParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminDeleteRoom(ctx, roomId, params)
+	return err
+}
+
+// AdminPutRoom converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutRoom(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "roomId" -------------
+	var roomId RoomId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "roomId", ctx.Param("roomId"), &roomId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter roomId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPutRoomParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPutRoom(ctx, roomId, params)
+	return err
+}
+
+// AdminGetUser converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminGetUser(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "userId" -------------
+	var userId UserId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "userId", ctx.Param("userId"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminGetUserParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminGetUser(ctx, userId, params)
+	return err
+}
+
+// AdminPutUser converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutUser(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "userId" -------------
+	var userId UserId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "userId", ctx.Param("userId"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPutUserParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPutUser(ctx, userId, params)
+	return err
+}
+
+// AdminPostMessage converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostMessage(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "userId" -------------
+	var userId UserId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "userId", ctx.Param("userId"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostMessageParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostMessage(ctx, userId, params)
+	return err
+}
+
+// PostAnswer converts echo context to params.
+func (w *ServerInterfaceWrapper) PostAnswer(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostAnswerParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostAnswer(ctx, params)
+	return err
+}
+
+// PutAnswer converts echo context to params.
+func (w *ServerInterfaceWrapper) PutAnswer(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "answerId" -------------
+	var answerId AnswerId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "answerId", ctx.Param("answerId"), &answerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter answerId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PutAnswerParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PutAnswer(ctx, answerId, params)
 	return err
 }
 
@@ -814,137 +2348,32 @@ func (w *ServerInterfaceWrapper) GetCamps(ctx echo.Context) error {
 	return err
 }
 
-// PostCamp converts echo context to params.
-func (w *ServerInterfaceWrapper) PostCamp(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostCampParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostCamp(ctx, params)
-	return err
-}
-
-// GetDefaultCamp converts echo context to params.
-func (w *ServerInterfaceWrapper) GetDefaultCamp(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetDefaultCamp(ctx)
-	return err
-}
-
-// GetCamp converts echo context to params.
-func (w *ServerInterfaceWrapper) GetCamp(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "camp_id" -------------
-	var campId CampId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "camp_id", ctx.Param("camp_id"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter camp_id: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetCamp(ctx, campId)
-	return err
-}
-
-// PutCamp converts echo context to params.
-func (w *ServerInterfaceWrapper) PutCamp(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "camp_id" -------------
-	var campId CampId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "camp_id", ctx.Param("camp_id"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter camp_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutCampParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PutCamp(ctx, campId, params)
-	return err
-}
-
-// PostDirectMessage converts echo context to params.
-func (w *ServerInterfaceWrapper) PostDirectMessage(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostDirectMessageParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostDirectMessage(ctx, params)
-	return err
-}
-
 // GetEvents converts echo context to params.
 func (w *ServerInterfaceWrapper) GetEvents(ctx echo.Context) error {
 	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetEvents(ctx)
+	err = w.Handler.GetEvents(ctx, campId)
 	return err
 }
 
 // PostEvent converts echo context to params.
 func (w *ServerInterfaceWrapper) PostEvent(ctx echo.Context) error {
 	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params PostEventParams
@@ -967,19 +2396,207 @@ func (w *ServerInterfaceWrapper) PostEvent(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostEvent(ctx, params)
+	err = w.Handler.PostEvent(ctx, campId, params)
+	return err
+}
+
+// GetImages converts echo context to params.
+func (w *ServerInterfaceWrapper) GetImages(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetImages(ctx, campId)
+	return err
+}
+
+// GetMyCamp converts echo context to params.
+func (w *ServerInterfaceWrapper) GetMyCamp(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetMyCampParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetMyCamp(ctx, campId, params)
+	return err
+}
+
+// GetCampParticipants converts echo context to params.
+func (w *ServerInterfaceWrapper) GetCampParticipants(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetCampParticipants(ctx, campId)
+	return err
+}
+
+// GetQuestionGroups converts echo context to params.
+func (w *ServerInterfaceWrapper) GetQuestionGroups(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetQuestionGroups(ctx, campId)
+	return err
+}
+
+// DeleteCampRegister converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteCampRegister(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteCampRegisterParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteCampRegister(ctx, campId, params)
+	return err
+}
+
+// PostCampRegister converts echo context to params.
+func (w *ServerInterfaceWrapper) PostCampRegister(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostCampRegisterParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostCampRegister(ctx, campId, params)
+	return err
+}
+
+// GetRollCalls converts echo context to params.
+func (w *ServerInterfaceWrapper) GetRollCalls(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetRollCalls(ctx, campId)
+	return err
+}
+
+// GetRoomGroups converts echo context to params.
+func (w *ServerInterfaceWrapper) GetRoomGroups(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetRoomGroups(ctx, campId)
 	return err
 }
 
 // DeleteEvent converts echo context to params.
 func (w *ServerInterfaceWrapper) DeleteEvent(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "event_id" -------------
+	// ------------- Path parameter "eventId" -------------
 	var eventId EventId
 
-	err = runtime.BindStyledParameterWithOptions("simple", "event_id", ctx.Param("event_id"), &eventId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "eventId", ctx.Param("eventId"), &eventId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter event_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter eventId: %s", err))
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
@@ -1007,31 +2624,15 @@ func (w *ServerInterfaceWrapper) DeleteEvent(ctx echo.Context) error {
 	return err
 }
 
-// GetEvent converts echo context to params.
-func (w *ServerInterfaceWrapper) GetEvent(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "event_id" -------------
-	var eventId EventId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "event_id", ctx.Param("event_id"), &eventId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter event_id: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetEvent(ctx, eventId)
-	return err
-}
-
 // PutEvent converts echo context to params.
 func (w *ServerInterfaceWrapper) PutEvent(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "event_id" -------------
+	// ------------- Path parameter "eventId" -------------
 	var eventId EventId
 
-	err = runtime.BindStyledParameterWithOptions("simple", "event_id", ctx.Param("event_id"), &eventId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "eventId", ctx.Param("eventId"), &eventId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter event_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter eventId: %s", err))
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
@@ -1059,91 +2660,19 @@ func (w *ServerInterfaceWrapper) PutEvent(ctx echo.Context) error {
 	return err
 }
 
-// GetParticipants converts echo context to params.
-func (w *ServerInterfaceWrapper) GetParticipants(ctx echo.Context) error {
+// GetImage converts echo context to params.
+func (w *ServerInterfaceWrapper) GetImage(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "event_id" -------------
-	var eventId EventId
+	// ------------- Path parameter "imageId" -------------
+	var imageId ImageId
 
-	err = runtime.BindStyledParameterWithOptions("simple", "event_id", ctx.Param("event_id"), &eventId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "imageId", ctx.Param("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter event_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter imageId: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetParticipants(ctx, eventId)
-	return err
-}
-
-// UnregisterEvent converts echo context to params.
-func (w *ServerInterfaceWrapper) UnregisterEvent(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "event_id" -------------
-	var eventId EventId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "event_id", ctx.Param("event_id"), &eventId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter event_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params UnregisterEventParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.UnregisterEvent(ctx, eventId, params)
-	return err
-}
-
-// RegisterEvent converts echo context to params.
-func (w *ServerInterfaceWrapper) RegisterEvent(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "event_id" -------------
-	var eventId EventId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "event_id", ctx.Param("event_id"), &eventId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter event_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params RegisterEventParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.RegisterEvent(ctx, eventId, params)
+	err = w.Handler.GetImage(ctx, imageId)
 	return err
 }
 
@@ -1176,223 +2705,19 @@ func (w *ServerInterfaceWrapper) GetMe(ctx echo.Context) error {
 	return err
 }
 
-// GetMyAnswer converts echo context to params.
-func (w *ServerInterfaceWrapper) GetMyAnswer(ctx echo.Context) error {
+// GetMyAnswers converts echo context to params.
+func (w *ServerInterfaceWrapper) GetMyAnswers(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "question_id" -------------
-	var questionId QuestionId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "question_id", ctx.Param("question_id"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter question_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetMyAnswerParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetMyAnswer(ctx, questionId, params)
-	return err
-}
-
-// PutAnswer converts echo context to params.
-func (w *ServerInterfaceWrapper) PutAnswer(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "question_id" -------------
-	var questionId QuestionId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "question_id", ctx.Param("question_id"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter question_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutAnswerParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PutAnswer(ctx, questionId, params)
-	return err
-}
-
-// GetMyBudget converts echo context to params.
-func (w *ServerInterfaceWrapper) GetMyBudget(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetMyBudgetParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetMyBudget(ctx, params)
-	return err
-}
-
-// PostOption converts echo context to params.
-func (w *ServerInterfaceWrapper) PostOption(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostOptionParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostOption(ctx, params)
-	return err
-}
-
-// PutOption converts echo context to params.
-func (w *ServerInterfaceWrapper) PutOption(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "option_id" -------------
-	var optionId OptionId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "option_id", ctx.Param("option_id"), &optionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter option_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutOptionParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PutOption(ctx, optionId, params)
-	return err
-}
-
-// GetQuestionGroups converts echo context to params.
-func (w *ServerInterfaceWrapper) GetQuestionGroups(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetQuestionGroups(ctx)
-	return err
-}
-
-// PostQuestionGroup converts echo context to params.
-func (w *ServerInterfaceWrapper) PostQuestionGroup(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostQuestionGroupParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostQuestionGroup(ctx, params)
-	return err
-}
-
-// DeleteQuestionGroup converts echo context to params.
-func (w *ServerInterfaceWrapper) DeleteQuestionGroup(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "question_group_id" -------------
+	// ------------- Path parameter "questionGroupId" -------------
 	var questionGroupId QuestionGroupId
 
-	err = runtime.BindStyledParameterWithOptions("simple", "question_group_id", ctx.Param("question_group_id"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter question_group_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params DeleteQuestionGroupParams
+	var params GetMyAnswersParams
 
 	headers := ctx.Request().Header
 	// ------------- Optional header parameter "X-Forwarded-User" -------------
@@ -1412,113 +2737,39 @@ func (w *ServerInterfaceWrapper) DeleteQuestionGroup(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.DeleteQuestionGroup(ctx, questionGroupId, params)
+	err = w.Handler.GetMyAnswers(ctx, questionGroupId, params)
 	return err
 }
 
-// GetQuestionGroup converts echo context to params.
-func (w *ServerInterfaceWrapper) GetQuestionGroup(ctx echo.Context) error {
+// GetAnswers converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAnswers(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "question_group_id" -------------
-	var questionGroupId QuestionGroupId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "question_group_id", ctx.Param("question_group_id"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter question_group_id: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetQuestionGroup(ctx, questionGroupId)
-	return err
-}
-
-// PutQuestionGroup converts echo context to params.
-func (w *ServerInterfaceWrapper) PutQuestionGroup(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "question_group_id" -------------
-	var questionGroupId QuestionGroupId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "question_group_id", ctx.Param("question_group_id"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter question_group_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutQuestionGroupParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PutQuestionGroup(ctx, questionGroupId, params)
-	return err
-}
-
-// GetQuestions converts echo context to params.
-func (w *ServerInterfaceWrapper) GetQuestions(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetQuestions(ctx)
-	return err
-}
-
-// PostQuestion converts echo context to params.
-func (w *ServerInterfaceWrapper) PostQuestion(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostQuestionParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostQuestion(ctx, params)
-	return err
-}
-
-// DeleteQuestion converts echo context to params.
-func (w *ServerInterfaceWrapper) DeleteQuestion(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "question_id" -------------
+	// ------------- Path parameter "questionId" -------------
 	var questionId QuestionId
 
-	err = runtime.BindStyledParameterWithOptions("simple", "question_id", ctx.Param("question_id"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "questionId", ctx.Param("questionId"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter question_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetAnswers(ctx, questionId)
+	return err
+}
+
+// DeleteReaction converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteReaction(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "reactionId" -------------
+	var reactionId ReactionId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "reactionId", ctx.Param("reactionId"), &reactionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter reactionId: %s", err))
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params DeleteQuestionParams
+	var params DeleteReactionParams
 
 	headers := ctx.Request().Header
 	// ------------- Optional header parameter "X-Forwarded-User" -------------
@@ -1538,39 +2789,23 @@ func (w *ServerInterfaceWrapper) DeleteQuestion(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.DeleteQuestion(ctx, questionId, params)
+	err = w.Handler.DeleteReaction(ctx, reactionId, params)
 	return err
 }
 
-// GetQuestion converts echo context to params.
-func (w *ServerInterfaceWrapper) GetQuestion(ctx echo.Context) error {
+// PutReaction converts echo context to params.
+func (w *ServerInterfaceWrapper) PutReaction(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "question_id" -------------
-	var questionId QuestionId
+	// ------------- Path parameter "reactionId" -------------
+	var reactionId ReactionId
 
-	err = runtime.BindStyledParameterWithOptions("simple", "question_id", ctx.Param("question_id"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "reactionId", ctx.Param("reactionId"), &reactionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter question_id: %s", err))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetQuestion(ctx, questionId)
-	return err
-}
-
-// PutQuestion converts echo context to params.
-func (w *ServerInterfaceWrapper) PutQuestion(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "question_id" -------------
-	var questionId QuestionId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "question_id", ctx.Param("question_id"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter question_id: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter reactionId: %s", err))
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params PutQuestionParams
+	var params PutReactionParams
 
 	headers := ctx.Request().Header
 	// ------------- Optional header parameter "X-Forwarded-User" -------------
@@ -1590,96 +2825,39 @@ func (w *ServerInterfaceWrapper) PutQuestion(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PutQuestion(ctx, questionId, params)
+	err = w.Handler.PutReaction(ctx, reactionId, params)
 	return err
 }
 
-// GetRooms converts echo context to params.
-func (w *ServerInterfaceWrapper) GetRooms(ctx echo.Context) error {
+// GetRollCallReactions converts echo context to params.
+func (w *ServerInterfaceWrapper) GetRollCallReactions(ctx echo.Context) error {
 	var err error
+	// ------------- Path parameter "rollCallId" -------------
+	var rollCallId RollCallId
 
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetRooms(ctx)
-	return err
-}
-
-// PostRoom converts echo context to params.
-func (w *ServerInterfaceWrapper) PostRoom(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostRoomParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostRoom(ctx, params)
-	return err
-}
-
-// PutRoom converts echo context to params.
-func (w *ServerInterfaceWrapper) PutRoom(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "room_id" -------------
-	var roomId RoomId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "room_id", ctx.Param("room_id"), &roomId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "rollCallId", ctx.Param("rollCallId"), &rollCallId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter room_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutRoomParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter rollCallId: %s", err))
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PutRoom(ctx, roomId, params)
+	err = w.Handler.GetRollCallReactions(ctx, rollCallId)
 	return err
 }
 
-// DeleteStaff converts echo context to params.
-func (w *ServerInterfaceWrapper) DeleteStaff(ctx echo.Context) error {
+// PostRollCallReaction converts echo context to params.
+func (w *ServerInterfaceWrapper) PostRollCallReaction(ctx echo.Context) error {
 	var err error
+	// ------------- Path parameter "rollCallId" -------------
+	var rollCallId RollCallId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "rollCallId", ctx.Param("rollCallId"), &rollCallId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter rollCallId: %s", err))
+	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params DeleteStaffParams
-	// ------------- Required query parameter "staff_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, true, "staff_id", ctx.QueryParams(), &params.StaffId)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter staff_id: %s", err))
-	}
+	var params PostRollCallReactionParams
 
 	headers := ctx.Request().Header
 	// ------------- Optional header parameter "X-Forwarded-User" -------------
@@ -1699,7 +2877,23 @@ func (w *ServerInterfaceWrapper) DeleteStaff(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.DeleteStaff(ctx, params)
+	err = w.Handler.PostRollCallReaction(ctx, rollCallId, params)
+	return err
+}
+
+// StreamRollCallReactions converts echo context to params.
+func (w *ServerInterfaceWrapper) StreamRollCallReactions(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "rollCallId" -------------
+	var rollCallId RollCallId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "rollCallId", ctx.Param("rollCallId"), &rollCallId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter rollCallId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.StreamRollCallReactions(ctx, rollCallId)
 	return err
 }
 
@@ -1709,231 +2903,6 @@ func (w *ServerInterfaceWrapper) GetStaffs(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetStaffs(ctx)
-	return err
-}
-
-// PostStaff converts echo context to params.
-func (w *ServerInterfaceWrapper) PostStaff(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostStaffParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostStaff(ctx, params)
-	return err
-}
-
-// GetUserAnswer converts echo context to params.
-func (w *ServerInterfaceWrapper) GetUserAnswer(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "traq_id" -------------
-	var traqId TraqId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "traq_id", ctx.Param("traq_id"), &traqId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter traq_id: %s", err))
-	}
-
-	// ------------- Path parameter "question_id" -------------
-	var questionId QuestionId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "question_id", ctx.Param("question_id"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter question_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetUserAnswerParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetUserAnswer(ctx, traqId, questionId, params)
-	return err
-}
-
-// PutUserAnswer converts echo context to params.
-func (w *ServerInterfaceWrapper) PutUserAnswer(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "traq_id" -------------
-	var traqId TraqId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "traq_id", ctx.Param("traq_id"), &traqId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter traq_id: %s", err))
-	}
-
-	// ------------- Path parameter "question_id" -------------
-	var questionId QuestionId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "question_id", ctx.Param("question_id"), &questionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter question_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutUserAnswerParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PutUserAnswer(ctx, traqId, questionId, params)
-	return err
-}
-
-// GetUserBudget converts echo context to params.
-func (w *ServerInterfaceWrapper) GetUserBudget(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "traq_id" -------------
-	var traqId TraqId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "traq_id", ctx.Param("traq_id"), &traqId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter traq_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetUserBudgetParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetUserBudget(ctx, traqId, params)
-	return err
-}
-
-// PostUserBudget converts echo context to params.
-func (w *ServerInterfaceWrapper) PostUserBudget(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "traq_id" -------------
-	var traqId TraqId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "traq_id", ctx.Param("traq_id"), &traqId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter traq_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostUserBudgetParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostUserBudget(ctx, traqId, params)
-	return err
-}
-
-// PutUserBudget converts echo context to params.
-func (w *ServerInterfaceWrapper) PutUserBudget(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "traq_id" -------------
-	var traqId TraqId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "traq_id", ctx.Param("traq_id"), &traqId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter traq_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PutUserBudgetParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PutUserBudget(ctx, traqId, params)
 	return err
 }
 
@@ -1965,47 +2934,60 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/api/budgets", wrapper.GetBudgets)
+	router.PUT(baseURL+"/api/admin/answers/:answerId", wrapper.AdminPutAnswer)
+	router.POST(baseURL+"/api/admin/camps", wrapper.AdminPostCamp)
+	router.DELETE(baseURL+"/api/admin/camps/:campId", wrapper.AdminDeleteCamp)
+	router.PUT(baseURL+"/api/admin/camps/:campId", wrapper.AdminPutCamp)
+	router.POST(baseURL+"/api/admin/camps/:campId/images", wrapper.AdminPostImage)
+	router.GET(baseURL+"/api/admin/camps/:campId/payments", wrapper.AdminGetPayments)
+	router.POST(baseURL+"/api/admin/camps/:campId/payments", wrapper.AdminPostPayment)
+	router.POST(baseURL+"/api/admin/camps/:campId/question-groups", wrapper.AdminPostQuestionGroup)
+	router.POST(baseURL+"/api/admin/camps/:campId/roll-calls", wrapper.AdminPostRollCall)
+	router.POST(baseURL+"/api/admin/camps/:campId/room-groups", wrapper.AdminPostRoomGroup)
+	router.DELETE(baseURL+"/api/admin/images/:imageId", wrapper.AdminDeleteImage)
+	router.PUT(baseURL+"/api/admin/images/:imageId", wrapper.AdminPutImage)
+	router.POST(baseURL+"/api/admin/options", wrapper.AdminPostOption)
+	router.DELETE(baseURL+"/api/admin/options/:optionId", wrapper.AdminDeleteOption)
+	router.PUT(baseURL+"/api/admin/options/:optionId", wrapper.AdminPutOption)
+	router.PUT(baseURL+"/api/admin/payments/:paymentId", wrapper.AdminPutPayment)
+	router.DELETE(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminDeleteQuestionGroup)
+	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroup)
+	router.POST(baseURL+"/api/admin/questions", wrapper.AdminPostQuestion)
+	router.DELETE(baseURL+"/api/admin/questions/:questionId", wrapper.AdminDeleteQuestion)
+	router.PUT(baseURL+"/api/admin/questions/:questionId", wrapper.AdminPutQuestion)
+	router.GET(baseURL+"/api/admin/questions/:questionId/answers", wrapper.AdminGetAnswers)
+	router.DELETE(baseURL+"/api/admin/room-groups/:roomGroupId", wrapper.AdminDeleteRoomGroup)
+	router.PUT(baseURL+"/api/admin/room-groups/:roomGroupId", wrapper.AdminPutRoomGroup)
+	router.POST(baseURL+"/api/admin/rooms", wrapper.AdminPostRoom)
+	router.DELETE(baseURL+"/api/admin/rooms/:roomId", wrapper.AdminDeleteRoom)
+	router.PUT(baseURL+"/api/admin/rooms/:roomId", wrapper.AdminPutRoom)
+	router.GET(baseURL+"/api/admin/users/:userId", wrapper.AdminGetUser)
+	router.PUT(baseURL+"/api/admin/users/:userId", wrapper.AdminPutUser)
+	router.POST(baseURL+"/api/admin/users/:userId/messages", wrapper.AdminPostMessage)
+	router.POST(baseURL+"/api/answers", wrapper.PostAnswer)
+	router.PUT(baseURL+"/api/answers/:answerId", wrapper.PutAnswer)
 	router.GET(baseURL+"/api/camps", wrapper.GetCamps)
-	router.POST(baseURL+"/api/camps", wrapper.PostCamp)
-	router.GET(baseURL+"/api/camps/default", wrapper.GetDefaultCamp)
-	router.GET(baseURL+"/api/camps/:camp_id", wrapper.GetCamp)
-	router.PUT(baseURL+"/api/camps/:camp_id", wrapper.PutCamp)
-	router.POST(baseURL+"/api/dm", wrapper.PostDirectMessage)
-	router.GET(baseURL+"/api/events", wrapper.GetEvents)
-	router.POST(baseURL+"/api/events", wrapper.PostEvent)
-	router.DELETE(baseURL+"/api/events/:event_id", wrapper.DeleteEvent)
-	router.GET(baseURL+"/api/events/:event_id", wrapper.GetEvent)
-	router.PUT(baseURL+"/api/events/:event_id", wrapper.PutEvent)
-	router.GET(baseURL+"/api/events/:event_id/participants", wrapper.GetParticipants)
-	router.DELETE(baseURL+"/api/events/:event_id/register", wrapper.UnregisterEvent)
-	router.POST(baseURL+"/api/events/:event_id/register", wrapper.RegisterEvent)
+	router.GET(baseURL+"/api/camps/:campId/events", wrapper.GetEvents)
+	router.POST(baseURL+"/api/camps/:campId/events", wrapper.PostEvent)
+	router.GET(baseURL+"/api/camps/:campId/images", wrapper.GetImages)
+	router.GET(baseURL+"/api/camps/:campId/me", wrapper.GetMyCamp)
+	router.GET(baseURL+"/api/camps/:campId/participants", wrapper.GetCampParticipants)
+	router.GET(baseURL+"/api/camps/:campId/question-groups", wrapper.GetQuestionGroups)
+	router.DELETE(baseURL+"/api/camps/:campId/register", wrapper.DeleteCampRegister)
+	router.POST(baseURL+"/api/camps/:campId/register", wrapper.PostCampRegister)
+	router.GET(baseURL+"/api/camps/:campId/roll-calls", wrapper.GetRollCalls)
+	router.GET(baseURL+"/api/camps/:campId/room-groups", wrapper.GetRoomGroups)
+	router.DELETE(baseURL+"/api/events/:eventId", wrapper.DeleteEvent)
+	router.PUT(baseURL+"/api/events/:eventId", wrapper.PutEvent)
+	router.GET(baseURL+"/api/images/:imageId", wrapper.GetImage)
 	router.GET(baseURL+"/api/me", wrapper.GetMe)
-	router.GET(baseURL+"/api/me/answers/:question_id", wrapper.GetMyAnswer)
-	router.PUT(baseURL+"/api/me/answers/:question_id", wrapper.PutAnswer)
-	router.GET(baseURL+"/api/me/budgets", wrapper.GetMyBudget)
-	router.POST(baseURL+"/api/options", wrapper.PostOption)
-	router.PUT(baseURL+"/api/options/:option_id", wrapper.PutOption)
-	router.GET(baseURL+"/api/question_groups", wrapper.GetQuestionGroups)
-	router.POST(baseURL+"/api/question_groups", wrapper.PostQuestionGroup)
-	router.DELETE(baseURL+"/api/question_groups/:question_group_id", wrapper.DeleteQuestionGroup)
-	router.GET(baseURL+"/api/question_groups/:question_group_id", wrapper.GetQuestionGroup)
-	router.PUT(baseURL+"/api/question_groups/:question_group_id", wrapper.PutQuestionGroup)
-	router.GET(baseURL+"/api/questions", wrapper.GetQuestions)
-	router.POST(baseURL+"/api/questions", wrapper.PostQuestion)
-	router.DELETE(baseURL+"/api/questions/:question_id", wrapper.DeleteQuestion)
-	router.GET(baseURL+"/api/questions/:question_id", wrapper.GetQuestion)
-	router.PUT(baseURL+"/api/questions/:question_id", wrapper.PutQuestion)
-	router.GET(baseURL+"/api/rooms", wrapper.GetRooms)
-	router.POST(baseURL+"/api/rooms", wrapper.PostRoom)
-	router.PUT(baseURL+"/api/rooms/:room_id", wrapper.PutRoom)
-	router.DELETE(baseURL+"/api/staffs", wrapper.DeleteStaff)
+	router.GET(baseURL+"/api/me/question-groups/:questionGroupId/answers", wrapper.GetMyAnswers)
+	router.GET(baseURL+"/api/questions/:questionId/answers", wrapper.GetAnswers)
+	router.DELETE(baseURL+"/api/reactions/:reactionId", wrapper.DeleteReaction)
+	router.PUT(baseURL+"/api/reactions/:reactionId", wrapper.PutReaction)
+	router.GET(baseURL+"/api/roll-calls/:rollCallId/reactions", wrapper.GetRollCallReactions)
+	router.POST(baseURL+"/api/roll-calls/:rollCallId/reactions", wrapper.PostRollCallReaction)
+	router.GET(baseURL+"/api/roll-calls/:rollCallId/reactions/stream", wrapper.StreamRollCallReactions)
 	router.GET(baseURL+"/api/staffs", wrapper.GetStaffs)
-	router.POST(baseURL+"/api/staffs", wrapper.PostStaff)
-	router.GET(baseURL+"/api/users/:traq_id/answers/:question_id", wrapper.GetUserAnswer)
-	router.PUT(baseURL+"/api/users/:traq_id/answers/:question_id", wrapper.PutUserAnswer)
-	router.GET(baseURL+"/api/users/:traq_id/budgets", wrapper.GetUserBudget)
-	router.POST(baseURL+"/api/users/:traq_id/budgets", wrapper.PostUserBudget)
-	router.PUT(baseURL+"/api/users/:traq_id/budgets", wrapper.PutUserBudget)
 
 }
