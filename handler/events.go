@@ -10,7 +10,7 @@ import (
 
 const trapTraqID = "traP"
 
-func (s *Server) GetEvents(e echo.Context) error {
+func (s *Server) GetEvents(e echo.Context, campId CampId) error {
 	events, err := s.repo.GetEvents()
 
 	if err != nil {
@@ -30,7 +30,7 @@ func (s *Server) GetEvents(e echo.Context) error {
 	return e.JSON(http.StatusOK, response)
 }
 
-func (s *Server) PostEvent(e echo.Context, params PostEventParams) error {
+func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams) error {
 	var req PostEventJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
@@ -47,6 +47,8 @@ func (s *Server) PostEvent(e echo.Context, params PostEventParams) error {
 
 	organizerTraqID := params.XForwardedUser
 
+	// TODO: req.CreateAsStaff is not available in new Event structure
+	/*
 	if req.CreateAsStaff {
 		user, err := s.repo.GetOrCreateUser(*organizerTraqID)
 
@@ -64,6 +66,7 @@ func (s *Server) PostEvent(e echo.Context, params PostEventParams) error {
 		organizerTraqID = &trapTraqID
 		eventModel.ByStaff = true
 	}
+	*/
 
 	eventModel.OrganizerTraqID = *organizerTraqID
 

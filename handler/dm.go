@@ -10,9 +10,9 @@ import (
 	traq "github.com/traPtitech/go-traq"
 )
 
-// PostDM は DM を送信するハンドラです。
-func (s *Server) PostDirectMessage(e echo.Context, params PostDirectMessageParams) error {
-	var req PostDirectMessageJSONRequestBody
+// AdminPostMessage は DM を送信するハンドラです。
+func (s *Server) AdminPostMessage(e echo.Context, userId UserId, params AdminPostMessageParams) error {
+	var req AdminPostMessageJSONRequestBody
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Errorf("failed to bind request: %v", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
@@ -32,8 +32,8 @@ func (s *Server) PostDirectMessage(e echo.Context, params PostDirectMessageParam
 
 	// 指定時刻まで待機してからDMを送信する
 	go func() {
-		if req.Sendtime != nil {
-			sendTime := *req.Sendtime
+		if !req.SendAt.IsZero() {
+			sendTime := req.SendAt
 			duration := time.Until(sendTime)
 			if duration > 0 {
 				time.Sleep(duration) // 指定時刻まで待機
@@ -41,7 +41,7 @@ func (s *Server) PostDirectMessage(e echo.Context, params PostDirectMessageParam
 		}
 		postMessageRequest := *traq.NewPostMessageRequest(req.Content)
 		postMessageRequest.SetEmbed(true)
-		targetUser, err := s.repo.GetOrCreateUser(req.TargetUser)
+		targetUser, err := s.repo.GetOrCreateUser(string(userId))
 		if err != nil {
 			e.Logger().Errorf("failed to get or create user: %v", err)
 			return

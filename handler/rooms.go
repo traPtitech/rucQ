@@ -29,7 +29,7 @@ func (s *Server) GetRooms(e echo.Context) error {
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) PostRoom(e echo.Context, params PostRoomParams) error {
+func (s *Server) AdminPostRoom(e echo.Context, params AdminPostRoomParams) error {
 	operator, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
 
 	if err != nil {
@@ -42,7 +42,7 @@ func (s *Server) PostRoom(e echo.Context, params PostRoomParams) error {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req PostRoomJSONRequestBody
+	var req AdminPostRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -56,10 +56,10 @@ func (s *Server) PostRoom(e echo.Context, params PostRoomParams) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	roomModel.Members = make([]model.User, len(req.Members))
+	roomModel.Members = make([]model.User, len(req.MemberIds))
 
-	for i := range req.Members {
-		member, err := s.repo.GetOrCreateUser(req.Members[i])
+	for i := range req.MemberIds {
+		member, err := s.repo.GetOrCreateUser(req.MemberIds[i])
 
 		if err != nil {
 			if errors.Is(err, model.ErrNotFound) {
@@ -95,7 +95,7 @@ func (s *Server) PostRoom(e echo.Context, params PostRoomParams) error {
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) PutRoom(e echo.Context, roomID RoomId, params PutRoomParams) error {
+func (s *Server) AdminPutRoom(e echo.Context, roomId RoomId, params AdminPutRoomParams) error {
 	operator, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
 
 	if err != nil {
@@ -108,13 +108,13 @@ func (s *Server) PutRoom(e echo.Context, roomID RoomId, params PutRoomParams) er
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req PutRoomJSONRequestBody
+	var req AdminPutRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
 	}
 
-	roomModel, err := s.repo.GetRoomByID(uint(roomID))
+	roomModel, err := s.repo.GetRoomByID(uint(roomId))
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
@@ -132,10 +132,10 @@ func (s *Server) PutRoom(e echo.Context, roomID RoomId, params PutRoomParams) er
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	roomModel.Members = make([]model.User, len(req.Members))
+	roomModel.Members = make([]model.User, len(req.MemberIds))
 
-	for i := range req.Members {
-		member, err := s.repo.GetOrCreateUser(req.Members[i])
+	for i := range req.MemberIds {
+		member, err := s.repo.GetOrCreateUser(req.MemberIds[i])
 
 		if err != nil {
 			if errors.Is(err, model.ErrNotFound) {
