@@ -1,4 +1,4 @@
-package handler
+package router
 
 import (
 	"net/http"
@@ -8,9 +8,9 @@ import (
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-const trapTraqID = "traP"
+// const trapTraqID = "traP"
 
-func (s *Server) GetEvents(e echo.Context) error {
+func (s *Server) GetEvents(e echo.Context, campId CampId) error {
 	events, err := s.repo.GetEvents()
 
 	if err != nil {
@@ -30,7 +30,7 @@ func (s *Server) GetEvents(e echo.Context) error {
 	return e.JSON(http.StatusOK, response)
 }
 
-func (s *Server) PostEvent(e echo.Context, params PostEventParams) error {
+func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams) error {
 	var req PostEventJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
@@ -47,23 +47,26 @@ func (s *Server) PostEvent(e echo.Context, params PostEventParams) error {
 
 	organizerTraqID := params.XForwardedUser
 
-	if req.CreateAsStaff {
-		user, err := s.repo.GetOrCreateUser(*organizerTraqID)
+	// TODO: req.CreateAsStaff is not available in new Event structure
+	/*
+		if req.CreateAsStaff {
+			user, err := s.repo.GetOrCreateUser(*organizerTraqID)
 
-		if err != nil {
-			e.Logger().Errorf("failed to get or create user: %v", err)
+			if err != nil {
+				e.Logger().Errorf("failed to get or create user: %v", err)
 
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			}
+
+			if !user.IsStaff {
+				return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+			}
+
+			trapTraqID := "traP"
+			organizerTraqID = &trapTraqID
+			eventModel.ByStaff = true
 		}
-
-		if !user.IsStaff {
-			return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
-		}
-
-		trapTraqID := "traP"
-		organizerTraqID = &trapTraqID
-		eventModel.ByStaff = true
-	}
+	*/
 
 	eventModel.OrganizerTraqID = *organizerTraqID
 

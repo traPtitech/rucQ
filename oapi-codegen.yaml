@@ -1,5 +1,5 @@
-package: handler
-output: backend/handler/api.gen.go
+package: router
+output: router/api.gen.go
 generate:
   echo-server: true
   models: true

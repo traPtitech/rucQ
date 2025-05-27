@@ -1,4 +1,4 @@
-package handler
+package router
 
 import (
 	"errors"
@@ -29,8 +29,10 @@ func (s *Server) GetCamps(e echo.Context) error {
 	return e.JSON(http.StatusOK, response)
 }
 
-func (s *Server) PostCamp(e echo.Context, params PostCampParams) error {
-	var req PostCampJSONRequestBody
+// AdminPostCamp 新規キャンプ追加
+// (POST /api/admin/camps)
+func (s *Server) AdminPostCamp(e echo.Context, params AdminPostCampParams) error {
+	var req AdminPostCampJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -121,7 +123,9 @@ func (s *Server) GetCamp(e echo.Context, campID CampId) error {
 	return e.JSON(http.StatusOK, response)
 }
 
-func (s *Server) PutCamp(e echo.Context, campID CampId, params PutCampParams) error {
+// AdminPutCamp キャンプ情報編集
+// (PUT /api/admin/camps/{campId})
+func (s *Server) AdminPutCamp(e echo.Context, campId CampId, params AdminPutCampParams) error {
 	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
 
 	if err != nil {
@@ -134,13 +138,13 @@ func (s *Server) PutCamp(e echo.Context, campID CampId, params PutCampParams) er
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req PutCampJSONRequestBody
+	var req AdminPutCampJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
 	}
 
-	camp, err := s.repo.GetCampByID(uint(campID))
+	camp, err := s.repo.GetCampByID(uint(campId))
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
@@ -158,7 +162,7 @@ func (s *Server) PutCamp(e echo.Context, campID CampId, params PutCampParams) er
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateCamp(uint(campID), camp); err != nil {
+	if err := s.repo.UpdateCamp(uint(campId), camp); err != nil {
 		e.Logger().Errorf("failed to update camp: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -173,4 +177,23 @@ func (s *Server) PutCamp(e echo.Context, campID CampId, params PutCampParams) er
 	}
 
 	return e.JSON(http.StatusOK, response)
+}
+
+// AdminDeleteCamp キャンプ削除
+// (DELETE /api/admin/camps/{campId})
+func (s *Server) AdminDeleteCamp(e echo.Context, campId CampId, params AdminDeleteCampParams) error {
+	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	// TODO: キャンプ削除機能は実装されていません
+	return echo.NewHTTPError(http.StatusNotImplemented, "Camp deletion not implemented")
 }

@@ -1,4 +1,4 @@
-package handler
+package router
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-func (s *Server) PostOption(e echo.Context, params PostOptionParams) error {
+func (s *Server) AdminPostOption(e echo.Context, params AdminPostOptionParams) error {
 	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
 
 	if err != nil {
@@ -21,7 +21,7 @@ func (s *Server) PostOption(e echo.Context, params PostOptionParams) error {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req PostOptionJSONRequestBody
+	var req AdminPostOptionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Errorf("failed to bind request body: %v", err)
@@ -54,6 +54,6 @@ func (s *Server) PostOption(e echo.Context, params PostOptionParams) error {
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) PutOption(e echo.Context, optionID OptionId, params PutOptionParams) error {
-	return nil
+func (s *Server) AdminPutOption(e echo.Context, optionId OptionId, params AdminPutOptionParams) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
 }

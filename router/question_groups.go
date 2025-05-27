@@ -1,4 +1,4 @@
-package handler
+package router
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-func (s *Server) GetQuestionGroups(e echo.Context) error {
+func (s *Server) GetQuestionGroups(e echo.Context, campId CampId) error {
 	questionGroups, err := s.repo.GetQuestionGroups()
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID QuestionGroupI
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) PostQuestionGroup(e echo.Context, params PostQuestionGroupParams) error {
+func (s *Server) AdminPostQuestionGroup(e echo.Context, campId CampId, params AdminPostQuestionGroupParams) error {
 	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
 
 	if err != nil {
@@ -65,7 +65,7 @@ func (s *Server) PostQuestionGroup(e echo.Context, params PostQuestionGroupParam
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req PostQuestionGroupJSONRequestBody
+	var req AdminPostQuestionGroupJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Errorf("failed to bind request body: %v", err)
@@ -98,7 +98,7 @@ func (s *Server) PostQuestionGroup(e echo.Context, params PostQuestionGroupParam
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) PutQuestionGroup(e echo.Context, questionGroupID QuestionGroupId, params PutQuestionGroupParams) error {
+func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupParams) error {
 	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
 
 	if err != nil {
@@ -111,7 +111,7 @@ func (s *Server) PutQuestionGroup(e echo.Context, questionGroupID QuestionGroupI
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req PutQuestionGroupJSONRequestBody
+	var req AdminPutQuestionGroupJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Errorf("failed to bind request body: %v", err)
@@ -119,8 +119,8 @@ func (s *Server) PutQuestionGroup(e echo.Context, questionGroupID QuestionGroupI
 		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
 
-	updateQuestionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupID))
-	
+	updateQuestionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupId))
+
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Not found")
@@ -135,7 +135,7 @@ func (s *Server) PutQuestionGroup(e echo.Context, questionGroupID QuestionGroupI
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateQuestionGroup(uint(questionGroupID), updateQuestionGroup); err != nil {
+	if err := s.repo.UpdateQuestionGroup(uint(questionGroupId), updateQuestionGroup); err != nil {
 		e.Logger().Errorf("failed to update question group: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -152,7 +152,7 @@ func (s *Server) PutQuestionGroup(e echo.Context, questionGroupID QuestionGroupI
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) DeleteQuestionGroup(e echo.Context, questionGroupID QuestionGroupId, params DeleteQuestionGroupParams) error {
+func (s *Server) AdminDeleteQuestionGroup(e echo.Context, questionGroupId QuestionGroupId, params AdminDeleteQuestionGroupParams) error {
 	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
 
 	if err != nil {
@@ -165,7 +165,7 @@ func (s *Server) DeleteQuestionGroup(e echo.Context, questionGroupID QuestionGro
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	if err := s.repo.DeleteQuestionGroup(uint(questionGroupID)); err != nil {
+	if err := s.repo.DeleteQuestionGroup(uint(questionGroupId)); err != nil {
 		e.Logger().Errorf("failed to delete question group: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")

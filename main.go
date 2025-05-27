@@ -8,8 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	"github.com/traP-jp/rucQ/backend/handler"
 	"github.com/traP-jp/rucQ/backend/migration"
+	"github.com/traP-jp/rucQ/backend/router"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -46,9 +46,9 @@ func main() {
 	}))
 
 	// botがtraQからのイベントを受け取るエンドポイントを設定
-	e.POST("/api/traq-events", handler.TraqEventHandler)
+	e.POST("/api/traq-events", router.TraqEventHandler)
 
-	handler.RegisterHandlers(e, handler.NewServer(db))
+	router.RegisterHandlers(e, router.NewServer(db))
 	e.Logger.Fatal(e.Start(os.Getenv("RUCQ_BACKEND_ADDR")))
 
 }

@@ -1,4 +1,4 @@
-package handler
+package router
 
 import (
 	"errors"
@@ -29,7 +29,7 @@ func (s *Server) GetQuestions(e echo.Context) error {
 	return e.JSON(http.StatusOK, questionsResponse)
 }
 
-func (s *Server) PostQuestion(e echo.Context, params PostQuestionParams) error {
+func (s *Server) AdminPostQuestion(e echo.Context, params AdminPostQuestionParams) error {
 	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
 
 	if err != nil {
@@ -42,7 +42,7 @@ func (s *Server) PostQuestion(e echo.Context, params PostQuestionParams) error {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req PostQuestionJSONRequestBody
+	var req AdminPostQuestionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -73,7 +73,7 @@ func (s *Server) PostQuestion(e echo.Context, params PostQuestionParams) error {
 	return e.JSON(http.StatusCreated, &questionResponse)
 }
 
-func (s *Server) DeleteQuestion(e echo.Context, questionID QuestionId, params DeleteQuestionParams) error {
+func (s *Server) AdminDeleteQuestion(e echo.Context, questionId QuestionId, params AdminDeleteQuestionParams) error {
 	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
 
 	if err != nil {
@@ -86,7 +86,7 @@ func (s *Server) DeleteQuestion(e echo.Context, questionID QuestionId, params De
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	if err := s.repo.DeleteQuestionByID(uint(questionID)); err != nil {
+	if err := s.repo.DeleteQuestionByID(uint(questionId)); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Not found")
 		}
@@ -123,7 +123,7 @@ func (s *Server) GetQuestion(e echo.Context, questionID QuestionId) error {
 	return e.JSON(http.StatusOK, &questionResponse)
 }
 
-func (s *Server) PutQuestion(e echo.Context, questionID QuestionId, params PutQuestionParams) error {
+func (s *Server) AdminPutQuestion(e echo.Context, questionId QuestionId, params AdminPutQuestionParams) error {
 	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
 
 	if err != nil {
@@ -136,7 +136,7 @@ func (s *Server) PutQuestion(e echo.Context, questionID QuestionId, params PutQu
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req PutQuestionJSONRequestBody
+	var req AdminPutQuestionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -150,7 +150,7 @@ func (s *Server) PutQuestion(e echo.Context, questionID QuestionId, params PutQu
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateQuestion(uint(questionID), &questionModel); err != nil {
+	if err := s.repo.UpdateQuestion(uint(questionId), &questionModel); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Not found")
 		}
@@ -168,7 +168,8 @@ func (s *Server) PutQuestion(e echo.Context, questionID QuestionId, params PutQu
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	questionResponse.Id = questionID
+	// TODO: questionResponse.Id is not available in new Question structure
+	// questionResponse.Id = questionId
 
 	return e.JSON(http.StatusOK, &questionResponse)
 }

@@ -1,4 +1,4 @@
-package handler
+package router
 
 import (
 	"github.com/traP-jp/rucQ/backend/repository"
