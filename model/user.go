@@ -9,5 +9,6 @@ type User struct {
 	Answers  []Answer
 	TraqUuid string
 
-	Budgets []Budget
+	Budgets  []Budget
+	Payments []Payment
 }

@@ -11,11 +11,12 @@ type Event struct {
 	Name            string
 	Description     string
 	Location        string
-	TimeStart       time.Time
-	TimeEnd         time.Time
+	TimeStart       *time.Time
+	TimeEnd         *time.Time
+	Time            *time.Time // For moment events
 	CampID          uint
 	OrganizerTraqID string
-	ByStaff         bool
+	Type            string // "duration", "moment", "official"
 	DisplayColor    string
 	Participants    []User `gorm:"many2many:event_participants;ForeignKey:id;References:id"`
 }

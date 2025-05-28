@@ -24,7 +24,7 @@ func (s *Server) GetMyAnswer(e echo.Context, questionID QuestionId, params GetMy
 
 	answer, err := s.repo.GetOrCreateAnswer(&repository.GetAnswerQuery{
 		QuestionID: uint(questionID),
-		UserID:     user.ID,
+		UserID:     user.TraqID,
 	})
 
 	if err != nil {
@@ -92,7 +92,7 @@ func (s *Server) PutAnswer(e echo.Context, questionID QuestionId, params PutAnsw
 
 	answer, err := s.repo.GetOrCreateAnswer(&repository.GetAnswerQuery{
 		QuestionID: uint(questionID),
-		UserID:     user.ID,
+		UserID:     user.TraqID,
 	})
 
 	if err != nil {
@@ -195,7 +195,7 @@ func (s *Server) GetUserAnswer(e echo.Context, traqID string, questionID Questio
 
 	answer, err := s.repo.GetOrCreateAnswer(&repository.GetAnswerQuery{
 		QuestionID: uint(questionID),
-		UserID:     user.ID,
+		UserID:     user.TraqID,
 	})
 
 	if err != nil {
@@ -276,7 +276,7 @@ func (s *Server) PutUserAnswer(e echo.Context, traqID string, questionID Questio
 
 	answer, err := s.repo.GetOrCreateAnswer(&repository.GetAnswerQuery{
 		QuestionID: uint(questionID),
-		UserID:     user.ID,
+		UserID:     user.TraqID,
 	})
 
 	if err != nil {
