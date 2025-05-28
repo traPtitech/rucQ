@@ -11,7 +11,7 @@ type Camp struct {
 	IsPaymentOpen      bool
 	IsRegistrationOpen bool
 
-	Budgets        []Budget
+	Payments       []Payment
 	Events         []Event
 	QuestionGroups []QuestionGroup
 	Rooms          []Room

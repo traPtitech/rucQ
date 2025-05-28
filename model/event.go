@@ -18,5 +18,4 @@ type Event struct {
 	OrganizerTraqID string
 	Type            string // "duration", "moment", "official"
 	DisplayColor    string
-	Participants    []User `gorm:"many2many:event_participants;ForeignKey:id;References:id"`
 }

@@ -17,7 +17,6 @@ func GetAllModels() []any {
 		&Camp{},
 		&Event{},
 		&User{},
-		&Budget{},
 		&Payment{},
 		&QuestionGroup{},
 		&Question{},
