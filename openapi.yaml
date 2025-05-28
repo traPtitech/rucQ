@@ -1657,8 +1657,6 @@ components:
           $ref: "#/components/schemas/Room"
       required:
         - id
-        - payment
-        - room
     Message:
       type: object
       properties:

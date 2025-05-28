@@ -77,9 +77,9 @@ type Camp struct {
 
 // Dashboard defines model for Dashboard.
 type Dashboard struct {
-	Id      *string `json:"id,omitempty"`
-	Payment Payment `json:"payment"`
-	Room    Room    `json:"room"`
+	Id      *string  `json:"id,omitempty"`
+	Payment *Payment `json:"payment,omitempty"`
+	Room    *Room    `json:"room,omitempty"`
 }
 
 // DurationEvent defines model for DurationEvent.
