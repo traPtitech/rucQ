@@ -36,7 +36,7 @@ func (r *Repository) GetOrCreateUser(traqID string) (*model.User, error) {
 
 	// 追加、更新するユーザーを作成
 	user.TraqUuid = usersUuid[0].Id
-	user.TraqID = traqID
+	user.ID = traqID
 
 	if err := r.db.Save(&user).Error; err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (r *Repository) GetUserTraqID(ID uint) (string, error) {
 		return "", err
 	}
 
-	return user.TraqID, nil
+	return user.ID, nil
 }
 
 func (r *Repository) GetStaffs() ([]model.User, error) {

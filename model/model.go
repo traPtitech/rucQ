@@ -17,11 +17,17 @@ func GetAllModels() []any {
 		&Camp{},
 		&Event{},
 		&User{},
-		&Budget{},
+		&Payment{},
 		&QuestionGroup{},
 		&Question{},
 		&Option{},
 		&Answer{},
 		&Room{},
+		&RoomGroup{},
+		&Dashboard{},
+		&Image{},
+		&Message{},
+		&RollCall{},
+		&RollCallReaction{},
 	}
 }

@@ -12,7 +12,7 @@ func (r *Repository) CreateAnswer(answer *model.Answer) error {
 
 type GetAnswerQuery struct {
 	QuestionID uint
-	UserID     uint
+	UserID     string
 }
 
 func (r *Repository) GetOrCreateAnswer(query *GetAnswerQuery) (*model.Answer, error) {

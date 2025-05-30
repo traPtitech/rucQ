@@ -33,17 +33,18 @@ func (s *Server) GetMyAnswer(e echo.Context, questionID QuestionId, params GetMy
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res AnswerBody
-
-	if err := copier.Copy(&res, &answer); err != nil {
-		e.Logger().Errorf("failed to copy model to response: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
 	_, err = s.repo.GetQuestionByID(uint(questionID))
 
 	if err != nil {
 		e.Logger().Errorf("failed to get question: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	var res AnswerBody
+
+	if err := copier.Copy(&res, &answer); err != nil {
+		e.Logger().Errorf("failed to copy model to response: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
