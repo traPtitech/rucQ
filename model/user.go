@@ -1,13 +1,19 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
-	gorm.Model
-	TraqID   string `gorm:"primaryKey;size:32"` // 主キー
-	IsStaff  bool   `gorm:"index"`
-	Answers  []Answer
-	TraqUuid string
+	ID        string `gorm:"primaryKey;size:32"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+	IsStaff   bool           `gorm:"index"`
+	Answers   []Answer
+	TraqUuid  string
 
 	Payments []Payment
 }

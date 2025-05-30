@@ -24,7 +24,7 @@ func (s *Server) GetMyAnswer(e echo.Context, questionID QuestionId, params GetMy
 
 	answer, err := s.repo.GetOrCreateAnswer(&repository.GetAnswerQuery{
 		QuestionID: uint(questionID),
-		UserID:     user.TraqID,
+		UserID:     user.ID,
 	})
 
 	if err != nil {
@@ -33,17 +33,18 @@ func (s *Server) GetMyAnswer(e echo.Context, questionID QuestionId, params GetMy
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res AnswerBody
-
-	if err := copier.Copy(&res, &answer); err != nil {
-		e.Logger().Errorf("failed to copy model to response: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
 	_, err = s.repo.GetQuestionByID(uint(questionID))
 
 	if err != nil {
 		e.Logger().Errorf("failed to get question: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	var res AnswerBody
+
+	if err := copier.Copy(&res, &answer); err != nil {
+		e.Logger().Errorf("failed to copy model to response: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -92,7 +93,7 @@ func (s *Server) PutAnswer(e echo.Context, questionID QuestionId, params PutAnsw
 
 	answer, err := s.repo.GetOrCreateAnswer(&repository.GetAnswerQuery{
 		QuestionID: uint(questionID),
-		UserID:     user.TraqID,
+		UserID:     user.ID,
 	})
 
 	if err != nil {
@@ -195,7 +196,7 @@ func (s *Server) GetUserAnswer(e echo.Context, traqID string, questionID Questio
 
 	answer, err := s.repo.GetOrCreateAnswer(&repository.GetAnswerQuery{
 		QuestionID: uint(questionID),
-		UserID:     user.TraqID,
+		UserID:     user.ID,
 	})
 
 	if err != nil {
@@ -276,7 +277,7 @@ func (s *Server) PutUserAnswer(e echo.Context, traqID string, questionID Questio
 
 	answer, err := s.repo.GetOrCreateAnswer(&repository.GetAnswerQuery{
 		QuestionID: uint(questionID),
-		UserID:     user.TraqID,
+		UserID:     user.ID,
 	})
 
 	if err != nil {

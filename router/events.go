@@ -122,7 +122,7 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if user.TraqID != updateEvent.OrganizerTraqID && !user.IsStaff { // イベントの主催者orスタッフでない場合は更新できない
+	if user.ID != updateEvent.OrganizerTraqID && !user.IsStaff { // イベントの主催者orスタッフでない場合は更新できない
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -170,7 +170,7 @@ func (s *Server) DeleteEvent(e echo.Context, eventID EventId, params DeleteEvent
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if user.TraqID != deleteEvent.OrganizerTraqID && !user.IsStaff { // イベントの主催者でない場合は削除できない
+	if user.ID != deleteEvent.OrganizerTraqID && !user.IsStaff { // イベントの主催者でない場合は削除できない
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
