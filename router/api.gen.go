@@ -675,6 +675,12 @@ type AdminPostRoomGroupParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// AdminDeleteImageParams defines parameters for AdminDeleteImage.
+type AdminDeleteImageParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // AdminPutImageMultipartBody defines parameters for AdminPutImage.
 type AdminPutImageMultipartBody struct {
 	File *openapi_types.File `json:"file,omitempty"`
@@ -767,6 +773,12 @@ type AdminPostRoomParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// AdminDeleteRoomParams defines parameters for AdminDeleteRoom.
+type AdminDeleteRoomParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // AdminPutRoomParams defines parameters for AdminPutRoom.
 type AdminPutRoomParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -847,6 +859,12 @@ type GetMeParams struct {
 
 // GetMyAnswersParams defines parameters for GetMyAnswers.
 type GetMyAnswersParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// DeleteReactionParams defines parameters for DeleteReaction.
+type DeleteReactionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
@@ -1605,6 +1623,9 @@ type ServerInterface interface {
 	// 部屋グループを作成（管理者用）
 	// (POST /api/admin/camps/{campId}/room-groups)
 	AdminPostRoomGroup(ctx echo.Context, campId CampId, params AdminPostRoomGroupParams) error
+	// 画像を削除（管理者用）
+	// (DELETE /api/admin/images/{imageId})
+	AdminDeleteImage(ctx echo.Context, imageId ImageId, params AdminDeleteImageParams) error
 	// 画像を更新（管理者用）
 	// (PUT /api/admin/images/{imageId})
 	AdminPutImage(ctx echo.Context, imageId ImageId, params AdminPutImageParams) error
@@ -1647,6 +1668,9 @@ type ServerInterface interface {
 	// 部屋を作成（管理者用）
 	// (POST /api/admin/rooms)
 	AdminPostRoom(ctx echo.Context, params AdminPostRoomParams) error
+	// 部屋を削除（管理者用）
+	// (DELETE /api/admin/rooms/{roomId})
+	AdminDeleteRoom(ctx echo.Context, roomId RoomId, params AdminDeleteRoomParams) error
 	// 部屋を更新（管理者用）
 	// (PUT /api/admin/rooms/{roomId})
 	AdminPutRoom(ctx echo.Context, roomId RoomId, params AdminPutRoomParams) error
@@ -1716,6 +1740,9 @@ type ServerInterface interface {
 	// 質問の回答一覧を取得
 	// (GET /api/questions/{questionId}/answers)
 	GetAnswers(ctx echo.Context, questionId QuestionId) error
+	// リアクションを削除
+	// (DELETE /api/reactions/{reactionId})
+	DeleteReaction(ctx echo.Context, reactionId ReactionId, params DeleteReactionParams) error
 	// リアクションを更新
 	// (PUT /api/reactions/{reactionId})
 	PutReaction(ctx echo.Context, reactionId ReactionId, params PutReactionParams) error
@@ -2088,6 +2115,42 @@ func (w *ServerInterfaceWrapper) AdminPostRoomGroup(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPostRoomGroup(ctx, campId, params)
+	return err
+}
+
+// AdminDeleteImage converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminDeleteImage(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "imageId" -------------
+	var imageId ImageId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "imageId", ctx.Param("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter imageId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminDeleteImageParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminDeleteImage(ctx, imageId, params)
 	return err
 }
 
@@ -2577,6 +2640,42 @@ func (w *ServerInterfaceWrapper) AdminPostRoom(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPostRoom(ctx, params)
+	return err
+}
+
+// AdminDeleteRoom converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminDeleteRoom(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "roomId" -------------
+	var roomId RoomId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "roomId", ctx.Param("roomId"), &roomId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter roomId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminDeleteRoomParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminDeleteRoom(ctx, roomId, params)
 	return err
 }
 
@@ -3207,6 +3306,42 @@ func (w *ServerInterfaceWrapper) GetAnswers(ctx echo.Context) error {
 	return err
 }
 
+// DeleteReaction converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteReaction(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "reactionId" -------------
+	var reactionId ReactionId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "reactionId", ctx.Param("reactionId"), &reactionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter reactionId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteReactionParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteReaction(ctx, reactionId, params)
+	return err
+}
+
 // PutReaction converts echo context to params.
 func (w *ServerInterfaceWrapper) PutReaction(ctx echo.Context) error {
 	var err error
@@ -3358,6 +3493,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/admin/camps/:campId/question-groups", wrapper.AdminPostQuestionGroup)
 	router.POST(baseURL+"/api/admin/camps/:campId/roll-calls", wrapper.AdminPostRollCall)
 	router.POST(baseURL+"/api/admin/camps/:campId/room-groups", wrapper.AdminPostRoomGroup)
+	router.DELETE(baseURL+"/api/admin/images/:imageId", wrapper.AdminDeleteImage)
 	router.PUT(baseURL+"/api/admin/images/:imageId", wrapper.AdminPutImage)
 	router.POST(baseURL+"/api/admin/options", wrapper.AdminPostOption)
 	router.DELETE(baseURL+"/api/admin/options/:optionId", wrapper.AdminDeleteOption)
@@ -3372,6 +3508,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/api/admin/room-groups/:roomGroupId", wrapper.AdminDeleteRoomGroup)
 	router.PUT(baseURL+"/api/admin/room-groups/:roomGroupId", wrapper.AdminPutRoomGroup)
 	router.POST(baseURL+"/api/admin/rooms", wrapper.AdminPostRoom)
+	router.DELETE(baseURL+"/api/admin/rooms/:roomId", wrapper.AdminDeleteRoom)
 	router.PUT(baseURL+"/api/admin/rooms/:roomId", wrapper.AdminPutRoom)
 	router.GET(baseURL+"/api/admin/users/:userId", wrapper.AdminGetUser)
 	router.PUT(baseURL+"/api/admin/users/:userId", wrapper.AdminPutUser)
@@ -3395,6 +3532,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/me", wrapper.GetMe)
 	router.GET(baseURL+"/api/me/question-groups/:questionGroupId/answers", wrapper.GetMyAnswers)
 	router.GET(baseURL+"/api/questions/:questionId/answers", wrapper.GetAnswers)
+	router.DELETE(baseURL+"/api/reactions/:reactionId", wrapper.DeleteReaction)
 	router.PUT(baseURL+"/api/reactions/:reactionId", wrapper.PutReaction)
 	router.GET(baseURL+"/api/roll-calls/:rollCallId/reactions", wrapper.GetRollCallReactions)
 	router.POST(baseURL+"/api/roll-calls/:rollCallId/reactions", wrapper.PostRollCallReaction)

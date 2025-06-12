@@ -8,6 +8,11 @@ import (
 
 // 欠けているメソッドのスタブ実装
 
+// AdminDeleteImage 画像を削除（管理者用）
+func (s *Server) AdminDeleteImage(e echo.Context, imageId ImageId, params AdminDeleteImageParams) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteImage not implemented")
+}
+
 // AdminPutImage 画像を更新（管理者用）
 func (s *Server) AdminPutImage(e echo.Context, imageId ImageId, params AdminPutImageParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutImage not implemented")
@@ -51,6 +56,11 @@ func (s *Server) AdminDeleteRoomGroup(e echo.Context, roomGroupId RoomGroupId, p
 // AdminPutRoomGroup 部屋グループを更新（管理者用）
 func (s *Server) AdminPutRoomGroup(e echo.Context, roomGroupId RoomGroupId, params AdminPutRoomGroupParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutRoomGroup not implemented")
+}
+
+// AdminDeleteRoom 部屋を削除（管理者用）
+func (s *Server) AdminDeleteRoom(e echo.Context, roomId RoomId, params AdminDeleteRoomParams) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteRoom not implemented")
 }
 
 // AdminDeleteOption 選択肢を削除（管理者用）
@@ -126,6 +136,11 @@ func (s *Server) GetMyAnswers(e echo.Context, questionId QuestionId, params GetM
 // GetAnswers 回答の一覧を取得
 func (s *Server) GetAnswers(e echo.Context, questionId QuestionId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetAnswers not implemented")
+}
+
+// DeleteReaction リアクションを削除
+func (s *Server) DeleteReaction(e echo.Context, rollCallId RollCallId, params DeleteReactionParams) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "DeleteReaction not implemented")
 }
 
 // PutReaction リアクションを更新
