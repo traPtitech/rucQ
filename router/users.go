@@ -16,7 +16,7 @@ func (s *Server) GetMe(e echo.Context, params GetMeParams) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response User
+	var response UserResponse
 
 	if err := copier.Copy(&response, &user); err != nil {
 		e.Logger().Errorf("failed to copy user: %v", err)

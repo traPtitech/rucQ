@@ -18,7 +18,7 @@ func (s *Server) GetQuestionGroups(e echo.Context, campId CampId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res []QuestionGroup
+	var res []QuestionGroupResponse
 
 	if err := copier.Copy(&res, &questionGroups); err != nil {
 		e.Logger().Errorf("failed to copy response body: %v", err)
@@ -41,7 +41,7 @@ func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID QuestionGroupI
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res QuestionGroup
+	var res QuestionGroupResponse
 
 	if err := copier.Copy(&res, questionGroup); err != nil {
 		e.Logger().Errorf("failed to copy response body: %v", err)
@@ -87,7 +87,7 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, campId CampId, params Ad
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res QuestionGroup
+	var res QuestionGroupResponse
 
 	if err := copier.Copy(&res, &questionGroup); err != nil {
 		e.Logger().Errorf("failed to copy response body: %v", err)
@@ -141,7 +141,7 @@ func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId QuestionG
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res QuestionGroup
+	var res QuestionGroupResponse
 
 	if err := copier.Copy(&res, updateQuestionGroup); err != nil {
 		e.Logger().Errorf("failed to copy response body: %v", err)
