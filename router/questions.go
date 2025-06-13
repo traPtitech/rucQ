@@ -18,7 +18,7 @@ func (s *Server) GetQuestions(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var questionsResponse []Question
+	var questionsResponse []QuestionResponse
 
 	if err := copier.Copy(&questionsResponse, &questions); err != nil {
 		e.Logger().Errorf("failed to copy questions: %v", err)
@@ -62,7 +62,7 @@ func (s *Server) AdminPostQuestion(e echo.Context, params AdminPostQuestionParam
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var questionResponse Question
+	var questionResponse QuestionResponse
 
 	if err := copier.Copy(&questionResponse, &questionModel); err != nil {
 		e.Logger().Errorf("failed to copy model to response: %v", err)
@@ -112,7 +112,7 @@ func (s *Server) GetQuestion(e echo.Context, questionID QuestionId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var questionResponse Question
+	var questionResponse QuestionResponse
 
 	if err := copier.Copy(&questionResponse, &question); err != nil {
 		e.Logger().Errorf("failed to copy question: %v", err)
@@ -160,7 +160,7 @@ func (s *Server) AdminPutQuestion(e echo.Context, questionId QuestionId, params 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var questionResponse Question
+	var questionResponse QuestionResponse
 
 	if err := copier.Copy(&questionResponse, &questionModel); err != nil {
 		e.Logger().Errorf("failed to copy model to response: %v", err)

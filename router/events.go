@@ -19,7 +19,7 @@ func (s *Server) GetEvents(e echo.Context, campId CampId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response []Event
+	var response []EventResponse
 
 	if err := copier.Copy(&response, &events); err != nil {
 		e.Logger().Errorf("failed to copy events: %v", err)
@@ -76,7 +76,7 @@ func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var eventResponse Event
+	var eventResponse EventResponse
 
 	if err := copier.Copy(&eventResponse, &eventModel); err != nil {
 		e.Logger().Errorf("failed to copy model to response: %v", err)
@@ -96,7 +96,7 @@ func (s *Server) GetEvent(e echo.Context, eventID EventId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response Event
+	var response EventResponse
 
 	if err := copier.Copy(&response, event); err != nil {
 		e.Logger().Errorf("failed to copy event: %v", err)
@@ -144,7 +144,7 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response Event
+	var response EventResponse
 
 	if err := copier.Copy(&response, updateEvent); err != nil {
 		e.Logger().Errorf("failed to copy model to response: %v", err)

@@ -18,7 +18,7 @@ func (s *Server) GetCamps(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response []Camp
+	var response []CampResponse
 
 	if err := copier.Copy(&response, &camps); err != nil {
 		e.Logger().Errorf("failed to copy camps: %v", err)
@@ -68,7 +68,7 @@ func (s *Server) AdminPostCamp(e echo.Context, params AdminPostCampParams) error
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response Camp
+	var response CampResponse
 
 	if err := copier.Copy(&response, &campModel); err != nil {
 		e.Logger().Errorf("failed to copy camp: %v", err)
@@ -88,7 +88,7 @@ func (s *Server) GetDefaultCamp(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response Camp
+	var response CampResponse
 
 	if err := copier.Copy(&response, camp); err != nil {
 		e.Logger().Errorf("failed to copy camp: %v", err)
@@ -112,7 +112,7 @@ func (s *Server) GetCamp(e echo.Context, campID CampId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response Camp
+	var response CampResponse
 
 	if err := copier.Copy(&response, camp); err != nil {
 		e.Logger().Errorf("failed to copy camp: %v", err)
@@ -168,7 +168,7 @@ func (s *Server) AdminPutCamp(e echo.Context, campId CampId, params AdminPutCamp
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response Camp
+	var response CampResponse
 
 	if err := copier.Copy(&response, camp); err != nil {
 		e.Logger().Errorf("failed to copy camp: %v", err)

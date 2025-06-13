@@ -25,7 +25,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Camp"
+                  $ref: "#/components/schemas/CampResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -42,14 +42,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Camp"
+              $ref: "#/components/schemas/CampRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Camp"
+                $ref: "#/components/schemas/CampResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -112,14 +112,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Camp"
+              $ref: "#/components/schemas/CampRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Camp"
+                $ref: "#/components/schemas/CampResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -162,7 +162,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/User"
+                  $ref: "#/components/schemas/UserResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/camps/{campId}/events:
@@ -181,7 +181,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Event"
+                  $ref: "#/components/schemas/EventResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
     post:
@@ -197,14 +197,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Event"
+              $ref: "#/components/schemas/EventRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Event"
+                $ref: "#/components/schemas/EventResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "500":
@@ -223,14 +223,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Event"
+              $ref: "#/components/schemas/EventRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Event"
+                $ref: "#/components/schemas/EventResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -272,7 +272,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/UserResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/camps/{campId}/me:
@@ -290,7 +290,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Dashboard"
+                $ref: "#/components/schemas/DashboardResponse"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -309,7 +309,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/User"
+                  $ref: "#/components/schemas/UserResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/admin/users/{userId}:
@@ -327,7 +327,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/UserResponse"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -347,14 +347,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "#/components/schemas/UserRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/UserResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -377,7 +377,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Message"
+              $ref: "#/components/schemas/MessageRequest"
       responses:
         "204":
           $ref: "#/components/responses/NoContent"
@@ -405,7 +405,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/QuestionGroup"
+                  $ref: "#/components/schemas/QuestionGroupResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -423,14 +423,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/QuestionGroup"
+              $ref: "#/components/schemas/QuestionGroupRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/QuestionGroup"
+                $ref: "#/components/schemas/QuestionGroupResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -451,14 +451,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/QuestionGroup"
+              $ref: "#/components/schemas/QuestionGroupRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/QuestionGroup"
+                $ref: "#/components/schemas/QuestionGroupResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -499,14 +499,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Question"
+              $ref: "#/components/schemas/QuestionRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Question"
+                $ref: "#/components/schemas/QuestionResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -527,14 +527,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Question"
+              $ref: "#/components/schemas/QuestionRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Question"
+                $ref: "#/components/schemas/QuestionResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -575,14 +575,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Option"
+              $ref: "#/components/schemas/OptionRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Option"
+                $ref: "#/components/schemas/OptionResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -603,14 +603,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Option"
+              $ref: "#/components/schemas/OptionRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Option"
+                $ref: "#/components/schemas/OptionResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -656,7 +656,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Answer"
+                  $ref: "#/components/schemas/AnswerResponse"
         "403":
           $ref: "#/components/responses/Forbidden"
         "500":
@@ -678,7 +678,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Answer"
+                  $ref: "#/components/schemas/AnswerResponse"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -700,7 +700,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Answer"
+                  $ref: "#/components/schemas/AnswerResponse"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -718,14 +718,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Answer"
+              $ref: "#/components/schemas/AnswerRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Answer"
+                $ref: "#/components/schemas/AnswerResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -746,14 +746,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Answer"
+              $ref: "#/components/schemas/AnswerRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Answer"
+                $ref: "#/components/schemas/AnswerResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -776,14 +776,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Answer"
+              $ref: "#/components/schemas/AnswerRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Answer"
+                $ref: "#/components/schemas/AnswerResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -809,7 +809,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Payment"
+                  $ref: "#/components/schemas/PaymentResponse"
         "403":
           $ref: "#/components/responses/Forbidden"
         "500":
@@ -827,14 +827,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Payment"
+              $ref: "#/components/schemas/PaymentRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Payment"
+                $ref: "#/components/schemas/PaymentResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -857,14 +857,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Payment"
+              $ref: "#/components/schemas/PaymentRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Payment"
+                $ref: "#/components/schemas/PaymentResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -889,7 +889,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RoomGroup"
+                  $ref: "#/components/schemas/RoomGroupResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/admin/camps/{campId}/room-groups:
@@ -906,14 +906,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RoomGroup"
+              $ref: "#/components/schemas/RoomGroupRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RoomGroup"
+                $ref: "#/components/schemas/RoomGroupResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -934,14 +934,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RoomGroup"
+              $ref: "#/components/schemas/RoomGroupRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RoomGroup"
+                $ref: "#/components/schemas/RoomGroupResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -982,14 +982,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostRoomRequest"
+              $ref: "#/components/schemas/RoomRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Room"
+                $ref: "#/components/schemas/RoomResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -1012,14 +1012,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostRoomRequest"
+              $ref: "#/components/schemas/RoomRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Room"
+                $ref: "#/components/schemas/RoomResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -1063,7 +1063,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Image"
+                  $ref: "#/components/schemas/ImageResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -1096,7 +1096,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Image"
+                  $ref: "#/components/schemas/ImageResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -1149,7 +1149,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Image"
+                $ref: "#/components/schemas/ImageResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -1193,7 +1193,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RollCall"
+                  $ref: "#/components/schemas/RollCallResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -1211,14 +1211,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RollCall"
+              $ref: "#/components/schemas/RollCallRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RollCall"
+                $ref: "#/components/schemas/RollCallResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -1241,7 +1241,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RollCallReaction"
+                  $ref: "#/components/schemas/RollCallReactionResponse"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1259,14 +1259,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RollCallReaction"
+              $ref: "#/components/schemas/RollCallReactionRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RollCallReaction"
+                $ref: "#/components/schemas/RollCallReactionResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -1287,7 +1287,7 @@ paths:
           content:
             text/event-stream:
               schema:
-                $ref: "#/components/schemas/RollCallReaction"
+                $ref: "#/components/schemas/RollCallReactionResponse"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1306,14 +1306,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RollCallReaction"
+              $ref: "#/components/schemas/RollCallReactionRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RollCallReaction"
+                $ref: "#/components/schemas/RollCallReactionResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -1503,12 +1503,33 @@ components:
                 type: string
                 example: Internal server error
   schemas:
-    Camp:
+    CampRequest:
+      type: object
+      properties:
+        displayId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        isDraft:
+          type: boolean
+        isRegistrationOpen:
+          type: boolean
+        isPaymentOpen:
+          type: boolean
+      required:
+        - displayId
+        - name
+        - description
+        - isDraft
+        - isRegistrationOpen
+        - isPaymentOpen
+    CampResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         displayId:
           type: string
         name:
@@ -1529,17 +1550,60 @@ components:
         - isDraft
         - isRegistrationOpen
         - isPaymentOpen
-    Event:
+    EventRequest:
       oneOf:
-        - $ref: "#/components/schemas/DurationEvent"
-        - $ref: "#/components/schemas/OfficialEvent"
-        - $ref: "#/components/schemas/MomentEvent"
-    DurationEvent:
+        - $ref: "#/components/schemas/DurationEventRequest"
+        - $ref: "#/components/schemas/OfficialEventRequest"
+        - $ref: "#/components/schemas/MomentEventRequest"
+    EventResponse:
+      oneOf:
+        - $ref: "#/components/schemas/DurationEventResponse"
+        - $ref: "#/components/schemas/OfficialEventResponse"
+        - $ref: "#/components/schemas/MomentEventResponse"
+    DurationEventRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - duration
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        timeStart:
+          type: string
+          format: date-time
+        timeEnd:
+          type: string
+          format: date-time
+        organizerId:
+          type: string
+        displayColor:
+          type: string
+          enum:
+            - orange
+            - green
+            - red
+            - blue
+            - purple
+            - pink
+      required:
+        - type
+        - name
+        - description
+        - location
+        - timeStart
+        - timeEnd
+        - organizerId
+        - displayColor
+    DurationEventResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         type:
           type: string
           enum:
@@ -1577,12 +1641,37 @@ components:
         - timeEnd
         - organizerId
         - displayColor
-    OfficialEvent:
+    OfficialEventRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - official
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        timeStart:
+          type: string
+          format: date-time
+        timeEnd:
+          type: string
+          format: date-time
+      required:
+        - type
+        - name
+        - description
+        - location
+        - timeStart
+        - timeEnd
+    OfficialEventResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         type:
           type: string
           enum:
@@ -1607,12 +1696,33 @@ components:
         - location
         - timeStart
         - timeEnd
-    MomentEvent:
+    MomentEventRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - moment
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        time:
+          type: string
+          format: date-time
+      required:
+        - type
+        - name
+        - description
+        - location
+        - time
+    MomentEventResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         type:
           type: string
           enum:
@@ -1633,31 +1743,35 @@ components:
         - description
         - location
         - time
-    User:
+    UserRequest:
+      type: object
+      properties:
+        isStaff:
+          type: boolean
+      required:
+        - isStaff
+    UserResponse:
       type: object
       properties:
         id:
           type: string
-          readOnly: true
         isStaff:
           type: boolean
-          writeOnly: true
       required:
         - id
         - isStaff
-    Dashboard:
+    DashboardResponse:
       type: object
       properties:
         id:
           type: string
-          readOnly: true
         payment:
-          $ref: "#/components/schemas/Payment"
+          $ref: "#/components/schemas/PaymentResponse"
         room:
-          $ref: "#/components/schemas/Room"
+          $ref: "#/components/schemas/RoomResponse"
       required:
         - id
-    Message:
+    MessageRequest:
       type: object
       properties:
         content:
@@ -1668,12 +1782,26 @@ components:
       required:
         - content
         - sendAt
-    QuestionGroup:
+    QuestionGroupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        due:
+          type: string
+          format: date-time
+      required:
+        - name
+        - description
+        - due
+    QuestionGroupResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         name:
           type: string
         description:
@@ -1684,28 +1812,57 @@ components:
           format: date-time
         questions:
           type: array
-          readOnly: true
           items:
-            $ref: "#/components/schemas/Question"
+            $ref: "#/components/schemas/QuestionResponse"
       required:
         - id
         - name
         - description
         - due
         - questions
-    Question:
+    QuestionRequest:
       oneOf:
-        - $ref: "#/components/schemas/FreeTextQuestion"
-        - $ref: "#/components/schemas/FreeNumberQuestion"
-        - $ref: "#/components/schemas/SingleChoiceQuestion"
-        - $ref: "#/components/schemas/MultipleChoiceQuestion"
+        - $ref: "#/components/schemas/FreeTextQuestionRequest"
+        - $ref: "#/components/schemas/FreeNumberQuestionRequest"
+        - $ref: "#/components/schemas/SingleChoiceQuestionRequest"
+        - $ref: "#/components/schemas/MultipleChoiceQuestionRequest"
+    QuestionResponse:
+      oneOf:
+        - $ref: "#/components/schemas/FreeTextQuestionResponse"
+        - $ref: "#/components/schemas/FreeNumberQuestionResponse"
+        - $ref: "#/components/schemas/SingleChoiceQuestionResponse"
+        - $ref: "#/components/schemas/MultipleChoiceQuestionResponse"
 
-    FreeTextQuestion:
+    FreeTextQuestionRequest:
+      type: object
+      properties:
+        questionGroupId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum:
+            - free_text
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
+      required:
+        - questionGroupId
+        - title
+        - description
+        - type
+        - isPublic
+        - isOpen
+    FreeTextQuestionResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         questionGroupId:
           type: integer
         title:
@@ -1730,12 +1887,36 @@ components:
         - isPublic
         - isOpen
 
-    FreeNumberQuestion:
+    FreeNumberQuestionRequest:
+      type: object
+      properties:
+        questionGroupId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum:
+            - free_number
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
+      required:
+        - questionGroupId
+        - title
+        - description
+        - type
+        - isPublic
+        - isOpen
+    FreeNumberQuestionResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         questionGroupId:
           type: integer
         title:
@@ -1760,12 +1941,36 @@ components:
         - isPublic
         - isOpen
 
-    SingleChoiceQuestion:
+    SingleChoiceQuestionRequest:
+      type: object
+      properties:
+        questionGroupId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum:
+            - single
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
+      required:
+        - questionGroupId
+        - title
+        - description
+        - type
+        - isPublic
+        - isOpen
+    SingleChoiceQuestionResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         questionGroupId:
           type: integer
         title:
@@ -1783,9 +1988,8 @@ components:
           type: boolean
         options:
           type: array
-          readOnly: true
           items:
-            $ref: "#/components/schemas/Option"
+            $ref: "#/components/schemas/OptionResponse"
       required:
         - id
         - questionGroupId
@@ -1796,12 +2000,36 @@ components:
         - isOpen
         - options
 
-    MultipleChoiceQuestion:
+    MultipleChoiceQuestionRequest:
+      type: object
+      properties:
+        questionGroupId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum:
+            - multiple
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
+      required:
+        - questionGroupId
+        - title
+        - description
+        - type
+        - isPublic
+        - isOpen
+    MultipleChoiceQuestionResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         questionGroupId:
           type: integer
         title:
@@ -1819,9 +2047,8 @@ components:
           type: boolean
         options:
           type: array
-          readOnly: true
           items:
-            $ref: "#/components/schemas/Option"
+            $ref: "#/components/schemas/OptionResponse"
       required:
         - id
         - questionGroupId
@@ -1831,12 +2058,21 @@ components:
         - isPublic
         - isOpen
         - options
-    Option:
+    OptionRequest:
+      type: object
+      properties:
+        questionId:
+          type: integer
+        content:
+          type: string
+      required:
+        - questionId
+        - content
+    OptionResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         questionId:
           type: integer
         content:
@@ -1845,103 +2081,193 @@ components:
         - id
         - questionId
         - content
-    Answer:
+    AnswerRequest:
       oneOf:
-        - $ref: "#/components/schemas/FreeTextAnswer"
-        - $ref: "#/components/schemas/FreeNumberAnswer"
-        - $ref: "#/components/schemas/SingleChoiceAnswer"
-        - $ref: "#/components/schemas/MultipleChoiceAnswer"
+        - $ref: "#/components/schemas/FreeTextAnswerRequest"
+        - $ref: "#/components/schemas/FreeNumberAnswerRequest"
+        - $ref: "#/components/schemas/SingleChoiceAnswerRequest"
+        - $ref: "#/components/schemas/MultipleChoiceAnswerRequest"
+    AnswerResponse:
+      oneOf:
+        - $ref: "#/components/schemas/FreeTextAnswerResponse"
+        - $ref: "#/components/schemas/FreeNumberAnswerResponse"
+        - $ref: "#/components/schemas/SingleChoiceAnswerResponse"
+        - $ref: "#/components/schemas/MultipleChoiceAnswerResponse"
 
-    FreeTextAnswer:
+    FreeTextAnswerRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - free_text
+        questionId:
+          type: integer
+        content:
+          type: string
+      required:
+        - type
+        - questionId
+        - content
+    FreeTextAnswerResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
+        type:
+          type: string
+          enum:
+            - free_text
         questionId:
           type: integer
-          writeOnly: true
         userId:
           type: string
-          readOnly: true
         content:
           type: string
       required:
         - id
+        - type
         - questionId
         - userId
         - content
 
-    FreeNumberAnswer:
+    FreeNumberAnswerRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - free_number
+        questionId:
+          type: integer
+        content:
+          type: number
+      required:
+        - type
+        - questionId
+        - content
+    FreeNumberAnswerResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
+        type:
+          type: string
+          enum:
+            - free_number
         questionId:
           type: integer
-          writeOnly: true
         userId:
           type: string
-          readOnly: true
         content:
           type: number
       required:
         - id
+        - type
         - questionId
         - userId
         - content
 
-    SingleChoiceAnswer:
+    SingleChoiceAnswerRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - single
+        questionId:
+          type: integer
+        content:
+          type: integer
+      required:
+        - type
+        - questionId
+        - content
+    SingleChoiceAnswerResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
+        type:
+          type: string
+          enum:
+            - single
         questionId:
           type: integer
-          writeOnly: true
         userId:
           type: string
-          readOnly: true
         content:
-          $ref: "#/components/schemas/Option"
+          $ref: "#/components/schemas/OptionResponse"
       required:
         - id
+        - type
         - questionId
         - userId
         - content
 
-    MultipleChoiceAnswer:
+    MultipleChoiceAnswerRequest:
       type: object
       properties:
-        id:
-          type: integer
-          readOnly: true
+        type:
+          type: string
+          enum:
+            - multiple
         questionId:
           type: integer
-          writeOnly: true
-        userId:
-          type: string
-          readOnly: true
         content:
           type: array
           items:
-            $ref: "#/components/schemas/Option"
+            type: integer
       required:
-        - id
+        - type
         - questionId
-        - userId
         - content
-    Payment:
+    MultipleChoiceAnswerResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
+        type:
+          type: string
+          enum:
+            - multiple
+        questionId:
+          type: integer
         userId:
           type: string
-          readOnly: true
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/OptionResponse"
+      required:
+        - id
+        - type
+        - questionId
+        - userId
+        - content
+    PaymentRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+        campId:
+          type: integer
+        amount:
+          type: integer
+        amountPaid:
+          type: integer
+      required:
+        - userId
+        - campId
+        - amount
+        - amountPaid
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
         campId:
           type: integer
         amount:
@@ -1954,39 +2280,29 @@ components:
         - campId
         - amount
         - amountPaid
-    RoomGroup:
+    RoomGroupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+      required:
+        - name
+    RoomGroupResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         name:
           type: string
         rooms:
           type: array
-          readOnly: true
           items:
-            $ref: "#/components/schemas/Room"
+            $ref: "#/components/schemas/RoomResponse"
       required:
         - id
         - name
         - rooms
-    Room:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        members:
-          type: array
-          items:
-            $ref: "#/components/schemas/User"
-      required:
-        - id
-        - name
-        - members
-    PostRoomRequest:
+    RoomRequest:
       type: object
       properties:
         name:
@@ -2001,20 +2317,53 @@ components:
         - name
         - roomGroupId
         - memberIds
-    Image:
+    RoomResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
+        name:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserResponse"
       required:
         - id
-    RollCall:
+        - name
+        - members
+    ImageResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
+      required:
+        - id
+    RollCallRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        subjects:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - description
+        - options
+        - subjects
+    RollCallResponse:
+      type: object
+      properties:
+        id:
+          type: integer
         name:
           type: string
         description:
@@ -2034,15 +2383,20 @@ components:
         - options
         - subjects
 
-    RollCallReaction:
+    RollCallReactionRequest:
+      type: object
+      properties:
+        content:
+          type: string
+      required:
+        - content
+    RollCallReactionResponse:
       type: object
       properties:
         id:
           type: integer
-          readOnly: true
         userId:
           type: string
-          readOnly: true
         content:
           type: string
       required:
