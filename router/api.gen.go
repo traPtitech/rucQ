@@ -44,6 +44,16 @@ const (
 	DurationEventResponseTypeDuration DurationEventResponseType = "duration"
 )
 
+// Defines values for FreeNumberAnswerRequestType.
+const (
+	FreeNumberAnswerRequestTypeFreeNumber FreeNumberAnswerRequestType = "free_number"
+)
+
+// Defines values for FreeNumberAnswerResponseType.
+const (
+	FreeNumberAnswerResponseTypeFreeNumber FreeNumberAnswerResponseType = "free_number"
+)
+
 // Defines values for FreeNumberQuestionRequestType.
 const (
 	FreeNumberQuestionRequestTypeFreeNumber FreeNumberQuestionRequestType = "free_number"
@@ -52,6 +62,16 @@ const (
 // Defines values for FreeNumberQuestionResponseType.
 const (
 	FreeNumberQuestionResponseTypeFreeNumber FreeNumberQuestionResponseType = "free_number"
+)
+
+// Defines values for FreeTextAnswerRequestType.
+const (
+	FreeTextAnswerRequestTypeFreeText FreeTextAnswerRequestType = "free_text"
+)
+
+// Defines values for FreeTextAnswerResponseType.
+const (
+	FreeTextAnswerResponseTypeFreeText FreeTextAnswerResponseType = "free_text"
 )
 
 // Defines values for FreeTextQuestionRequestType.
@@ -74,6 +94,16 @@ const (
 	MomentEventResponseTypeMoment MomentEventResponseType = "moment"
 )
 
+// Defines values for MultipleChoiceAnswerRequestType.
+const (
+	MultipleChoiceAnswerRequestTypeMultiple MultipleChoiceAnswerRequestType = "multiple"
+)
+
+// Defines values for MultipleChoiceAnswerResponseType.
+const (
+	MultipleChoiceAnswerResponseTypeMultiple MultipleChoiceAnswerResponseType = "multiple"
+)
+
 // Defines values for MultipleChoiceQuestionRequestType.
 const (
 	MultipleChoiceQuestionRequestTypeMultiple MultipleChoiceQuestionRequestType = "multiple"
@@ -92,6 +122,16 @@ const (
 // Defines values for OfficialEventResponseType.
 const (
 	OfficialEventResponseTypeOfficial OfficialEventResponseType = "official"
+)
+
+// Defines values for SingleChoiceAnswerRequestType.
+const (
+	SingleChoiceAnswerRequestTypeSingle SingleChoiceAnswerRequestType = "single"
+)
+
+// Defines values for SingleChoiceAnswerResponseType.
+const (
+	SingleChoiceAnswerResponseTypeSingle SingleChoiceAnswerResponseType = "single"
 )
 
 // Defines values for SingleChoiceQuestionRequestType.
@@ -191,17 +231,25 @@ type EventResponse struct {
 
 // FreeNumberAnswerRequest defines model for FreeNumberAnswerRequest.
 type FreeNumberAnswerRequest struct {
-	Content    float32 `json:"content"`
-	QuestionId int     `json:"questionId"`
+	Content    float32                     `json:"content"`
+	QuestionId int                         `json:"questionId"`
+	Type       FreeNumberAnswerRequestType `json:"type"`
 }
+
+// FreeNumberAnswerRequestType defines model for FreeNumberAnswerRequest.Type.
+type FreeNumberAnswerRequestType string
 
 // FreeNumberAnswerResponse defines model for FreeNumberAnswerResponse.
 type FreeNumberAnswerResponse struct {
-	Content    float32 `json:"content"`
-	Id         int     `json:"id"`
-	QuestionId int     `json:"questionId"`
-	UserId     string  `json:"userId"`
+	Content    float32                      `json:"content"`
+	Id         int                          `json:"id"`
+	QuestionId int                          `json:"questionId"`
+	Type       FreeNumberAnswerResponseType `json:"type"`
+	UserId     string                       `json:"userId"`
 }
+
+// FreeNumberAnswerResponseType defines model for FreeNumberAnswerResponse.Type.
+type FreeNumberAnswerResponseType string
 
 // FreeNumberQuestionRequest defines model for FreeNumberQuestionRequest.
 type FreeNumberQuestionRequest struct {
@@ -232,17 +280,25 @@ type FreeNumberQuestionResponseType string
 
 // FreeTextAnswerRequest defines model for FreeTextAnswerRequest.
 type FreeTextAnswerRequest struct {
-	Content    string `json:"content"`
-	QuestionId int    `json:"questionId"`
+	Content    string                    `json:"content"`
+	QuestionId int                       `json:"questionId"`
+	Type       FreeTextAnswerRequestType `json:"type"`
 }
+
+// FreeTextAnswerRequestType defines model for FreeTextAnswerRequest.Type.
+type FreeTextAnswerRequestType string
 
 // FreeTextAnswerResponse defines model for FreeTextAnswerResponse.
 type FreeTextAnswerResponse struct {
-	Content    string `json:"content"`
-	Id         int    `json:"id"`
-	QuestionId int    `json:"questionId"`
-	UserId     string `json:"userId"`
+	Content    string                     `json:"content"`
+	Id         int                        `json:"id"`
+	QuestionId int                        `json:"questionId"`
+	Type       FreeTextAnswerResponseType `json:"type"`
+	UserId     string                     `json:"userId"`
 }
+
+// FreeTextAnswerResponseType defines model for FreeTextAnswerResponse.Type.
+type FreeTextAnswerResponseType string
 
 // FreeTextQuestionRequest defines model for FreeTextQuestionRequest.
 type FreeTextQuestionRequest struct {
@@ -309,17 +365,25 @@ type MomentEventResponseType string
 
 // MultipleChoiceAnswerRequest defines model for MultipleChoiceAnswerRequest.
 type MultipleChoiceAnswerRequest struct {
-	Content    []int `json:"content"`
-	QuestionId int   `json:"questionId"`
+	Content    []int                           `json:"content"`
+	QuestionId int                             `json:"questionId"`
+	Type       MultipleChoiceAnswerRequestType `json:"type"`
 }
+
+// MultipleChoiceAnswerRequestType defines model for MultipleChoiceAnswerRequest.Type.
+type MultipleChoiceAnswerRequestType string
 
 // MultipleChoiceAnswerResponse defines model for MultipleChoiceAnswerResponse.
 type MultipleChoiceAnswerResponse struct {
-	Content    []OptionResponse `json:"content"`
-	Id         int              `json:"id"`
-	QuestionId int              `json:"questionId"`
-	UserId     string           `json:"userId"`
+	Content    []OptionResponse                 `json:"content"`
+	Id         int                              `json:"id"`
+	QuestionId int                              `json:"questionId"`
+	Type       MultipleChoiceAnswerResponseType `json:"type"`
+	UserId     string                           `json:"userId"`
 }
+
+// MultipleChoiceAnswerResponseType defines model for MultipleChoiceAnswerResponse.Type.
+type MultipleChoiceAnswerResponseType string
 
 // MultipleChoiceQuestionRequest defines model for MultipleChoiceQuestionRequest.
 type MultipleChoiceQuestionRequest struct {
@@ -489,17 +553,25 @@ type RoomResponse struct {
 
 // SingleChoiceAnswerRequest defines model for SingleChoiceAnswerRequest.
 type SingleChoiceAnswerRequest struct {
-	Content    int `json:"content"`
-	QuestionId int `json:"questionId"`
+	Content    int                           `json:"content"`
+	QuestionId int                           `json:"questionId"`
+	Type       SingleChoiceAnswerRequestType `json:"type"`
 }
+
+// SingleChoiceAnswerRequestType defines model for SingleChoiceAnswerRequest.Type.
+type SingleChoiceAnswerRequestType string
 
 // SingleChoiceAnswerResponse defines model for SingleChoiceAnswerResponse.
 type SingleChoiceAnswerResponse struct {
-	Content    OptionResponse `json:"content"`
-	Id         int            `json:"id"`
-	QuestionId int            `json:"questionId"`
-	UserId     string         `json:"userId"`
+	Content    OptionResponse                 `json:"content"`
+	Id         int                            `json:"id"`
+	QuestionId int                            `json:"questionId"`
+	Type       SingleChoiceAnswerResponseType `json:"type"`
+	UserId     string                         `json:"userId"`
 }
+
+// SingleChoiceAnswerResponseType defines model for SingleChoiceAnswerResponse.Type.
+type SingleChoiceAnswerResponseType string
 
 // SingleChoiceQuestionRequest defines model for SingleChoiceQuestionRequest.
 type SingleChoiceQuestionRequest struct {
