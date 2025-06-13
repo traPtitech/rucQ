@@ -406,13 +406,6 @@ type PaymentResponse struct {
 	UserId     string `json:"userId"`
 }
 
-// PostRoomRequest defines model for PostRoomRequest.
-type PostRoomRequest struct {
-	MemberIds   []string `json:"memberIds"`
-	Name        string   `json:"name"`
-	RoomGroupId int      `json:"roomGroupId"`
-}
-
 // QuestionGroupRequest defines model for QuestionGroupRequest.
 type QuestionGroupRequest struct {
 	Description *string   `json:"description"`
@@ -478,6 +471,13 @@ type RoomGroupResponse struct {
 	Id    int            `json:"id"`
 	Name  string         `json:"name"`
 	Rooms []RoomResponse `json:"rooms"`
+}
+
+// RoomRequest defines model for RoomRequest.
+type RoomRequest struct {
+	MemberIds   []string `json:"memberIds"`
+	Name        string   `json:"name"`
+	RoomGroupId int      `json:"roomGroupId"`
 }
 
 // RoomResponse defines model for RoomResponse.
@@ -930,10 +930,10 @@ type AdminPutQuestionJSONRequestBody = QuestionRequest
 type AdminPutRoomGroupJSONRequestBody = RoomGroupRequest
 
 // AdminPostRoomJSONRequestBody defines body for AdminPostRoom for application/json ContentType.
-type AdminPostRoomJSONRequestBody = PostRoomRequest
+type AdminPostRoomJSONRequestBody = RoomRequest
 
 // AdminPutRoomJSONRequestBody defines body for AdminPutRoom for application/json ContentType.
-type AdminPutRoomJSONRequestBody = PostRoomRequest
+type AdminPutRoomJSONRequestBody = RoomRequest
 
 // AdminPutUserJSONRequestBody defines body for AdminPutUser for application/json ContentType.
 type AdminPutUserJSONRequestBody = UserRequest

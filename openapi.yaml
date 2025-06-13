@@ -982,7 +982,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostRoomRequest"
+              $ref: "#/components/schemas/RoomRequest"
       responses:
         "201":
           description: Created
@@ -1012,7 +1012,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostRoomRequest"
+              $ref: "#/components/schemas/RoomRequest"
       responses:
         "200":
           description: OK
@@ -2262,6 +2262,21 @@ components:
         - id
         - name
         - rooms
+    RoomRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        roomGroupId:
+          type: integer
+        memberIds:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - roomGroupId
+        - memberIds
     RoomResponse:
       type: object
       properties:
@@ -2277,21 +2292,6 @@ components:
         - id
         - name
         - members
-    PostRoomRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        roomGroupId:
-          type: integer
-        memberIds:
-          type: array
-          items:
-            type: string
-      required:
-        - name
-        - roomGroupId
-        - memberIds
     ImageResponse:
       type: object
       properties:
