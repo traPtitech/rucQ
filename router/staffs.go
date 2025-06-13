@@ -16,7 +16,7 @@ func (s *Server) GetStaffs(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response []User
+	var response []UserResponse
 
 	if err := copier.Copy(&response, &staffs); err != nil {
 		e.Logger().Errorf("failed to copy staffs: %v", err)

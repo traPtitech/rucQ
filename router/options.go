@@ -43,7 +43,7 @@ func (s *Server) AdminPostOption(e echo.Context, params AdminPostOptionParams) e
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res Option
+	var res OptionResponse
 
 	if err := copier.Copy(&res, &option); err != nil {
 		e.Logger().Errorf("failed to copy response body: %v", err)

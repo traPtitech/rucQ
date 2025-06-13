@@ -14,297 +14,530 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// Defines values for DurationEventDisplayColor.
+// Defines values for DurationEventRequestDisplayColor.
 const (
-	Blue   DurationEventDisplayColor = "blue"
-	Green  DurationEventDisplayColor = "green"
-	Orange DurationEventDisplayColor = "orange"
-	Pink   DurationEventDisplayColor = "pink"
-	Purple DurationEventDisplayColor = "purple"
-	Red    DurationEventDisplayColor = "red"
+	DurationEventRequestDisplayColorBlue   DurationEventRequestDisplayColor = "blue"
+	DurationEventRequestDisplayColorGreen  DurationEventRequestDisplayColor = "green"
+	DurationEventRequestDisplayColorOrange DurationEventRequestDisplayColor = "orange"
+	DurationEventRequestDisplayColorPink   DurationEventRequestDisplayColor = "pink"
+	DurationEventRequestDisplayColorPurple DurationEventRequestDisplayColor = "purple"
+	DurationEventRequestDisplayColorRed    DurationEventRequestDisplayColor = "red"
 )
 
-// Defines values for DurationEventType.
+// Defines values for DurationEventRequestType.
 const (
-	Duration DurationEventType = "duration"
+	DurationEventRequestTypeDuration DurationEventRequestType = "duration"
 )
 
-// Defines values for FreeNumberQuestionType.
+// Defines values for DurationEventResponseDisplayColor.
 const (
-	FreeNumber FreeNumberQuestionType = "free_number"
+	DurationEventResponseDisplayColorBlue   DurationEventResponseDisplayColor = "blue"
+	DurationEventResponseDisplayColorGreen  DurationEventResponseDisplayColor = "green"
+	DurationEventResponseDisplayColorOrange DurationEventResponseDisplayColor = "orange"
+	DurationEventResponseDisplayColorPink   DurationEventResponseDisplayColor = "pink"
+	DurationEventResponseDisplayColorPurple DurationEventResponseDisplayColor = "purple"
+	DurationEventResponseDisplayColorRed    DurationEventResponseDisplayColor = "red"
 )
 
-// Defines values for FreeTextQuestionType.
+// Defines values for DurationEventResponseType.
 const (
-	FreeText FreeTextQuestionType = "free_text"
+	DurationEventResponseTypeDuration DurationEventResponseType = "duration"
 )
 
-// Defines values for MomentEventType.
+// Defines values for FreeNumberQuestionRequestType.
 const (
-	Moment MomentEventType = "moment"
+	FreeNumberQuestionRequestTypeFreeNumber FreeNumberQuestionRequestType = "free_number"
 )
 
-// Defines values for MultipleChoiceQuestionType.
+// Defines values for FreeNumberQuestionResponseType.
 const (
-	Multiple MultipleChoiceQuestionType = "multiple"
+	FreeNumberQuestionResponseTypeFreeNumber FreeNumberQuestionResponseType = "free_number"
 )
 
-// Defines values for OfficialEventType.
+// Defines values for FreeTextQuestionRequestType.
 const (
-	Official OfficialEventType = "official"
+	FreeTextQuestionRequestTypeFreeText FreeTextQuestionRequestType = "free_text"
 )
 
-// Defines values for SingleChoiceQuestionType.
+// Defines values for FreeTextQuestionResponseType.
 const (
-	Single SingleChoiceQuestionType = "single"
+	FreeTextQuestionResponseTypeFreeText FreeTextQuestionResponseType = "free_text"
 )
 
-// Answer defines model for Answer.
-type Answer struct {
+// Defines values for MomentEventRequestType.
+const (
+	MomentEventRequestTypeMoment MomentEventRequestType = "moment"
+)
+
+// Defines values for MomentEventResponseType.
+const (
+	MomentEventResponseTypeMoment MomentEventResponseType = "moment"
+)
+
+// Defines values for MultipleChoiceQuestionRequestType.
+const (
+	MultipleChoiceQuestionRequestTypeMultiple MultipleChoiceQuestionRequestType = "multiple"
+)
+
+// Defines values for MultipleChoiceQuestionResponseType.
+const (
+	MultipleChoiceQuestionResponseTypeMultiple MultipleChoiceQuestionResponseType = "multiple"
+)
+
+// Defines values for OfficialEventRequestType.
+const (
+	OfficialEventRequestTypeOfficial OfficialEventRequestType = "official"
+)
+
+// Defines values for OfficialEventResponseType.
+const (
+	OfficialEventResponseTypeOfficial OfficialEventResponseType = "official"
+)
+
+// Defines values for SingleChoiceQuestionRequestType.
+const (
+	SingleChoiceQuestionRequestTypeSingle SingleChoiceQuestionRequestType = "single"
+)
+
+// Defines values for SingleChoiceQuestionResponseType.
+const (
+	SingleChoiceQuestionResponseTypeSingle SingleChoiceQuestionResponseType = "single"
+)
+
+// AnswerRequest defines model for AnswerRequest.
+type AnswerRequest struct {
 	union json.RawMessage
 }
 
-// Camp defines model for Camp.
-type Camp struct {
+// AnswerResponse defines model for AnswerResponse.
+type AnswerResponse struct {
+	union json.RawMessage
+}
+
+// CampRequest defines model for CampRequest.
+type CampRequest struct {
 	Description        string `json:"description"`
 	DisplayId          string `json:"displayId"`
-	Id                 *int   `json:"id,omitempty"`
 	IsDraft            bool   `json:"isDraft"`
 	IsPaymentOpen      bool   `json:"isPaymentOpen"`
 	IsRegistrationOpen bool   `json:"isRegistrationOpen"`
 	Name               string `json:"name"`
 }
 
-// Dashboard defines model for Dashboard.
-type Dashboard struct {
-	Id      *string  `json:"id,omitempty"`
-	Payment *Payment `json:"payment,omitempty"`
-	Room    *Room    `json:"room,omitempty"`
+// CampResponse defines model for CampResponse.
+type CampResponse struct {
+	Description        string `json:"description"`
+	DisplayId          string `json:"displayId"`
+	Id                 int    `json:"id"`
+	IsDraft            bool   `json:"isDraft"`
+	IsPaymentOpen      bool   `json:"isPaymentOpen"`
+	IsRegistrationOpen bool   `json:"isRegistrationOpen"`
+	Name               string `json:"name"`
 }
 
-// DurationEvent defines model for DurationEvent.
-type DurationEvent struct {
-	Description  string                    `json:"description"`
-	DisplayColor DurationEventDisplayColor `json:"displayColor"`
-	Id           *int                      `json:"id,omitempty"`
-	Location     string                    `json:"location"`
-	Name         string                    `json:"name"`
-	OrganizerId  string                    `json:"organizerId"`
-	TimeEnd      time.Time                 `json:"timeEnd"`
-	TimeStart    time.Time                 `json:"timeStart"`
-	Type         DurationEventType         `json:"type"`
+// DashboardResponse defines model for DashboardResponse.
+type DashboardResponse struct {
+	Id      string           `json:"id"`
+	Payment *PaymentResponse `json:"payment,omitempty"`
+	Room    *RoomResponse    `json:"room,omitempty"`
 }
 
-// DurationEventDisplayColor defines model for DurationEvent.DisplayColor.
-type DurationEventDisplayColor string
+// DurationEventRequest defines model for DurationEventRequest.
+type DurationEventRequest struct {
+	Description  string                           `json:"description"`
+	DisplayColor DurationEventRequestDisplayColor `json:"displayColor"`
+	Location     string                           `json:"location"`
+	Name         string                           `json:"name"`
+	OrganizerId  string                           `json:"organizerId"`
+	TimeEnd      time.Time                        `json:"timeEnd"`
+	TimeStart    time.Time                        `json:"timeStart"`
+	Type         DurationEventRequestType         `json:"type"`
+}
 
-// DurationEventType defines model for DurationEvent.Type.
-type DurationEventType string
+// DurationEventRequestDisplayColor defines model for DurationEventRequest.DisplayColor.
+type DurationEventRequestDisplayColor string
 
-// Event defines model for Event.
-type Event struct {
+// DurationEventRequestType defines model for DurationEventRequest.Type.
+type DurationEventRequestType string
+
+// DurationEventResponse defines model for DurationEventResponse.
+type DurationEventResponse struct {
+	Description  string                            `json:"description"`
+	DisplayColor DurationEventResponseDisplayColor `json:"displayColor"`
+	Id           int                               `json:"id"`
+	Location     string                            `json:"location"`
+	Name         string                            `json:"name"`
+	OrganizerId  string                            `json:"organizerId"`
+	TimeEnd      time.Time                         `json:"timeEnd"`
+	TimeStart    time.Time                         `json:"timeStart"`
+	Type         DurationEventResponseType         `json:"type"`
+}
+
+// DurationEventResponseDisplayColor defines model for DurationEventResponse.DisplayColor.
+type DurationEventResponseDisplayColor string
+
+// DurationEventResponseType defines model for DurationEventResponse.Type.
+type DurationEventResponseType string
+
+// EventRequest defines model for EventRequest.
+type EventRequest struct {
 	union json.RawMessage
 }
 
-// FreeNumberAnswer defines model for FreeNumberAnswer.
-type FreeNumberAnswer struct {
+// EventResponse defines model for EventResponse.
+type EventResponse struct {
+	union json.RawMessage
+}
+
+// FreeNumberAnswerRequest defines model for FreeNumberAnswerRequest.
+type FreeNumberAnswerRequest struct {
 	Content    float32 `json:"content"`
-	Id         *int    `json:"id,omitempty"`
-	QuestionId *int    `json:"questionId,omitempty"`
-	UserId     *string `json:"userId,omitempty"`
+	QuestionId int     `json:"questionId"`
 }
 
-// FreeNumberQuestion defines model for FreeNumberQuestion.
-type FreeNumberQuestion struct {
-	Description     *string                `json:"description"`
-	Id              *int                   `json:"id,omitempty"`
-	IsOpen          bool                   `json:"isOpen"`
-	IsPublic        bool                   `json:"isPublic"`
-	QuestionGroupId int                    `json:"questionGroupId"`
-	Title           string                 `json:"title"`
-	Type            FreeNumberQuestionType `json:"type"`
+// FreeNumberAnswerResponse defines model for FreeNumberAnswerResponse.
+type FreeNumberAnswerResponse struct {
+	Content    float32 `json:"content"`
+	Id         int     `json:"id"`
+	QuestionId int     `json:"questionId"`
+	UserId     string  `json:"userId"`
 }
 
-// FreeNumberQuestionType defines model for FreeNumberQuestion.Type.
-type FreeNumberQuestionType string
-
-// FreeTextAnswer defines model for FreeTextAnswer.
-type FreeTextAnswer struct {
-	Content    string  `json:"content"`
-	Id         *int    `json:"id,omitempty"`
-	QuestionId *int    `json:"questionId,omitempty"`
-	UserId     *string `json:"userId,omitempty"`
+// FreeNumberQuestionRequest defines model for FreeNumberQuestionRequest.
+type FreeNumberQuestionRequest struct {
+	Description     *string                       `json:"description"`
+	IsOpen          bool                          `json:"isOpen"`
+	IsPublic        bool                          `json:"isPublic"`
+	QuestionGroupId int                           `json:"questionGroupId"`
+	Title           string                        `json:"title"`
+	Type            FreeNumberQuestionRequestType `json:"type"`
 }
 
-// FreeTextQuestion defines model for FreeTextQuestion.
-type FreeTextQuestion struct {
-	Description     *string              `json:"description"`
-	Id              *int                 `json:"id,omitempty"`
-	IsOpen          bool                 `json:"isOpen"`
-	IsPublic        bool                 `json:"isPublic"`
-	QuestionGroupId int                  `json:"questionGroupId"`
-	Title           string               `json:"title"`
-	Type            FreeTextQuestionType `json:"type"`
+// FreeNumberQuestionRequestType defines model for FreeNumberQuestionRequest.Type.
+type FreeNumberQuestionRequestType string
+
+// FreeNumberQuestionResponse defines model for FreeNumberQuestionResponse.
+type FreeNumberQuestionResponse struct {
+	Description     *string                        `json:"description"`
+	Id              int                            `json:"id"`
+	IsOpen          bool                           `json:"isOpen"`
+	IsPublic        bool                           `json:"isPublic"`
+	QuestionGroupId int                            `json:"questionGroupId"`
+	Title           string                         `json:"title"`
+	Type            FreeNumberQuestionResponseType `json:"type"`
 }
 
-// FreeTextQuestionType defines model for FreeTextQuestion.Type.
-type FreeTextQuestionType string
+// FreeNumberQuestionResponseType defines model for FreeNumberQuestionResponse.Type.
+type FreeNumberQuestionResponseType string
 
-// Image defines model for Image.
-type Image struct {
-	Id *int `json:"id,omitempty"`
+// FreeTextAnswerRequest defines model for FreeTextAnswerRequest.
+type FreeTextAnswerRequest struct {
+	Content    string `json:"content"`
+	QuestionId int    `json:"questionId"`
 }
 
-// Message defines model for Message.
-type Message struct {
+// FreeTextAnswerResponse defines model for FreeTextAnswerResponse.
+type FreeTextAnswerResponse struct {
+	Content    string `json:"content"`
+	Id         int    `json:"id"`
+	QuestionId int    `json:"questionId"`
+	UserId     string `json:"userId"`
+}
+
+// FreeTextQuestionRequest defines model for FreeTextQuestionRequest.
+type FreeTextQuestionRequest struct {
+	Description     *string                     `json:"description"`
+	IsOpen          bool                        `json:"isOpen"`
+	IsPublic        bool                        `json:"isPublic"`
+	QuestionGroupId int                         `json:"questionGroupId"`
+	Title           string                      `json:"title"`
+	Type            FreeTextQuestionRequestType `json:"type"`
+}
+
+// FreeTextQuestionRequestType defines model for FreeTextQuestionRequest.Type.
+type FreeTextQuestionRequestType string
+
+// FreeTextQuestionResponse defines model for FreeTextQuestionResponse.
+type FreeTextQuestionResponse struct {
+	Description     *string                      `json:"description"`
+	Id              int                          `json:"id"`
+	IsOpen          bool                         `json:"isOpen"`
+	IsPublic        bool                         `json:"isPublic"`
+	QuestionGroupId int                          `json:"questionGroupId"`
+	Title           string                       `json:"title"`
+	Type            FreeTextQuestionResponseType `json:"type"`
+}
+
+// FreeTextQuestionResponseType defines model for FreeTextQuestionResponse.Type.
+type FreeTextQuestionResponseType string
+
+// ImageResponse defines model for ImageResponse.
+type ImageResponse struct {
+	Id int `json:"id"`
+}
+
+// MessageRequest defines model for MessageRequest.
+type MessageRequest struct {
 	Content string    `json:"content"`
 	SendAt  time.Time `json:"sendAt"`
 }
 
-// MomentEvent defines model for MomentEvent.
-type MomentEvent struct {
-	Description string          `json:"description"`
-	Id          *int            `json:"id,omitempty"`
-	Location    string          `json:"location"`
-	Name        string          `json:"name"`
-	Time        time.Time       `json:"time"`
-	Type        MomentEventType `json:"type"`
+// MomentEventRequest defines model for MomentEventRequest.
+type MomentEventRequest struct {
+	Description string                 `json:"description"`
+	Location    string                 `json:"location"`
+	Name        string                 `json:"name"`
+	Time        time.Time              `json:"time"`
+	Type        MomentEventRequestType `json:"type"`
 }
 
-// MomentEventType defines model for MomentEvent.Type.
-type MomentEventType string
+// MomentEventRequestType defines model for MomentEventRequest.Type.
+type MomentEventRequestType string
 
-// MultipleChoiceAnswer defines model for MultipleChoiceAnswer.
-type MultipleChoiceAnswer struct {
-	Content    []Option `json:"content"`
-	Id         *int     `json:"id,omitempty"`
-	QuestionId *int     `json:"questionId,omitempty"`
-	UserId     *string  `json:"userId,omitempty"`
+// MomentEventResponse defines model for MomentEventResponse.
+type MomentEventResponse struct {
+	Description string                  `json:"description"`
+	Id          int                     `json:"id"`
+	Location    string                  `json:"location"`
+	Name        string                  `json:"name"`
+	Time        time.Time               `json:"time"`
+	Type        MomentEventResponseType `json:"type"`
 }
 
-// MultipleChoiceQuestion defines model for MultipleChoiceQuestion.
-type MultipleChoiceQuestion struct {
-	Description     *string                    `json:"description"`
-	Id              *int                       `json:"id,omitempty"`
-	IsOpen          bool                       `json:"isOpen"`
-	IsPublic        bool                       `json:"isPublic"`
-	Options         *[]Option                  `json:"options,omitempty"`
-	QuestionGroupId int                        `json:"questionGroupId"`
-	Title           string                     `json:"title"`
-	Type            MultipleChoiceQuestionType `json:"type"`
+// MomentEventResponseType defines model for MomentEventResponse.Type.
+type MomentEventResponseType string
+
+// MultipleChoiceAnswerRequest defines model for MultipleChoiceAnswerRequest.
+type MultipleChoiceAnswerRequest struct {
+	Content    []int `json:"content"`
+	QuestionId int   `json:"questionId"`
 }
 
-// MultipleChoiceQuestionType defines model for MultipleChoiceQuestion.Type.
-type MultipleChoiceQuestionType string
-
-// OfficialEvent defines model for OfficialEvent.
-type OfficialEvent struct {
-	Description string            `json:"description"`
-	Id          *int              `json:"id,omitempty"`
-	Location    string            `json:"location"`
-	Name        string            `json:"name"`
-	TimeEnd     time.Time         `json:"timeEnd"`
-	TimeStart   time.Time         `json:"timeStart"`
-	Type        OfficialEventType `json:"type"`
+// MultipleChoiceAnswerResponse defines model for MultipleChoiceAnswerResponse.
+type MultipleChoiceAnswerResponse struct {
+	Content    []OptionResponse `json:"content"`
+	Id         int              `json:"id"`
+	QuestionId int              `json:"questionId"`
+	UserId     string           `json:"userId"`
 }
 
-// OfficialEventType defines model for OfficialEvent.Type.
-type OfficialEventType string
+// MultipleChoiceQuestionRequest defines model for MultipleChoiceQuestionRequest.
+type MultipleChoiceQuestionRequest struct {
+	Description     *string                           `json:"description"`
+	IsOpen          bool                              `json:"isOpen"`
+	IsPublic        bool                              `json:"isPublic"`
+	QuestionGroupId int                               `json:"questionGroupId"`
+	Title           string                            `json:"title"`
+	Type            MultipleChoiceQuestionRequestType `json:"type"`
+}
 
-// Option defines model for Option.
-type Option struct {
+// MultipleChoiceQuestionRequestType defines model for MultipleChoiceQuestionRequest.Type.
+type MultipleChoiceQuestionRequestType string
+
+// MultipleChoiceQuestionResponse defines model for MultipleChoiceQuestionResponse.
+type MultipleChoiceQuestionResponse struct {
+	Description     *string                            `json:"description"`
+	Id              int                                `json:"id"`
+	IsOpen          bool                               `json:"isOpen"`
+	IsPublic        bool                               `json:"isPublic"`
+	Options         []OptionResponse                   `json:"options"`
+	QuestionGroupId int                                `json:"questionGroupId"`
+	Title           string                             `json:"title"`
+	Type            MultipleChoiceQuestionResponseType `json:"type"`
+}
+
+// MultipleChoiceQuestionResponseType defines model for MultipleChoiceQuestionResponse.Type.
+type MultipleChoiceQuestionResponseType string
+
+// OfficialEventRequest defines model for OfficialEventRequest.
+type OfficialEventRequest struct {
+	Description string                   `json:"description"`
+	Location    string                   `json:"location"`
+	Name        string                   `json:"name"`
+	TimeEnd     time.Time                `json:"timeEnd"`
+	TimeStart   time.Time                `json:"timeStart"`
+	Type        OfficialEventRequestType `json:"type"`
+}
+
+// OfficialEventRequestType defines model for OfficialEventRequest.Type.
+type OfficialEventRequestType string
+
+// OfficialEventResponse defines model for OfficialEventResponse.
+type OfficialEventResponse struct {
+	Description string                    `json:"description"`
+	Id          int                       `json:"id"`
+	Location    string                    `json:"location"`
+	Name        string                    `json:"name"`
+	TimeEnd     time.Time                 `json:"timeEnd"`
+	TimeStart   time.Time                 `json:"timeStart"`
+	Type        OfficialEventResponseType `json:"type"`
+}
+
+// OfficialEventResponseType defines model for OfficialEventResponse.Type.
+type OfficialEventResponseType string
+
+// OptionRequest defines model for OptionRequest.
+type OptionRequest struct {
 	Content    string `json:"content"`
-	Id         *int   `json:"id,omitempty"`
 	QuestionId int    `json:"questionId"`
 }
 
-// Payment defines model for Payment.
-type Payment struct {
-	Amount     int     `json:"amount"`
-	AmountPaid int     `json:"amountPaid"`
-	CampId     int     `json:"campId"`
-	Id         *int    `json:"id,omitempty"`
-	UserId     *string `json:"userId,omitempty"`
+// OptionResponse defines model for OptionResponse.
+type OptionResponse struct {
+	Content    string `json:"content"`
+	Id         int    `json:"id"`
+	QuestionId int    `json:"questionId"`
 }
 
-// PostRoomRequest defines model for PostRoomRequest.
-type PostRoomRequest struct {
-	MemberIds   []string `json:"memberIds"`
-	Name        string   `json:"name"`
-	RoomGroupId int      `json:"roomGroupId"`
+// PaymentRequest defines model for PaymentRequest.
+type PaymentRequest struct {
+	Amount     int    `json:"amount"`
+	AmountPaid int    `json:"amountPaid"`
+	CampId     int    `json:"campId"`
+	UserId     string `json:"userId"`
 }
 
-// Question defines model for Question.
-type Question struct {
+// PaymentResponse defines model for PaymentResponse.
+type PaymentResponse struct {
+	Amount     int    `json:"amount"`
+	AmountPaid int    `json:"amountPaid"`
+	CampId     int    `json:"campId"`
+	Id         int    `json:"id"`
+	UserId     string `json:"userId"`
+}
+
+// QuestionGroupRequest defines model for QuestionGroupRequest.
+type QuestionGroupRequest struct {
+	Description *string   `json:"description"`
+	Due         time.Time `json:"due"`
+	Name        string    `json:"name"`
+}
+
+// QuestionGroupResponse defines model for QuestionGroupResponse.
+type QuestionGroupResponse struct {
+	Description *string            `json:"description"`
+	Due         time.Time          `json:"due"`
+	Id          int                `json:"id"`
+	Name        string             `json:"name"`
+	Questions   []QuestionResponse `json:"questions"`
+}
+
+// QuestionRequest defines model for QuestionRequest.
+type QuestionRequest struct {
 	union json.RawMessage
 }
 
-// QuestionGroup defines model for QuestionGroup.
-type QuestionGroup struct {
-	Description *string     `json:"description"`
-	Due         time.Time   `json:"due"`
-	Id          *int        `json:"id,omitempty"`
-	Name        string      `json:"name"`
-	Questions   *[]Question `json:"questions,omitempty"`
+// QuestionResponse defines model for QuestionResponse.
+type QuestionResponse struct {
+	union json.RawMessage
 }
 
-// RollCall defines model for RollCall.
-type RollCall struct {
+// RollCallReactionRequest defines model for RollCallReactionRequest.
+type RollCallReactionRequest struct {
+	Content string `json:"content"`
+}
+
+// RollCallReactionResponse defines model for RollCallReactionResponse.
+type RollCallReactionResponse struct {
+	Content string `json:"content"`
+	Id      int    `json:"id"`
+	UserId  string `json:"userId"`
+}
+
+// RollCallRequest defines model for RollCallRequest.
+type RollCallRequest struct {
 	Description string   `json:"description"`
-	Id          *int     `json:"id,omitempty"`
 	Name        string   `json:"name"`
 	Options     []string `json:"options"`
 	Subjects    []string `json:"subjects"`
 }
 
-// RollCallReaction defines model for RollCallReaction.
-type RollCallReaction struct {
-	Content string  `json:"content"`
-	Id      *int    `json:"id,omitempty"`
-	UserId  *string `json:"userId,omitempty"`
+// RollCallResponse defines model for RollCallResponse.
+type RollCallResponse struct {
+	Description string   `json:"description"`
+	Id          int      `json:"id"`
+	Name        string   `json:"name"`
+	Options     []string `json:"options"`
+	Subjects    []string `json:"subjects"`
 }
 
-// Room defines model for Room.
-type Room struct {
-	Id      int    `json:"id"`
-	Members []User `json:"members"`
-	Name    string `json:"name"`
+// RoomGroupRequest defines model for RoomGroupRequest.
+type RoomGroupRequest struct {
+	Name string `json:"name"`
 }
 
-// RoomGroup defines model for RoomGroup.
-type RoomGroup struct {
-	Id    *int    `json:"id,omitempty"`
-	Name  string  `json:"name"`
-	Rooms *[]Room `json:"rooms,omitempty"`
+// RoomGroupResponse defines model for RoomGroupResponse.
+type RoomGroupResponse struct {
+	Id    int            `json:"id"`
+	Name  string         `json:"name"`
+	Rooms []RoomResponse `json:"rooms"`
 }
 
-// SingleChoiceAnswer defines model for SingleChoiceAnswer.
-type SingleChoiceAnswer struct {
-	Content    Option  `json:"content"`
-	Id         *int    `json:"id,omitempty"`
-	QuestionId *int    `json:"questionId,omitempty"`
-	UserId     *string `json:"userId,omitempty"`
+// RoomRequest defines model for RoomRequest.
+type RoomRequest struct {
+	MemberIds   []string `json:"memberIds"`
+	Name        string   `json:"name"`
+	RoomGroupId int      `json:"roomGroupId"`
 }
 
-// SingleChoiceQuestion defines model for SingleChoiceQuestion.
-type SingleChoiceQuestion struct {
-	Description     *string                  `json:"description"`
-	Id              *int                     `json:"id,omitempty"`
-	IsOpen          bool                     `json:"isOpen"`
-	IsPublic        bool                     `json:"isPublic"`
-	Options         *[]Option                `json:"options,omitempty"`
-	QuestionGroupId int                      `json:"questionGroupId"`
-	Title           string                   `json:"title"`
-	Type            SingleChoiceQuestionType `json:"type"`
+// RoomResponse defines model for RoomResponse.
+type RoomResponse struct {
+	Id      int            `json:"id"`
+	Members []UserResponse `json:"members"`
+	Name    string         `json:"name"`
 }
 
-// SingleChoiceQuestionType defines model for SingleChoiceQuestion.Type.
-type SingleChoiceQuestionType string
+// SingleChoiceAnswerRequest defines model for SingleChoiceAnswerRequest.
+type SingleChoiceAnswerRequest struct {
+	Content    int `json:"content"`
+	QuestionId int `json:"questionId"`
+}
 
-// User defines model for User.
-type User struct {
-	Id      *string `json:"id,omitempty"`
-	IsStaff *bool   `json:"isStaff,omitempty"`
+// SingleChoiceAnswerResponse defines model for SingleChoiceAnswerResponse.
+type SingleChoiceAnswerResponse struct {
+	Content    OptionResponse `json:"content"`
+	Id         int            `json:"id"`
+	QuestionId int            `json:"questionId"`
+	UserId     string         `json:"userId"`
+}
+
+// SingleChoiceQuestionRequest defines model for SingleChoiceQuestionRequest.
+type SingleChoiceQuestionRequest struct {
+	Description     *string                         `json:"description"`
+	IsOpen          bool                            `json:"isOpen"`
+	IsPublic        bool                            `json:"isPublic"`
+	QuestionGroupId int                             `json:"questionGroupId"`
+	Title           string                          `json:"title"`
+	Type            SingleChoiceQuestionRequestType `json:"type"`
+}
+
+// SingleChoiceQuestionRequestType defines model for SingleChoiceQuestionRequest.Type.
+type SingleChoiceQuestionRequestType string
+
+// SingleChoiceQuestionResponse defines model for SingleChoiceQuestionResponse.
+type SingleChoiceQuestionResponse struct {
+	Description     *string                          `json:"description"`
+	Id              int                              `json:"id"`
+	IsOpen          bool                             `json:"isOpen"`
+	IsPublic        bool                             `json:"isPublic"`
+	Options         []OptionResponse                 `json:"options"`
+	QuestionGroupId int                              `json:"questionGroupId"`
+	Title           string                           `json:"title"`
+	Type            SingleChoiceQuestionResponseType `json:"type"`
+}
+
+// SingleChoiceQuestionResponseType defines model for SingleChoiceQuestionResponse.Type.
+type SingleChoiceQuestionResponseType string
+
+// UserRequest defines model for UserRequest.
+type UserRequest struct {
+	IsStaff bool `json:"isStaff"`
+}
+
+// UserResponse defines model for UserResponse.
+type UserResponse struct {
+	Id      string `json:"id"`
+	IsStaff bool   `json:"isStaff"`
 }
 
 // AnswerId defines model for AnswerId.
@@ -649,99 +882,99 @@ type PostRollCallReactionParams struct {
 }
 
 // AdminPutAnswerJSONRequestBody defines body for AdminPutAnswer for application/json ContentType.
-type AdminPutAnswerJSONRequestBody = Answer
+type AdminPutAnswerJSONRequestBody = AnswerRequest
 
 // AdminPostCampJSONRequestBody defines body for AdminPostCamp for application/json ContentType.
-type AdminPostCampJSONRequestBody = Camp
+type AdminPostCampJSONRequestBody = CampRequest
 
 // AdminPutCampJSONRequestBody defines body for AdminPutCamp for application/json ContentType.
-type AdminPutCampJSONRequestBody = Camp
+type AdminPutCampJSONRequestBody = CampRequest
 
 // AdminPostImageMultipartRequestBody defines body for AdminPostImage for multipart/form-data ContentType.
 type AdminPostImageMultipartRequestBody AdminPostImageMultipartBody
 
 // AdminPostPaymentJSONRequestBody defines body for AdminPostPayment for application/json ContentType.
-type AdminPostPaymentJSONRequestBody = Payment
+type AdminPostPaymentJSONRequestBody = PaymentRequest
 
 // AdminPostQuestionGroupJSONRequestBody defines body for AdminPostQuestionGroup for application/json ContentType.
-type AdminPostQuestionGroupJSONRequestBody = QuestionGroup
+type AdminPostQuestionGroupJSONRequestBody = QuestionGroupRequest
 
 // AdminPostRollCallJSONRequestBody defines body for AdminPostRollCall for application/json ContentType.
-type AdminPostRollCallJSONRequestBody = RollCall
+type AdminPostRollCallJSONRequestBody = RollCallRequest
 
 // AdminPostRoomGroupJSONRequestBody defines body for AdminPostRoomGroup for application/json ContentType.
-type AdminPostRoomGroupJSONRequestBody = RoomGroup
+type AdminPostRoomGroupJSONRequestBody = RoomGroupRequest
 
 // AdminPutImageMultipartRequestBody defines body for AdminPutImage for multipart/form-data ContentType.
 type AdminPutImageMultipartRequestBody AdminPutImageMultipartBody
 
 // AdminPostOptionJSONRequestBody defines body for AdminPostOption for application/json ContentType.
-type AdminPostOptionJSONRequestBody = Option
+type AdminPostOptionJSONRequestBody = OptionRequest
 
 // AdminPutOptionJSONRequestBody defines body for AdminPutOption for application/json ContentType.
-type AdminPutOptionJSONRequestBody = Option
+type AdminPutOptionJSONRequestBody = OptionRequest
 
 // AdminPutPaymentJSONRequestBody defines body for AdminPutPayment for application/json ContentType.
-type AdminPutPaymentJSONRequestBody = Payment
+type AdminPutPaymentJSONRequestBody = PaymentRequest
 
 // AdminPutQuestionGroupJSONRequestBody defines body for AdminPutQuestionGroup for application/json ContentType.
-type AdminPutQuestionGroupJSONRequestBody = QuestionGroup
+type AdminPutQuestionGroupJSONRequestBody = QuestionGroupRequest
 
 // AdminPostQuestionJSONRequestBody defines body for AdminPostQuestion for application/json ContentType.
-type AdminPostQuestionJSONRequestBody = Question
+type AdminPostQuestionJSONRequestBody = QuestionRequest
 
 // AdminPutQuestionJSONRequestBody defines body for AdminPutQuestion for application/json ContentType.
-type AdminPutQuestionJSONRequestBody = Question
+type AdminPutQuestionJSONRequestBody = QuestionRequest
 
 // AdminPutRoomGroupJSONRequestBody defines body for AdminPutRoomGroup for application/json ContentType.
-type AdminPutRoomGroupJSONRequestBody = RoomGroup
+type AdminPutRoomGroupJSONRequestBody = RoomGroupRequest
 
 // AdminPostRoomJSONRequestBody defines body for AdminPostRoom for application/json ContentType.
-type AdminPostRoomJSONRequestBody = PostRoomRequest
+type AdminPostRoomJSONRequestBody = RoomRequest
 
 // AdminPutRoomJSONRequestBody defines body for AdminPutRoom for application/json ContentType.
-type AdminPutRoomJSONRequestBody = PostRoomRequest
+type AdminPutRoomJSONRequestBody = RoomRequest
 
 // AdminPutUserJSONRequestBody defines body for AdminPutUser for application/json ContentType.
-type AdminPutUserJSONRequestBody = User
+type AdminPutUserJSONRequestBody = UserRequest
 
 // AdminPostMessageJSONRequestBody defines body for AdminPostMessage for application/json ContentType.
-type AdminPostMessageJSONRequestBody = Message
+type AdminPostMessageJSONRequestBody = MessageRequest
 
 // PostAnswerJSONRequestBody defines body for PostAnswer for application/json ContentType.
-type PostAnswerJSONRequestBody = Answer
+type PostAnswerJSONRequestBody = AnswerRequest
 
 // PutAnswerJSONRequestBody defines body for PutAnswer for application/json ContentType.
-type PutAnswerJSONRequestBody = Answer
+type PutAnswerJSONRequestBody = AnswerRequest
 
 // PostEventJSONRequestBody defines body for PostEvent for application/json ContentType.
-type PostEventJSONRequestBody = Event
+type PostEventJSONRequestBody = EventRequest
 
 // PutEventJSONRequestBody defines body for PutEvent for application/json ContentType.
-type PutEventJSONRequestBody = Event
+type PutEventJSONRequestBody = EventRequest
 
 // PutReactionJSONRequestBody defines body for PutReaction for application/json ContentType.
-type PutReactionJSONRequestBody = RollCallReaction
+type PutReactionJSONRequestBody = RollCallReactionRequest
 
 // PostRollCallReactionJSONRequestBody defines body for PostRollCallReaction for application/json ContentType.
-type PostRollCallReactionJSONRequestBody = RollCallReaction
+type PostRollCallReactionJSONRequestBody = RollCallReactionRequest
 
-// AsFreeTextAnswer returns the union data inside the Answer as a FreeTextAnswer
-func (t Answer) AsFreeTextAnswer() (FreeTextAnswer, error) {
-	var body FreeTextAnswer
+// AsFreeTextAnswerRequest returns the union data inside the AnswerRequest as a FreeTextAnswerRequest
+func (t AnswerRequest) AsFreeTextAnswerRequest() (FreeTextAnswerRequest, error) {
+	var body FreeTextAnswerRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromFreeTextAnswer overwrites any union data inside the Answer as the provided FreeTextAnswer
-func (t *Answer) FromFreeTextAnswer(v FreeTextAnswer) error {
+// FromFreeTextAnswerRequest overwrites any union data inside the AnswerRequest as the provided FreeTextAnswerRequest
+func (t *AnswerRequest) FromFreeTextAnswerRequest(v FreeTextAnswerRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeFreeTextAnswer performs a merge with any union data inside the Answer, using the provided FreeTextAnswer
-func (t *Answer) MergeFreeTextAnswer(v FreeTextAnswer) error {
+// MergeFreeTextAnswerRequest performs a merge with any union data inside the AnswerRequest, using the provided FreeTextAnswerRequest
+func (t *AnswerRequest) MergeFreeTextAnswerRequest(v FreeTextAnswerRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -752,22 +985,22 @@ func (t *Answer) MergeFreeTextAnswer(v FreeTextAnswer) error {
 	return err
 }
 
-// AsFreeNumberAnswer returns the union data inside the Answer as a FreeNumberAnswer
-func (t Answer) AsFreeNumberAnswer() (FreeNumberAnswer, error) {
-	var body FreeNumberAnswer
+// AsFreeNumberAnswerRequest returns the union data inside the AnswerRequest as a FreeNumberAnswerRequest
+func (t AnswerRequest) AsFreeNumberAnswerRequest() (FreeNumberAnswerRequest, error) {
+	var body FreeNumberAnswerRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromFreeNumberAnswer overwrites any union data inside the Answer as the provided FreeNumberAnswer
-func (t *Answer) FromFreeNumberAnswer(v FreeNumberAnswer) error {
+// FromFreeNumberAnswerRequest overwrites any union data inside the AnswerRequest as the provided FreeNumberAnswerRequest
+func (t *AnswerRequest) FromFreeNumberAnswerRequest(v FreeNumberAnswerRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeFreeNumberAnswer performs a merge with any union data inside the Answer, using the provided FreeNumberAnswer
-func (t *Answer) MergeFreeNumberAnswer(v FreeNumberAnswer) error {
+// MergeFreeNumberAnswerRequest performs a merge with any union data inside the AnswerRequest, using the provided FreeNumberAnswerRequest
+func (t *AnswerRequest) MergeFreeNumberAnswerRequest(v FreeNumberAnswerRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -778,22 +1011,22 @@ func (t *Answer) MergeFreeNumberAnswer(v FreeNumberAnswer) error {
 	return err
 }
 
-// AsSingleChoiceAnswer returns the union data inside the Answer as a SingleChoiceAnswer
-func (t Answer) AsSingleChoiceAnswer() (SingleChoiceAnswer, error) {
-	var body SingleChoiceAnswer
+// AsSingleChoiceAnswerRequest returns the union data inside the AnswerRequest as a SingleChoiceAnswerRequest
+func (t AnswerRequest) AsSingleChoiceAnswerRequest() (SingleChoiceAnswerRequest, error) {
+	var body SingleChoiceAnswerRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromSingleChoiceAnswer overwrites any union data inside the Answer as the provided SingleChoiceAnswer
-func (t *Answer) FromSingleChoiceAnswer(v SingleChoiceAnswer) error {
+// FromSingleChoiceAnswerRequest overwrites any union data inside the AnswerRequest as the provided SingleChoiceAnswerRequest
+func (t *AnswerRequest) FromSingleChoiceAnswerRequest(v SingleChoiceAnswerRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeSingleChoiceAnswer performs a merge with any union data inside the Answer, using the provided SingleChoiceAnswer
-func (t *Answer) MergeSingleChoiceAnswer(v SingleChoiceAnswer) error {
+// MergeSingleChoiceAnswerRequest performs a merge with any union data inside the AnswerRequest, using the provided SingleChoiceAnswerRequest
+func (t *AnswerRequest) MergeSingleChoiceAnswerRequest(v SingleChoiceAnswerRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -804,22 +1037,22 @@ func (t *Answer) MergeSingleChoiceAnswer(v SingleChoiceAnswer) error {
 	return err
 }
 
-// AsMultipleChoiceAnswer returns the union data inside the Answer as a MultipleChoiceAnswer
-func (t Answer) AsMultipleChoiceAnswer() (MultipleChoiceAnswer, error) {
-	var body MultipleChoiceAnswer
+// AsMultipleChoiceAnswerRequest returns the union data inside the AnswerRequest as a MultipleChoiceAnswerRequest
+func (t AnswerRequest) AsMultipleChoiceAnswerRequest() (MultipleChoiceAnswerRequest, error) {
+	var body MultipleChoiceAnswerRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromMultipleChoiceAnswer overwrites any union data inside the Answer as the provided MultipleChoiceAnswer
-func (t *Answer) FromMultipleChoiceAnswer(v MultipleChoiceAnswer) error {
+// FromMultipleChoiceAnswerRequest overwrites any union data inside the AnswerRequest as the provided MultipleChoiceAnswerRequest
+func (t *AnswerRequest) FromMultipleChoiceAnswerRequest(v MultipleChoiceAnswerRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeMultipleChoiceAnswer performs a merge with any union data inside the Answer, using the provided MultipleChoiceAnswer
-func (t *Answer) MergeMultipleChoiceAnswer(v MultipleChoiceAnswer) error {
+// MergeMultipleChoiceAnswerRequest performs a merge with any union data inside the AnswerRequest, using the provided MultipleChoiceAnswerRequest
+func (t *AnswerRequest) MergeMultipleChoiceAnswerRequest(v MultipleChoiceAnswerRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -830,32 +1063,32 @@ func (t *Answer) MergeMultipleChoiceAnswer(v MultipleChoiceAnswer) error {
 	return err
 }
 
-func (t Answer) MarshalJSON() ([]byte, error) {
+func (t AnswerRequest) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *Answer) UnmarshalJSON(b []byte) error {
+func (t *AnswerRequest) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
 
-// AsDurationEvent returns the union data inside the Event as a DurationEvent
-func (t Event) AsDurationEvent() (DurationEvent, error) {
-	var body DurationEvent
+// AsFreeTextAnswerResponse returns the union data inside the AnswerResponse as a FreeTextAnswerResponse
+func (t AnswerResponse) AsFreeTextAnswerResponse() (FreeTextAnswerResponse, error) {
+	var body FreeTextAnswerResponse
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromDurationEvent overwrites any union data inside the Event as the provided DurationEvent
-func (t *Event) FromDurationEvent(v DurationEvent) error {
+// FromFreeTextAnswerResponse overwrites any union data inside the AnswerResponse as the provided FreeTextAnswerResponse
+func (t *AnswerResponse) FromFreeTextAnswerResponse(v FreeTextAnswerResponse) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeDurationEvent performs a merge with any union data inside the Event, using the provided DurationEvent
-func (t *Event) MergeDurationEvent(v DurationEvent) error {
+// MergeFreeTextAnswerResponse performs a merge with any union data inside the AnswerResponse, using the provided FreeTextAnswerResponse
+func (t *AnswerResponse) MergeFreeTextAnswerResponse(v FreeTextAnswerResponse) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -866,22 +1099,22 @@ func (t *Event) MergeDurationEvent(v DurationEvent) error {
 	return err
 }
 
-// AsOfficialEvent returns the union data inside the Event as a OfficialEvent
-func (t Event) AsOfficialEvent() (OfficialEvent, error) {
-	var body OfficialEvent
+// AsFreeNumberAnswerResponse returns the union data inside the AnswerResponse as a FreeNumberAnswerResponse
+func (t AnswerResponse) AsFreeNumberAnswerResponse() (FreeNumberAnswerResponse, error) {
+	var body FreeNumberAnswerResponse
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromOfficialEvent overwrites any union data inside the Event as the provided OfficialEvent
-func (t *Event) FromOfficialEvent(v OfficialEvent) error {
+// FromFreeNumberAnswerResponse overwrites any union data inside the AnswerResponse as the provided FreeNumberAnswerResponse
+func (t *AnswerResponse) FromFreeNumberAnswerResponse(v FreeNumberAnswerResponse) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeOfficialEvent performs a merge with any union data inside the Event, using the provided OfficialEvent
-func (t *Event) MergeOfficialEvent(v OfficialEvent) error {
+// MergeFreeNumberAnswerResponse performs a merge with any union data inside the AnswerResponse, using the provided FreeNumberAnswerResponse
+func (t *AnswerResponse) MergeFreeNumberAnswerResponse(v FreeNumberAnswerResponse) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -892,22 +1125,22 @@ func (t *Event) MergeOfficialEvent(v OfficialEvent) error {
 	return err
 }
 
-// AsMomentEvent returns the union data inside the Event as a MomentEvent
-func (t Event) AsMomentEvent() (MomentEvent, error) {
-	var body MomentEvent
+// AsSingleChoiceAnswerResponse returns the union data inside the AnswerResponse as a SingleChoiceAnswerResponse
+func (t AnswerResponse) AsSingleChoiceAnswerResponse() (SingleChoiceAnswerResponse, error) {
+	var body SingleChoiceAnswerResponse
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromMomentEvent overwrites any union data inside the Event as the provided MomentEvent
-func (t *Event) FromMomentEvent(v MomentEvent) error {
+// FromSingleChoiceAnswerResponse overwrites any union data inside the AnswerResponse as the provided SingleChoiceAnswerResponse
+func (t *AnswerResponse) FromSingleChoiceAnswerResponse(v SingleChoiceAnswerResponse) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeMomentEvent performs a merge with any union data inside the Event, using the provided MomentEvent
-func (t *Event) MergeMomentEvent(v MomentEvent) error {
+// MergeSingleChoiceAnswerResponse performs a merge with any union data inside the AnswerResponse, using the provided SingleChoiceAnswerResponse
+func (t *AnswerResponse) MergeSingleChoiceAnswerResponse(v SingleChoiceAnswerResponse) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -918,32 +1151,58 @@ func (t *Event) MergeMomentEvent(v MomentEvent) error {
 	return err
 }
 
-func (t Event) MarshalJSON() ([]byte, error) {
+// AsMultipleChoiceAnswerResponse returns the union data inside the AnswerResponse as a MultipleChoiceAnswerResponse
+func (t AnswerResponse) AsMultipleChoiceAnswerResponse() (MultipleChoiceAnswerResponse, error) {
+	var body MultipleChoiceAnswerResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMultipleChoiceAnswerResponse overwrites any union data inside the AnswerResponse as the provided MultipleChoiceAnswerResponse
+func (t *AnswerResponse) FromMultipleChoiceAnswerResponse(v MultipleChoiceAnswerResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMultipleChoiceAnswerResponse performs a merge with any union data inside the AnswerResponse, using the provided MultipleChoiceAnswerResponse
+func (t *AnswerResponse) MergeMultipleChoiceAnswerResponse(v MultipleChoiceAnswerResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AnswerResponse) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *Event) UnmarshalJSON(b []byte) error {
+func (t *AnswerResponse) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
 
-// AsFreeTextQuestion returns the union data inside the Question as a FreeTextQuestion
-func (t Question) AsFreeTextQuestion() (FreeTextQuestion, error) {
-	var body FreeTextQuestion
+// AsDurationEventRequest returns the union data inside the EventRequest as a DurationEventRequest
+func (t EventRequest) AsDurationEventRequest() (DurationEventRequest, error) {
+	var body DurationEventRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromFreeTextQuestion overwrites any union data inside the Question as the provided FreeTextQuestion
-func (t *Question) FromFreeTextQuestion(v FreeTextQuestion) error {
+// FromDurationEventRequest overwrites any union data inside the EventRequest as the provided DurationEventRequest
+func (t *EventRequest) FromDurationEventRequest(v DurationEventRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeFreeTextQuestion performs a merge with any union data inside the Question, using the provided FreeTextQuestion
-func (t *Question) MergeFreeTextQuestion(v FreeTextQuestion) error {
+// MergeDurationEventRequest performs a merge with any union data inside the EventRequest, using the provided DurationEventRequest
+func (t *EventRequest) MergeDurationEventRequest(v DurationEventRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -954,22 +1213,22 @@ func (t *Question) MergeFreeTextQuestion(v FreeTextQuestion) error {
 	return err
 }
 
-// AsFreeNumberQuestion returns the union data inside the Question as a FreeNumberQuestion
-func (t Question) AsFreeNumberQuestion() (FreeNumberQuestion, error) {
-	var body FreeNumberQuestion
+// AsOfficialEventRequest returns the union data inside the EventRequest as a OfficialEventRequest
+func (t EventRequest) AsOfficialEventRequest() (OfficialEventRequest, error) {
+	var body OfficialEventRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromFreeNumberQuestion overwrites any union data inside the Question as the provided FreeNumberQuestion
-func (t *Question) FromFreeNumberQuestion(v FreeNumberQuestion) error {
+// FromOfficialEventRequest overwrites any union data inside the EventRequest as the provided OfficialEventRequest
+func (t *EventRequest) FromOfficialEventRequest(v OfficialEventRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeFreeNumberQuestion performs a merge with any union data inside the Question, using the provided FreeNumberQuestion
-func (t *Question) MergeFreeNumberQuestion(v FreeNumberQuestion) error {
+// MergeOfficialEventRequest performs a merge with any union data inside the EventRequest, using the provided OfficialEventRequest
+func (t *EventRequest) MergeOfficialEventRequest(v OfficialEventRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -980,22 +1239,22 @@ func (t *Question) MergeFreeNumberQuestion(v FreeNumberQuestion) error {
 	return err
 }
 
-// AsSingleChoiceQuestion returns the union data inside the Question as a SingleChoiceQuestion
-func (t Question) AsSingleChoiceQuestion() (SingleChoiceQuestion, error) {
-	var body SingleChoiceQuestion
+// AsMomentEventRequest returns the union data inside the EventRequest as a MomentEventRequest
+func (t EventRequest) AsMomentEventRequest() (MomentEventRequest, error) {
+	var body MomentEventRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromSingleChoiceQuestion overwrites any union data inside the Question as the provided SingleChoiceQuestion
-func (t *Question) FromSingleChoiceQuestion(v SingleChoiceQuestion) error {
+// FromMomentEventRequest overwrites any union data inside the EventRequest as the provided MomentEventRequest
+func (t *EventRequest) FromMomentEventRequest(v MomentEventRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeSingleChoiceQuestion performs a merge with any union data inside the Question, using the provided SingleChoiceQuestion
-func (t *Question) MergeSingleChoiceQuestion(v SingleChoiceQuestion) error {
+// MergeMomentEventRequest performs a merge with any union data inside the EventRequest, using the provided MomentEventRequest
+func (t *EventRequest) MergeMomentEventRequest(v MomentEventRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1006,38 +1265,328 @@ func (t *Question) MergeSingleChoiceQuestion(v SingleChoiceQuestion) error {
 	return err
 }
 
-// AsMultipleChoiceQuestion returns the union data inside the Question as a MultipleChoiceQuestion
-func (t Question) AsMultipleChoiceQuestion() (MultipleChoiceQuestion, error) {
-	var body MultipleChoiceQuestion
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromMultipleChoiceQuestion overwrites any union data inside the Question as the provided MultipleChoiceQuestion
-func (t *Question) FromMultipleChoiceQuestion(v MultipleChoiceQuestion) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeMultipleChoiceQuestion performs a merge with any union data inside the Question, using the provided MultipleChoiceQuestion
-func (t *Question) MergeMultipleChoiceQuestion(v MultipleChoiceQuestion) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t Question) MarshalJSON() ([]byte, error) {
+func (t EventRequest) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *Question) UnmarshalJSON(b []byte) error {
+func (t *EventRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsDurationEventResponse returns the union data inside the EventResponse as a DurationEventResponse
+func (t EventResponse) AsDurationEventResponse() (DurationEventResponse, error) {
+	var body DurationEventResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromDurationEventResponse overwrites any union data inside the EventResponse as the provided DurationEventResponse
+func (t *EventResponse) FromDurationEventResponse(v DurationEventResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeDurationEventResponse performs a merge with any union data inside the EventResponse, using the provided DurationEventResponse
+func (t *EventResponse) MergeDurationEventResponse(v DurationEventResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsOfficialEventResponse returns the union data inside the EventResponse as a OfficialEventResponse
+func (t EventResponse) AsOfficialEventResponse() (OfficialEventResponse, error) {
+	var body OfficialEventResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOfficialEventResponse overwrites any union data inside the EventResponse as the provided OfficialEventResponse
+func (t *EventResponse) FromOfficialEventResponse(v OfficialEventResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOfficialEventResponse performs a merge with any union data inside the EventResponse, using the provided OfficialEventResponse
+func (t *EventResponse) MergeOfficialEventResponse(v OfficialEventResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsMomentEventResponse returns the union data inside the EventResponse as a MomentEventResponse
+func (t EventResponse) AsMomentEventResponse() (MomentEventResponse, error) {
+	var body MomentEventResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMomentEventResponse overwrites any union data inside the EventResponse as the provided MomentEventResponse
+func (t *EventResponse) FromMomentEventResponse(v MomentEventResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMomentEventResponse performs a merge with any union data inside the EventResponse, using the provided MomentEventResponse
+func (t *EventResponse) MergeMomentEventResponse(v MomentEventResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t EventResponse) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *EventResponse) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsFreeTextQuestionRequest returns the union data inside the QuestionRequest as a FreeTextQuestionRequest
+func (t QuestionRequest) AsFreeTextQuestionRequest() (FreeTextQuestionRequest, error) {
+	var body FreeTextQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFreeTextQuestionRequest overwrites any union data inside the QuestionRequest as the provided FreeTextQuestionRequest
+func (t *QuestionRequest) FromFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFreeTextQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided FreeTextQuestionRequest
+func (t *QuestionRequest) MergeFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFreeNumberQuestionRequest returns the union data inside the QuestionRequest as a FreeNumberQuestionRequest
+func (t QuestionRequest) AsFreeNumberQuestionRequest() (FreeNumberQuestionRequest, error) {
+	var body FreeNumberQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFreeNumberQuestionRequest overwrites any union data inside the QuestionRequest as the provided FreeNumberQuestionRequest
+func (t *QuestionRequest) FromFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFreeNumberQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided FreeNumberQuestionRequest
+func (t *QuestionRequest) MergeFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSingleChoiceQuestionRequest returns the union data inside the QuestionRequest as a SingleChoiceQuestionRequest
+func (t QuestionRequest) AsSingleChoiceQuestionRequest() (SingleChoiceQuestionRequest, error) {
+	var body SingleChoiceQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSingleChoiceQuestionRequest overwrites any union data inside the QuestionRequest as the provided SingleChoiceQuestionRequest
+func (t *QuestionRequest) FromSingleChoiceQuestionRequest(v SingleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSingleChoiceQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided SingleChoiceQuestionRequest
+func (t *QuestionRequest) MergeSingleChoiceQuestionRequest(v SingleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsMultipleChoiceQuestionRequest returns the union data inside the QuestionRequest as a MultipleChoiceQuestionRequest
+func (t QuestionRequest) AsMultipleChoiceQuestionRequest() (MultipleChoiceQuestionRequest, error) {
+	var body MultipleChoiceQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMultipleChoiceQuestionRequest overwrites any union data inside the QuestionRequest as the provided MultipleChoiceQuestionRequest
+func (t *QuestionRequest) FromMultipleChoiceQuestionRequest(v MultipleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMultipleChoiceQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided MultipleChoiceQuestionRequest
+func (t *QuestionRequest) MergeMultipleChoiceQuestionRequest(v MultipleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t QuestionRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *QuestionRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsFreeTextQuestionResponse returns the union data inside the QuestionResponse as a FreeTextQuestionResponse
+func (t QuestionResponse) AsFreeTextQuestionResponse() (FreeTextQuestionResponse, error) {
+	var body FreeTextQuestionResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFreeTextQuestionResponse overwrites any union data inside the QuestionResponse as the provided FreeTextQuestionResponse
+func (t *QuestionResponse) FromFreeTextQuestionResponse(v FreeTextQuestionResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFreeTextQuestionResponse performs a merge with any union data inside the QuestionResponse, using the provided FreeTextQuestionResponse
+func (t *QuestionResponse) MergeFreeTextQuestionResponse(v FreeTextQuestionResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFreeNumberQuestionResponse returns the union data inside the QuestionResponse as a FreeNumberQuestionResponse
+func (t QuestionResponse) AsFreeNumberQuestionResponse() (FreeNumberQuestionResponse, error) {
+	var body FreeNumberQuestionResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFreeNumberQuestionResponse overwrites any union data inside the QuestionResponse as the provided FreeNumberQuestionResponse
+func (t *QuestionResponse) FromFreeNumberQuestionResponse(v FreeNumberQuestionResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFreeNumberQuestionResponse performs a merge with any union data inside the QuestionResponse, using the provided FreeNumberQuestionResponse
+func (t *QuestionResponse) MergeFreeNumberQuestionResponse(v FreeNumberQuestionResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsSingleChoiceQuestionResponse returns the union data inside the QuestionResponse as a SingleChoiceQuestionResponse
+func (t QuestionResponse) AsSingleChoiceQuestionResponse() (SingleChoiceQuestionResponse, error) {
+	var body SingleChoiceQuestionResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromSingleChoiceQuestionResponse overwrites any union data inside the QuestionResponse as the provided SingleChoiceQuestionResponse
+func (t *QuestionResponse) FromSingleChoiceQuestionResponse(v SingleChoiceQuestionResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeSingleChoiceQuestionResponse performs a merge with any union data inside the QuestionResponse, using the provided SingleChoiceQuestionResponse
+func (t *QuestionResponse) MergeSingleChoiceQuestionResponse(v SingleChoiceQuestionResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsMultipleChoiceQuestionResponse returns the union data inside the QuestionResponse as a MultipleChoiceQuestionResponse
+func (t QuestionResponse) AsMultipleChoiceQuestionResponse() (MultipleChoiceQuestionResponse, error) {
+	var body MultipleChoiceQuestionResponse
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMultipleChoiceQuestionResponse overwrites any union data inside the QuestionResponse as the provided MultipleChoiceQuestionResponse
+func (t *QuestionResponse) FromMultipleChoiceQuestionResponse(v MultipleChoiceQuestionResponse) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMultipleChoiceQuestionResponse performs a merge with any union data inside the QuestionResponse, using the provided MultipleChoiceQuestionResponse
+func (t *QuestionResponse) MergeMultipleChoiceQuestionResponse(v MultipleChoiceQuestionResponse) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t QuestionResponse) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *QuestionResponse) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

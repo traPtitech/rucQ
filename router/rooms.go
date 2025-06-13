@@ -18,7 +18,7 @@ func (s *Server) GetRooms(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res []Room
+	var res []RoomResponse
 
 	if err := copier.Copy(&res, &rooms); err != nil {
 		e.Logger().Errorf("failed to copy models to response: %v", err)
@@ -84,7 +84,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params AdminPostRoomParams) error
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res Room
+	var res RoomResponse
 
 	if err := copier.Copy(&res, &roomModel); err != nil {
 		e.Logger().Errorf("failed to copy model to response: %v", err)
@@ -156,7 +156,7 @@ func (s *Server) AdminPutRoom(e echo.Context, roomId RoomId, params AdminPutRoom
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res Room
+	var res RoomResponse
 
 	if err := copier.Copy(&res, roomModel); err != nil {
 		e.Logger().Errorf("failed to copy model to response: %v", err)
