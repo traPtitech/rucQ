@@ -5,6 +5,7 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
+
 	"github.com/traP-jp/rucQ/backend/repository"
 )
 
@@ -49,22 +50,22 @@ func (s *Server) GetMyAnswer(e echo.Context, questionID QuestionId, params GetMy
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if answer.Content != nil {
-		// TODO: model.QuestionTypeMultiple と model.QuestionTypeSingle の実装をapi.gen.goの型定義に合わせて修正する
-		// if question.Type == string(QuestionTypeMultiple) {
-		//  if err := res.Content.FromAnswerContent1(*answer.Content); err != nil {
-		//   e.Logger().Errorf("failed to convert content: %v", err)
-		//
-		//   return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		//  }
-		// } else {
-		//  if err := res.Content.FromAnswerContent0((*answer.Content)[0]); err != nil {
-		//   e.Logger().Errorf("failed to convert content: %v", err)
-		//
-		//   return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		//  }
-		// }
-	}
+	// if answer.Content != nil {
+	// 	// TODO: model.QuestionTypeMultiple と model.QuestionTypeSingle の実装をapi.gen.goの型定義に合わせて修正する
+	// 	if question.Type == string(QuestionTypeMultiple) {
+	// 	 if err := res.Content.FromAnswerContent1(*answer.Content); err != nil {
+	// 	  e.Logger().Errorf("failed to convert content: %v", err)
+	//
+	// 	  return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	// 	 }
+	// 	} else {
+	// 	 if err := res.Content.FromAnswerContent0((*answer.Content)[0]); err != nil {
+	// 	  e.Logger().Errorf("failed to convert content: %v", err)
+	//
+	// 	  return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	// 	 }
+	// 	}
+	// }
 
 	// res.UserTraqId = *params.XForwardedUser // TODO: AnswerBody に UserTraqId がないためコメントアウト
 
