@@ -6,4 +6,6 @@ type RoomGroup struct {
 	gorm.Model
 	Name  string
 	Rooms []Room
+
+	CampID uint
 }

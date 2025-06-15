@@ -14,6 +14,6 @@ type Camp struct {
 	Payments       []Payment
 	Events         []Event
 	QuestionGroups []QuestionGroup
-	Rooms          []Room
+	RoomGroups     []RoomGroup
 	Images         []Image
 }

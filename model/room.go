@@ -4,8 +4,8 @@ import "gorm.io/gorm"
 
 type Room struct {
 	gorm.Model
-	Name        string
-	CampID      uint
+	Name    string
+	Members []User `gorm:"many2many:room_members"`
+
 	RoomGroupID uint
-	Members     []User `gorm:"many2many:room_members;ForeignKey:id;References:id"`
 }

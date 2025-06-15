@@ -4,8 +4,9 @@ import (
 	"errors"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/traP-jp/rucQ/backend/model"
 	"gorm.io/gorm"
+
+	"github.com/traP-jp/rucQ/backend/model"
 )
 
 func (r *Repository) GetRooms() ([]model.Room, error) {
@@ -53,8 +54,7 @@ func (r *Repository) UpdateRoom(room *model.Room) error {
 		}
 
 		return tx.Model(room).Updates(&model.Room{
-			Name:   room.Name,
-			CampID: room.CampID,
+			Name: room.Name,
 		}).Error
 	})
 }
