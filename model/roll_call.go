@@ -8,4 +8,6 @@ type RollCall struct {
 	Description string
 	Options     []string `gorm:"serializer:json"`
 	Subjects    []User   `gorm:"many2many:roll_call_subjects;"`
+
+	Reactions []RollCallReaction
 }
