@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"net/http"
 	"os"
 	"time"
@@ -41,18 +40,18 @@ func (s *Server) AdminPostMessage(e echo.Context, userId UserId, params AdminPos
 		}
 		postMessageRequest := *traq.NewPostMessageRequest(req.Content)
 		postMessageRequest.SetEmbed(true)
-		targetUser, err := s.repo.GetOrCreateUser(string(userId))
-		if err != nil {
-			e.Logger().Errorf("failed to get or create user: %v", err)
-			return
-		}
+		// targetUser, err := s.repo.GetOrCreateUser(string(userId))
+		// if err != nil {
+		// 	e.Logger().Errorf("failed to get or create user: %v", err)
+		// 	return
+		// }
 		configuration := traq.NewConfiguration()
 		configuration.AddDefaultHeader("Authorization", "Bearer "+os.Getenv("BOT_ACCESS_TOKEN"))
-		apiClient := traq.NewAPIClient(configuration)
-		_, r, err := apiClient.MessageApi.PostDirectMessage(context.Background(), targetUser.TraqUuid).PostMessageRequest(postMessageRequest).Execute()
-		if err != nil {
-			e.Logger().Errorf("error when calling MessageApi.PostDirectMessage: %v\nfull HTTP response: %v", err, r)
-		}
+		// apiClient := traq.NewAPIClient(configuration)
+		// _, r, err := apiClient.MessageApi.PostDirectMessage(context.Background(), targetUser.TraqUUID).PostMessageRequest(postMessageRequest).Execute()
+		// if err != nil {
+		// 	e.Logger().Errorf("error when calling MessageApi.PostDirectMessage: %v\nfull HTTP response: %v", err, r)
+		// }
 	}()
 
 	return e.NoContent(http.StatusAccepted)
