@@ -7,7 +7,7 @@ type Camp struct {
 	DisplayID          string
 	Name               string
 	Description        string
-	IsDraft            bool `gorm:"index"`
+	IsDraft            bool
 	IsPaymentOpen      bool
 	IsRegistrationOpen bool
 
