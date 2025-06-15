@@ -24,7 +24,6 @@ func GetAllModels() []any {
 		&Answer{},
 		&Room{},
 		&RoomGroup{},
-		&Dashboard{},
 		&Image{},
 		&Message{},
 		&RollCall{},
