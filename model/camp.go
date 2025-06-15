@@ -15,4 +15,5 @@ type Camp struct {
 	Events         []Event
 	QuestionGroups []QuestionGroup
 	Rooms          []Room
+	Images         []Image
 }
