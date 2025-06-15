@@ -16,5 +16,6 @@ type User struct {
 	TraqUuid  string
 
 	Payments        []Payment
-	OrganizedEvents []Event `gorm:"foreignKey:OrganizerID"`
+	OrganizedEvents []Event   `gorm:"foreignKey:OrganizerID"`
+	TargetMessages  []Message `gorm:"foreignKey:TargetUserID"`
 }

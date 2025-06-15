@@ -8,6 +8,7 @@ import (
 
 type Message struct {
 	gorm.Model
-	Content string
-	SendAt  time.Time
+	TargetUserID string
+	Content      string
+	SendAt       time.Time
 }
