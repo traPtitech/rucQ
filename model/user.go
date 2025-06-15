@@ -15,5 +15,6 @@ type User struct {
 	Answers   []Answer
 	TraqUuid  string
 
-	Payments []Payment
+	Payments        []Payment
+	OrganizedEvents []Event `gorm:"foreignKey:OrganizerID"`
 }

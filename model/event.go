@@ -6,16 +6,24 @@ import (
 	"gorm.io/gorm"
 )
 
+type EventType string
+
+const (
+	EventTypeDuration EventType = "duration"
+	EventTypeMoment   EventType = "moment"
+	EventTypeOfficial EventType = "official"
+)
+
 type Event struct {
 	gorm.Model
-	Name            string
-	Description     string
-	Location        string
-	TimeStart       *time.Time
-	TimeEnd         *time.Time
-	Time            *time.Time // For moment events
-	CampID          uint
-	OrganizerTraqID string
-	Type            string // "duration", "moment", "official"
-	DisplayColor    string
+	Type         EventType `gorm:"type:enum('duration', 'moment', 'official')"`
+	Name         string
+	Description  string
+	Location     string
+	TimeStart    time.Time // MomentEventのtimeもTimeStartとして扱う
+	TimeEnd      *time.Time
+	OrganizerID  *string
+	DisplayColor *string
+
+	CampID uint
 }
