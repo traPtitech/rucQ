@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/traP-jp/rucQ/backend/model"
 	traq "github.com/traPtitech/go-traq"
+
+	"github.com/traP-jp/rucQ/backend/model"
 )
 
 func (r *Repository) GetOrCreateUser(traqID string) (*model.User, error) {
@@ -17,9 +18,9 @@ func (r *Repository) GetOrCreateUser(traqID string) (*model.User, error) {
 		return nil, err
 	}
 
-	if user.TraqUuid != "" {
-		return &user, nil
-	}
+	// if user.TraqUUID != "" {
+	// 	return &user, nil
+	// }
 
 	configuration := traq.NewConfiguration()
 	apiClient := traq.NewAPIClient(configuration)
@@ -35,8 +36,8 @@ func (r *Repository) GetOrCreateUser(traqID string) (*model.User, error) {
 	}
 
 	// 追加、更新するユーザーを作成
-	user.TraqUuid = usersUuid[0].Id
-	user.TraqID = traqID
+	// user.TraqUUID = usersUuid[0].Id
+	user.ID = traqID
 
 	if err := r.db.Save(&user).Error; err != nil {
 		return nil, err
@@ -52,7 +53,7 @@ func (r *Repository) GetUserTraqID(ID uint) (string, error) {
 		return "", err
 	}
 
-	return user.TraqID, nil
+	return user.ID, nil
 }
 
 func (r *Repository) GetStaffs() ([]model.User, error) {

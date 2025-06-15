@@ -5,6 +5,7 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
+
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
@@ -68,7 +69,7 @@ func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams
 		}
 	*/
 
-	eventModel.OrganizerTraqID = *organizerTraqID
+	eventModel.OrganizerID = organizerTraqID
 
 	if err := s.repo.CreateEvent(&eventModel); err != nil {
 		e.Logger().Errorf("failed to create event: %v", err)
@@ -122,7 +123,7 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if user.TraqID != updateEvent.OrganizerTraqID && !user.IsStaff { // イベントの主催者orスタッフでない場合は更新できない
+	if user.ID != *updateEvent.OrganizerID && !user.IsStaff { // イベントの主催者orスタッフでない場合は更新できない
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -170,7 +171,7 @@ func (s *Server) DeleteEvent(e echo.Context, eventID EventId, params DeleteEvent
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if user.TraqID != deleteEvent.OrganizerTraqID && !user.IsStaff { // イベントの主催者でない場合は削除できない
+	if user.ID != *deleteEvent.OrganizerID && !user.IsStaff { // イベントの主催者でない場合は削除できない
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 

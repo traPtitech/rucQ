@@ -1,13 +1,22 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type User struct {
-	gorm.Model
-	TraqID   string `gorm:"primaryKey;size:32"` // 主キー
-	IsStaff  bool   `gorm:"index"`
-	Answers  []Answer
-	TraqUuid string
+	ID        string `gorm:"primaryKey;size:32"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+	IsStaff   bool           `gorm:"index"`
+	TraqUUID  uuid.UUID
 
-	Budgets []Budget
+	Answers         []Answer
+	Payments        []Payment
+	OrganizedEvents []Event   `gorm:"foreignKey:OrganizerID"`
+	TargetMessages  []Message `gorm:"foreignKey:TargetUserID"`
 }

@@ -17,11 +17,5 @@ func Migrate(db *gorm.DB) error {
 }
 
 func getAllMigrations() []*gormigrate.Migration {
-	return []*gormigrate.Migration{
-		v1(),
-		v2(),
-		v3(),
-		v4(),
-		v5(), // イベント参加者の追加
-	}
+	return []*gormigrate.Migration{}
 }

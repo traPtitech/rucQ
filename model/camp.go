@@ -4,13 +4,16 @@ import "gorm.io/gorm"
 
 type Camp struct {
 	gorm.Model
-	DisplayID   string
-	Name        string
-	Description string
-	IsDraft     bool `gorm:"index"`
+	DisplayID          string
+	Name               string
+	Description        string
+	IsDraft            bool
+	IsPaymentOpen      bool
+	IsRegistrationOpen bool
 
-	Budgets        []Budget
+	Payments       []Payment
 	Events         []Event
 	QuestionGroups []QuestionGroup
-	Rooms          []Room
+	RoomGroups     []RoomGroup
+	Images         []Image
 }
