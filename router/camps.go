@@ -203,6 +203,26 @@ func (s *Server) PostCampRegister(e echo.Context, campID CampId, params PostCamp
 	return e.NoContent(http.StatusNoContent)
 }
 
+// DeleteCampRegister 合宿登録を取り消し
+func (s *Server) DeleteCampRegister(e echo.Context, campID CampId, params DeleteCampRegisterParams) error {
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// TODO: Forbidden、 Not found エラーのハンドリングを追加
+	if err := s.repo.RemoveCampParticipant(e.Request().Context(), uint(campID), user); err != nil {
+		e.Logger().Errorf("failed to remove camp participant: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.NoContent(http.StatusNoContent)
+}
+
 // GetCampParticipants 合宿の参加者一覧を取得
 func (s *Server) GetCampParticipants(e echo.Context, campID CampId) error {
 	participants, err := s.repo.GetCampParticipants(e.Request().Context(), uint(campID))
