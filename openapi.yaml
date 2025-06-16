@@ -280,7 +280,7 @@ paths:
       summary: 自分の合宿参加情報を取得
       tags:
         - Users
-      operationId: getMyCamp
+      operationId: getDashboard
       parameters:
         - $ref: "#/components/parameters/CampId"
         - $ref: "#/components/parameters/X-Forwarded-User"
