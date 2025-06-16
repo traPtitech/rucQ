@@ -1,6 +1,7 @@
 package gorm
 
 import (
+	"context"
 	"errors"
 
 	"github.com/go-sql-driver/mysql"
@@ -57,4 +58,14 @@ func (r *Repository) UpdateCamp(campID uint, camp *model.Camp) error {
 	}
 
 	return nil
+}
+
+func (r *Repository) DeleteCamp(ctx context.Context, campID uint) error {
+	_, err := gorm.G[*model.Camp](r.db).Where(&model.Camp{
+		Model: gorm.Model{
+			ID: campID,
+		},
+	}).Delete(ctx)
+
+	return err
 }

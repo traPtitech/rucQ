@@ -1,10 +1,15 @@
 package repository
 
-import "github.com/traP-jp/rucQ/backend/model"
+import (
+	"context"
+
+	"github.com/traP-jp/rucQ/backend/model"
+)
 
 type CampRepository interface {
 	CreateCamp(camp *model.Camp) error
 	GetCamps() ([]model.Camp, error)
 	GetCampByID(id uint) (*model.Camp, error)
 	UpdateCamp(campID uint, camp *model.Camp) error
+	DeleteCamp(ctx context.Context, campID uint) error
 }

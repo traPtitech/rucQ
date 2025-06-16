@@ -161,7 +161,7 @@ func (s *Server) AdminPutCamp(e echo.Context, campId CampId, params AdminPutCamp
 
 // AdminDeleteCamp キャンプ削除
 // (DELETE /api/admin/camps/{campId})
-func (s *Server) AdminDeleteCamp(e echo.Context, campId CampId, params AdminDeleteCampParams) error {
+func (s *Server) AdminDeleteCamp(e echo.Context, campID CampId, params AdminDeleteCampParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -174,6 +174,10 @@ func (s *Server) AdminDeleteCamp(e echo.Context, campId CampId, params AdminDele
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	// TODO: キャンプ削除機能は実装されていません
-	return echo.NewHTTPError(http.StatusNotImplemented, "Camp deletion not implemented")
+	// TODO: Not found エラーのハンドリングを追加
+	if err := s.repo.DeleteCamp(e.Request().Context(), uint(campID)); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.NoContent(http.StatusNoContent)
 }
