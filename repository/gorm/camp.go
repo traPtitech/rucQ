@@ -69,3 +69,27 @@ func (r *Repository) DeleteCamp(ctx context.Context, campID uint) error {
 
 	return err
 }
+
+func (r *Repository) AddCampParticipant(ctx context.Context, campID uint, user *model.User) error {
+	camp, err := gorm.G[*model.Camp](r.db).Where(&model.Camp{
+		Model: gorm.Model{
+			ID: campID,
+		},
+	}).First(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	if !camp.IsRegistrationOpen {
+		return model.ErrForbidden
+	}
+
+	// Generics APIではまだAssociationが使えないため従来の書き方を使用
+	// https://github.com/go-gorm/gorm/pull/7424#issuecomment-2918449411
+	if err := r.db.Model(camp).Association("Participants").Append(user); err != nil {
+		return err
+	}
+
+	return nil
+}

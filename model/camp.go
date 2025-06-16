@@ -11,6 +11,7 @@ type Camp struct {
 	IsPaymentOpen      bool
 	IsRegistrationOpen bool
 
+	Participants   []User `gorm:"many2many:camp_participants;"`
 	Payments       []Payment
 	Events         []Event
 	QuestionGroups []QuestionGroup

@@ -6,6 +6,7 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
+
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
@@ -176,6 +177,26 @@ func (s *Server) AdminDeleteCamp(e echo.Context, campID CampId, params AdminDele
 
 	// TODO: Not found エラーのハンドリングを追加
 	if err := s.repo.DeleteCamp(e.Request().Context(), uint(campID)); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.NoContent(http.StatusNoContent)
+}
+
+// PostCampRegister 合宿に登録
+func (s *Server) PostCampRegister(e echo.Context, campID CampId, params PostCampRegisterParams) error {
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// TODO: Forbidden、 Not found エラーのハンドリングを追加
+	if err := s.repo.AddCampParticipant(e.Request().Context(), uint(campID), user); err != nil {
+		e.Logger().Errorf("failed to add camp participant: %v", err)
+
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 

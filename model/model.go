@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrAlreadyExists = errors.New("already exists")
+	ErrForbidden     = errors.New("forbidden")
 	ErrNotFound      = gorm.ErrRecordNotFound
 )
 

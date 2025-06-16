@@ -108,11 +108,6 @@ func (s *Server) DeleteCampRegister(e echo.Context, campId CampId, params Delete
 	return echo.NewHTTPError(http.StatusNotImplemented, "DeleteCampRegister not implemented")
 }
 
-// PostCampRegister 合宿に登録
-func (s *Server) PostCampRegister(e echo.Context, campId CampId, params PostCampRegisterParams) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "PostCampRegister not implemented")
-}
-
 // GetRollCalls 点呼の一覧を取得
 func (s *Server) GetRollCalls(e echo.Context, campId CampId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetRollCalls not implemented")
