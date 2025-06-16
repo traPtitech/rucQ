@@ -79,26 +79,6 @@ func (s *Server) AdminPostCamp(e echo.Context, params AdminPostCampParams) error
 	return e.JSON(http.StatusCreated, response)
 }
 
-func (s *Server) GetDefaultCamp(e echo.Context) error {
-	camp, err := s.repo.GetDefaultCamp()
-
-	if err != nil {
-		e.Logger().Errorf("failed to get default camp: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	var response CampResponse
-
-	if err := copier.Copy(&response, camp); err != nil {
-		e.Logger().Errorf("failed to copy camp: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	return e.JSON(http.StatusOK, response)
-}
-
 func (s *Server) GetCamp(e echo.Context, campID CampId) error {
 	camp, err := s.repo.GetCampByID(uint(campID))
 

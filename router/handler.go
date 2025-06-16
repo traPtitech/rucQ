@@ -1,14 +1,16 @@
 package router
 
 import (
-	"github.com/traP-jp/rucQ/backend/repository"
 	"gorm.io/gorm"
+
+	"github.com/traP-jp/rucQ/backend/repository"
+	gormRepository "github.com/traP-jp/rucQ/backend/repository/gorm"
 )
 
 type Server struct {
-	repo *repository.Repository
+	repo repository.Repository
 }
 
 func NewServer(db *gorm.DB) *Server {
-	return &Server{repo: repository.NewRepository(db)}
+	return &Server{repo: gormRepository.NewGormRepository(db)}
 }
