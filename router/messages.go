@@ -18,7 +18,7 @@ func (s *Server) AdminPostMessage(e echo.Context, userId UserId, params AdminPos
 	}
 
 	// スタッフだけがbotを用いてdmを送信できるようにする
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)

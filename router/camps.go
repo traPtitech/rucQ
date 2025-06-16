@@ -38,7 +38,7 @@ func (s *Server) AdminPostCamp(e echo.Context, params AdminPostCampParams) error
 		return e.JSON(http.StatusBadRequest, err)
 	}
 
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
@@ -106,7 +106,7 @@ func (s *Server) GetCamp(e echo.Context, campID CampId) error {
 // AdminPutCamp キャンプ情報編集
 // (PUT /api/admin/camps/{campId})
 func (s *Server) AdminPutCamp(e echo.Context, campId CampId, params AdminPutCampParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
@@ -162,7 +162,7 @@ func (s *Server) AdminPutCamp(e echo.Context, campId CampId, params AdminPutCamp
 // AdminDeleteCamp キャンプ削除
 // (DELETE /api/admin/camps/{campId})
 func (s *Server) AdminDeleteCamp(e echo.Context, campId CampId, params AdminDeleteCampParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)

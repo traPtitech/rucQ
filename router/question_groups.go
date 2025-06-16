@@ -53,7 +53,7 @@ func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID QuestionGroupI
 }
 
 func (s *Server) AdminPostQuestionGroup(e echo.Context, campId CampId, params AdminPostQuestionGroupParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
@@ -99,7 +99,7 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, campId CampId, params Ad
 }
 
 func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
@@ -153,7 +153,7 @@ func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId QuestionG
 }
 
 func (s *Server) AdminDeleteQuestionGroup(e echo.Context, questionGroupId QuestionGroupId, params AdminDeleteQuestionGroupParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)

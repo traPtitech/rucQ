@@ -30,7 +30,7 @@ func (s *Server) GetRooms(e echo.Context) error {
 }
 
 func (s *Server) AdminPostRoom(e echo.Context, params AdminPostRoomParams) error {
-	operator, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
@@ -59,7 +59,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params AdminPostRoomParams) error
 	roomModel.Members = make([]model.User, len(req.MemberIds))
 
 	for i := range req.MemberIds {
-		member, err := s.repo.GetOrCreateUser(req.MemberIds[i])
+		member, err := s.repo.GetOrCreateUser(e.Request().Context(), req.MemberIds[i])
 
 		if err != nil {
 			if errors.Is(err, model.ErrNotFound) {
@@ -96,7 +96,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params AdminPostRoomParams) error
 }
 
 func (s *Server) AdminPutRoom(e echo.Context, roomId RoomId, params AdminPutRoomParams) error {
-	operator, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
@@ -135,7 +135,7 @@ func (s *Server) AdminPutRoom(e echo.Context, roomId RoomId, params AdminPutRoom
 	roomModel.Members = make([]model.User, len(req.MemberIds))
 
 	for i := range req.MemberIds {
-		member, err := s.repo.GetOrCreateUser(req.MemberIds[i])
+		member, err := s.repo.GetOrCreateUser(e.Request().Context(), req.MemberIds[i])
 
 		if err != nil {
 			if errors.Is(err, model.ErrNotFound) {

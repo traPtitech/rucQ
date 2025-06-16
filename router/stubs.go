@@ -83,11 +83,6 @@ func (s *Server) AdminGetUser(e echo.Context, traqId string, params AdminGetUser
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetUser not implemented")
 }
 
-// AdminPutUser ユーザー情報を更新（管理者用）
-func (s *Server) AdminPutUser(e echo.Context, traqId string, params AdminPutUserParams) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutUser not implemented")
-}
-
 // GetImages 画像の一覧を取得
 func (s *Server) GetImages(e echo.Context, campId CampId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetImages not implemented")

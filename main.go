@@ -48,7 +48,9 @@ func main() {
 	// botがtraQからのイベントを受け取るエンドポイントを設定
 	e.POST("/api/traq-events", router.TraqEventHandler)
 
-	router.RegisterHandlers(e, router.NewServer(db))
+	debug := os.Getenv("RUCQ_DEBUG") == "true"
+
+	router.RegisterHandlers(e, router.NewServer(db, debug))
 	e.Logger.Fatal(e.Start(os.Getenv("RUCQ_BACKEND_ADDR")))
 
 }

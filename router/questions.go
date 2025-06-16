@@ -30,7 +30,7 @@ func (s *Server) GetQuestions(e echo.Context) error {
 }
 
 func (s *Server) AdminPostQuestion(e echo.Context, params AdminPostQuestionParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
@@ -74,7 +74,7 @@ func (s *Server) AdminPostQuestion(e echo.Context, params AdminPostQuestionParam
 }
 
 func (s *Server) AdminDeleteQuestion(e echo.Context, questionId QuestionId, params AdminDeleteQuestionParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
@@ -124,7 +124,7 @@ func (s *Server) GetQuestion(e echo.Context, questionID QuestionId) error {
 }
 
 func (s *Server) AdminPutQuestion(e echo.Context, questionId QuestionId, params AdminPutQuestionParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
