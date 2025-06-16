@@ -20,15 +20,67 @@ func (s *Server) GetEvents(e echo.Context, campId CampId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response []EventResponse
+	responseEvents := make([]EventResponse, len(events))
 
-	if err := copier.Copy(&response, &events); err != nil {
-		e.Logger().Errorf("failed to copy events: %v", err)
+	for i := range events {
+		var responseEvent EventResponse
 
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		switch events[i].Type {
+		case model.EventTypeDuration:
+			var durationEvent DurationEventResponse
+
+			if err := copier.Copy(&durationEvent, &events[i]); err != nil {
+				e.Logger().Errorf("failed to copy duration event: %v", err)
+
+				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			}
+
+			if err := responseEvent.FromDurationEventResponse(durationEvent); err != nil {
+				e.Logger().Errorf("failed to convert duration event response: %v", err)
+
+				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			}
+
+		case model.EventTypeMoment:
+			var momentEvent MomentEventResponse
+
+			if err := copier.Copy(&momentEvent, &events[i]); err != nil {
+				e.Logger().Errorf("failed to copy moment event: %v", err)
+
+				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			}
+
+			if err := responseEvent.FromMomentEventResponse(momentEvent); err != nil {
+				e.Logger().Errorf("failed to convert moment event response: %v", err)
+
+				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			}
+
+		case model.EventTypeOfficial:
+			var officialEvent OfficialEventResponse
+
+			if err := copier.Copy(&officialEvent, &events[i]); err != nil {
+				e.Logger().Errorf("failed to copy official event: %v", err)
+
+				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			}
+
+			if err := responseEvent.FromOfficialEventResponse(officialEvent); err != nil {
+				e.Logger().Errorf("failed to convert official event response: %v", err)
+
+				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			}
+
+		default:
+			e.Logger().Errorf("unknown event type: %s", events[i].Type)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		responseEvents[i] = responseEvent
 	}
 
-	return e.JSON(http.StatusOK, response)
+	return e.JSON(http.StatusOK, responseEvents)
 }
 
 func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams) error {
