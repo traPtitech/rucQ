@@ -893,8 +893,8 @@ type PostEventParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// GetMyCampParams defines parameters for GetMyCamp.
-type GetMyCampParams struct {
+// GetDashboardParams defines parameters for GetDashboard.
+type GetDashboardParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
@@ -1775,7 +1775,7 @@ type ServerInterface interface {
 	GetImages(ctx echo.Context, campId CampId) error
 	// 自分の合宿参加情報を取得
 	// (GET /api/camps/{campId}/me)
-	GetMyCamp(ctx echo.Context, campId CampId, params GetMyCampParams) error
+	GetDashboard(ctx echo.Context, campId CampId, params GetDashboardParams) error
 	// 合宿の参加者一覧を取得
 	// (GET /api/camps/{campId}/participants)
 	GetCampParticipants(ctx echo.Context, campId CampId) error
@@ -3037,8 +3037,8 @@ func (w *ServerInterfaceWrapper) GetImages(ctx echo.Context) error {
 	return err
 }
 
-// GetMyCamp converts echo context to params.
-func (w *ServerInterfaceWrapper) GetMyCamp(ctx echo.Context) error {
+// GetDashboard converts echo context to params.
+func (w *ServerInterfaceWrapper) GetDashboard(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "campId" -------------
 	var campId CampId
@@ -3049,7 +3049,7 @@ func (w *ServerInterfaceWrapper) GetMyCamp(ctx echo.Context) error {
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetMyCampParams
+	var params GetDashboardParams
 
 	headers := ctx.Request().Header
 	// ------------- Optional header parameter "X-Forwarded-User" -------------
@@ -3069,7 +3069,7 @@ func (w *ServerInterfaceWrapper) GetMyCamp(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetMyCamp(ctx, campId, params)
+	err = w.Handler.GetDashboard(ctx, campId, params)
 	return err
 }
 
@@ -3591,7 +3591,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/camps/:campId/events", wrapper.GetEvents)
 	router.POST(baseURL+"/api/camps/:campId/events", wrapper.PostEvent)
 	router.GET(baseURL+"/api/camps/:campId/images", wrapper.GetImages)
-	router.GET(baseURL+"/api/camps/:campId/me", wrapper.GetMyCamp)
+	router.GET(baseURL+"/api/camps/:campId/me", wrapper.GetDashboard)
 	router.GET(baseURL+"/api/camps/:campId/participants", wrapper.GetCampParticipants)
 	router.GET(baseURL+"/api/camps/:campId/question-groups", wrapper.GetQuestionGroups)
 	router.DELETE(baseURL+"/api/camps/:campId/register", wrapper.DeleteCampRegister)

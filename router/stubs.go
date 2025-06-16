@@ -98,9 +98,9 @@ func (s *Server) GetImage(e echo.Context, imageId ImageId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetImage not implemented")
 }
 
-// GetMyCamp 自分の参加する合宿を取得
-func (s *Server) GetMyCamp(e echo.Context, campId CampId, params GetMyCampParams) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "GetMyCamp not implemented")
+// GetDashboard 自分の参加する合宿を取得
+func (s *Server) GetDashboard(e echo.Context, campId CampId, params GetDashboardParams) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "GetDashboard not implemented")
 }
 
 // GetCampParticipants 合宿の参加者一覧を取得
