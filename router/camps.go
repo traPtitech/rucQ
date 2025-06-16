@@ -202,3 +202,25 @@ func (s *Server) PostCampRegister(e echo.Context, campID CampId, params PostCamp
 
 	return e.NoContent(http.StatusNoContent)
 }
+
+// GetCampParticipants 合宿の参加者一覧を取得
+func (s *Server) GetCampParticipants(e echo.Context, campID CampId) error {
+	participants, err := s.repo.GetCampParticipants(e.Request().Context(), uint(campID))
+
+	// TODO: Not found エラーのハンドリングを追加（APIスキーマにも追加する）
+	if err != nil {
+		e.Logger().Errorf("failed to get camp participants: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	var response []UserResponse
+
+	if err := copier.Copy(&response, &participants); err != nil {
+		e.Logger().Errorf("failed to copy participants: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, response)
+}

@@ -93,3 +93,17 @@ func (r *Repository) AddCampParticipant(ctx context.Context, campID uint, user *
 
 	return nil
 }
+
+func (r *Repository) GetCampParticipants(ctx context.Context, campID uint) ([]model.User, error) {
+	camp, err := gorm.G[*model.Camp](r.db).Preload("Participants", nil).Where(&model.Camp{
+		Model: gorm.Model{
+			ID: campID,
+		},
+	}).First(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return camp.Participants, nil
+}

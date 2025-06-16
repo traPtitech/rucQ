@@ -13,4 +13,5 @@ type CampRepository interface {
 	UpdateCamp(campID uint, camp *model.Camp) error
 	DeleteCamp(ctx context.Context, campID uint) error
 	AddCampParticipant(ctx context.Context, campID uint, user *model.User) error
+	GetCampParticipants(ctx context.Context, campID uint) ([]model.User, error)
 }

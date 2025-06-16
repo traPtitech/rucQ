@@ -98,11 +98,6 @@ func (s *Server) GetDashboard(e echo.Context, campId CampId, params GetDashboard
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetDashboard not implemented")
 }
 
-// GetCampParticipants 合宿の参加者一覧を取得
-func (s *Server) GetCampParticipants(e echo.Context, campId CampId) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "GetCampParticipants not implemented")
-}
-
 // DeleteCampRegister 合宿登録を削除
 func (s *Server) DeleteCampRegister(e echo.Context, campId CampId, params DeleteCampRegisterParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "DeleteCampRegister not implemented")
