@@ -6,16 +6,23 @@ import (
 	"os"
 
 	traq "github.com/traPtitech/go-traq"
+	"gorm.io/gorm"
 
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-func (r *Repository) GetOrCreateUser(traqID string) (*model.User, error) {
+func (r *Repository) GetOrCreateUser(ctx context.Context, traqID string) (*model.User, error) {
+	// まずデータベースを検索
+	users, err := gorm.G[*model.User](r.db).Limit(1).Where(&model.User{ID: traqID}).Find(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
 	var user model.User
 
-	// まずデータベースを検索
-	if err := r.db.Where("traq_id = ?", traqID).Find(&user).Error; err != nil {
-		return nil, err
+	if len(users) > 0 {
+		user = *users[0]
 	}
 
 	// if user.TraqUUID != "" {
@@ -66,10 +73,8 @@ func (r *Repository) GetStaffs() ([]model.User, error) {
 	return staffs, nil
 }
 
-func (r *Repository) SetUserIsStaff(user *model.User, isStaff bool) error {
-	if err := r.db.Model(user).Update("is_staff", isStaff).Error; err != nil {
-		return err
-	}
+func (r *Repository) UpdateUser(ctx context.Context, user *model.User) error {
+	_, err := gorm.G[*model.User](r.db).Updates(ctx, user)
 
-	return nil
+	return err
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Server) AdminPostOption(e echo.Context, params AdminPostOptionParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)

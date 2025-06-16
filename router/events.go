@@ -109,7 +109,7 @@ func (s *Server) GetEvent(e echo.Context, eventID EventId) error {
 }
 
 func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
 
@@ -157,7 +157,7 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 }
 
 func (s *Server) DeleteEvent(e echo.Context, eventID EventId, params DeleteEventParams) error {
-	user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
 

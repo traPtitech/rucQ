@@ -8,9 +8,10 @@ import (
 )
 
 type Server struct {
-	repo repository.Repository
+	repo  repository.Repository
+	debug bool
 }
 
-func NewServer(db *gorm.DB) *Server {
-	return &Server{repo: gormRepository.NewGormRepository(db)}
+func NewServer(db *gorm.DB, debug bool) *Server {
+	return &Server{repo: gormRepository.NewGormRepository(db), debug: debug}
 }
