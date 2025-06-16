@@ -11,9 +11,9 @@ import (
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-func (r *Repository) GetOrCreateUser(ctx context.Context, traqID string) (*model.User, error) {
+func (r *Repository) GetOrCreateUser(ctx context.Context, userID string) (*model.User, error) {
 	// まずデータベースを検索
-	users, err := gorm.G[*model.User](r.db).Limit(1).Where(&model.User{ID: traqID}).Find(ctx)
+	users, err := gorm.G[*model.User](r.db).Limit(1).Where(&model.User{ID: userID}).Find(ctx)
 
 	if err != nil {
 		return nil, err
@@ -32,19 +32,19 @@ func (r *Repository) GetOrCreateUser(ctx context.Context, traqID string) (*model
 	configuration := traq.NewConfiguration()
 	apiClient := traq.NewAPIClient(configuration)
 	configuration.AddDefaultHeader("Authorization", "Bearer "+os.Getenv("BOT_ACCESS_TOKEN"))
-	usersUuid, httpResp, err := apiClient.UserApi.GetUsers(context.Background()).Name(traqID).Execute()
+	usersUuid, httpResp, err := apiClient.UserApi.GetUsers(context.Background()).Name(userID).Execute()
 	if err != nil {
 		return nil, fmt.Errorf("error when calling UserApi.GetUsers: %w\nfull HTTP response: %v", err, httpResp)
 	}
 
 	// traQ API のレスポンスをチェック
 	if len(usersUuid) != 1 {
-		return nil, fmt.Errorf("no users found with name %s", traqID)
+		return nil, fmt.Errorf("no users found with name %s", userID)
 	}
 
 	// 追加、更新するユーザーを作成
 	// user.TraqUUID = usersUuid[0].Id
-	user.ID = traqID
+	user.ID = userID
 
 	if err := r.db.Save(&user).Error; err != nil {
 		return nil, err
