@@ -112,6 +112,18 @@ func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams
 			return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
 		}
 
+		user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+
+		if err != nil {
+			e.Logger().Errorf("failed to get or create user: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		if !user.IsStaff {
+			return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+		}
+
 		if err := copier.Copy(&eventModel, &momentEventRequest); err != nil {
 			e.Logger().Errorf("failed to copy moment event request to model: %v", err)
 
@@ -292,7 +304,7 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if updateEvent.Type == model.EventTypeOfficial && !user.IsStaff {
+	if (updateEvent.Type == model.EventTypeOfficial || updateEvent.Type == model.EventTypeMoment) && !user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -322,6 +334,10 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+		}
+
+		if !user.IsStaff {
+			return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 		}
 
 		if err := copier.Copy(updateEvent, &momentEventRequest); err != nil {
@@ -429,7 +445,7 @@ func (s *Server) DeleteEvent(e echo.Context, eventID EventId, params DeleteEvent
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if deleteEvent.Type == model.EventTypeOfficial && !user.IsStaff {
+	if (deleteEvent.Type == model.EventTypeOfficial || deleteEvent.Type == model.EventTypeMoment) && !user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
