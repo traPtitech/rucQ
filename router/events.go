@@ -213,7 +213,6 @@ func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams
 }
 
 func (s *Server) GetEvent(e echo.Context, eventID EventId) error {
-
 	event, err := s.repo.GetEventByID(uint(eventID))
 	if err != nil {
 		e.Logger().Errorf("failed to get event: %v", err)
@@ -223,8 +222,54 @@ func (s *Server) GetEvent(e echo.Context, eventID EventId) error {
 
 	var response EventResponse
 
-	if err := copier.Copy(&response, event); err != nil {
-		e.Logger().Errorf("failed to copy event: %v", err)
+	switch event.Type {
+	case model.EventTypeDuration:
+		var durationEvent DurationEventResponse
+
+		if err := copier.Copy(&durationEvent, event); err != nil {
+			e.Logger().Errorf("failed to copy duration event: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		if err := response.FromDurationEventResponse(durationEvent); err != nil {
+			e.Logger().Errorf("failed to convert duration event response: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+	case model.EventTypeMoment:
+		var momentEvent MomentEventResponse
+
+		if err := copier.Copy(&momentEvent, event); err != nil {
+			e.Logger().Errorf("failed to copy moment event: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		if err := response.FromMomentEventResponse(momentEvent); err != nil {
+			e.Logger().Errorf("failed to convert moment event response: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+	case model.EventTypeOfficial:
+		var officialEvent OfficialEventResponse
+
+		if err := copier.Copy(&officialEvent, event); err != nil {
+			e.Logger().Errorf("failed to copy official event: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		if err := response.FromOfficialEventResponse(officialEvent); err != nil {
+			e.Logger().Errorf("failed to convert official event response: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+	default:
+		e.Logger().Errorf("unknown event type: %s", event.Type)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
