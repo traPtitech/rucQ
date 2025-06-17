@@ -9,8 +9,6 @@ import (
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-// const trapTraqID = "traP"
-
 func (s *Server) GetEvents(e echo.Context, campId CampId) error {
 	events, err := s.repo.GetEvents()
 
