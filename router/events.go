@@ -429,7 +429,7 @@ func (s *Server) DeleteEvent(e echo.Context, eventID EventId, params DeleteEvent
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if user.ID != *deleteEvent.OrganizerID && !user.IsStaff { // イベントの主催者でない場合は削除できない
+	if deleteEvent.Type == model.EventTypeOfficial && !user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
