@@ -292,7 +292,7 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if user.ID != *updateEvent.OrganizerID && !user.IsStaff { // イベントの主催者orスタッフでない場合は更新できない
+	if updateEvent.Type == model.EventTypeOfficial && !user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -302,10 +302,53 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return e.JSON(http.StatusBadRequest, err)
 	}
 
-	if err := copier.Copy(updateEvent, &req); err != nil {
-		e.Logger().Errorf("failed to copy request to model: %v", err)
+	// Typeを取得するため、一旦DurationEventRequestを使う
+	durationEventRequest, durationErr := req.AsDurationEventRequest()
 
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	if durationErr != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+	}
+
+	switch model.EventType(durationEventRequest.Type) {
+	case model.EventTypeDuration:
+		if err := copier.Copy(updateEvent, &durationEventRequest); err != nil {
+			e.Logger().Errorf("failed to copy duration event request to model: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+	case model.EventTypeMoment:
+		momentEventRequest, err := req.AsMomentEventRequest()
+
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+		}
+
+		if err := copier.Copy(updateEvent, &momentEventRequest); err != nil {
+			e.Logger().Errorf("failed to copy moment event request to model: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+	case model.EventTypeOfficial:
+		officialEventRequest, err := req.AsOfficialEventRequest()
+
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+		}
+
+		if !user.IsStaff {
+			return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+		}
+
+		if err := copier.Copy(updateEvent, &officialEventRequest); err != nil {
+			e.Logger().Errorf("failed to copy official event request to model: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+	default:
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid event type")
 	}
 
 	if err := s.repo.UpdateEvent(uint(eventID), updateEvent); err != nil {
@@ -316,13 +359,59 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 
 	var response EventResponse
 
-	if err := copier.Copy(&response, updateEvent); err != nil {
-		e.Logger().Errorf("failed to copy model to response: %v", err)
+	switch updateEvent.Type {
+	case model.EventTypeDuration:
+		var durationEvent DurationEventResponse
+
+		if err := copier.Copy(&durationEvent, updateEvent); err != nil {
+			e.Logger().Errorf("failed to copy duration event: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		if err := response.FromDurationEventResponse(durationEvent); err != nil {
+			e.Logger().Errorf("failed to convert duration event response: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+	case model.EventTypeMoment:
+		var momentEvent MomentEventResponse
+
+		if err := copier.Copy(&momentEvent, updateEvent); err != nil {
+			e.Logger().Errorf("failed to copy moment event: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		if err := response.FromMomentEventResponse(momentEvent); err != nil {
+			e.Logger().Errorf("failed to convert moment event response: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+	case model.EventTypeOfficial:
+		var officialEvent OfficialEventResponse
+
+		if err := copier.Copy(&officialEvent, updateEvent); err != nil {
+			e.Logger().Errorf("failed to copy official event: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		if err := response.FromOfficialEventResponse(officialEvent); err != nil {
+			e.Logger().Errorf("failed to convert official event response: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+	default:
+		e.Logger().Errorf("unknown event type: %s", updateEvent.Type)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	return e.JSON(http.StatusOK, &response)
+	return e.JSON(http.StatusOK, response)
 }
 
 func (s *Server) DeleteEvent(e echo.Context, eventID EventId, params DeleteEventParams) error {
