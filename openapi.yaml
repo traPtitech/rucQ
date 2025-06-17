@@ -1712,6 +1712,8 @@ components:
         time:
           type: string
           format: date-time
+          x-oapi-codegen-extra-tags:
+            copier: TimeStart # サーバー側ではtimeStartとして扱う
       required:
         - type
         - name
@@ -1736,6 +1738,8 @@ components:
         time:
           type: string
           format: date-time
+          x-oapi-codegen-extra-tags:
+            copier: TimeStart # サーバー側ではtimeStartとして扱う
       required:
         - id
         - type
