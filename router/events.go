@@ -21,61 +21,14 @@ func (s *Server) GetEvents(e echo.Context, campId CampId) error {
 	responseEvents := make([]EventResponse, len(events))
 
 	for i := range events {
-		var responseEvent EventResponse
-
-		switch events[i].Type {
-		case model.EventTypeDuration:
-			var durationEvent DurationEventResponse
-
-			if err := copier.Copy(&durationEvent, &events[i]); err != nil {
-				e.Logger().Errorf("failed to copy duration event: %v", err)
-
-				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-			}
-
-			if err := responseEvent.FromDurationEventResponse(durationEvent); err != nil {
-				e.Logger().Errorf("failed to convert duration event response: %v", err)
-
-				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-			}
-
-		case model.EventTypeMoment:
-			var momentEvent MomentEventResponse
-
-			if err := copier.Copy(&momentEvent, &events[i]); err != nil {
-				e.Logger().Errorf("failed to copy moment event: %v", err)
-
-				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-			}
-
-			if err := responseEvent.FromMomentEventResponse(momentEvent); err != nil {
-				e.Logger().Errorf("failed to convert moment event response: %v", err)
-
-				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-			}
-
-		case model.EventTypeOfficial:
-			var officialEvent OfficialEventResponse
-
-			if err := copier.Copy(&officialEvent, &events[i]); err != nil {
-				e.Logger().Errorf("failed to copy official event: %v", err)
-
-				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-			}
-
-			if err := responseEvent.FromOfficialEventResponse(officialEvent); err != nil {
-				e.Logger().Errorf("failed to convert official event response: %v", err)
-
-				return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-			}
-
-		default:
-			e.Logger().Errorf("unknown event type: %s", events[i].Type)
+		responseEvent, err := convertModelToEventResponse(&events[i])
+		if err != nil {
+			e.Logger().Errorf("failed to convert event to response: %v", err)
 
 			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 		}
 
-		responseEvents[i] = responseEvent
+		responseEvents[i] = *responseEvent
 	}
 
 	return e.JSON(http.StatusOK, responseEvents)
@@ -88,140 +41,45 @@ func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams
 		return e.JSON(http.StatusBadRequest, err)
 	}
 
-	var eventModel model.Event
+	eventModel, err := convertRequestToModel(req, uint(campId))
 
-	// Typeを取得するため、一旦DurationEventRequestを使う
-	durationEventRequest, durationErr := req.AsDurationEventRequest()
-
-	if durationErr != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+	if err != nil {
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			return httpErr
+		}
+		e.Logger().Errorf("failed to convert request to model: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	switch model.EventType(durationEventRequest.Type) {
-	case model.EventTypeDuration:
-		if err := copier.Copy(&eventModel, &durationEventRequest); err != nil {
-			e.Logger().Errorf("failed to copy duration event request to model: %v", err)
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
 
-	case model.EventTypeMoment:
-		momentEventRequest, err := req.AsMomentEventRequest()
-
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
-		}
-
-		user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
-
-		if err != nil {
-			e.Logger().Errorf("failed to get or create user: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-		if !user.IsStaff {
-			return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
-		}
-
-		if err := copier.Copy(&eventModel, &momentEventRequest); err != nil {
-			e.Logger().Errorf("failed to copy moment event request to model: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	case model.EventTypeOfficial:
-		officialEventRequest, err := req.AsOfficialEventRequest()
-
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
-		}
-
-		user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
-
-		if err != nil {
-			e.Logger().Errorf("failed to get or create user: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-		if !user.IsStaff {
-			return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
-		}
-
-		if err := copier.Copy(&eventModel, &officialEventRequest); err != nil {
-			e.Logger().Errorf("failed to copy official event request to model: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	default:
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid event type")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	eventModel.CampID = uint(campId)
+	if (eventModel.Type == model.EventTypeOfficial || eventModel.Type == model.EventTypeMoment) && !user.IsStaff {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
 
-	if err := s.repo.CreateEvent(&eventModel); err != nil {
+	if err := s.repo.CreateEvent(eventModel); err != nil {
 		e.Logger().Errorf("failed to create event: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var eventResponse EventResponse
+	eventResponse, err := convertModelToEventResponse(eventModel)
 
-	switch eventModel.Type {
-	case model.EventTypeDuration:
-		var durationEventResponse DurationEventResponse
-
-		if err := copier.Copy(&durationEventResponse, &eventModel); err != nil {
-			e.Logger().Errorf("failed to copy duration event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	if err != nil {
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			return httpErr
 		}
-
-		if err := eventResponse.FromDurationEventResponse(durationEventResponse); err != nil {
-			e.Logger().Errorf("failed to convert duration event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	case model.EventTypeMoment:
-		var momentEventResponse MomentEventResponse
-
-		if err := copier.Copy(&momentEventResponse, &eventModel); err != nil {
-			e.Logger().Errorf("failed to copy moment event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-		if err := eventResponse.FromMomentEventResponse(momentEventResponse); err != nil {
-			e.Logger().Errorf("failed to convert moment event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	case model.EventTypeOfficial:
-		var officialEventResponse OfficialEventResponse
-
-		if err := copier.Copy(&officialEventResponse, &eventModel); err != nil {
-			e.Logger().Errorf("failed to copy official event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-		if err := eventResponse.FromOfficialEventResponse(officialEventResponse); err != nil {
-			e.Logger().Errorf("failed to convert official event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	default:
-		e.Logger().Errorf("unknown event type: %s", eventModel.Type)
-
+		e.Logger().Errorf("failed to convert event to response: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	return e.JSON(http.StatusCreated, &eventResponse)
+	return e.JSON(http.StatusCreated, eventResponse)
 }
 
 func (s *Server) GetEvent(e echo.Context, eventID EventId) error {
@@ -232,61 +90,17 @@ func (s *Server) GetEvent(e echo.Context, eventID EventId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response EventResponse
+	response, err := convertModelToEventResponse(event)
 
-	switch event.Type {
-	case model.EventTypeDuration:
-		var durationEvent DurationEventResponse
-
-		if err := copier.Copy(&durationEvent, event); err != nil {
-			e.Logger().Errorf("failed to copy duration event: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	if err != nil {
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			return httpErr
 		}
-
-		if err := response.FromDurationEventResponse(durationEvent); err != nil {
-			e.Logger().Errorf("failed to convert duration event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	case model.EventTypeMoment:
-		var momentEvent MomentEventResponse
-
-		if err := copier.Copy(&momentEvent, event); err != nil {
-			e.Logger().Errorf("failed to copy moment event: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-		if err := response.FromMomentEventResponse(momentEvent); err != nil {
-			e.Logger().Errorf("failed to convert moment event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	case model.EventTypeOfficial:
-		var officialEvent OfficialEventResponse
-
-		if err := copier.Copy(&officialEvent, event); err != nil {
-			e.Logger().Errorf("failed to copy official event: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-		if err := response.FromOfficialEventResponse(officialEvent); err != nil {
-			e.Logger().Errorf("failed to convert official event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	default:
-		e.Logger().Errorf("unknown event type: %s", event.Type)
-
+		e.Logger().Errorf("failed to convert event to response: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	return e.JSON(http.StatusOK, &response)
+	return e.JSON(http.StatusOK, response)
 }
 
 func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams) error {
@@ -314,57 +128,16 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return e.JSON(http.StatusBadRequest, err)
 	}
 
-	// Typeを取得するため、一旦DurationEventRequestを使う
-	durationEventRequest, durationErr := req.AsDurationEventRequest()
-
-	if durationErr != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+	if err := convertPutRequestToModel(req, updateEvent); err != nil {
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			return httpErr
+		}
+		e.Logger().Errorf("failed to convert request to model: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	switch model.EventType(durationEventRequest.Type) {
-	case model.EventTypeDuration:
-		if err := copier.Copy(updateEvent, &durationEventRequest); err != nil {
-			e.Logger().Errorf("failed to copy duration event request to model: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	case model.EventTypeMoment:
-		momentEventRequest, err := req.AsMomentEventRequest()
-
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
-		}
-
-		if !user.IsStaff {
-			return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
-		}
-
-		if err := copier.Copy(updateEvent, &momentEventRequest); err != nil {
-			e.Logger().Errorf("failed to copy moment event request to model: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	case model.EventTypeOfficial:
-		officialEventRequest, err := req.AsOfficialEventRequest()
-
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
-		}
-
-		if !user.IsStaff {
-			return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
-		}
-
-		if err := copier.Copy(updateEvent, &officialEventRequest); err != nil {
-			e.Logger().Errorf("failed to copy official event request to model: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	default:
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid event type")
+	if (updateEvent.Type == model.EventTypeOfficial || updateEvent.Type == model.EventTypeMoment) && !user.IsStaff {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	if err := s.repo.UpdateEvent(uint(eventID), updateEvent); err != nil {
@@ -373,57 +146,13 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response EventResponse
+	response, err := convertModelToEventResponse(updateEvent)
 
-	switch updateEvent.Type {
-	case model.EventTypeDuration:
-		var durationEvent DurationEventResponse
-
-		if err := copier.Copy(&durationEvent, updateEvent); err != nil {
-			e.Logger().Errorf("failed to copy duration event: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	if err != nil {
+		if httpErr, ok := err.(*echo.HTTPError); ok {
+			return httpErr
 		}
-
-		if err := response.FromDurationEventResponse(durationEvent); err != nil {
-			e.Logger().Errorf("failed to convert duration event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	case model.EventTypeMoment:
-		var momentEvent MomentEventResponse
-
-		if err := copier.Copy(&momentEvent, updateEvent); err != nil {
-			e.Logger().Errorf("failed to copy moment event: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-		if err := response.FromMomentEventResponse(momentEvent); err != nil {
-			e.Logger().Errorf("failed to convert moment event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	case model.EventTypeOfficial:
-		var officialEvent OfficialEventResponse
-
-		if err := copier.Copy(&officialEvent, updateEvent); err != nil {
-			e.Logger().Errorf("failed to copy official event: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-		if err := response.FromOfficialEventResponse(officialEvent); err != nil {
-			e.Logger().Errorf("failed to convert official event response: %v", err)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-	default:
-		e.Logger().Errorf("unknown event type: %s", updateEvent.Type)
-
+		e.Logger().Errorf("failed to convert event to response: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
@@ -456,4 +185,124 @@ func (s *Server) DeleteEvent(e echo.Context, eventID EventId, params DeleteEvent
 	}
 
 	return e.NoContent(http.StatusNoContent)
+}
+
+// convertModelToEventResponse はmodel.EventをEventResponseに変換する
+func convertModelToEventResponse(event *model.Event) (*EventResponse, error) {
+	var response EventResponse
+
+	switch event.Type {
+	case model.EventTypeDuration:
+		var durationEvent DurationEventResponse
+		if err := copier.Copy(&durationEvent, event); err != nil {
+			return nil, err
+		}
+		if err := response.FromDurationEventResponse(durationEvent); err != nil {
+			return nil, err
+		}
+
+	case model.EventTypeMoment:
+		var momentEvent MomentEventResponse
+		if err := copier.Copy(&momentEvent, event); err != nil {
+			return nil, err
+		}
+		if err := response.FromMomentEventResponse(momentEvent); err != nil {
+			return nil, err
+		}
+
+	case model.EventTypeOfficial:
+		var officialEvent OfficialEventResponse
+		if err := copier.Copy(&officialEvent, event); err != nil {
+			return nil, err
+		}
+		if err := response.FromOfficialEventResponse(officialEvent); err != nil {
+			return nil, err
+		}
+
+	default:
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "unknown event type")
+	}
+
+	return &response, nil
+}
+
+// convertRequestToModel はリクエストをmodel.Eventに変換する
+func convertRequestToModel(req PostEventJSONRequestBody, campID uint) (*model.Event, error) {
+	var eventModel model.Event
+
+	// Typeを取得するため、一旦DurationEventRequestを使う
+	durationEventRequest, err := req.AsDurationEventRequest()
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+	}
+
+	switch model.EventType(durationEventRequest.Type) {
+	case model.EventTypeDuration:
+		if err := copier.Copy(&eventModel, &durationEventRequest); err != nil {
+			return nil, err
+		}
+
+	case model.EventTypeMoment:
+		momentEventRequest, err := req.AsMomentEventRequest()
+		if err != nil {
+			return nil, echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+		}
+		if err := copier.Copy(&eventModel, &momentEventRequest); err != nil {
+			return nil, err
+		}
+
+	case model.EventTypeOfficial:
+		officialEventRequest, err := req.AsOfficialEventRequest()
+		if err != nil {
+			return nil, echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+		}
+		if err := copier.Copy(&eventModel, &officialEventRequest); err != nil {
+			return nil, err
+		}
+
+	default:
+		return nil, echo.NewHTTPError(http.StatusBadRequest, "Invalid event type")
+	}
+
+	eventModel.CampID = campID
+	return &eventModel, nil
+}
+
+// convertPutRequestToModel はPUTリクエストでmodel.Eventを更新する
+func convertPutRequestToModel(req PutEventJSONRequestBody, event *model.Event) error {
+	// Typeを取得するため、一旦DurationEventRequestを使う
+	durationEventRequest, durationErr := req.AsDurationEventRequest()
+	if durationErr != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+	}
+
+	switch model.EventType(durationEventRequest.Type) {
+	case model.EventTypeDuration:
+		if err := copier.Copy(event, &durationEventRequest); err != nil {
+			return err
+		}
+
+	case model.EventTypeMoment:
+		momentEventRequest, err := req.AsMomentEventRequest()
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+		}
+		if err := copier.Copy(event, &momentEventRequest); err != nil {
+			return err
+		}
+
+	case model.EventTypeOfficial:
+		officialEventRequest, err := req.AsOfficialEventRequest()
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid event request body")
+		}
+		if err := copier.Copy(event, &officialEventRequest); err != nil {
+			return err
+		}
+
+	default:
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid event type")
+	}
+
+	return nil
 }
