@@ -5,7 +5,7 @@ import "github.com/traP-jp/rucQ/backend/model"
 func (r *Repository) GetEvents() ([]model.Event, error) {
 	var events []model.Event
 
-	if err := r.db.Preload("Participants").Find(&events).Error; err != nil {
+	if err := r.db.Find(&events).Error; err != nil {
 		return nil, err
 	}
 
@@ -15,7 +15,7 @@ func (r *Repository) GetEvents() ([]model.Event, error) {
 func (r *Repository) GetEventByID(id uint) (*model.Event, error) {
 	var event model.Event
 
-	if err := r.db.Preload("Participants").First(&event, id).Error; err != nil {
+	if err := r.db.First(&event, id).Error; err != nil {
 		return nil, err
 	}
 
