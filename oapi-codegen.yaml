@@ -1,5 +1,5 @@
 package: router
-output: router/api.gen.go
+output: api.gen.go
 generate:
   echo-server: true
   models: true
