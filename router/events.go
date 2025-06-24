@@ -13,9 +13,9 @@ import (
 
 // コンバート関数で使用するエラー変数
 var (
-	ErrUnknownEventType   = errors.New("unknown event type")
-	ErrInvalidRequestBody = errors.New("invalid request body")
-	ErrInvalidEventType   = errors.New("invalid event type")
+	errUnknownEventType   = errors.New("unknown event type")
+	errInvalidRequestBody = errors.New("invalid request body")
+	errInvalidEventType   = errors.New("invalid event type")
 )
 
 func (s *Server) GetEvents(e echo.Context, campId CampId) error {
@@ -50,10 +50,10 @@ func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams
 		return e.JSON(http.StatusBadRequest, err)
 	}
 
-	eventModel, err := convertRequestToModel(req, uint(campId))
+	eventModel, err := convertEventRequestToModel(req)
 
 	if err != nil {
-		if errors.Is(err, ErrInvalidRequestBody) || errors.Is(err, ErrInvalidEventType) {
+		if errors.Is(err, errInvalidRequestBody) || errors.Is(err, errInvalidEventType) {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 
@@ -62,6 +62,7 @@ func (s *Server) PostEvent(e echo.Context, campId CampId, params PostEventParams
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
+	eventModel.CampID = uint(campId)
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -118,14 +119,14 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	updateEvent, err := s.repo.GetEventByID(uint(eventID))
+	existingEvent, err := s.repo.GetEventByID(uint(eventID))
 	if err != nil {
 		e.Logger().Errorf("failed to get event: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if (updateEvent.Type == model.EventTypeOfficial || updateEvent.Type == model.EventTypeMoment) && !user.IsStaff {
+	if (existingEvent.Type == model.EventTypeOfficial || existingEvent.Type == model.EventTypeMoment) && !user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -135,8 +136,10 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return e.JSON(http.StatusBadRequest, err)
 	}
 
-	if err := convertPutRequestToModel(req, updateEvent); err != nil {
-		if errors.Is(err, ErrInvalidRequestBody) || errors.Is(err, ErrInvalidEventType) {
+	newEvent, err := convertEventRequestToModel(req)
+
+	if err != nil {
+		if errors.Is(err, errInvalidRequestBody) || errors.Is(err, errInvalidEventType) {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 
@@ -145,17 +148,19 @@ func (s *Server) PutEvent(e echo.Context, eventID EventId, params PutEventParams
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if (updateEvent.Type == model.EventTypeOfficial || updateEvent.Type == model.EventTypeMoment) && !user.IsStaff {
+	newEvent.ID = existingEvent.ID
+
+	if (newEvent.Type == model.EventTypeOfficial || newEvent.Type == model.EventTypeMoment) && !user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	if err := s.repo.UpdateEvent(uint(eventID), updateEvent); err != nil {
+	if err := s.repo.UpdateEvent(e.Request().Context(), uint(eventID), newEvent); err != nil {
 		e.Logger().Errorf("failed to update event: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	response, err := convertModelToEventResponse(updateEvent)
+	response, err := convertModelToEventResponse(newEvent)
 
 	if err != nil {
 		e.Logger().Errorf("failed to convert event to response: %v", err)
@@ -232,26 +237,25 @@ func convertModelToEventResponse(event *model.Event) (*EventResponse, error) {
 		}
 
 	default:
-		return nil, ErrUnknownEventType
+		return nil, errUnknownEventType
 	}
 
 	return &response, nil
 }
 
-// convertRequestToModel はリクエストをmodel.Eventに変換する
-func convertRequestToModel(req PostEventJSONRequestBody, campID uint) (*model.Event, error) {
-	var eventModel model.Event
+func convertEventRequestToModel(req EventRequest) (*model.Event, error) {
+	var event model.Event
 
-	// Typeを取得するため、一旦DurationEventRequestを使う
-	durationEventRequest, err := req.AsDurationEventRequest()
+	// リクエストのTypeを取得するため、一旦DurationEventRequestを使う
+	durationEventRequest, durationErr := req.AsDurationEventRequest()
 
-	if err != nil {
-		return nil, ErrInvalidRequestBody
+	if durationErr != nil {
+		return nil, errInvalidRequestBody
 	}
 
 	switch model.EventType(durationEventRequest.Type) {
 	case model.EventTypeDuration:
-		if err := copier.Copy(&eventModel, &durationEventRequest); err != nil {
+		if err := copier.Copy(&event, &durationEventRequest); err != nil {
 			return nil, fmt.Errorf("failed to copy DurationEventRequest to model.Event: %w", err)
 		}
 
@@ -259,10 +263,10 @@ func convertRequestToModel(req PostEventJSONRequestBody, campID uint) (*model.Ev
 		momentEventRequest, err := req.AsMomentEventRequest()
 
 		if err != nil {
-			return nil, ErrInvalidRequestBody
+			return nil, errInvalidRequestBody
 		}
 
-		if err := copier.Copy(&eventModel, &momentEventRequest); err != nil {
+		if err := copier.Copy(&event, &momentEventRequest); err != nil {
 			return nil, fmt.Errorf("failed to copy MomentEventRequest to model.Event: %w", err)
 		}
 
@@ -270,61 +274,16 @@ func convertRequestToModel(req PostEventJSONRequestBody, campID uint) (*model.Ev
 		officialEventRequest, err := req.AsOfficialEventRequest()
 
 		if err != nil {
-			return nil, ErrInvalidRequestBody
+			return nil, errInvalidRequestBody
 		}
 
-		if err := copier.Copy(&eventModel, &officialEventRequest); err != nil {
+		if err := copier.Copy(&event, &officialEventRequest); err != nil {
 			return nil, fmt.Errorf("failed to copy OfficialEventRequest to model.Event: %w", err)
 		}
 
 	default:
-		return nil, ErrInvalidEventType
+		return nil, errInvalidEventType
 	}
 
-	eventModel.CampID = campID
-	return &eventModel, nil
-}
-
-// convertPutRequestToModel はPUTリクエストでmodel.Eventを更新する
-func convertPutRequestToModel(req PutEventJSONRequestBody, event *model.Event) error {
-	// Typeを取得するため、一旦DurationEventRequestを使う
-	durationEventRequest, durationErr := req.AsDurationEventRequest()
-
-	if durationErr != nil {
-		return ErrInvalidRequestBody
-	}
-
-	switch model.EventType(durationEventRequest.Type) {
-	case model.EventTypeDuration:
-		if err := copier.Copy(event, &durationEventRequest); err != nil {
-			return fmt.Errorf("failed to copy DurationEventRequest to model.Event: %w", err)
-		}
-
-	case model.EventTypeMoment:
-		momentEventRequest, err := req.AsMomentEventRequest()
-
-		if err != nil {
-			return ErrInvalidRequestBody
-		}
-
-		if err := copier.Copy(event, &momentEventRequest); err != nil {
-			return fmt.Errorf("failed to copy MomentEventRequest to model.Event: %w", err)
-		}
-
-	case model.EventTypeOfficial:
-		officialEventRequest, err := req.AsOfficialEventRequest()
-
-		if err != nil {
-			return ErrInvalidRequestBody
-		}
-
-		if err := copier.Copy(event, &officialEventRequest); err != nil {
-			return fmt.Errorf("failed to copy OfficialEventRequest to model.Event: %w", err)
-		}
-
-	default:
-		return ErrInvalidEventType
-	}
-
-	return nil
+	return &event, nil
 }
