@@ -156,23 +156,27 @@ type AnswerResponse struct {
 
 // CampRequest defines model for CampRequest.
 type CampRequest struct {
-	Description        string `json:"description"`
-	DisplayId          string `json:"displayId"`
-	IsDraft            bool   `json:"isDraft"`
-	IsPaymentOpen      bool   `json:"isPaymentOpen"`
-	IsRegistrationOpen bool   `json:"isRegistrationOpen"`
-	Name               string `json:"name"`
+	DateEnd            openapi_types.Date `json:"dateEnd"`
+	DateStart          openapi_types.Date `json:"dateStart"`
+	Description        string             `json:"description"`
+	DisplayId          string             `json:"displayId"`
+	IsDraft            bool               `json:"isDraft"`
+	IsPaymentOpen      bool               `json:"isPaymentOpen"`
+	IsRegistrationOpen bool               `json:"isRegistrationOpen"`
+	Name               string             `json:"name"`
 }
 
 // CampResponse defines model for CampResponse.
 type CampResponse struct {
-	Description        string `json:"description"`
-	DisplayId          string `json:"displayId"`
-	Id                 int    `json:"id"`
-	IsDraft            bool   `json:"isDraft"`
-	IsPaymentOpen      bool   `json:"isPaymentOpen"`
-	IsRegistrationOpen bool   `json:"isRegistrationOpen"`
-	Name               string `json:"name"`
+	DateEnd            openapi_types.Date `json:"dateEnd"`
+	DateStart          openapi_types.Date `json:"dateStart"`
+	Description        string             `json:"description"`
+	DisplayId          string             `json:"displayId"`
+	Id                 int                `json:"id"`
+	IsDraft            bool               `json:"isDraft"`
+	IsPaymentOpen      bool               `json:"isPaymentOpen"`
+	IsRegistrationOpen bool               `json:"isRegistrationOpen"`
+	Name               string             `json:"name"`
 }
 
 // DashboardResponse defines model for DashboardResponse.
@@ -343,7 +347,7 @@ type MomentEventRequest struct {
 	Description string                 `json:"description"`
 	Location    string                 `json:"location"`
 	Name        string                 `json:"name"`
-	Time        time.Time              `json:"time"`
+	Time        time.Time              `copier:"TimeStart" json:"time"`
 	Type        MomentEventRequestType `json:"type"`
 }
 
@@ -356,7 +360,7 @@ type MomentEventResponse struct {
 	Id          int                     `json:"id"`
 	Location    string                  `json:"location"`
 	Name        string                  `json:"name"`
-	Time        time.Time               `json:"time"`
+	Time        time.Time               `copier:"TimeStart" json:"time"`
 	Type        MomentEventResponseType `json:"type"`
 }
 

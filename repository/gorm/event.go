@@ -1,11 +1,16 @@
 package gorm
 
-import "github.com/traP-jp/rucQ/backend/model"
+import (
+	"context"
+
+	"github.com/traP-jp/rucQ/backend/model"
+	"gorm.io/gorm"
+)
 
 func (r *Repository) GetEvents() ([]model.Event, error) {
 	var events []model.Event
 
-	if err := r.db.Preload("Participants").Find(&events).Error; err != nil {
+	if err := r.db.Find(&events).Error; err != nil {
 		return nil, err
 	}
 
@@ -15,7 +20,7 @@ func (r *Repository) GetEvents() ([]model.Event, error) {
 func (r *Repository) GetEventByID(id uint) (*model.Event, error) {
 	var event model.Event
 
-	if err := r.db.Preload("Participants").First(&event, id).Error; err != nil {
+	if err := r.db.First(&event, id).Error; err != nil {
 		return nil, err
 	}
 
@@ -30,10 +35,12 @@ func (r *Repository) CreateEvent(event *model.Event) error {
 	return nil
 }
 
-func (r *Repository) UpdateEvent(ID uint, event *model.Event) error {
-	if err := r.db.
-		Where("id = ?", ID).
-		Save(event).Error; err != nil {
+func (r *Repository) UpdateEvent(ctx context.Context, ID uint, event *model.Event) error {
+	if _, err := gorm.G[*model.Event](r.db).Where(&model.Event{
+		Model: gorm.Model{
+			ID: ID,
+		},
+	}).Updates(ctx, event); err != nil {
 		return err
 	}
 
