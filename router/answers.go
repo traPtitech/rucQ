@@ -4,14 +4,16 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+
+	"github.com/traP-jp/rucQ/backend/api"
 )
 
 // PutAnswer アンケート回答編集
-func (s *Server) PutAnswer(e echo.Context, answerID AnswerId, params PutAnswerParams) error {
+func (s *Server) PutAnswer(e echo.Context, answerID api.AnswerId, params api.PutAnswerParams) error {
 	if params.XForwardedUser == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
 	}
-	var req PutAnswerJSONRequestBody
+	var req api.PutAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -104,7 +106,7 @@ func (s *Server) PutAnswer(e echo.Context, answerID AnswerId, params PutAnswerPa
 
 // PostAnswer アンケート回答作成
 // (POST /answers)
-func (s *Server) PostAnswer(c echo.Context, params PostAnswerParams) error {
+func (s *Server) PostAnswer(c echo.Context, params api.PostAnswerParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
 
+	"github.com/traP-jp/rucQ/backend/api"
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
@@ -19,7 +20,7 @@ func (s *Server) GetCamps(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response []CampResponse
+	var response []api.CampResponse
 
 	if err := copier.Copy(&response, &camps); err != nil {
 		e.Logger().Errorf("failed to copy camps: %v", err)
@@ -32,8 +33,8 @@ func (s *Server) GetCamps(e echo.Context) error {
 
 // AdminPostCamp 新規キャンプ追加
 // (POST /api/admin/camps)
-func (s *Server) AdminPostCamp(e echo.Context, params AdminPostCampParams) error {
-	var req AdminPostCampJSONRequestBody
+func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) error {
+	var req api.AdminPostCampJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -69,7 +70,7 @@ func (s *Server) AdminPostCamp(e echo.Context, params AdminPostCampParams) error
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response CampResponse
+	var response api.CampResponse
 
 	if err := copier.Copy(&response, &campModel); err != nil {
 		e.Logger().Errorf("failed to copy camp: %v", err)
@@ -80,7 +81,7 @@ func (s *Server) AdminPostCamp(e echo.Context, params AdminPostCampParams) error
 	return e.JSON(http.StatusCreated, response)
 }
 
-func (s *Server) GetCamp(e echo.Context, campID CampId) error {
+func (s *Server) GetCamp(e echo.Context, campID api.CampId) error {
 	camp, err := s.repo.GetCampByID(uint(campID))
 
 	if err != nil {
@@ -93,7 +94,7 @@ func (s *Server) GetCamp(e echo.Context, campID CampId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response CampResponse
+	var response api.CampResponse
 
 	if err := copier.Copy(&response, camp); err != nil {
 		e.Logger().Errorf("failed to copy camp: %v", err)
@@ -106,7 +107,7 @@ func (s *Server) GetCamp(e echo.Context, campID CampId) error {
 
 // AdminPutCamp キャンプ情報編集
 // (PUT /api/admin/camps/{campId})
-func (s *Server) AdminPutCamp(e echo.Context, campId CampId, params AdminPutCampParams) error {
+func (s *Server) AdminPutCamp(e echo.Context, campId api.CampId, params api.AdminPutCampParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -119,7 +120,7 @@ func (s *Server) AdminPutCamp(e echo.Context, campId CampId, params AdminPutCamp
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req AdminPutCampJSONRequestBody
+	var req api.AdminPutCampJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -149,7 +150,7 @@ func (s *Server) AdminPutCamp(e echo.Context, campId CampId, params AdminPutCamp
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response CampResponse
+	var response api.CampResponse
 
 	if err := copier.Copy(&response, camp); err != nil {
 		e.Logger().Errorf("failed to copy camp: %v", err)
@@ -162,7 +163,7 @@ func (s *Server) AdminPutCamp(e echo.Context, campId CampId, params AdminPutCamp
 
 // AdminDeleteCamp キャンプ削除
 // (DELETE /api/admin/camps/{campId})
-func (s *Server) AdminDeleteCamp(e echo.Context, campID CampId, params AdminDeleteCampParams) error {
+func (s *Server) AdminDeleteCamp(e echo.Context, campID api.CampId, params api.AdminDeleteCampParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -184,7 +185,7 @@ func (s *Server) AdminDeleteCamp(e echo.Context, campID CampId, params AdminDele
 }
 
 // PostCampRegister 合宿に登録
-func (s *Server) PostCampRegister(e echo.Context, campID CampId, params PostCampRegisterParams) error {
+func (s *Server) PostCampRegister(e echo.Context, campID api.CampId, params api.PostCampRegisterParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -204,7 +205,7 @@ func (s *Server) PostCampRegister(e echo.Context, campID CampId, params PostCamp
 }
 
 // DeleteCampRegister 合宿登録を取り消し
-func (s *Server) DeleteCampRegister(e echo.Context, campID CampId, params DeleteCampRegisterParams) error {
+func (s *Server) DeleteCampRegister(e echo.Context, campID api.CampId, params api.DeleteCampRegisterParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -224,7 +225,7 @@ func (s *Server) DeleteCampRegister(e echo.Context, campID CampId, params Delete
 }
 
 // GetCampParticipants 合宿の参加者一覧を取得
-func (s *Server) GetCampParticipants(e echo.Context, campID CampId) error {
+func (s *Server) GetCampParticipants(e echo.Context, campID api.CampId) error {
 	participants, err := s.repo.GetCampParticipants(e.Request().Context(), uint(campID))
 
 	// TODO: Not found エラーのハンドリングを追加（APIスキーマにも追加する）
@@ -234,7 +235,7 @@ func (s *Server) GetCampParticipants(e echo.Context, campID CampId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response []UserResponse
+	var response []api.UserResponse
 
 	if err := copier.Copy(&response, &participants); err != nil {
 		e.Logger().Errorf("failed to copy participants: %v", err)

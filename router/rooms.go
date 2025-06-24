@@ -6,6 +6,8 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
+
+	"github.com/traP-jp/rucQ/backend/api"
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
@@ -18,7 +20,7 @@ func (s *Server) GetRooms(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res []RoomResponse
+	var res []api.RoomResponse
 
 	if err := copier.Copy(&res, &rooms); err != nil {
 		e.Logger().Errorf("failed to copy models to response: %v", err)
@@ -29,7 +31,7 @@ func (s *Server) GetRooms(e echo.Context) error {
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) AdminPostRoom(e echo.Context, params AdminPostRoomParams) error {
+func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) error {
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -42,7 +44,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params AdminPostRoomParams) error
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req AdminPostRoomJSONRequestBody
+	var req api.AdminPostRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -84,7 +86,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params AdminPostRoomParams) error
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res RoomResponse
+	var res api.RoomResponse
 
 	if err := copier.Copy(&res, &roomModel); err != nil {
 		e.Logger().Errorf("failed to copy model to response: %v", err)
@@ -95,7 +97,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params AdminPostRoomParams) error
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) AdminPutRoom(e echo.Context, roomId RoomId, params AdminPutRoomParams) error {
+func (s *Server) AdminPutRoom(e echo.Context, roomId api.RoomId, params api.AdminPutRoomParams) error {
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -108,7 +110,7 @@ func (s *Server) AdminPutRoom(e echo.Context, roomId RoomId, params AdminPutRoom
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req AdminPutRoomJSONRequestBody
+	var req api.AdminPutRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -156,7 +158,7 @@ func (s *Server) AdminPutRoom(e echo.Context, roomId RoomId, params AdminPutRoom
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res RoomResponse
+	var res api.RoomResponse
 
 	if err := copier.Copy(&res, roomModel); err != nil {
 		e.Logger().Errorf("failed to copy model to response: %v", err)

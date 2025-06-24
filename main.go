@@ -8,10 +8,12 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	"github.com/traP-jp/rucQ/backend/migration"
-	"github.com/traP-jp/rucQ/backend/router"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	"github.com/traP-jp/rucQ/backend/api"
+	"github.com/traP-jp/rucQ/backend/migration"
+	"github.com/traP-jp/rucQ/backend/router"
 )
 
 func main() {
@@ -50,7 +52,7 @@ func main() {
 
 	debug := os.Getenv("RUCQ_DEBUG") == "true"
 
-	router.RegisterHandlers(e, router.NewServer(db, debug))
+	api.RegisterHandlers(e, router.NewServer(db, debug))
 	e.Logger.Fatal(e.Start(os.Getenv("RUCQ_BACKEND_ADDR")))
 
 }
