@@ -28,3 +28,4 @@ bot.env
 # .env
 
 .DS_Store
+.vscode/

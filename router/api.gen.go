@@ -347,7 +347,7 @@ type MomentEventRequest struct {
 	Description string                 `json:"description"`
 	Location    string                 `json:"location"`
 	Name        string                 `json:"name"`
-	Time        time.Time              `json:"time"`
+	Time        time.Time              `copier:"TimeStart" json:"time"`
 	Type        MomentEventRequestType `json:"type"`
 }
 
@@ -360,7 +360,7 @@ type MomentEventResponse struct {
 	Id          int                     `json:"id"`
 	Location    string                  `json:"location"`
 	Name        string                  `json:"name"`
-	Time        time.Time               `json:"time"`
+	Time        time.Time               `copier:"TimeStart" json:"time"`
 	Type        MomentEventResponseType `json:"type"`
 }
 
