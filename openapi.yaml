@@ -1518,6 +1518,12 @@ components:
           type: boolean
         isPaymentOpen:
           type: boolean
+        dateStart:
+          type: string
+          format: date
+        dateEnd:
+          type: string
+          format: date
       required:
         - displayId
         - name
@@ -1525,6 +1531,8 @@ components:
         - isDraft
         - isRegistrationOpen
         - isPaymentOpen
+        - dateStart
+        - dateEnd
     CampResponse:
       type: object
       properties:
@@ -1542,6 +1550,12 @@ components:
           type: boolean
         isPaymentOpen:
           type: boolean
+        dateStart:
+          type: string
+          format: date
+        dateEnd:
+          type: string
+          format: date
       required:
         - id
         - displayId
@@ -1550,6 +1564,8 @@ components:
         - isDraft
         - isRegistrationOpen
         - isPaymentOpen
+        - dateStart
+        - dateEnd
     EventRequest:
       oneOf:
         - $ref: "#/components/schemas/DurationEventRequest"
