@@ -14,6 +14,7 @@ require (
 	github.com/labstack/gommon v0.4.2
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/traPtitech/go-traq v0.0.0-20241109062858-3757c489f610
+	go.uber.org/mock v0.5.2
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.30.0
 )
@@ -51,4 +52,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
+tool (
+	github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
+	go.uber.org/mock/mockgen
+)
