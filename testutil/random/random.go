@@ -1,6 +1,7 @@
 package random
 
 import (
+	"math"
 	"math/rand/v2"
 	"testing"
 	"time"
@@ -26,13 +27,8 @@ func AlphaNumericString(t *testing.T, maxLength uint) string {
 func PositiveInt(t *testing.T) int {
 	t.Helper()
 
-	var n int
-
-	for n <= 0 {
-		n = rand.Int()
-	}
-
-	return n
+	// intの範囲に収まる正の整数を生成
+	return int(rand.UintN(math.MaxInt)) + 1
 }
 
 func Time(t *testing.T) time.Time {
