@@ -1,6 +1,8 @@
 module github.com/traP-jp/rucQ/backend
 
-go 1.23.4
+go 1.24
+
+toolchain go1.24.4
 
 require (
 	github.com/go-gormigrate/gormigrate/v2 v2.1.3
