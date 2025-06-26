@@ -22,15 +22,15 @@ func TestGetEvents(t *testing.T) {
 		h := setup(t)
 		defer h.close()
 
-		campID := random.PositiveNumber(t)
+		campID := uint(random.PositiveInt(t))
 		timeStart1 := random.Time(t)
-		timeEnd1 := timeStart1.Add(time.Duration(random.PositiveNumber(t)))
+		timeEnd1 := timeStart1.Add(time.Duration(random.PositiveInt(t)))
 		userID := random.AlphaNumericString(t, 32)
 		color := "blue" // TODO: validなものからランダムに選ぶ
 
 		durationEvent := model.Event{
 			Model: gorm.Model{
-				ID: random.PositiveNumber(t),
+				ID: uint(random.PositiveInt(t)),
 			},
 			Type:         model.EventTypeDuration,
 			Name:         random.AlphaNumericString(t, 20),
@@ -46,7 +46,7 @@ func TestGetEvents(t *testing.T) {
 
 		momentEvent := model.Event{
 			Model: gorm.Model{
-				ID: random.PositiveNumber(t),
+				ID: uint(random.PositiveInt(t)),
 			},
 			Type:        model.EventTypeMoment,
 			Name:        random.AlphaNumericString(t, 20),
@@ -56,11 +56,11 @@ func TestGetEvents(t *testing.T) {
 		}
 
 		timeStart3 := random.Time(t)
-		timeEnd3 := timeStart3.Add(time.Duration(random.PositiveNumber(t)))
+		timeEnd3 := timeStart3.Add(time.Duration(random.PositiveInt(t)))
 
 		officialEvent := model.Event{
 			Model: gorm.Model{
-				ID: random.PositiveNumber(t),
+				ID: uint(random.PositiveInt(t)),
 			},
 			Type:        model.EventTypeOfficial,
 			Name:        random.AlphaNumericString(t, 20),

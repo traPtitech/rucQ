@@ -23,10 +23,16 @@ func AlphaNumericString(t *testing.T, maxLength uint) string {
 	return result
 }
 
-func PositiveNumber(t *testing.T) uint {
+func PositiveInt(t *testing.T) int {
 	t.Helper()
 
-	return rand.Uint() + 1
+	var n int
+
+	for n <= 0 {
+		n = rand.Int()
+	}
+
+	return n
 }
 
 func Time(t *testing.T) time.Time {
@@ -35,5 +41,6 @@ func Time(t *testing.T) time.Time {
 	rand1 := rand.Int()
 	rand2 := rand.Int()
 
-	return time.Now().Add(time.Duration(rand1 - rand2))
+	// ローカルのタイムゾーンが使われることによる不整合を回避
+	return time.Now().UTC().Add(time.Duration(rand1 - rand2))
 }
