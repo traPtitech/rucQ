@@ -5,10 +5,12 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
+
+	"github.com/traP-jp/rucQ/backend/api"
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-func (s *Server) AdminPostOption(e echo.Context, params AdminPostOptionParams) error {
+func (s *Server) AdminPostOption(e echo.Context, params api.AdminPostOptionParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -21,7 +23,7 @@ func (s *Server) AdminPostOption(e echo.Context, params AdminPostOptionParams) e
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req AdminPostOptionJSONRequestBody
+	var req api.AdminPostOptionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Errorf("failed to bind request body: %v", err)
@@ -43,7 +45,7 @@ func (s *Server) AdminPostOption(e echo.Context, params AdminPostOptionParams) e
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res OptionResponse
+	var res api.OptionResponse
 
 	if err := copier.Copy(&res, &option); err != nil {
 		e.Logger().Errorf("failed to copy response body: %v", err)
@@ -54,6 +56,6 @@ func (s *Server) AdminPostOption(e echo.Context, params AdminPostOptionParams) e
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) AdminPutOption(e echo.Context, optionId OptionId, params AdminPutOptionParams) error {
+func (s *Server) AdminPutOption(e echo.Context, optionId api.OptionId, params api.AdminPutOptionParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
 }

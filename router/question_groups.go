@@ -6,10 +6,12 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
+
+	"github.com/traP-jp/rucQ/backend/api"
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-func (s *Server) GetQuestionGroups(e echo.Context, campId CampId) error {
+func (s *Server) GetQuestionGroups(e echo.Context, campId api.CampId) error {
 	questionGroups, err := s.repo.GetQuestionGroups()
 
 	if err != nil {
@@ -18,7 +20,7 @@ func (s *Server) GetQuestionGroups(e echo.Context, campId CampId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res []QuestionGroupResponse
+	var res []api.QuestionGroupResponse
 
 	if err := copier.Copy(&res, &questionGroups); err != nil {
 		e.Logger().Errorf("failed to copy response body: %v", err)
@@ -29,7 +31,7 @@ func (s *Server) GetQuestionGroups(e echo.Context, campId CampId) error {
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID QuestionGroupId) error {
+func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID api.QuestionGroupId) error {
 	questionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupID))
 
 	if err != nil {
@@ -41,7 +43,7 @@ func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID QuestionGroupI
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res QuestionGroupResponse
+	var res api.QuestionGroupResponse
 
 	if err := copier.Copy(&res, questionGroup); err != nil {
 		e.Logger().Errorf("failed to copy response body: %v", err)
@@ -52,7 +54,7 @@ func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID QuestionGroupI
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) AdminPostQuestionGroup(e echo.Context, campId CampId, params AdminPostQuestionGroupParams) error {
+func (s *Server) AdminPostQuestionGroup(e echo.Context, campId api.CampId, params api.AdminPostQuestionGroupParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -65,7 +67,7 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, campId CampId, params Ad
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req AdminPostQuestionGroupJSONRequestBody
+	var req api.AdminPostQuestionGroupJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Errorf("failed to bind request body: %v", err)
@@ -87,7 +89,7 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, campId CampId, params Ad
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res QuestionGroupResponse
+	var res api.QuestionGroupResponse
 
 	if err := copier.Copy(&res, &questionGroup); err != nil {
 		e.Logger().Errorf("failed to copy response body: %v", err)
@@ -98,7 +100,7 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, campId CampId, params Ad
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupParams) error {
+func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId api.QuestionGroupId, params api.AdminPutQuestionGroupParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -111,7 +113,7 @@ func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId QuestionG
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req AdminPutQuestionGroupJSONRequestBody
+	var req api.AdminPutQuestionGroupJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Errorf("failed to bind request body: %v", err)
@@ -141,7 +143,7 @@ func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId QuestionG
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res QuestionGroupResponse
+	var res api.QuestionGroupResponse
 
 	if err := copier.Copy(&res, updateQuestionGroup); err != nil {
 		e.Logger().Errorf("failed to copy response body: %v", err)
@@ -152,7 +154,7 @@ func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId QuestionG
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) AdminDeleteQuestionGroup(e echo.Context, questionGroupId QuestionGroupId, params AdminDeleteQuestionGroupParams) error {
+func (s *Server) AdminDeleteQuestionGroup(e echo.Context, questionGroupId api.QuestionGroupId, params api.AdminDeleteQuestionGroupParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {

@@ -4,141 +4,143 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+
+	"github.com/traP-jp/rucQ/backend/api"
 )
 
 // 欠けているメソッドのスタブ実装
 
 // AdminDeleteImage 画像を削除（管理者用）
-func (s *Server) AdminDeleteImage(e echo.Context, imageId ImageId, params AdminDeleteImageParams) error {
+func (s *Server) AdminDeleteImage(e echo.Context, imageId api.ImageId, params api.AdminDeleteImageParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteImage not implemented")
 }
 
 // AdminPutImage 画像を更新（管理者用）
-func (s *Server) AdminPutImage(e echo.Context, imageId ImageId, params AdminPutImageParams) error {
+func (s *Server) AdminPutImage(e echo.Context, imageId api.ImageId, params api.AdminPutImageParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutImage not implemented")
 }
 
 // AdminPostImage 画像をアップロード（管理者用）
-func (s *Server) AdminPostImage(e echo.Context, campId CampId, params AdminPostImageParams) error {
+func (s *Server) AdminPostImage(e echo.Context, campId api.CampId, params api.AdminPostImageParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostImage not implemented")
 }
 
 // AdminGetPayments 支払い情報の一覧を取得（管理者用）
-func (s *Server) AdminGetPayments(e echo.Context, campId CampId, params AdminGetPaymentsParams) error {
+func (s *Server) AdminGetPayments(e echo.Context, campId api.CampId, params api.AdminGetPaymentsParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetPayments not implemented")
 }
 
 // AdminPostPayment 支払い情報を作成（管理者用）
-func (s *Server) AdminPostPayment(e echo.Context, campId CampId, params AdminPostPaymentParams) error {
+func (s *Server) AdminPostPayment(e echo.Context, campId api.CampId, params api.AdminPostPaymentParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostPayment not implemented")
 }
 
 // AdminPutPayment 支払い情報を更新（管理者用）
-func (s *Server) AdminPutPayment(e echo.Context, paymentId PaymentId, params AdminPutPaymentParams) error {
+func (s *Server) AdminPutPayment(e echo.Context, paymentId api.PaymentId, params api.AdminPutPaymentParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutPayment not implemented")
 }
 
 // AdminPostRollCall 点呼を作成（管理者用）
-func (s *Server) AdminPostRollCall(e echo.Context, campId CampId, params AdminPostRollCallParams) error {
+func (s *Server) AdminPostRollCall(e echo.Context, campId api.CampId, params api.AdminPostRollCallParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostRollCall not implemented")
 }
 
 // AdminPostRoomGroup 部屋グループを作成（管理者用）
-func (s *Server) AdminPostRoomGroup(e echo.Context, campId CampId, params AdminPostRoomGroupParams) error {
+func (s *Server) AdminPostRoomGroup(e echo.Context, campId api.CampId, params api.AdminPostRoomGroupParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostRoomGroup not implemented")
 }
 
 // AdminDeleteRoomGroup 部屋グループを削除（管理者用）
-func (s *Server) AdminDeleteRoomGroup(e echo.Context, roomGroupId RoomGroupId, params AdminDeleteRoomGroupParams) error {
+func (s *Server) AdminDeleteRoomGroup(e echo.Context, roomGroupId api.RoomGroupId, params api.AdminDeleteRoomGroupParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteRoomGroup not implemented")
 }
 
 // AdminPutRoomGroup 部屋グループを更新（管理者用）
-func (s *Server) AdminPutRoomGroup(e echo.Context, roomGroupId RoomGroupId, params AdminPutRoomGroupParams) error {
+func (s *Server) AdminPutRoomGroup(e echo.Context, roomGroupId api.RoomGroupId, params api.AdminPutRoomGroupParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutRoomGroup not implemented")
 }
 
 // AdminDeleteRoom 部屋を削除（管理者用）
-func (s *Server) AdminDeleteRoom(e echo.Context, roomId RoomId, params AdminDeleteRoomParams) error {
+func (s *Server) AdminDeleteRoom(e echo.Context, roomId api.RoomId, params api.AdminDeleteRoomParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteRoom not implemented")
 }
 
 // AdminDeleteOption 選択肢を削除（管理者用）
-func (s *Server) AdminDeleteOption(e echo.Context, optionId OptionId, params AdminDeleteOptionParams) error {
+func (s *Server) AdminDeleteOption(e echo.Context, optionId api.OptionId, params api.AdminDeleteOptionParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteOption not implemented")
 }
 
 // AdminGetAnswers 回答の一覧を取得（管理者用）
-func (s *Server) AdminGetAnswers(e echo.Context, questionId QuestionId, params AdminGetAnswersParams) error {
+func (s *Server) AdminGetAnswers(e echo.Context, questionId api.QuestionId, params api.AdminGetAnswersParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetAnswers not implemented")
 }
 
 // AdminPutAnswer 管理者が回答を更新
-func (s *Server) AdminPutAnswer(e echo.Context, answerId AnswerId, params AdminPutAnswerParams) error {
+func (s *Server) AdminPutAnswer(e echo.Context, answerId api.AnswerId, params api.AdminPutAnswerParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutAnswer not implemented")
 }
 
 // AdminGetUser ユーザー詳細を取得（管理者用）
-func (s *Server) AdminGetUser(e echo.Context, traqId string, params AdminGetUserParams) error {
+func (s *Server) AdminGetUser(e echo.Context, traqId string, params api.AdminGetUserParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetUser not implemented")
 }
 
 // GetImages 画像の一覧を取得
-func (s *Server) GetImages(e echo.Context, campId CampId) error {
+func (s *Server) GetImages(e echo.Context, campId api.CampId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetImages not implemented")
 }
 
 // GetImage 画像を取得
-func (s *Server) GetImage(e echo.Context, imageId ImageId) error {
+func (s *Server) GetImage(e echo.Context, imageId api.ImageId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetImage not implemented")
 }
 
 // GetDashboard 自分の参加する合宿を取得
-func (s *Server) GetDashboard(e echo.Context, campId CampId, params GetDashboardParams) error {
+func (s *Server) GetDashboard(e echo.Context, campId api.CampId, params api.GetDashboardParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetDashboard not implemented")
 }
 
 // GetRollCalls 点呼の一覧を取得
-func (s *Server) GetRollCalls(e echo.Context, campId CampId) error {
+func (s *Server) GetRollCalls(e echo.Context, campId api.CampId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetRollCalls not implemented")
 }
 
 // GetRoomGroups 部屋グループの一覧を取得
-func (s *Server) GetRoomGroups(e echo.Context, campId CampId) error {
+func (s *Server) GetRoomGroups(e echo.Context, campId api.CampId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetRoomGroups not implemented")
 }
 
 // GetMyAnswers 自分の回答一覧を取得
-func (s *Server) GetMyAnswers(e echo.Context, questionId QuestionId, params GetMyAnswersParams) error {
+func (s *Server) GetMyAnswers(e echo.Context, questionId api.QuestionId, params api.GetMyAnswersParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetMyAnswers not implemented")
 }
 
 // GetAnswers 回答の一覧を取得
-func (s *Server) GetAnswers(e echo.Context, questionId QuestionId) error {
+func (s *Server) GetAnswers(e echo.Context, questionId api.QuestionId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetAnswers not implemented")
 }
 
 // DeleteReaction リアクションを削除
-func (s *Server) DeleteReaction(e echo.Context, rollCallId RollCallId, params DeleteReactionParams) error {
+func (s *Server) DeleteReaction(e echo.Context, rollCallId api.RollCallId, params api.DeleteReactionParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "DeleteReaction not implemented")
 }
 
 // PutReaction リアクションを更新
-func (s *Server) PutReaction(e echo.Context, rollCallId RollCallId, params PutReactionParams) error {
+func (s *Server) PutReaction(e echo.Context, rollCallId api.RollCallId, params api.PutReactionParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "PutReaction not implemented")
 }
 
 // GetRollCallReactions 点呼のリアクション一覧を取得
-func (s *Server) GetRollCallReactions(e echo.Context, rollCallId RollCallId) error {
+func (s *Server) GetRollCallReactions(e echo.Context, rollCallId api.RollCallId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetRollCallReactions not implemented")
 }
 
 // PostRollCallReaction 点呼にリアクション
-func (s *Server) PostRollCallReaction(e echo.Context, rollCallId RollCallId, params PostRollCallReactionParams) error {
+func (s *Server) PostRollCallReaction(e echo.Context, rollCallId api.RollCallId, params api.PostRollCallReactionParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "PostRollCallReaction not implemented")
 }
 
 // StreamRollCallReactions 点呼のリアクションをストリーミング
-func (s *Server) StreamRollCallReactions(e echo.Context, rollCallId RollCallId) error {
+func (s *Server) StreamRollCallReactions(e echo.Context, rollCallId api.RollCallId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "StreamRollCallReactions not implemented")
 }

@@ -6,6 +6,8 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
+
+	"github.com/traP-jp/rucQ/backend/api"
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
@@ -18,7 +20,7 @@ func (s *Server) GetQuestions(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var questionsResponse []QuestionResponse
+	var questionsResponse []api.QuestionResponse
 
 	if err := copier.Copy(&questionsResponse, &questions); err != nil {
 		e.Logger().Errorf("failed to copy questions: %v", err)
@@ -29,7 +31,7 @@ func (s *Server) GetQuestions(e echo.Context) error {
 	return e.JSON(http.StatusOK, questionsResponse)
 }
 
-func (s *Server) AdminPostQuestion(e echo.Context, params AdminPostQuestionParams) error {
+func (s *Server) AdminPostQuestion(e echo.Context, params api.AdminPostQuestionParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -42,7 +44,7 @@ func (s *Server) AdminPostQuestion(e echo.Context, params AdminPostQuestionParam
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req AdminPostQuestionJSONRequestBody
+	var req api.AdminPostQuestionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -62,7 +64,7 @@ func (s *Server) AdminPostQuestion(e echo.Context, params AdminPostQuestionParam
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var questionResponse QuestionResponse
+	var questionResponse api.QuestionResponse
 
 	if err := copier.Copy(&questionResponse, &questionModel); err != nil {
 		e.Logger().Errorf("failed to copy model to response: %v", err)
@@ -73,7 +75,7 @@ func (s *Server) AdminPostQuestion(e echo.Context, params AdminPostQuestionParam
 	return e.JSON(http.StatusCreated, &questionResponse)
 }
 
-func (s *Server) AdminDeleteQuestion(e echo.Context, questionId QuestionId, params AdminDeleteQuestionParams) error {
+func (s *Server) AdminDeleteQuestion(e echo.Context, questionId api.QuestionId, params api.AdminDeleteQuestionParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -99,7 +101,7 @@ func (s *Server) AdminDeleteQuestion(e echo.Context, questionId QuestionId, para
 	return e.NoContent(http.StatusNoContent)
 }
 
-func (s *Server) GetQuestion(e echo.Context, questionID QuestionId) error {
+func (s *Server) GetQuestion(e echo.Context, questionID api.QuestionId) error {
 	question, err := s.repo.GetQuestionByID(uint(questionID))
 
 	if err != nil {
@@ -112,7 +114,7 @@ func (s *Server) GetQuestion(e echo.Context, questionID QuestionId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var questionResponse QuestionResponse
+	var questionResponse api.QuestionResponse
 
 	if err := copier.Copy(&questionResponse, &question); err != nil {
 		e.Logger().Errorf("failed to copy question: %v", err)
@@ -123,7 +125,7 @@ func (s *Server) GetQuestion(e echo.Context, questionID QuestionId) error {
 	return e.JSON(http.StatusOK, &questionResponse)
 }
 
-func (s *Server) AdminPutQuestion(e echo.Context, questionId QuestionId, params AdminPutQuestionParams) error {
+func (s *Server) AdminPutQuestion(e echo.Context, questionId api.QuestionId, params api.AdminPutQuestionParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -136,7 +138,7 @@ func (s *Server) AdminPutQuestion(e echo.Context, questionId QuestionId, params 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req AdminPutQuestionJSONRequestBody
+	var req api.AdminPutQuestionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		return e.JSON(http.StatusBadRequest, err)
@@ -160,7 +162,7 @@ func (s *Server) AdminPutQuestion(e echo.Context, questionId QuestionId, params 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var questionResponse QuestionResponse
+	var questionResponse api.QuestionResponse
 
 	if err := copier.Copy(&questionResponse, &questionModel); err != nil {
 		e.Logger().Errorf("failed to copy model to response: %v", err)

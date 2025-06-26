@@ -5,9 +5,11 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
+
+	"github.com/traP-jp/rucQ/backend/api"
 )
 
-func (s *Server) GetMe(e echo.Context, params GetMeParams) error {
+func (s *Server) GetMe(e echo.Context, params api.GetMeParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -16,7 +18,7 @@ func (s *Server) GetMe(e echo.Context, params GetMeParams) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response UserResponse
+	var response api.UserResponse
 
 	if err := copier.Copy(&response, &user); err != nil {
 		e.Logger().Errorf("failed to copy user: %v", err)
@@ -36,7 +38,7 @@ func (s *Server) GetStaffs(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response []UserResponse
+	var response []api.UserResponse
 
 	if err := copier.Copy(&response, &staffs); err != nil {
 		e.Logger().Errorf("failed to copy staffs: %v", err)
@@ -48,7 +50,7 @@ func (s *Server) GetStaffs(e echo.Context) error {
 }
 
 // AdminPutUser ユーザー情報を更新（管理者用）
-func (s *Server) AdminPutUser(e echo.Context, targetUserID string, params AdminPutUserParams) error {
+func (s *Server) AdminPutUser(e echo.Context, targetUserID string, params api.AdminPutUserParams) error {
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -70,7 +72,7 @@ func (s *Server) AdminPutUser(e echo.Context, targetUserID string, params AdminP
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var req AdminPutUserJSONRequestBody
+	var req api.AdminPutUserJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Errorf("failed to bind request: %v", err)
@@ -91,7 +93,7 @@ func (s *Server) AdminPutUser(e echo.Context, targetUserID string, params AdminP
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response UserResponse
+	var response api.UserResponse
 
 	if err := copier.Copy(&response, targetUser); err != nil {
 		e.Logger().Errorf("failed to copy updated user: %v", err)
