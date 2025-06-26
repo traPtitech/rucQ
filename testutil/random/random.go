@@ -3,6 +3,7 @@ package random
 import (
 	"math"
 	"math/rand/v2"
+	"strings"
 	"testing"
 	"time"
 )
@@ -14,14 +15,15 @@ func AlphaNumericString(t *testing.T, maxLength uint) string {
 
 	length := rand.UintN(maxLength) + 1
 
-	var result string
+	var builder strings.Builder
 
 	for range length {
 		index := rand.UintN(uint(len(charset)))
-		result += string(charset[index])
+
+		builder.WriteByte(charset[index])
 	}
 
-	return result
+	return builder.String()
 }
 
 func Bool(t *testing.T) bool {
