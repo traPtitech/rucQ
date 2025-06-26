@@ -1,17 +1,12 @@
 package router
 
-import (
-	"gorm.io/gorm"
-
-	"github.com/traP-jp/rucQ/backend/repository"
-	gormRepository "github.com/traP-jp/rucQ/backend/repository/gorm"
-)
+import "github.com/traP-jp/rucQ/backend/repository"
 
 type Server struct {
 	repo  repository.Repository
 	debug bool
 }
 
-func NewServer(db *gorm.DB, debug bool) *Server {
-	return &Server{repo: gormRepository.NewGormRepository(db), debug: debug}
+func NewServer(repo repository.Repository, debug bool) *Server {
+	return &Server{repo: repo, debug: debug}
 }

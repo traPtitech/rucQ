@@ -13,6 +13,7 @@ import (
 
 	"github.com/traP-jp/rucQ/backend/api"
 	"github.com/traP-jp/rucQ/backend/migration"
+	gormRepository "github.com/traP-jp/rucQ/backend/repository/gorm"
 	"github.com/traP-jp/rucQ/backend/router"
 )
 
@@ -51,8 +52,9 @@ func main() {
 	e.POST("/api/traq-events", router.TraqEventHandler)
 
 	debug := os.Getenv("RUCQ_DEBUG") == "true"
+	repo := gormRepository.NewGormRepository(db)
 
-	api.RegisterHandlers(e, router.NewServer(db, debug))
+	api.RegisterHandlers(e, router.NewServer(repo, debug))
 	e.Logger.Fatal(e.Start(os.Getenv("RUCQ_BACKEND_ADDR")))
 
 }
