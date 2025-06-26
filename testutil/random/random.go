@@ -24,6 +24,12 @@ func AlphaNumericString(t *testing.T, maxLength uint) string {
 	return result
 }
 
+func Bool(t *testing.T) bool {
+	t.Helper()
+
+	return rand.UintN(2) == 0
+}
+
 func PositiveInt(t *testing.T) int {
 	t.Helper()
 
