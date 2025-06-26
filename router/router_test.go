@@ -40,12 +40,6 @@ type testHandler struct {
 	server *httptest.Server
 }
 
-func (h *testHandler) close() {
-	if h.server != nil {
-		h.server.Close()
-	}
-}
-
 func setup(t *testing.T) *testHandler {
 	t.Helper()
 
@@ -56,8 +50,14 @@ func setup(t *testing.T) *testHandler {
 
 	api.RegisterHandlers(e, server)
 
+	httptestServer := httptest.NewServer(e)
+
+	t.Cleanup(func() {
+		httptestServer.Close()
+	})
+
 	return &testHandler{
 		repo:   repo,
-		server: httptest.NewServer(e),
+		server: httptestServer,
 	}
 }

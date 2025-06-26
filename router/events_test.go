@@ -20,8 +20,6 @@ func TestGetEvents(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		defer h.close()
-
 		campID := uint(random.PositiveInt(t))
 		timeStart1 := random.Time(t)
 		timeEnd1 := timeStart1.Add(time.Duration(random.PositiveInt(t)))
