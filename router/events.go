@@ -10,7 +10,7 @@ import (
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-func (s *Server) GetEvents(e echo.Context, campId api.CampId) error {
+func (s *Server) GetEvents(e echo.Context, campID api.CampId) error {
 	events, err := s.repo.GetEvents()
 
 	if err != nil {
@@ -30,7 +30,7 @@ func (s *Server) GetEvents(e echo.Context, campId api.CampId) error {
 	return e.JSON(http.StatusOK, &response)
 }
 
-func (s *Server) PostEvent(e echo.Context, campId api.CampId, params api.PostEventParams) error {
+func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEventParams) error {
 	var req api.PostEventJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
@@ -43,7 +43,7 @@ func (s *Server) PostEvent(e echo.Context, campId api.CampId, params api.PostEve
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	eventModel.CampID = uint(campId)
+	eventModel.CampID = uint(campID)
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
