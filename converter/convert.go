@@ -9,6 +9,8 @@ func Convert[T any](src any) (T, error) {
 		Converters: []copier.TypeConverter{
 			campSchemaToModel,
 			campModelToSchema,
+			eventSchemaToModel,
+			eventModelToSchema,
 		},
 	})
 
