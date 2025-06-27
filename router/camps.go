@@ -137,6 +137,7 @@ func (s *Server) AdminPutCamp(e echo.Context, campID api.CampId, params api.Admi
 
 	newCamp.ID = uint(campID)
 
+	// TODO: Not foundエラーのハンドリングを追加
 	if err := s.repo.UpdateCamp(uint(campID), &newCamp); err != nil {
 		e.Logger().Errorf("failed to update camp: %v", err)
 
