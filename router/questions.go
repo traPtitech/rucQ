@@ -31,50 +31,6 @@ func (s *Server) GetQuestions(e echo.Context) error {
 	return e.JSON(http.StatusOK, questionsResponse)
 }
 
-func (s *Server) AdminPostQuestion(e echo.Context, params api.AdminPostQuestionParams) error {
-	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
-
-	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	if !user.IsStaff {
-		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
-	}
-
-	var req api.AdminPostQuestionJSONRequestBody
-
-	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
-	}
-
-	var questionModel model.Question
-
-	if err := copier.Copy(&questionModel, &req); err != nil {
-		e.Logger().Errorf("failed to copy request to model: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	if err := s.repo.CreateQuestion(&questionModel); err != nil {
-		e.Logger().Errorf("failed to create question: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	var questionResponse api.QuestionResponse
-
-	if err := copier.Copy(&questionResponse, &questionModel); err != nil {
-		e.Logger().Errorf("failed to copy model to response: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	return e.JSON(http.StatusCreated, &questionResponse)
-}
-
 func (s *Server) AdminDeleteQuestion(e echo.Context, questionId api.QuestionId, params api.AdminDeleteQuestionParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
