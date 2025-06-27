@@ -14,6 +14,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/traP-jp/rucQ/backend/migration"
+	"github.com/traP-jp/rucQ/backend/model"
+	"github.com/traP-jp/rucQ/backend/testutil/random"
 )
 
 func setup(t *testing.T) *Repository {
@@ -67,4 +69,31 @@ func setup(t *testing.T) *Repository {
 	require.NoError(t, err)
 
 	return NewGormRepository(db)
+}
+
+func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
+	t.Helper()
+
+	dateStart := random.Time(t)
+	dateEnd := dateStart.Add(time.Duration(random.PositiveInt(t)))
+	camp := &model.Camp{
+		DisplayID:          random.AlphaNumericString(t, 10),
+		Name:               random.AlphaNumericString(t, 20),
+		Description:        random.AlphaNumericString(t, 100),
+		IsDraft:            random.Bool(t),
+		IsPaymentOpen:      random.Bool(t),
+		IsRegistrationOpen: random.Bool(t),
+		DateStart:          dateStart,
+		DateEnd:            dateEnd,
+	}
+	err := r.CreateCamp(camp)
+
+	require.NoError(t, err)
+
+	// 時刻の精度などを揃えるため再取得する
+	camp, err = r.GetCampByID(camp.ID)
+
+	require.NoError(t, err)
+
+	return *camp
 }
