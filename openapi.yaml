@@ -486,33 +486,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/admin/questions:
-    post:
-      summary: 質問を作成（管理者用）
-      tags:
-        - Questions
-      operationId: adminPostQuestion
-      parameters:
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/QuestionRequest"
-      responses:
-        "201":
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QuestionResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
   /api/admin/questions/{questionId}:
     put:
       summary: 質問を更新（管理者用）
@@ -560,33 +533,6 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-  /api/admin/options:
-    post:
-      summary: 選択肢を作成（管理者用）
-      tags:
-        - Questions
-      operationId: adminPostOption
-      parameters:
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/OptionRequest"
-      responses:
-        "201":
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OptionResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/admin/options/{optionId}:
@@ -1813,10 +1759,15 @@ components:
         due:
           type: string
           format: date-time
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionRequest"
       required:
         - name
         - description
         - due
+        - questions
     QuestionGroupResponse:
       type: object
       properties:
@@ -1856,6 +1807,9 @@ components:
     FreeTextQuestionRequest:
       type: object
       properties:
+        id:
+          type: integer
+          description: 質問ID（編集時のみ、新規作成時は不要）
         questionGroupId:
           type: integer
         title:
@@ -1910,6 +1864,9 @@ components:
     FreeNumberQuestionRequest:
       type: object
       properties:
+        id:
+          type: integer
+          description: 質問ID（編集時のみ、新規作成時は不要）
         questionGroupId:
           type: integer
         title:
@@ -1964,6 +1921,9 @@ components:
     SingleChoiceQuestionRequest:
       type: object
       properties:
+        id:
+          type: integer
+          description: 質問ID（編集時のみ、新規作成時は不要）
         questionGroupId:
           type: integer
         title:
@@ -1979,6 +1939,10 @@ components:
           type: boolean
         isOpen:
           type: boolean
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/OptionRequest"
       required:
         - questionGroupId
         - title
@@ -1986,6 +1950,7 @@ components:
         - type
         - isPublic
         - isOpen
+        - options
     SingleChoiceQuestionResponse:
       type: object
       properties:
@@ -2023,6 +1988,9 @@ components:
     MultipleChoiceQuestionRequest:
       type: object
       properties:
+        id:
+          type: integer
+          description: 質問ID（編集時のみ、新規作成時は不要）
         questionGroupId:
           type: integer
         title:
@@ -2038,6 +2006,10 @@ components:
           type: boolean
         isOpen:
           type: boolean
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/OptionRequest"
       required:
         - questionGroupId
         - title
@@ -2045,6 +2017,7 @@ components:
         - type
         - isPublic
         - isOpen
+        - options
     MultipleChoiceQuestionResponse:
       type: object
       properties:
@@ -2081,6 +2054,9 @@ components:
     OptionRequest:
       type: object
       properties:
+        id:
+          type: integer
+          description: 選択肢ID（編集時のみ、新規作成時は不要）
         questionId:
           type: integer
         content:
