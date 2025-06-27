@@ -1,6 +1,10 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Camp struct {
 	gorm.Model
@@ -10,6 +14,8 @@ type Camp struct {
 	IsDraft            bool
 	IsPaymentOpen      bool
 	IsRegistrationOpen bool
+	DateStart          time.Time
+	DateEnd            time.Time
 
 	Participants   []User `gorm:"many2many:camp_participants;"`
 	Payments       []Payment

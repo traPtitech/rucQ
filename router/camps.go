@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/traP-jp/rucQ/backend/api"
+	"github.com/traP-jp/rucQ/backend/converter"
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
@@ -20,10 +21,10 @@ func (s *Server) GetCamps(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response []api.CampResponse
+	response, err := converter.Convert[[]api.CampResponse](camps)
 
-	if err := copier.Copy(&response, &camps); err != nil {
-		e.Logger().Errorf("failed to copy camps: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert camps: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -52,10 +53,10 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var campModel model.Camp
+	campModel, err := converter.Convert[model.Camp](req)
 
-	if err := copier.Copy(&campModel, &req); err != nil {
-		e.Logger().Errorf("failed to copy request to model: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert request to model: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -70,15 +71,15 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response api.CampResponse
+	response, err := converter.Convert[api.CampResponse](campModel)
 
-	if err := copier.Copy(&response, &campModel); err != nil {
-		e.Logger().Errorf("failed to copy camp: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert camp to response: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	return e.JSON(http.StatusCreated, response)
+	return e.JSON(http.StatusCreated, &response)
 }
 
 func (s *Server) GetCamp(e echo.Context, campID api.CampId) error {
@@ -94,20 +95,20 @@ func (s *Server) GetCamp(e echo.Context, campID api.CampId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response api.CampResponse
+	response, err := converter.Convert[api.CampResponse](camp)
 
-	if err := copier.Copy(&response, camp); err != nil {
-		e.Logger().Errorf("failed to copy camp: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert camp to response: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	return e.JSON(http.StatusOK, response)
+	return e.JSON(http.StatusOK, &response)
 }
 
 // AdminPutCamp キャンプ情報編集
 // (PUT /api/admin/camps/{campId})
-func (s *Server) AdminPutCamp(e echo.Context, campId api.CampId, params api.AdminPutCampParams) error {
+func (s *Server) AdminPutCamp(e echo.Context, campID api.CampId, params api.AdminPutCampParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -126,39 +127,32 @@ func (s *Server) AdminPutCamp(e echo.Context, campId api.CampId, params api.Admi
 		return e.JSON(http.StatusBadRequest, err)
 	}
 
-	camp, err := s.repo.GetCampByID(uint(campId))
+	newCamp, err := converter.Convert[model.Camp](req)
 
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Not found")
-		}
-
 		e.Logger().Errorf("failed to get camp: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := copier.Copy(camp, &req); err != nil {
-		e.Logger().Errorf("failed to copy request to model: %v", err)
+	newCamp.ID = uint(campID)
 
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	if err := s.repo.UpdateCamp(uint(campId), camp); err != nil {
+	// TODO: Not foundエラーのハンドリングを追加
+	if err := s.repo.UpdateCamp(uint(campID), &newCamp); err != nil {
 		e.Logger().Errorf("failed to update camp: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var response api.CampResponse
+	response, err := converter.Convert[api.CampResponse](newCamp)
 
-	if err := copier.Copy(&response, camp); err != nil {
-		e.Logger().Errorf("failed to copy camp: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert camp to response: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	return e.JSON(http.StatusOK, response)
+	return e.JSON(http.StatusOK, &response)
 }
 
 // AdminDeleteCamp キャンプ削除

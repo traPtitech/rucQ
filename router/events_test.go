@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gavv/httpexpect/v2"
 	"gorm.io/gorm"
 
 	"github.com/traP-jp/rucQ/backend/model"
@@ -74,10 +73,7 @@ func TestGetEvents(t *testing.T) {
 			officialEvent,
 		}, nil)
 
-		res := httpexpect.WithConfig(httpexpect.Config{
-			BaseURL:  h.server.URL,
-			Reporter: httpexpect.NewAssertReporter(t),
-		}).GET(fmt.Sprintf("/api/camps/%d/events", campID)).Expect().Status(http.StatusOK).JSON().Array()
+		res := h.expect.GET(fmt.Sprintf("/api/camps/%d/events", campID)).Expect().Status(http.StatusOK).JSON().Array()
 
 		res.Length().IsEqual(3)
 
