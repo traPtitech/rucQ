@@ -412,6 +412,7 @@ paths:
   /api/admin/camps/{campId}/question-groups:
     post:
       summary: 質問グループを作成（管理者用）
+      description: 質問グループを作成します。グループに属する質問や、その選択肢も同時に作成できます。
       tags:
         - Questions
       operationId: adminPostQuestionGroup
@@ -440,6 +441,7 @@ paths:
   /api/admin/question-groups/{questionGroupId}:
     put:
       summary: 質問グループを更新（管理者用）
+      description: 質問グループを更新します。グループに属する質問や、その選択肢も同時に更新できます。（質問と選択肢はIDが指定されている場合に更新され、IDがない場合は新規作成されます）
       tags:
         - Questions
       operationId: adminPutQuestionGroup
