@@ -27,7 +27,7 @@ func (s *Server) GetEvents(e echo.Context, campID api.CampId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	return e.JSON(http.StatusOK, &response)
+	return e.JSON(http.StatusOK, response)
 }
 
 func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEventParams) error {
