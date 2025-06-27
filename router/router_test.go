@@ -4,6 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gavv/httpexpect/v2"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/mock/gomock"
 
@@ -36,6 +37,7 @@ func newMockRepository(ctrl *gomock.Controller) *mockRepository {
 }
 
 type testHandler struct {
+	expect *httpexpect.Expect
 	repo   *mockRepository
 	server *httptest.Server
 }
@@ -56,7 +58,13 @@ func setup(t *testing.T) *testHandler {
 		httptestServer.Close()
 	})
 
+	expect := httpexpect.WithConfig(httpexpect.Config{
+		BaseURL:  httptestServer.URL,
+		Reporter: httpexpect.NewAssertReporter(t),
+	})
+
 	return &testHandler{
+		expect: expect,
 		repo:   repo,
 		server: httptestServer,
 	}

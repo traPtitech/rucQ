@@ -7,7 +7,6 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/gavv/httpexpect/v2"
 	"github.com/traP-jp/rucQ/backend/model"
 	"github.com/traP-jp/rucQ/backend/testutil/random"
 )
@@ -37,10 +36,7 @@ func TestGetCamps(t *testing.T) {
 
 		h.repo.MockCampRepository.EXPECT().GetCamps().Return([]model.Camp{camp}, nil)
 
-		res := httpexpect.WithConfig(httpexpect.Config{
-			BaseURL:  h.server.URL,
-			Reporter: httpexpect.NewAssertReporter(t),
-		}).GET("/api/camps").Expect().Status(http.StatusOK).JSON().Array()
+		res := h.expect.GET("/api/camps").Expect().Status(http.StatusOK).JSON().Array()
 
 		res.Length().IsEqual(1)
 
