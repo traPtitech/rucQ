@@ -257,7 +257,10 @@ type FreeNumberAnswerResponseType string
 
 // FreeNumberQuestionRequest defines model for FreeNumberQuestionRequest.
 type FreeNumberQuestionRequest struct {
-	Description     *string                       `json:"description"`
+	Description *string `json:"description"`
+
+	// Id 質問ID（編集時のみ、新規作成時は不要）
+	Id              *int                          `json:"id,omitempty"`
 	IsOpen          bool                          `json:"isOpen"`
 	IsPublic        bool                          `json:"isPublic"`
 	QuestionGroupId int                           `json:"questionGroupId"`
@@ -306,7 +309,10 @@ type FreeTextAnswerResponseType string
 
 // FreeTextQuestionRequest defines model for FreeTextQuestionRequest.
 type FreeTextQuestionRequest struct {
-	Description     *string                     `json:"description"`
+	Description *string `json:"description"`
+
+	// Id 質問ID（編集時のみ、新規作成時は不要）
+	Id              *int                        `json:"id,omitempty"`
 	IsOpen          bool                        `json:"isOpen"`
 	IsPublic        bool                        `json:"isPublic"`
 	QuestionGroupId int                         `json:"questionGroupId"`
@@ -391,9 +397,13 @@ type MultipleChoiceAnswerResponseType string
 
 // MultipleChoiceQuestionRequest defines model for MultipleChoiceQuestionRequest.
 type MultipleChoiceQuestionRequest struct {
-	Description     *string                           `json:"description"`
+	Description *string `json:"description"`
+
+	// Id 質問ID（編集時のみ、新規作成時は不要）
+	Id              *int                              `json:"id,omitempty"`
 	IsOpen          bool                              `json:"isOpen"`
 	IsPublic        bool                              `json:"isPublic"`
+	Options         []OptionRequest                   `json:"options"`
 	QuestionGroupId int                               `json:"questionGroupId"`
 	Title           string                            `json:"title"`
 	Type            MultipleChoiceQuestionRequestType `json:"type"`
@@ -446,8 +456,11 @@ type OfficialEventResponseType string
 
 // OptionRequest defines model for OptionRequest.
 type OptionRequest struct {
-	Content    string `json:"content"`
-	QuestionId int    `json:"questionId"`
+	Content string `json:"content"`
+
+	// Id 選択肢ID（編集時のみ、新規作成時は不要）
+	Id         *int `json:"id,omitempty"`
+	QuestionId int  `json:"questionId"`
 }
 
 // OptionResponse defines model for OptionResponse.
@@ -476,9 +489,10 @@ type PaymentResponse struct {
 
 // QuestionGroupRequest defines model for QuestionGroupRequest.
 type QuestionGroupRequest struct {
-	Description *string   `json:"description"`
-	Due         time.Time `json:"due"`
-	Name        string    `json:"name"`
+	Description *string           `json:"description"`
+	Due         time.Time         `json:"due"`
+	Name        string            `json:"name"`
+	Questions   []QuestionRequest `json:"questions"`
 }
 
 // QuestionGroupResponse defines model for QuestionGroupResponse.
@@ -579,9 +593,13 @@ type SingleChoiceAnswerResponseType string
 
 // SingleChoiceQuestionRequest defines model for SingleChoiceQuestionRequest.
 type SingleChoiceQuestionRequest struct {
-	Description     *string                         `json:"description"`
+	Description *string `json:"description"`
+
+	// Id 質問ID（編集時のみ、新規作成時は不要）
+	Id              *int                            `json:"id,omitempty"`
 	IsOpen          bool                            `json:"isOpen"`
 	IsPublic        bool                            `json:"isPublic"`
+	Options         []OptionRequest                 `json:"options"`
 	QuestionGroupId int                             `json:"questionGroupId"`
 	Title           string                          `json:"title"`
 	Type            SingleChoiceQuestionRequestType `json:"type"`
@@ -768,12 +786,6 @@ type AdminPutImageParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// AdminPostOptionParams defines parameters for AdminPostOption.
-type AdminPostOptionParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
 // AdminDeleteOptionParams defines parameters for AdminDeleteOption.
 type AdminDeleteOptionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -800,12 +812,6 @@ type AdminDeleteQuestionGroupParams struct {
 
 // AdminPutQuestionGroupParams defines parameters for AdminPutQuestionGroup.
 type AdminPutQuestionGroupParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
-// AdminPostQuestionParams defines parameters for AdminPostQuestion.
-type AdminPostQuestionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
@@ -984,9 +990,6 @@ type AdminPostRoomGroupJSONRequestBody = RoomGroupRequest
 // AdminPutImageMultipartRequestBody defines body for AdminPutImage for multipart/form-data ContentType.
 type AdminPutImageMultipartRequestBody AdminPutImageMultipartBody
 
-// AdminPostOptionJSONRequestBody defines body for AdminPostOption for application/json ContentType.
-type AdminPostOptionJSONRequestBody = OptionRequest
-
 // AdminPutOptionJSONRequestBody defines body for AdminPutOption for application/json ContentType.
 type AdminPutOptionJSONRequestBody = OptionRequest
 
@@ -995,9 +998,6 @@ type AdminPutPaymentJSONRequestBody = PaymentRequest
 
 // AdminPutQuestionGroupJSONRequestBody defines body for AdminPutQuestionGroup for application/json ContentType.
 type AdminPutQuestionGroupJSONRequestBody = QuestionGroupRequest
-
-// AdminPostQuestionJSONRequestBody defines body for AdminPostQuestion for application/json ContentType.
-type AdminPostQuestionJSONRequestBody = QuestionRequest
 
 // AdminPutQuestionJSONRequestBody defines body for AdminPutQuestion for application/json ContentType.
 type AdminPutQuestionJSONRequestBody = QuestionRequest
@@ -1705,9 +1705,6 @@ type ServerInterface interface {
 	// 画像を更新（管理者用）
 	// (PUT /api/admin/images/{imageId})
 	AdminPutImage(ctx echo.Context, imageId ImageId, params AdminPutImageParams) error
-	// 選択肢を作成（管理者用）
-	// (POST /api/admin/options)
-	AdminPostOption(ctx echo.Context, params AdminPostOptionParams) error
 	// 選択肢を削除（管理者用）
 	// (DELETE /api/admin/options/{optionId})
 	AdminDeleteOption(ctx echo.Context, optionId OptionId, params AdminDeleteOptionParams) error
@@ -1723,9 +1720,6 @@ type ServerInterface interface {
 	// 質問グループを更新（管理者用）
 	// (PUT /api/admin/question-groups/{questionGroupId})
 	AdminPutQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupParams) error
-	// 質問を作成（管理者用）
-	// (POST /api/admin/questions)
-	AdminPostQuestion(ctx echo.Context, params AdminPostQuestionParams) error
 	// 質問を削除（管理者用）
 	// (DELETE /api/admin/questions/{questionId})
 	AdminDeleteQuestion(ctx echo.Context, questionId QuestionId, params AdminDeleteQuestionParams) error
@@ -2266,35 +2260,6 @@ func (w *ServerInterfaceWrapper) AdminPutImage(ctx echo.Context) error {
 	return err
 }
 
-// AdminPostOption converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminPostOption(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminPostOptionParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminPostOption(ctx, params)
-	return err
-}
-
 // AdminDeleteOption converts echo context to params.
 func (w *ServerInterfaceWrapper) AdminDeleteOption(ctx echo.Context) error {
 	var err error
@@ -2472,35 +2437,6 @@ func (w *ServerInterfaceWrapper) AdminPutQuestionGroup(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPutQuestionGroup(ctx, questionGroupId, params)
-	return err
-}
-
-// AdminPostQuestion converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminPostQuestion(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminPostQuestionParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminPostQuestion(ctx, params)
 	return err
 }
 
@@ -3571,13 +3507,11 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/admin/camps/:campId/room-groups", wrapper.AdminPostRoomGroup)
 	router.DELETE(baseURL+"/api/admin/images/:imageId", wrapper.AdminDeleteImage)
 	router.PUT(baseURL+"/api/admin/images/:imageId", wrapper.AdminPutImage)
-	router.POST(baseURL+"/api/admin/options", wrapper.AdminPostOption)
 	router.DELETE(baseURL+"/api/admin/options/:optionId", wrapper.AdminDeleteOption)
 	router.PUT(baseURL+"/api/admin/options/:optionId", wrapper.AdminPutOption)
 	router.PUT(baseURL+"/api/admin/payments/:paymentId", wrapper.AdminPutPayment)
 	router.DELETE(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminDeleteQuestionGroup)
 	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroup)
-	router.POST(baseURL+"/api/admin/questions", wrapper.AdminPostQuestion)
 	router.DELETE(baseURL+"/api/admin/questions/:questionId", wrapper.AdminDeleteQuestion)
 	router.PUT(baseURL+"/api/admin/questions/:questionId", wrapper.AdminPutQuestion)
 	router.GET(baseURL+"/api/admin/questions/:questionId/answers", wrapper.AdminGetAnswers)
