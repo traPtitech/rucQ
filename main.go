@@ -24,6 +24,7 @@ func main() {
 		l.SetHeader("${level}")
 	}
 
+	//nolint:errcheck // 開発環境でしか使用しないため、エラーは無視
 	godotenv.Load(".env", "bot.env")
 
 	user := os.Getenv("NS_MARIADB_USER")

@@ -10,7 +10,7 @@ import (
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-func (s *Server) GetEvents(e echo.Context, campID api.CampId) error {
+func (s *Server) GetEvents(e echo.Context, _ api.CampId) error {
 	events, err := s.repo.GetEvents()
 
 	if err != nil {

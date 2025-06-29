@@ -9,7 +9,7 @@ import (
 )
 
 // PutAnswer アンケート回答編集
-func (s *Server) PutAnswer(e echo.Context, answerID api.AnswerId, params api.PutAnswerParams) error {
+func (s *Server) PutAnswer(e echo.Context, _ api.AnswerId, params api.PutAnswerParams) error {
 	if params.XForwardedUser == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
 	}
@@ -106,7 +106,7 @@ func (s *Server) PutAnswer(e echo.Context, answerID api.AnswerId, params api.Put
 
 // PostAnswer アンケート回答作成
 // (POST /answers)
-func (s *Server) PostAnswer(c echo.Context, params api.PostAnswerParams) error {
+func (s *Server) PostAnswer(_ echo.Context, _ api.PostAnswerParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
 }
 
