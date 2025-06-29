@@ -8,6 +8,6 @@ import (
 	"github.com/traP-jp/rucQ/backend/api"
 )
 
-func (s *Server) AdminPutOption(e echo.Context, optionId api.OptionId, params api.AdminPutOptionParams) error {
+func (s *Server) AdminPutOption(_ echo.Context, _ api.OptionId, _ api.AdminPutOptionParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
 }

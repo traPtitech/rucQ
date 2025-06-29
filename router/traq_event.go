@@ -2,6 +2,6 @@ package router
 
 import "github.com/labstack/echo/v4"
 
-func TraqEventHandler(c echo.Context) error {
+func TraqEventHandler(_ echo.Context) error {
 	return nil
 }

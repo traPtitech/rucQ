@@ -11,7 +11,7 @@ import (
 	"github.com/traP-jp/rucQ/backend/model"
 )
 
-func (s *Server) GetQuestionGroups(e echo.Context, campId api.CampId) error {
+func (s *Server) GetQuestionGroups(e echo.Context, _ api.CampId) error {
 	questionGroups, err := s.repo.GetQuestionGroups()
 
 	if err != nil {
@@ -54,7 +54,7 @@ func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID api.QuestionGr
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) AdminPostQuestionGroup(e echo.Context, campId api.CampId, params api.AdminPostQuestionGroupParams) error {
+func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api.AdminPostQuestionGroupParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {

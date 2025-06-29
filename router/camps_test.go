@@ -99,7 +99,7 @@ func TestAdminPostCamp(t *testing.T) {
 		res.Value("isDraft").Boolean().IsEqual(req.IsDraft)
 		res.Value("isPaymentOpen").Boolean().IsEqual(req.IsPaymentOpen)
 		res.Value("isRegistrationOpen").Boolean().IsEqual(req.IsRegistrationOpen)
-		res.Value("dateStart").String().IsEqual(req.DateStart.Time.Format(time.DateOnly))
-		res.Value("dateEnd").String().IsEqual(req.DateEnd.Time.Format(time.DateOnly))
+		res.Value("dateStart").String().IsEqual(req.DateStart.Format(time.DateOnly))
+		res.Value("dateEnd").String().IsEqual(req.DateEnd.Format(time.DateOnly))
 	})
 }

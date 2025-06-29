@@ -12,7 +12,7 @@ import (
 )
 
 // AdminPostMessage は DM を送信するハンドラです。
-func (s *Server) AdminPostMessage(e echo.Context, userId api.UserId, params api.AdminPostMessageParams) error {
+func (s *Server) AdminPostMessage(e echo.Context, _ api.UserId, params api.AdminPostMessageParams) error {
 	var req api.AdminPostMessageJSONRequestBody
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Errorf("failed to bind request: %v", err)
