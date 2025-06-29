@@ -32,6 +32,16 @@ func Bool(t *testing.T) bool {
 	return rand.UintN(2) == 0
 }
 
+func Nilable[T any](t *testing.T, value T) *T {
+	t.Helper()
+
+	if Bool(t) {
+		return nil
+	}
+
+	return &value
+}
+
 func PositiveInt(t *testing.T) int {
 	t.Helper()
 
