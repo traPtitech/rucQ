@@ -19,7 +19,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.37.0
 	github.com/traPtitech/go-traq v0.0.0-20241109062858-3757c489f610
 	go.uber.org/mock v0.5.2
-	gorm.io/driver/mysql v1.5.7
+	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.30.0
 )
 
