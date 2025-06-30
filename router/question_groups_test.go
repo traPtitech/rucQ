@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
 	"github.com/traPtitech/rucQ/api"
@@ -66,15 +67,18 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		questions := make([]api.QuestionRequest, 3)
 
 		var freeTextReq api.QuestionRequest
-		freeTextReq.FromFreeTextQuestionRequest(freeTextQuestion)
+		err := freeTextReq.FromFreeTextQuestionRequest(freeTextQuestion)
+		require.NoError(t, err)
 		questions[0] = freeTextReq
 
 		var singleChoiceReq api.QuestionRequest
-		singleChoiceReq.FromSingleChoiceQuestionRequest(singleChoiceQuestion)
+		err = singleChoiceReq.FromSingleChoiceQuestionRequest(singleChoiceQuestion)
+		require.NoError(t, err)
 		questions[1] = singleChoiceReq
 
 		var multipleChoiceReq api.QuestionRequest
-		multipleChoiceReq.FromMultipleChoiceQuestionRequest(multipleChoiceQuestion)
+		err = multipleChoiceReq.FromMultipleChoiceQuestionRequest(multipleChoiceQuestion)
+		require.NoError(t, err)
 		questions[2] = multipleChoiceReq
 
 		due := random.Time(t)
