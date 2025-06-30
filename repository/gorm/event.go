@@ -3,7 +3,7 @@ package gorm
 import (
 	"context"
 
-	"github.com/traP-jp/rucQ/backend/model"
+	"github.com/traPtitech/rucQ/model"
 	"gorm.io/gorm"
 )
 

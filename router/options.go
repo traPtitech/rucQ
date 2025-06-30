@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/traP-jp/rucQ/backend/api"
+	"github.com/traPtitech/rucQ/api"
 )
 
 func (s *Server) AdminPutOption(_ echo.Context, _ api.OptionId, _ api.AdminPutOptionParams) error {

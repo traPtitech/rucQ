@@ -5,8 +5,8 @@ import (
 
 	"github.com/jinzhu/copier"
 
-	"github.com/traP-jp/rucQ/backend/api"
-	"github.com/traP-jp/rucQ/backend/model"
+	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/model"
 )
 
 var eventSchemaToModel = copier.TypeConverter{

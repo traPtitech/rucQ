@@ -9,9 +9,9 @@ import (
 	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
 
-	"github.com/traP-jp/rucQ/backend/api"
-	"github.com/traP-jp/rucQ/backend/model"
-	"github.com/traP-jp/rucQ/backend/testutil/random"
+	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/testutil/random"
 )
 
 func TestGetCamps(t *testing.T) {

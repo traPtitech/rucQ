@@ -1,6 +1,6 @@
 package router
 
-import "github.com/traP-jp/rucQ/backend/repository"
+import "github.com/traPtitech/rucQ/repository"
 
 type Server struct {
 	repo  repository.Repository

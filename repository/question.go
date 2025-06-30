@@ -1,7 +1,7 @@
 //go:generate go tool mockgen -source=$GOFILE -destination=mock/$GOFILE -package=mock
 package repository
 
-import "github.com/traP-jp/rucQ/backend/model"
+import "github.com/traPtitech/rucQ/model"
 
 type QuestionRepository interface {
 	CreateQuestion(question *model.Question) error

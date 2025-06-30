@@ -1,6 +1,6 @@
 package gorm
 
-import "github.com/traP-jp/rucQ/backend/model"
+import "github.com/traPtitech/rucQ/model"
 
 func (r *Repository) CreateAnswer(answer *model.Answer) error {
 	if err := r.db.Create(answer).Error; err != nil {

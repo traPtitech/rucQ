@@ -11,10 +11,10 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/traP-jp/rucQ/backend/api"
-	"github.com/traP-jp/rucQ/backend/migration"
-	gormRepository "github.com/traP-jp/rucQ/backend/repository/gorm"
-	"github.com/traP-jp/rucQ/backend/router"
+	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/migration"
+	gormRepository "github.com/traPtitech/rucQ/repository/gorm"
+	"github.com/traPtitech/rucQ/router"
 )
 
 func main() {
