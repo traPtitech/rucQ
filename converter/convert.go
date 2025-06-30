@@ -11,6 +11,10 @@ func Convert[T any](src any) (T, error) {
 			campModelToSchema,
 			eventSchemaToModel,
 			eventModelToSchema,
+			questionGroupSchemaToModel,
+			questionGroupModelToSchema,
+			questionSchemaToModel,
+			questionModelToSchema,
 		},
 	})
 

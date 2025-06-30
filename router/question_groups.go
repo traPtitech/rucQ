@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
 )
 
@@ -20,10 +21,10 @@ func (s *Server) GetQuestionGroups(e echo.Context, _ api.CampId) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res []api.QuestionGroupResponse
+	res, err := converter.Convert[[]api.QuestionGroupResponse](questionGroups)
 
-	if err := copier.Copy(&res, &questionGroups); err != nil {
-		e.Logger().Errorf("failed to copy response body: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -43,10 +44,10 @@ func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID api.QuestionGr
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res api.QuestionGroupResponse
+	res, err := converter.Convert[api.QuestionGroupResponse](*questionGroup)
 
-	if err := copier.Copy(&res, questionGroup); err != nil {
-		e.Logger().Errorf("failed to copy response body: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -77,8 +78,10 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api
 
 	var questionGroup model.QuestionGroup
 
-	if err := copier.Copy(&questionGroup, &req); err != nil {
-		e.Logger().Errorf("failed to copy request body: %v", err)
+	questionGroup, err = converter.Convert[model.QuestionGroup](req)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert request body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -89,10 +92,10 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res api.QuestionGroupResponse
+	res, err := converter.Convert[api.QuestionGroupResponse](questionGroup)
 
-	if err := copier.Copy(&res, &questionGroup); err != nil {
-		e.Logger().Errorf("failed to copy response body: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -143,10 +146,10 @@ func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId api.Quest
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res api.QuestionGroupResponse
+	res, err := converter.Convert[api.QuestionGroupResponse](*updateQuestionGroup)
 
-	if err := copier.Copy(&res, updateQuestionGroup); err != nil {
-		e.Logger().Errorf("failed to copy response body: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}

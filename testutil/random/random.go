@@ -39,6 +39,16 @@ func PositiveInt(t *testing.T) int {
 	return int(rand.UintN(math.MaxInt)) + 1
 }
 
+func PtrOrNil[T any](t *testing.T, value T) *T {
+	t.Helper()
+
+	if Bool(t) {
+		return nil
+	}
+
+	return &value
+}
+
 func Time(t *testing.T) time.Time {
 	t.Helper()
 
