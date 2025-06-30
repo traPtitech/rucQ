@@ -97,3 +97,17 @@ func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
 
 	return *camp
 }
+
+func mustCreateUser(t *testing.T, r *Repository) model.User {
+	t.Helper()
+
+	userID := random.AlphaNumericString(t, 32)
+	user, err := r.GetOrCreateUser(t.Context(), userID)
+
+	require.NoError(t, err)
+	require.NotNil(t, user)
+	require.Equal(t, userID, user.ID)
+	require.False(t, user.IsStaff)
+
+	return *user
+}
