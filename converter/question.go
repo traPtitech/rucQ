@@ -1,7 +1,6 @@
 package converter
 
 import (
-	"encoding/json"
 	"errors"
 
 	"github.com/jinzhu/copier"
@@ -22,27 +21,15 @@ var questionSchemaToModel = copier.TypeConverter{
 
 		var dst model.Question
 
-		// まず、Typeを判定するため、一旦Marshalしてから型を判定する
-		reqBytes, err := req.MarshalJSON()
+		// まずTypeを判定するため、一旦FreeTextQuestionRequestに変換する
+		freeTextQuestionRequest, err := req.AsFreeTextQuestionRequest()
+
 		if err != nil {
 			return nil, err
 		}
 
-		var typeChecker struct {
-			Type string `json:"type"`
-		}
-
-		if err := json.Unmarshal(reqBytes, &typeChecker); err != nil {
-			return nil, err
-		}
-
-		switch model.QuestionType(typeChecker.Type) {
+		switch model.QuestionType(freeTextQuestionRequest.Type) {
 		case model.FreeTextQuestion:
-			freeTextQuestionRequest, err := req.AsFreeTextQuestionRequest()
-			if err != nil {
-				return nil, err
-			}
-
 			if err := copier.Copy(&dst, &freeTextQuestionRequest); err != nil {
 				return nil, err
 			}
