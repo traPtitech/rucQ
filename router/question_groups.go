@@ -24,7 +24,7 @@ func (s *Server) GetQuestionGroups(e echo.Context, _ api.CampId) error {
 	res, err := converter.Convert[[]api.QuestionGroupResponse](questionGroups)
 
 	if err != nil {
-		e.Logger().Errorf("failed to copy response body: %v", err)
+		e.Logger().Errorf("failed to convert response body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -47,7 +47,7 @@ func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID api.QuestionGr
 	res, err := converter.Convert[api.QuestionGroupResponse](*questionGroup)
 
 	if err != nil {
-		e.Logger().Errorf("failed to copy response body: %v", err)
+		e.Logger().Errorf("failed to convert response body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -81,7 +81,7 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api
 	questionGroup, err = converter.Convert[model.QuestionGroup](req)
 
 	if err != nil {
-		e.Logger().Errorf("failed to copy request body: %v", err)
+		e.Logger().Errorf("failed to convert request body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -95,7 +95,7 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api
 	res, err := converter.Convert[api.QuestionGroupResponse](questionGroup)
 
 	if err != nil {
-		e.Logger().Errorf("failed to copy response body: %v", err)
+		e.Logger().Errorf("failed to convert response body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -149,7 +149,7 @@ func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId api.Quest
 	res, err := converter.Convert[api.QuestionGroupResponse](*updateQuestionGroup)
 
 	if err != nil {
-		e.Logger().Errorf("failed to copy response body: %v", err)
+		e.Logger().Errorf("failed to convert response body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
