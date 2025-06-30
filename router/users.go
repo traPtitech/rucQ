@@ -6,7 +6,7 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
 
-	"github.com/traP-jp/rucQ/backend/api"
+	"github.com/traPtitech/rucQ/api"
 )
 
 func (s *Server) GetMe(e echo.Context, params api.GetMeParams) error {

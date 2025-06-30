@@ -6,8 +6,8 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/oapi-codegen/runtime/types"
 
-	"github.com/traP-jp/rucQ/backend/api"
-	"github.com/traP-jp/rucQ/backend/model"
+	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/model"
 )
 
 var campSchemaToModel = copier.TypeConverter{

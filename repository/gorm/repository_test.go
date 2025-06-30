@@ -13,9 +13,9 @@ import (
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/traP-jp/rucQ/backend/migration"
-	"github.com/traP-jp/rucQ/backend/model"
-	"github.com/traP-jp/rucQ/backend/testutil/random"
+	"github.com/traPtitech/rucQ/migration"
+	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/testutil/random"
 )
 
 func setup(t *testing.T) *Repository {

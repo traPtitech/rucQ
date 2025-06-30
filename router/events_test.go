@@ -8,8 +8,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/traP-jp/rucQ/backend/model"
-	"github.com/traP-jp/rucQ/backend/testutil/random"
+	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/testutil/random"
 )
 
 func TestGetEvents(t *testing.T) {

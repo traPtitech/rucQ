@@ -2,7 +2,7 @@ package migration
 
 import (
 	"github.com/go-gormigrate/gormigrate/v2"
-	"github.com/traP-jp/rucQ/backend/model"
+	"github.com/traPtitech/rucQ/model"
 	"gorm.io/gorm"
 )
 

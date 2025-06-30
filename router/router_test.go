@@ -8,8 +8,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.uber.org/mock/gomock"
 
-	"github.com/traP-jp/rucQ/backend/api"
-	"github.com/traP-jp/rucQ/backend/repository/mock"
+	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/repository/mock"
 )
 
 type mockRepository struct {

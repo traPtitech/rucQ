@@ -1,8 +1,8 @@
 package gorm
 
 import (
-	"github.com/traP-jp/rucQ/backend/model"
-	"github.com/traP-jp/rucQ/backend/repository"
+	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (r *Repository) CreateOption(option *model.Option) error {

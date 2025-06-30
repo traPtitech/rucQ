@@ -6,7 +6,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/traP-jp/rucQ/backend/model"
+	"github.com/traPtitech/rucQ/model"
 )
 
 func (r *Repository) GetRooms() ([]model.Room, error) {

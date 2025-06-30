@@ -1,4 +1,4 @@
-module github.com/traP-jp/rucQ/backend
+module github.com/traPtitech/rucQ
 
 go 1.24
 
