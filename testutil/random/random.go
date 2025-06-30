@@ -32,7 +32,14 @@ func Bool(t *testing.T) bool {
 	return rand.UintN(2) == 0
 }
 
-func Nilable[T any](t *testing.T, value T) *T {
+func PositiveInt(t *testing.T) int {
+	t.Helper()
+
+	// intの範囲に収まる正の整数を生成
+	return int(rand.UintN(math.MaxInt)) + 1
+}
+
+func PtrOrNil[T any](t *testing.T, value T) *T {
 	t.Helper()
 
 	if Bool(t) {
@@ -40,13 +47,6 @@ func Nilable[T any](t *testing.T, value T) *T {
 	}
 
 	return &value
-}
-
-func PositiveInt(t *testing.T) int {
-	t.Helper()
-
-	// intの範囲に収まる正の整数を生成
-	return int(rand.UintN(math.MaxInt)) + 1
 }
 
 func Time(t *testing.T) time.Time {

@@ -23,7 +23,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 
 		freeTextQuestion := api.FreeTextQuestionRequest{
 			Title:       random.AlphaNumericString(t, 30),
-			Description: random.Nilable(t, random.AlphaNumericString(t, 100)),
+			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 			Type:        api.FreeTextQuestionRequestTypeFreeText,
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
@@ -31,7 +31,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 
 		singleChoiceQuestion := api.SingleChoiceQuestionRequest{
 			Title:       random.AlphaNumericString(t, 30),
-			Description: random.Nilable(t, random.AlphaNumericString(t, 100)),
+			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 			Type:        api.SingleChoiceQuestionRequestTypeSingle,
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
@@ -47,7 +47,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 
 		multipleChoiceQuestion := api.MultipleChoiceQuestionRequest{
 			Title:       random.AlphaNumericString(t, 30),
-			Description: random.Nilable(t, random.AlphaNumericString(t, 100)),
+			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 			Type:        api.MultipleChoiceQuestionRequestTypeMultiple,
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
@@ -84,7 +84,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		due := random.Time(t)
 		req := api.AdminPostQuestionGroupJSONRequestBody{
 			Name:        random.AlphaNumericString(t, 20),
-			Description: random.Nilable(t, random.AlphaNumericString(t, 100)),
+			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 			Due:         due,
 			Questions:   questions,
 		}

@@ -18,27 +18,27 @@ func TestCreateQuestionGroup(t *testing.T) {
 
 		r := setup(t)
 		name := random.AlphaNumericString(t, 20)
-		description := random.Nilable(t, random.AlphaNumericString(t, 100))
+		description := random.PtrOrNil(t, random.AlphaNumericString(t, 100))
 		due := random.Time(t)
 		questions := []model.Question{
 			{
 				Type:        model.FreeTextQuestion,
 				Title:       random.AlphaNumericString(t, 20),
-				Description: random.Nilable(t, random.AlphaNumericString(t, 100)),
+				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 				IsPublic:    random.Bool(t),
 				IsOpen:      random.Bool(t),
 			},
 			{
 				Type:        model.FreeNumberQuestion,
 				Title:       random.AlphaNumericString(t, 20),
-				Description: random.Nilable(t, random.AlphaNumericString(t, 100)),
+				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 				IsPublic:    random.Bool(t),
 				IsOpen:      random.Bool(t),
 			},
 			{
 				Type:        model.SingleChoiceQuestion,
 				Title:       random.AlphaNumericString(t, 20),
-				Description: random.Nilable(t, random.AlphaNumericString(t, 100)),
+				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 				IsPublic:    random.Bool(t),
 				IsOpen:      random.Bool(t),
 				Options: []model.Option{
@@ -50,7 +50,7 @@ func TestCreateQuestionGroup(t *testing.T) {
 			{
 				Type:        model.MultipleChoiceQuestion,
 				Title:       random.AlphaNumericString(t, 20),
-				Description: random.Nilable(t, random.AlphaNumericString(t, 100)),
+				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 				IsPublic:    random.Bool(t),
 				IsOpen:      random.Bool(t),
 				Options: []model.Option{
