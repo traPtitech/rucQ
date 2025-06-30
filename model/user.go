@@ -3,7 +3,6 @@ package model
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -13,7 +12,6 @@ type User struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	IsStaff   bool           `gorm:"index"`
-	TraqUUID  uuid.UUID
 
 	Answers         []Answer
 	Payments        []Payment

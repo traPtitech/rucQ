@@ -2,51 +2,28 @@ package gorm
 
 import (
 	"context"
-	"fmt"
-	"os"
 
-	traq "github.com/traPtitech/go-traq"
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
 )
 
 func (r *Repository) GetOrCreateUser(ctx context.Context, userID string) (*model.User, error) {
-	// まずデータベースを検索
 	users, err := gorm.G[*model.User](r.db).Limit(1).Where(&model.User{ID: userID}).Find(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	var user model.User
-
 	if len(users) > 0 {
-		user = *users[0]
+		return users[0], nil
 	}
 
-	// if user.TraqUUID != "" {
-	// 	return &user, nil
-	// }
-
-	configuration := traq.NewConfiguration()
-	apiClient := traq.NewAPIClient(configuration)
-	configuration.AddDefaultHeader("Authorization", "Bearer "+os.Getenv("BOT_ACCESS_TOKEN"))
-	usersUuid, httpResp, err := apiClient.UserApi.GetUsers(context.Background()).Name(userID).Execute()
-	if err != nil {
-		return nil, fmt.Errorf("error when calling UserApi.GetUsers: %w\nfull HTTP response: %v", err, httpResp)
+	user := model.User{
+		ID: userID,
 	}
 
-	// traQ API のレスポンスをチェック
-	if len(usersUuid) != 1 {
-		return nil, fmt.Errorf("no users found with name %s", userID)
-	}
-
-	// 追加、更新するユーザーを作成
-	// user.TraqUUID = usersUuid[0].Id
-	user.ID = userID
-
-	if err := r.db.Save(&user).Error; err != nil {
+	if err := gorm.G[model.User](r.db).Create(ctx, &user); err != nil {
 		return nil, err
 	}
 
