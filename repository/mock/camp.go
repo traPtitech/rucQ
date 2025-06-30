@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	model "github.com/traP-jp/rucQ/backend/model"
+	model "github.com/traPtitech/rucQ/model"
 	gomock "go.uber.org/mock/gomock"
 )
 

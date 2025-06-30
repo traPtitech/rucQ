@@ -12,8 +12,8 @@ package mock
 import (
 	reflect "reflect"
 
-	model "github.com/traP-jp/rucQ/backend/model"
-	repository "github.com/traP-jp/rucQ/backend/repository"
+	model "github.com/traPtitech/rucQ/model"
+	repository "github.com/traPtitech/rucQ/repository"
 	gomock "go.uber.org/mock/gomock"
 )
 

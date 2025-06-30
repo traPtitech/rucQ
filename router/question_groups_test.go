@@ -7,9 +7,9 @@ import (
 
 	"go.uber.org/mock/gomock"
 
-	"github.com/traP-jp/rucQ/backend/api"
-	"github.com/traP-jp/rucQ/backend/model"
-	"github.com/traP-jp/rucQ/backend/testutil/random"
+	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/testutil/random"
 )
 
 func TestAdminPostQuestionGroup(t *testing.T) {

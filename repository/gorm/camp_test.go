@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/traP-jp/rucQ/backend/model"
-	"github.com/traP-jp/rucQ/backend/testutil/random"
+	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/testutil/random"
 )
 
 func TestCreateCamp(t *testing.T) {

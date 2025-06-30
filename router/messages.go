@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	traq "github.com/traPtitech/go-traq"
 
-	"github.com/traP-jp/rucQ/backend/api"
+	"github.com/traPtitech/rucQ/api"
 )
 
 // AdminPostMessage は DM を送信するハンドラです。

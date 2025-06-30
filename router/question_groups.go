@@ -7,9 +7,9 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
 
-	"github.com/traP-jp/rucQ/backend/api"
-	"github.com/traP-jp/rucQ/backend/converter"
-	"github.com/traP-jp/rucQ/backend/model"
+	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/converter"
+	"github.com/traPtitech/rucQ/model"
 )
 
 func (s *Server) GetQuestionGroups(e echo.Context, _ api.CampId) error {

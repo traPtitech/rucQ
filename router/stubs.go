@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/traP-jp/rucQ/backend/api"
+	"github.com/traPtitech/rucQ/api"
 )
 
 // 欠けているメソッドのスタブ実装

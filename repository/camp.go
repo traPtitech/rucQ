@@ -4,7 +4,7 @@ package repository
 import (
 	"context"
 
-	"github.com/traP-jp/rucQ/backend/model"
+	"github.com/traPtitech/rucQ/model"
 )
 
 type CampRepository interface {

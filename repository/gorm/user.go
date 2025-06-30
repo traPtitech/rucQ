@@ -8,7 +8,7 @@ import (
 	traq "github.com/traPtitech/go-traq"
 	"gorm.io/gorm"
 
-	"github.com/traP-jp/rucQ/backend/model"
+	"github.com/traPtitech/rucQ/model"
 )
 
 func (r *Repository) GetOrCreateUser(ctx context.Context, userID string) (*model.User, error) {
