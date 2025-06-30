@@ -124,7 +124,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		res.Value("due").String().AsDateTime(time.RFC3339).InRange(req.Due.Add(-time.Second), req.Due.Add(time.Second))
 
 		questionsArray := res.Value("questions").Array()
-		questionsArray.Length().IsEqual(3)
+		questionsArray.Length().IsEqual(4)
 
 		// Verify FreeTextQuestion
 		freeTextRes := questionsArray.Value(0).Object()
