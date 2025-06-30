@@ -29,6 +29,14 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			IsOpen:      random.Bool(t),
 		}
 
+		freeNumberQuestion := api.FreeNumberQuestionRequest{
+			Title:       random.AlphaNumericString(t, 30),
+			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
+			Type:        api.FreeNumberQuestionRequestTypeFreeNumber,
+			IsPublic:    random.Bool(t),
+			IsOpen:      random.Bool(t),
+		}
+
 		singleChoiceQuestion := api.SingleChoiceQuestionRequest{
 			Title:       random.AlphaNumericString(t, 30),
 			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
@@ -64,22 +72,27 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			},
 		}
 
-		questions := make([]api.QuestionRequest, 3)
+		questions := make([]api.QuestionRequest, 4)
 
 		var freeTextReq api.QuestionRequest
 		err := freeTextReq.FromFreeTextQuestionRequest(freeTextQuestion)
 		require.NoError(t, err)
 		questions[0] = freeTextReq
 
+		var freeNumberReq api.QuestionRequest
+		err = freeNumberReq.FromFreeNumberQuestionRequest(freeNumberQuestion)
+		require.NoError(t, err)
+		questions[1] = freeNumberReq
+
 		var singleChoiceReq api.QuestionRequest
 		err = singleChoiceReq.FromSingleChoiceQuestionRequest(singleChoiceQuestion)
 		require.NoError(t, err)
-		questions[1] = singleChoiceReq
+		questions[2] = singleChoiceReq
 
 		var multipleChoiceReq api.QuestionRequest
 		err = multipleChoiceReq.FromMultipleChoiceQuestionRequest(multipleChoiceQuestion)
 		require.NoError(t, err)
-		questions[2] = multipleChoiceReq
+		questions[3] = multipleChoiceReq
 
 		due := random.Time(t)
 		req := api.AdminPostQuestionGroupJSONRequestBody{
@@ -127,8 +140,22 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		freeTextRes.Value("isPublic").Boolean().IsEqual(freeTextQuestion.IsPublic)
 		freeTextRes.Value("isOpen").Boolean().IsEqual(freeTextQuestion.IsOpen)
 
+		// Verify FreeNumberQuestion
+		freeNumberRes := questionsArray.Value(1).Object()
+		freeNumberRes.Value("title").String().IsEqual(freeNumberQuestion.Title)
+
+		if freeNumberQuestion.Description == nil {
+			freeNumberRes.Value("description").IsNull()
+		} else {
+			freeNumberRes.Value("description").String().IsEqual(*freeNumberQuestion.Description)
+		}
+
+		freeNumberRes.Value("type").String().IsEqual(string(freeNumberQuestion.Type))
+		freeNumberRes.Value("isPublic").Boolean().IsEqual(freeNumberQuestion.IsPublic)
+		freeNumberRes.Value("isOpen").Boolean().IsEqual(freeNumberQuestion.IsOpen)
+
 		// Verify SingleChoiceQuestion
-		singleChoiceRes := questionsArray.Value(1).Object()
+		singleChoiceRes := questionsArray.Value(2).Object()
 		singleChoiceRes.Value("title").String().IsEqual(singleChoiceQuestion.Title)
 
 		if singleChoiceQuestion.Description == nil {
@@ -148,7 +175,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		singleChoiceOptions.Value(1).Object().Value("content").String().IsEqual(singleChoiceQuestion.Options[1].Content)
 
 		// Verify MultipleChoiceQuestion
-		multipleChoiceRes := questionsArray.Value(2).Object()
+		multipleChoiceRes := questionsArray.Value(3).Object()
 		multipleChoiceRes.Value("title").String().IsEqual(multipleChoiceQuestion.Title)
 
 		if multipleChoiceQuestion.Description == nil {
