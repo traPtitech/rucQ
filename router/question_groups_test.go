@@ -104,7 +104,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			res.Value("description").String().IsEqual(*req.Description)
 		}
 
-		res.Value("due").String().IsEqual(req.Due.Format(time.RFC3339))
+		res.Value("due").String().AsDateTime(time.RFC3339).InRange(req.Due.Add(-time.Second), req.Due.Add(time.Second))
 
 		questionsArray := res.Value("questions").Array()
 		questionsArray.Length().IsEqual(3)

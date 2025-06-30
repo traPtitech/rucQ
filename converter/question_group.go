@@ -2,7 +2,6 @@ package converter
 
 import (
 	"errors"
-	"time"
 
 	"github.com/jinzhu/copier"
 
@@ -25,9 +24,6 @@ var questionGroupSchemaToModel = copier.TypeConverter{
 		if err := copier.Copy(&dst, &req); err != nil {
 			return nil, err
 		}
-
-		// 時刻の精度を秒にトランケート
-		dst.Due = req.Due.Truncate(time.Second)
 
 		// Questions配列を手動で変換
 		dst.Questions = make([]model.Question, len(req.Questions))
