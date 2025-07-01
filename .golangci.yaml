@@ -16,4 +16,5 @@ formatters:
 
   settings:
     goimports:
-      local-prefixes: "github.com/traPtitech/rucQ"
+      local-prefixes:
+        - "github.com/traPtitech/rucQ"
