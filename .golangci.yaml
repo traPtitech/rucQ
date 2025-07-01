@@ -8,3 +8,13 @@ linters:
       rules:
         - name: unused-parameter
           severity: error
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+  settings:
+    goimports:
+      local-prefixes:
+        - "github.com/traPtitech/rucQ"
