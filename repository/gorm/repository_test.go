@@ -60,7 +60,9 @@ func setup(t *testing.T) *Repository {
 	config.ParseTime = true
 	config.Loc = loc
 
-	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()))
+	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
+		TranslateError: true,
+	})
 
 	require.NoError(t, err)
 
