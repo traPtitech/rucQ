@@ -2,55 +2,44 @@ package gorm
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"os"
 
-	traq "github.com/traPtitech/go-traq"
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
 )
 
 func (r *Repository) GetOrCreateUser(ctx context.Context, userID string) (*model.User, error) {
-	// まずデータベースを検索
-	users, err := gorm.G[*model.User](r.db).Limit(1).Where(&model.User{ID: userID}).Find(ctx)
-
-	if err != nil {
-		return nil, err
+	// 先に作成を試す（取得を先に行うと、同時に複数のリクエストが来た場合に競合が発生する可能性があるため）
+	user := model.User{
+		ID: userID,
 	}
 
-	var user model.User
+	err := gorm.G[model.User](r.db).Create(ctx, &user)
 
-	if len(users) > 0 {
-		user = *users[0]
+	if err == nil {
+		// ユーザーが正常に作成された場合は、そのユーザーを返す
+		return &user, nil
 	}
 
-	// if user.TraqUUID != "" {
-	// 	return &user, nil
-	// }
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		// 重複キーエラーが発生した場合は、すでに存在するユーザーを取得する
+		users, err := gorm.G[*model.User](r.db).Limit(1).Where(&model.User{ID: userID}).Find(ctx)
 
-	configuration := traq.NewConfiguration()
-	apiClient := traq.NewAPIClient(configuration)
-	configuration.AddDefaultHeader("Authorization", "Bearer "+os.Getenv("BOT_ACCESS_TOKEN"))
-	usersUuid, httpResp, err := apiClient.UserApi.GetUsers(context.Background()).Name(userID).Execute()
-	if err != nil {
-		return nil, fmt.Errorf("error when calling UserApi.GetUsers: %w\nfull HTTP response: %v", err, httpResp)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(users) > 0 {
+			return users[0], nil
+		}
+
+		return nil, fmt.Errorf("user not found after duplicate key error: %s", userID)
 	}
 
-	// traQ API のレスポンスをチェック
-	if len(usersUuid) != 1 {
-		return nil, fmt.Errorf("no users found with name %s", userID)
-	}
-
-	// 追加、更新するユーザーを作成
-	// user.TraqUUID = usersUuid[0].Id
-	user.ID = userID
-
-	if err := r.db.Save(&user).Error; err != nil {
-		return nil, err
-	}
-
-	return &user, nil
+	// その他の予期せぬエラー
+	return nil, err
 }
 
 func (r *Repository) GetUserTraqID(ID uint) (string, error) {

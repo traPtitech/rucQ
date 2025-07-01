@@ -60,7 +60,9 @@ func setup(t *testing.T) *Repository {
 	config.ParseTime = true
 	config.Loc = loc
 
-	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()))
+	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
+		TranslateError: true,
+	})
 
 	require.NoError(t, err)
 
@@ -96,4 +98,18 @@ func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
 	require.NoError(t, err)
 
 	return *camp
+}
+
+func mustCreateUser(t *testing.T, r *Repository) model.User {
+	t.Helper()
+
+	userID := random.AlphaNumericString(t, 32)
+	user, err := r.GetOrCreateUser(t.Context(), userID)
+
+	require.NoError(t, err)
+	require.NotNil(t, user)
+	require.Equal(t, userID, user.ID)
+	require.False(t, user.IsStaff)
+
+	return *user
 }
