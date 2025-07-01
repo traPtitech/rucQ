@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
@@ -67,7 +68,7 @@ func TestGetEvents(t *testing.T) {
 			TimeEnd:     &timeEnd3,
 		}
 
-		h.repo.MockEventRepository.EXPECT().GetEvents().Return([]model.Event{
+		h.repo.MockEventRepository.EXPECT().GetEvents(gomock.Any(), campID).Return([]model.Event{
 			durationEvent,
 			momentEvent,
 			officialEvent,
