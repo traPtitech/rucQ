@@ -6,8 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
 
+	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
@@ -23,7 +25,15 @@ func TestGetEvents(t *testing.T) {
 		timeStart1 := random.Time(t)
 		timeEnd1 := timeStart1.Add(time.Duration(random.PositiveInt(t)))
 		userID := random.AlphaNumericString(t, 32)
-		color := "blue" // TODO: validなものからランダムに選ぶ
+		color := string(random.SelectFrom(
+			t,
+			api.DurationEventRequestDisplayColorBlue,
+			api.DurationEventRequestDisplayColorGreen,
+			api.DurationEventRequestDisplayColorOrange,
+			api.DurationEventRequestDisplayColorPink,
+			api.DurationEventRequestDisplayColorPurple,
+			api.DurationEventRequestDisplayColorRed,
+		))
 
 		durationEvent := model.Event{
 			Model: gorm.Model{
@@ -67,7 +77,7 @@ func TestGetEvents(t *testing.T) {
 			TimeEnd:     &timeEnd3,
 		}
 
-		h.repo.MockEventRepository.EXPECT().GetEvents().Return([]model.Event{
+		h.repo.MockEventRepository.EXPECT().GetEvents(gomock.Any(), campID).Return([]model.Event{
 			durationEvent,
 			momentEvent,
 			officialEvent,

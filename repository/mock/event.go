@@ -85,18 +85,18 @@ func (mr *MockEventRepositoryMockRecorder) GetEventByID(id any) *gomock.Call {
 }
 
 // GetEvents mocks base method.
-func (m *MockEventRepository) GetEvents() ([]model.Event, error) {
+func (m *MockEventRepository) GetEvents(ctx context.Context, campID uint) ([]model.Event, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEvents")
+	ret := m.ctrl.Call(m, "GetEvents", ctx, campID)
 	ret0, _ := ret[0].([]model.Event)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEvents indicates an expected call of GetEvents.
-func (mr *MockEventRepositoryMockRecorder) GetEvents() *gomock.Call {
+func (mr *MockEventRepositoryMockRecorder) GetEvents(ctx, campID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockEventRepository)(nil).GetEvents))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockEventRepository)(nil).GetEvents), ctx, campID)
 }
 
 // UpdateEvent mocks base method.

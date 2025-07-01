@@ -7,10 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func (r *Repository) GetEvents() ([]model.Event, error) {
-	var events []model.Event
+func (r *Repository) GetEvents(ctx context.Context, campID uint) ([]model.Event, error) {
+	events, err := gorm.G[model.Event](r.db).
+		Where(&model.Event{CampID: campID}).
+		Find(ctx)
 
-	if err := r.db.Find(&events).Error; err != nil {
+	if err != nil {
 		return nil, err
 	}
 

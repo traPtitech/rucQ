@@ -10,8 +10,8 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-func (s *Server) GetEvents(e echo.Context, _ api.CampId) error {
-	events, err := s.repo.GetEvents()
+func (s *Server) GetEvents(e echo.Context, campID api.CampId) error {
+	events, err := s.repo.GetEvents(e.Request().Context(), uint(campID))
 
 	if err != nil {
 		e.Logger().Errorf("failed to get events: %v", err)

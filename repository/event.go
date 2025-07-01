@@ -8,7 +8,7 @@ import (
 )
 
 type EventRepository interface {
-	GetEvents() ([]model.Event, error)
+	GetEvents(ctx context.Context, campID uint) ([]model.Event, error)
 	GetEventByID(id uint) (*model.Event, error)
 	CreateEvent(event *model.Event) error
 	UpdateEvent(ctx context.Context, ID uint, event *model.Event) error
