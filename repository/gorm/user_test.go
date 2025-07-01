@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -35,5 +36,33 @@ func TestGetOrCreateUser(t *testing.T) {
 		assert.NotNil(t, got)
 		assert.Equal(t, user.ID, got.ID)
 		assert.False(t, got.IsStaff)
+	})
+
+	t.Run("Success (Concurrent Creation)", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+
+		concurrency := 50
+		results := make(chan *model.User, concurrency)
+		errs := make(chan error, concurrency)
+
+		for range concurrency {
+			go func() {
+				user, err := r.GetOrCreateUser(t.Context(), userID)
+				results <- user
+				errs <- err
+			}()
+		}
+
+		for range concurrency {
+			user := <-results
+			err := <-errs
+
+			assert.NoError(t, err)
+			assert.NotNil(t, user)
+			assert.Equal(t, userID, user.ID)
+		}
 	})
 }
