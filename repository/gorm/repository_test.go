@@ -100,6 +100,67 @@ func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
 	return *camp
 }
 
+func mustCreateEvent(t *testing.T, r *Repository, campID uint) model.Event {
+	t.Helper()
+
+	eventType := random.SelectFrom(t, model.EventTypeDuration, model.EventTypeMoment, model.EventTypeOfficial)
+
+	var event *model.Event
+
+	switch eventType {
+	case model.EventTypeDuration:
+		timeStart := random.Time(t)
+		timeEnd := timeStart.Add(time.Duration(random.PositiveInt(t)))
+		user := mustCreateUser(t, r)
+		color := random.AlphaNumericString(t, 10)
+		event = &model.Event{
+			Type:         model.EventTypeDuration,
+			Name:         random.AlphaNumericString(t, 20),
+			Description:  random.AlphaNumericString(t, 100),
+			Location:     random.AlphaNumericString(t, 50),
+			TimeStart:    timeStart,
+			TimeEnd:      &timeEnd,
+			OrganizerID:  &user.ID,
+			DisplayColor: &color,
+			CampID:       campID,
+		}
+
+	case model.EventTypeMoment:
+		event = &model.Event{
+			Type:        model.EventTypeMoment,
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.AlphaNumericString(t, 100),
+			Location:    random.AlphaNumericString(t, 50),
+			TimeStart:   random.Time(t),
+			CampID:      campID,
+		}
+
+	case model.EventTypeOfficial:
+		timeStart := random.Time(t)
+		timeEnd := timeStart.Add(time.Duration(random.PositiveInt(t)))
+		event = &model.Event{
+			Type:        model.EventTypeOfficial,
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.AlphaNumericString(t, 100),
+			Location:    random.AlphaNumericString(t, 50),
+			TimeStart:   timeStart,
+			TimeEnd:     &timeEnd,
+			CampID:      campID,
+		}
+	}
+
+	err := r.CreateEvent(event)
+
+	require.NoError(t, err)
+
+	// 時刻の精度などを揃えるため再取得する
+	event, err = r.GetEventByID(event.ID)
+
+	require.NoError(t, err)
+
+	return *event
+}
+
 func mustCreateUser(t *testing.T, r *Repository) model.User {
 	t.Helper()
 

@@ -49,6 +49,14 @@ func PtrOrNil[T any](t *testing.T, value T) *T {
 	return &value
 }
 
+func SelectFrom[T any](t *testing.T, items ...T) T {
+	t.Helper()
+
+	index := rand.UintN(uint(len(items)))
+
+	return items[index]
+}
+
 func Time(t *testing.T) time.Time {
 	t.Helper()
 
