@@ -1,9 +1,10 @@
 package gorm
 
 import (
+	"gorm.io/gorm"
+
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
-	"gorm.io/gorm"
 )
 
 func (r *Repository) CreateQuestion(question *model.Question) error {

@@ -3,8 +3,9 @@ package gorm
 import (
 	"context"
 
-	"github.com/traPtitech/rucQ/model"
 	"gorm.io/gorm"
+
+	"github.com/traPtitech/rucQ/model"
 )
 
 func (r *Repository) GetEvents(ctx context.Context, campID uint) ([]model.Event, error) {

@@ -2,8 +2,9 @@ package migration
 
 import (
 	"github.com/go-gormigrate/gormigrate/v2"
-	"github.com/traPtitech/rucQ/model"
 	"gorm.io/gorm"
+
+	"github.com/traPtitech/rucQ/model"
 )
 
 func Migrate(db *gorm.DB) error {
