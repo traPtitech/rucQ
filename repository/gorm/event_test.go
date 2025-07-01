@@ -21,7 +21,6 @@ func TestGetEvents(t *testing.T) {
 		event1 := mustCreateEvent(t, r, camp1.ID)
 		event2 := mustCreateEvent(t, r, camp1.ID)
 		event3 := mustCreateEvent(t, r, camp2.ID)
-		err := r.CreateEvent(&event1)
 
 		events1, err := r.GetEvents(t.Context(), camp1.ID)
 
