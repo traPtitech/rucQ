@@ -17,6 +17,7 @@ type mockRepository struct {
 	*mock.MockCampRepository
 	*mock.MockEventRepository
 	*mock.MockOptionRepository
+	*mock.MockPaymentRepository
 	*mock.MockQuestionRepository
 	*mock.MockQuestionGroupRepository
 	*mock.MockRoomRepository
@@ -29,6 +30,7 @@ func newMockRepository(ctrl *gomock.Controller) *mockRepository {
 		MockCampRepository:          mock.NewMockCampRepository(ctrl),
 		MockEventRepository:         mock.NewMockEventRepository(ctrl),
 		MockOptionRepository:        mock.NewMockOptionRepository(ctrl),
+		MockPaymentRepository:       mock.NewMockPaymentRepository(ctrl),
 		MockQuestionRepository:      mock.NewMockQuestionRepository(ctrl),
 		MockQuestionGroupRepository: mock.NewMockQuestionGroupRepository(ctrl),
 		MockRoomRepository:          mock.NewMockRoomRepository(ctrl),

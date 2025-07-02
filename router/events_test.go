@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -83,7 +82,7 @@ func TestGetEvents(t *testing.T) {
 			officialEvent,
 		}, nil)
 
-		res := h.expect.GET(fmt.Sprintf("/api/camps/%d/events", campID)).Expect().Status(http.StatusOK).JSON().Array()
+		res := h.expect.GET("/api/camps/{campId}/events", campID).Expect().Status(http.StatusOK).JSON().Array()
 
 		res.Length().IsEqual(3)
 
