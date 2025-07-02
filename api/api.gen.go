@@ -371,7 +371,7 @@ type MomentEventResponseType string
 
 // MultipleChoiceAnswerRequest defines model for MultipleChoiceAnswerRequest.
 type MultipleChoiceAnswerRequest struct {
-	Content    []int                           `json:"content"`
+	OptionIds  []int                           `json:"optionIds"`
 	QuestionId int                             `json:"questionId"`
 	Type       MultipleChoiceAnswerRequestType `json:"type"`
 }
@@ -381,11 +381,11 @@ type MultipleChoiceAnswerRequestType string
 
 // MultipleChoiceAnswerResponse defines model for MultipleChoiceAnswerResponse.
 type MultipleChoiceAnswerResponse struct {
-	Content    []OptionResponse                 `json:"content"`
-	Id         int                              `json:"id"`
-	QuestionId int                              `json:"questionId"`
-	Type       MultipleChoiceAnswerResponseType `json:"type"`
-	UserId     string                           `json:"userId"`
+	Id              int                              `json:"id"`
+	QuestionId      int                              `json:"questionId"`
+	SelectedOptions []OptionResponse                 `json:"selectedOptions"`
+	Type            MultipleChoiceAnswerResponseType `json:"type"`
+	UserId          string                           `json:"userId"`
 }
 
 // MultipleChoiceAnswerResponseType defines model for MultipleChoiceAnswerResponse.Type.
@@ -563,7 +563,7 @@ type RoomResponse struct {
 
 // SingleChoiceAnswerRequest defines model for SingleChoiceAnswerRequest.
 type SingleChoiceAnswerRequest struct {
-	Content    int                           `json:"content"`
+	OptionId   int                           `json:"optionId"`
 	QuestionId int                           `json:"questionId"`
 	Type       SingleChoiceAnswerRequestType `json:"type"`
 }
@@ -573,11 +573,11 @@ type SingleChoiceAnswerRequestType string
 
 // SingleChoiceAnswerResponse defines model for SingleChoiceAnswerResponse.
 type SingleChoiceAnswerResponse struct {
-	Content    OptionResponse                 `json:"content"`
-	Id         int                            `json:"id"`
-	QuestionId int                            `json:"questionId"`
-	Type       SingleChoiceAnswerResponseType `json:"type"`
-	UserId     string                         `json:"userId"`
+	Id             int                            `json:"id"`
+	QuestionId     int                            `json:"questionId"`
+	SelectedOption OptionResponse                 `json:"selectedOption"`
+	Type           SingleChoiceAnswerResponseType `json:"type"`
+	UserId         string                         `json:"userId"`
 }
 
 // SingleChoiceAnswerResponseType defines model for SingleChoiceAnswerResponse.Type.

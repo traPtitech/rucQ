@@ -2145,12 +2145,12 @@ components:
             - single
         questionId:
           type: integer
-        content:
+        optionId:
           type: integer
       required:
         - type
         - questionId
-        - content
+        - optionId
     SingleChoiceAnswerResponse:
       type: object
       properties:
@@ -2164,14 +2164,14 @@ components:
           type: integer
         userId:
           type: string
-        content:
+        selectedOption:
           $ref: "#/components/schemas/OptionResponse"
       required:
         - id
         - type
         - questionId
         - userId
-        - content
+        - selectedOption
 
     MultipleChoiceAnswerRequest:
       type: object
@@ -2182,14 +2182,14 @@ components:
             - multiple
         questionId:
           type: integer
-        content:
+        optionIds:
           type: array
           items:
             type: integer
       required:
         - type
         - questionId
-        - content
+        - optionIds
     MultipleChoiceAnswerResponse:
       type: object
       properties:
@@ -2203,7 +2203,7 @@ components:
           type: integer
         userId:
           type: string
-        content:
+        selectedOptions:
           type: array
           items:
             $ref: "#/components/schemas/OptionResponse"
@@ -2212,7 +2212,7 @@ components:
         - type
         - questionId
         - userId
-        - content
+        - selectedOptions
     PaymentRequest:
       type: object
       properties:
