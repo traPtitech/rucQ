@@ -30,11 +30,6 @@ func (s *Server) AdminGetPayments(_ echo.Context, _ api.CampId, _ api.AdminGetPa
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetPayments not implemented")
 }
 
-// AdminPostPayment 支払い情報を作成（管理者用）
-func (s *Server) AdminPostPayment(_ echo.Context, _ api.CampId, _ api.AdminPostPaymentParams) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostPayment not implemented")
-}
-
 // AdminPutPayment 支払い情報を更新（管理者用）
 func (s *Server) AdminPutPayment(_ echo.Context, _ api.PaymentId, _ api.AdminPutPaymentParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutPayment not implemented")
