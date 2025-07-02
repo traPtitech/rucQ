@@ -1812,8 +1812,6 @@ components:
         id:
           type: integer
           description: 質問ID（編集時のみ、新規作成時は不要）
-        questionGroupId:
-          type: integer
         title:
           type: string
         description:
@@ -1828,7 +1826,6 @@ components:
         isOpen:
           type: boolean
       required:
-        - questionGroupId
         - title
         - description
         - type
@@ -1838,8 +1835,6 @@ components:
       type: object
       properties:
         id:
-          type: integer
-        questionGroupId:
           type: integer
         title:
           type: string
@@ -1856,7 +1851,6 @@ components:
           type: boolean
       required:
         - id
-        - questionGroupId
         - title
         - description
         - type
@@ -1869,8 +1863,6 @@ components:
         id:
           type: integer
           description: 質問ID（編集時のみ、新規作成時は不要）
-        questionGroupId:
-          type: integer
         title:
           type: string
         description:
@@ -1885,7 +1877,6 @@ components:
         isOpen:
           type: boolean
       required:
-        - questionGroupId
         - title
         - description
         - type
@@ -1895,8 +1886,6 @@ components:
       type: object
       properties:
         id:
-          type: integer
-        questionGroupId:
           type: integer
         title:
           type: string
@@ -1913,7 +1902,6 @@ components:
           type: boolean
       required:
         - id
-        - questionGroupId
         - title
         - description
         - type
@@ -1926,8 +1914,6 @@ components:
         id:
           type: integer
           description: 質問ID（編集時のみ、新規作成時は不要）
-        questionGroupId:
-          type: integer
         title:
           type: string
         description:
@@ -1946,7 +1932,6 @@ components:
           items:
             $ref: "#/components/schemas/OptionRequest"
       required:
-        - questionGroupId
         - title
         - description
         - type
@@ -1957,8 +1942,6 @@ components:
       type: object
       properties:
         id:
-          type: integer
-        questionGroupId:
           type: integer
         title:
           type: string
@@ -1979,7 +1962,6 @@ components:
             $ref: "#/components/schemas/OptionResponse"
       required:
         - id
-        - questionGroupId
         - title
         - description
         - type
@@ -1993,8 +1975,6 @@ components:
         id:
           type: integer
           description: 質問ID（編集時のみ、新規作成時は不要）
-        questionGroupId:
-          type: integer
         title:
           type: string
         description:
@@ -2013,7 +1993,6 @@ components:
           items:
             $ref: "#/components/schemas/OptionRequest"
       required:
-        - questionGroupId
         - title
         - description
         - type
@@ -2024,8 +2003,6 @@ components:
       type: object
       properties:
         id:
-          type: integer
-        questionGroupId:
           type: integer
         title:
           type: string
@@ -2046,7 +2023,6 @@ components:
             $ref: "#/components/schemas/OptionResponse"
       required:
         - id
-        - questionGroupId
         - title
         - description
         - type
@@ -2059,25 +2035,19 @@ components:
         id:
           type: integer
           description: 選択肢ID（編集時のみ、新規作成時は不要）
-        questionId:
-          type: integer
         content:
           type: string
       required:
-        - questionId
         - content
     OptionResponse:
       type: object
       properties:
         id:
           type: integer
-        questionId:
-          type: integer
         content:
           type: string
       required:
         - id
-        - questionId
         - content
     AnswerRequest:
       oneOf:
