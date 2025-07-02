@@ -180,4 +180,25 @@ func TestCreateEvent(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotZero(t, event2.ID)
 	})
+
+	t.Run("Failure (Organizer Not Found)", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		userID := random.AlphaNumericString(t, 32) // 存在しないユーザーID
+		event := model.Event{
+			Type:        model.EventTypeMoment,
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.AlphaNumericString(t, 100),
+			Location:    random.AlphaNumericString(t, 50),
+			TimeStart:   random.Time(t),
+			CampID:      camp.ID,
+			OrganizerID: &userID,
+		}
+		err := r.CreateEvent(&event)
+
+		assert.Error(t, err)
+		// TODO: 具体的なエラー内容を確認するためのアサーションを追加する
+	})
 }
