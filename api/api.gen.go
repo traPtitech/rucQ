@@ -481,16 +481,16 @@ type PaymentResponse struct {
 
 // QuestionGroupRequest defines model for QuestionGroupRequest.
 type QuestionGroupRequest struct {
-	Description *string           `json:"description"`
-	Due         time.Time         `json:"due"`
-	Name        string            `json:"name"`
-	Questions   []QuestionRequest `json:"questions"`
+	Description *string            `json:"description"`
+	Due         openapi_types.Date `json:"due"`
+	Name        string             `json:"name"`
+	Questions   []QuestionRequest  `json:"questions"`
 }
 
 // QuestionGroupResponse defines model for QuestionGroupResponse.
 type QuestionGroupResponse struct {
 	Description *string            `json:"description"`
-	Due         time.Time          `json:"due"`
+	Due         openapi_types.Date `json:"due"`
 	Id          int                `json:"id"`
 	Name        string             `json:"name"`
 	Questions   []QuestionResponse `json:"questions"`

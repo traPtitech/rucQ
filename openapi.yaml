@@ -1760,7 +1760,7 @@ components:
           nullable: true
         due:
           type: string
-          format: date-time
+          format: date
         questions:
           type: array
           items:
@@ -1782,7 +1782,7 @@ components:
           nullable: true
         due:
           type: string
-          format: date-time
+          format: date
         questions:
           type: array
           items:
