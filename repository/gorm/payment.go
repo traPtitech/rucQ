@@ -9,7 +9,7 @@ import (
 )
 
 func (r *Repository) CreatePayment(ctx context.Context, payment *model.Payment) error {
-	err := gorm.G[*model.Payment](r.db).Create(ctx, &payment)
+	err := gorm.G[model.Payment](r.db).Create(ctx, payment)
 
 	if err != nil {
 		return err
