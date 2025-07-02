@@ -56,6 +56,20 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
+	if eventModel.OrganizerID != nil {
+		// TODO: ユーザーがtraQに存在するか確認する
+		organizer, err := s.repo.GetOrCreateUser(e.Request().Context(), *eventModel.OrganizerID)
+
+		if err != nil {
+			e.Logger().Errorf("failed to get or create organizer user: %v", err)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		// IDの正規化
+		eventModel.OrganizerID = &organizer.ID
+	}
+
 	if err := s.repo.CreateEvent(&eventModel); err != nil {
 		e.Logger().Errorf("failed to create event: %v", err)
 
