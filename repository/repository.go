@@ -5,6 +5,7 @@ type Repository interface {
 	CampRepository
 	EventRepository
 	OptionRepository
+	PaymentRepository
 	QuestionRepository
 	QuestionGroupRepository
 	RoomRepository
