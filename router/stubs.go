@@ -95,11 +95,6 @@ func (s *Server) GetImage(_ echo.Context, _ api.ImageId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetImage not implemented")
 }
 
-// GetDashboard 自分の参加する合宿を取得
-func (s *Server) GetDashboard(_ echo.Context, _ api.CampId, _ api.GetDashboardParams) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "GetDashboard not implemented")
-}
-
 // GetRollCalls 点呼の一覧を取得
 func (s *Server) GetRollCalls(_ echo.Context, _ api.CampId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetRollCalls not implemented")
