@@ -260,12 +260,11 @@ type FreeNumberQuestionRequest struct {
 	Description *string `json:"description"`
 
 	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id              *int                          `json:"id,omitempty"`
-	IsOpen          bool                          `json:"isOpen"`
-	IsPublic        bool                          `json:"isPublic"`
-	QuestionGroupId int                           `json:"questionGroupId"`
-	Title           string                        `json:"title"`
-	Type            FreeNumberQuestionRequestType `json:"type"`
+	Id       *int                          `json:"id,omitempty"`
+	IsOpen   bool                          `json:"isOpen"`
+	IsPublic bool                          `json:"isPublic"`
+	Title    string                        `json:"title"`
+	Type     FreeNumberQuestionRequestType `json:"type"`
 }
 
 // FreeNumberQuestionRequestType defines model for FreeNumberQuestionRequest.Type.
@@ -273,13 +272,12 @@ type FreeNumberQuestionRequestType string
 
 // FreeNumberQuestionResponse defines model for FreeNumberQuestionResponse.
 type FreeNumberQuestionResponse struct {
-	Description     *string                        `json:"description"`
-	Id              int                            `json:"id"`
-	IsOpen          bool                           `json:"isOpen"`
-	IsPublic        bool                           `json:"isPublic"`
-	QuestionGroupId int                            `json:"questionGroupId"`
-	Title           string                         `json:"title"`
-	Type            FreeNumberQuestionResponseType `json:"type"`
+	Description *string                        `json:"description"`
+	Id          int                            `json:"id"`
+	IsOpen      bool                           `json:"isOpen"`
+	IsPublic    bool                           `json:"isPublic"`
+	Title       string                         `json:"title"`
+	Type        FreeNumberQuestionResponseType `json:"type"`
 }
 
 // FreeNumberQuestionResponseType defines model for FreeNumberQuestionResponse.Type.
@@ -312,12 +310,11 @@ type FreeTextQuestionRequest struct {
 	Description *string `json:"description"`
 
 	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id              *int                        `json:"id,omitempty"`
-	IsOpen          bool                        `json:"isOpen"`
-	IsPublic        bool                        `json:"isPublic"`
-	QuestionGroupId int                         `json:"questionGroupId"`
-	Title           string                      `json:"title"`
-	Type            FreeTextQuestionRequestType `json:"type"`
+	Id       *int                        `json:"id,omitempty"`
+	IsOpen   bool                        `json:"isOpen"`
+	IsPublic bool                        `json:"isPublic"`
+	Title    string                      `json:"title"`
+	Type     FreeTextQuestionRequestType `json:"type"`
 }
 
 // FreeTextQuestionRequestType defines model for FreeTextQuestionRequest.Type.
@@ -325,13 +322,12 @@ type FreeTextQuestionRequestType string
 
 // FreeTextQuestionResponse defines model for FreeTextQuestionResponse.
 type FreeTextQuestionResponse struct {
-	Description     *string                      `json:"description"`
-	Id              int                          `json:"id"`
-	IsOpen          bool                         `json:"isOpen"`
-	IsPublic        bool                         `json:"isPublic"`
-	QuestionGroupId int                          `json:"questionGroupId"`
-	Title           string                       `json:"title"`
-	Type            FreeTextQuestionResponseType `json:"type"`
+	Description *string                      `json:"description"`
+	Id          int                          `json:"id"`
+	IsOpen      bool                         `json:"isOpen"`
+	IsPublic    bool                         `json:"isPublic"`
+	Title       string                       `json:"title"`
+	Type        FreeTextQuestionResponseType `json:"type"`
 }
 
 // FreeTextQuestionResponseType defines model for FreeTextQuestionResponse.Type.
@@ -400,13 +396,12 @@ type MultipleChoiceQuestionRequest struct {
 	Description *string `json:"description"`
 
 	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id              *int                              `json:"id,omitempty"`
-	IsOpen          bool                              `json:"isOpen"`
-	IsPublic        bool                              `json:"isPublic"`
-	Options         []OptionRequest                   `json:"options"`
-	QuestionGroupId int                               `json:"questionGroupId"`
-	Title           string                            `json:"title"`
-	Type            MultipleChoiceQuestionRequestType `json:"type"`
+	Id       *int                              `json:"id,omitempty"`
+	IsOpen   bool                              `json:"isOpen"`
+	IsPublic bool                              `json:"isPublic"`
+	Options  []OptionRequest                   `json:"options"`
+	Title    string                            `json:"title"`
+	Type     MultipleChoiceQuestionRequestType `json:"type"`
 }
 
 // MultipleChoiceQuestionRequestType defines model for MultipleChoiceQuestionRequest.Type.
@@ -414,14 +409,13 @@ type MultipleChoiceQuestionRequestType string
 
 // MultipleChoiceQuestionResponse defines model for MultipleChoiceQuestionResponse.
 type MultipleChoiceQuestionResponse struct {
-	Description     *string                            `json:"description"`
-	Id              int                                `json:"id"`
-	IsOpen          bool                               `json:"isOpen"`
-	IsPublic        bool                               `json:"isPublic"`
-	Options         []OptionResponse                   `json:"options"`
-	QuestionGroupId int                                `json:"questionGroupId"`
-	Title           string                             `json:"title"`
-	Type            MultipleChoiceQuestionResponseType `json:"type"`
+	Description *string                            `json:"description"`
+	Id          int                                `json:"id"`
+	IsOpen      bool                               `json:"isOpen"`
+	IsPublic    bool                               `json:"isPublic"`
+	Options     []OptionResponse                   `json:"options"`
+	Title       string                             `json:"title"`
+	Type        MultipleChoiceQuestionResponseType `json:"type"`
 }
 
 // MultipleChoiceQuestionResponseType defines model for MultipleChoiceQuestionResponse.Type.
@@ -459,15 +453,13 @@ type OptionRequest struct {
 	Content string `json:"content"`
 
 	// Id 選択肢ID（編集時のみ、新規作成時は不要）
-	Id         *int `json:"id,omitempty"`
-	QuestionId int  `json:"questionId"`
+	Id *int `json:"id,omitempty"`
 }
 
 // OptionResponse defines model for OptionResponse.
 type OptionResponse struct {
-	Content    string `json:"content"`
-	Id         int    `json:"id"`
-	QuestionId int    `json:"questionId"`
+	Content string `json:"content"`
+	Id      int    `json:"id"`
 }
 
 // PaymentRequest defines model for PaymentRequest.
@@ -596,13 +588,12 @@ type SingleChoiceQuestionRequest struct {
 	Description *string `json:"description"`
 
 	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id              *int                            `json:"id,omitempty"`
-	IsOpen          bool                            `json:"isOpen"`
-	IsPublic        bool                            `json:"isPublic"`
-	Options         []OptionRequest                 `json:"options"`
-	QuestionGroupId int                             `json:"questionGroupId"`
-	Title           string                          `json:"title"`
-	Type            SingleChoiceQuestionRequestType `json:"type"`
+	Id       *int                            `json:"id,omitempty"`
+	IsOpen   bool                            `json:"isOpen"`
+	IsPublic bool                            `json:"isPublic"`
+	Options  []OptionRequest                 `json:"options"`
+	Title    string                          `json:"title"`
+	Type     SingleChoiceQuestionRequestType `json:"type"`
 }
 
 // SingleChoiceQuestionRequestType defines model for SingleChoiceQuestionRequest.Type.
@@ -610,14 +601,13 @@ type SingleChoiceQuestionRequestType string
 
 // SingleChoiceQuestionResponse defines model for SingleChoiceQuestionResponse.
 type SingleChoiceQuestionResponse struct {
-	Description     *string                          `json:"description"`
-	Id              int                              `json:"id"`
-	IsOpen          bool                             `json:"isOpen"`
-	IsPublic        bool                             `json:"isPublic"`
-	Options         []OptionResponse                 `json:"options"`
-	QuestionGroupId int                              `json:"questionGroupId"`
-	Title           string                           `json:"title"`
-	Type            SingleChoiceQuestionResponseType `json:"type"`
+	Description *string                          `json:"description"`
+	Id          int                              `json:"id"`
+	IsOpen      bool                             `json:"isOpen"`
+	IsPublic    bool                             `json:"isPublic"`
+	Options     []OptionResponse                 `json:"options"`
+	Title       string                           `json:"title"`
+	Type        SingleChoiceQuestionResponseType `json:"type"`
 }
 
 // SingleChoiceQuestionResponseType defines model for SingleChoiceQuestionResponse.Type.
