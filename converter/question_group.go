@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/jinzhu/copier"
+	"github.com/oapi-codegen/runtime/types"
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
@@ -39,6 +40,8 @@ var questionGroupSchemaToModel = copier.TypeConverter{
 			dst.Questions[i] = question
 		}
 
+		dst.Due = req.Due.Time // types.Dateからtime.Timeへの変換
+
 		return dst, nil
 	},
 }
@@ -72,6 +75,8 @@ var questionGroupModelToSchema = copier.TypeConverter{
 			}
 			dst.Questions[i] = question
 		}
+
+		dst.Due = types.Date{Time: questionGroupModel.Due} // time.Timeからtypes.Dateへの変換
 
 		return dst, nil
 	},

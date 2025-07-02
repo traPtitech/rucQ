@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/oapi-codegen/runtime/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
@@ -98,7 +99,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		req := api.AdminPostQuestionGroupJSONRequestBody{
 			Name:        random.AlphaNumericString(t, 20),
 			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
-			Due:         due,
+			Due:         types.Date{Time: due},
 			Questions:   questions,
 		}
 		username := random.AlphaNumericString(t, 32)
@@ -121,7 +122,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			res.Value("description").String().IsEqual(*req.Description)
 		}
 
-		res.Value("due").String().AsDateTime(time.RFC3339).InRange(req.Due.Add(-time.Second), req.Due.Add(time.Second))
+		res.Value("due").String().IsEqual(req.Due.Format(time.DateOnly))
 
 		questionsArray := res.Value("questions").Array()
 		questionsArray.Length().IsEqual(4)
