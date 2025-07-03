@@ -38,13 +38,13 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			IsOpen:      random.Bool(t),
 		}
 
-		singleChoiceQuestion := api.SingleChoiceQuestionRequest{
+		singleChoiceQuestion := api.PostSingleChoiceQuestionRequest{
 			Title:       random.AlphaNumericString(t, 30),
 			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
-			Type:        api.SingleChoiceQuestionRequestTypeSingle,
+			Type:        api.PostSingleChoiceQuestionRequestTypeSingle,
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
-			Options: []api.OptionRequest{
+			Options: []api.PostOptionRequest{
 				{
 					Content: random.AlphaNumericString(t, 20),
 				},
@@ -54,13 +54,13 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			},
 		}
 
-		multipleChoiceQuestion := api.MultipleChoiceQuestionRequest{
+		multipleChoiceQuestion := api.PostMultipleChoiceQuestionRequest{
 			Title:       random.AlphaNumericString(t, 30),
 			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
-			Type:        api.MultipleChoiceQuestionRequestTypeMultiple,
+			Type:        api.PostMultipleChoiceQuestionRequestTypeMultiple,
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
-			Options: []api.OptionRequest{
+			Options: []api.PostOptionRequest{
 				{
 					Content: random.AlphaNumericString(t, 20),
 				},
@@ -73,25 +73,25 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			},
 		}
 
-		questions := make([]api.QuestionRequest, 4)
+		questions := make([]api.PostQuestionRequest, 4)
 
-		var freeTextReq api.QuestionRequest
+		var freeTextReq api.PostQuestionRequest
 		err := freeTextReq.FromFreeTextQuestionRequest(freeTextQuestion)
 		require.NoError(t, err)
 		questions[0] = freeTextReq
 
-		var freeNumberReq api.QuestionRequest
+		var freeNumberReq api.PostQuestionRequest
 		err = freeNumberReq.FromFreeNumberQuestionRequest(freeNumberQuestion)
 		require.NoError(t, err)
 		questions[1] = freeNumberReq
 
-		var singleChoiceReq api.QuestionRequest
-		err = singleChoiceReq.FromSingleChoiceQuestionRequest(singleChoiceQuestion)
+		var singleChoiceReq api.PostQuestionRequest
+		err = singleChoiceReq.FromPostSingleChoiceQuestionRequest(singleChoiceQuestion)
 		require.NoError(t, err)
 		questions[2] = singleChoiceReq
 
-		var multipleChoiceReq api.QuestionRequest
-		err = multipleChoiceReq.FromMultipleChoiceQuestionRequest(multipleChoiceQuestion)
+		var multipleChoiceReq api.PostQuestionRequest
+		err = multipleChoiceReq.FromPostMultipleChoiceQuestionRequest(multipleChoiceQuestion)
 		require.NoError(t, err)
 		questions[3] = multipleChoiceReq
 

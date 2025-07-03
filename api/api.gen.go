@@ -104,11 +104,6 @@ const (
 	MultipleChoiceAnswerResponseTypeMultiple MultipleChoiceAnswerResponseType = "multiple"
 )
 
-// Defines values for MultipleChoiceQuestionRequestType.
-const (
-	MultipleChoiceQuestionRequestTypeMultiple MultipleChoiceQuestionRequestType = "multiple"
-)
-
 // Defines values for MultipleChoiceQuestionResponseType.
 const (
 	MultipleChoiceQuestionResponseTypeMultiple MultipleChoiceQuestionResponseType = "multiple"
@@ -124,6 +119,26 @@ const (
 	OfficialEventResponseTypeOfficial OfficialEventResponseType = "official"
 )
 
+// Defines values for PostMultipleChoiceQuestionRequestType.
+const (
+	PostMultipleChoiceQuestionRequestTypeMultiple PostMultipleChoiceQuestionRequestType = "multiple"
+)
+
+// Defines values for PostSingleChoiceQuestionRequestType.
+const (
+	PostSingleChoiceQuestionRequestTypeSingle PostSingleChoiceQuestionRequestType = "single"
+)
+
+// Defines values for PutMultipleChoiceQuestionRequestType.
+const (
+	Multiple PutMultipleChoiceQuestionRequestType = "multiple"
+)
+
+// Defines values for PutSingleChoiceQuestionRequestType.
+const (
+	PutSingleChoiceQuestionRequestTypeSingle PutSingleChoiceQuestionRequestType = "single"
+)
+
 // Defines values for SingleChoiceAnswerRequestType.
 const (
 	SingleChoiceAnswerRequestTypeSingle SingleChoiceAnswerRequestType = "single"
@@ -134,14 +149,9 @@ const (
 	SingleChoiceAnswerResponseTypeSingle SingleChoiceAnswerResponseType = "single"
 )
 
-// Defines values for SingleChoiceQuestionRequestType.
-const (
-	SingleChoiceQuestionRequestTypeSingle SingleChoiceQuestionRequestType = "single"
-)
-
 // Defines values for SingleChoiceQuestionResponseType.
 const (
-	SingleChoiceQuestionResponseTypeSingle SingleChoiceQuestionResponseType = "single"
+	Single SingleChoiceQuestionResponseType = "single"
 )
 
 // AnswerRequest defines model for AnswerRequest.
@@ -385,19 +395,6 @@ type MultipleChoiceAnswerResponse struct {
 // MultipleChoiceAnswerResponseType defines model for MultipleChoiceAnswerResponse.Type.
 type MultipleChoiceAnswerResponseType string
 
-// MultipleChoiceQuestionRequest defines model for MultipleChoiceQuestionRequest.
-type MultipleChoiceQuestionRequest struct {
-	Description *string                           `json:"description,omitempty"`
-	IsOpen      bool                              `json:"isOpen"`
-	IsPublic    bool                              `json:"isPublic"`
-	Options     []OptionRequest                   `json:"options"`
-	Title       string                            `json:"title"`
-	Type        MultipleChoiceQuestionRequestType `json:"type"`
-}
-
-// MultipleChoiceQuestionRequestType defines model for MultipleChoiceQuestionRequest.Type.
-type MultipleChoiceQuestionRequestType string
-
 // MultipleChoiceQuestionResponse defines model for MultipleChoiceQuestionResponse.
 type MultipleChoiceQuestionResponse struct {
 	Description *string                            `json:"description"`
@@ -439,11 +436,6 @@ type OfficialEventResponse struct {
 // OfficialEventResponseType defines model for OfficialEventResponse.Type.
 type OfficialEventResponseType string
 
-// OptionRequest defines model for OptionRequest.
-type OptionRequest struct {
-	Content string `json:"content"`
-}
-
 // OptionResponse defines model for OptionResponse.
 type OptionResponse struct {
 	Content string `json:"content"`
@@ -467,41 +459,100 @@ type PaymentResponse struct {
 	UserId     string `json:"userId"`
 }
 
-// QuestionGroupMetadataRequest defines model for QuestionGroupMetadataRequest.
-type QuestionGroupMetadataRequest struct {
+// PostMultipleChoiceQuestionRequest defines model for PostMultipleChoiceQuestionRequest.
+type PostMultipleChoiceQuestionRequest struct {
+	Description *string                               `json:"description,omitempty"`
+	IsOpen      bool                                  `json:"isOpen"`
+	IsPublic    bool                                  `json:"isPublic"`
+	Options     []PostOptionRequest                   `json:"options"`
+	Title       string                                `json:"title"`
+	Type        PostMultipleChoiceQuestionRequestType `json:"type"`
+}
+
+// PostMultipleChoiceQuestionRequestType defines model for PostMultipleChoiceQuestionRequest.Type.
+type PostMultipleChoiceQuestionRequestType string
+
+// PostOptionRequest defines model for PostOptionRequest.
+type PostOptionRequest struct {
+	Content string `json:"content"`
+}
+
+// PostQuestionGroupRequest defines model for PostQuestionGroupRequest.
+type PostQuestionGroupRequest struct {
+	Description *string               `json:"description,omitempty"`
+	Due         openapi_types.Date    `json:"due"`
+	Name        string                `json:"name"`
+	Questions   []PostQuestionRequest `json:"questions"`
+}
+
+// PostQuestionRequest defines model for PostQuestionRequest.
+type PostQuestionRequest struct {
+	union json.RawMessage
+}
+
+// PostSingleChoiceQuestionRequest defines model for PostSingleChoiceQuestionRequest.
+type PostSingleChoiceQuestionRequest struct {
+	Description *string                             `json:"description,omitempty"`
+	IsOpen      bool                                `json:"isOpen"`
+	IsPublic    bool                                `json:"isPublic"`
+	Options     []PostOptionRequest                 `json:"options"`
+	Title       string                              `json:"title"`
+	Type        PostSingleChoiceQuestionRequestType `json:"type"`
+}
+
+// PostSingleChoiceQuestionRequestType defines model for PostSingleChoiceQuestionRequest.Type.
+type PostSingleChoiceQuestionRequestType string
+
+// PutMultipleChoiceQuestionRequest defines model for PutMultipleChoiceQuestionRequest.
+type PutMultipleChoiceQuestionRequest struct {
+	Description *string                              `json:"description,omitempty"`
+	IsOpen      bool                                 `json:"isOpen"`
+	IsPublic    bool                                 `json:"isPublic"`
+	Options     []PutOptionRequest                   `json:"options"`
+	Title       string                               `json:"title"`
+	Type        PutMultipleChoiceQuestionRequestType `json:"type"`
+}
+
+// PutMultipleChoiceQuestionRequestType defines model for PutMultipleChoiceQuestionRequest.Type.
+type PutMultipleChoiceQuestionRequestType string
+
+// PutOptionRequest defines model for PutOptionRequest.
+type PutOptionRequest struct {
+	Content string `json:"content"`
+	Id      int    `json:"id"`
+}
+
+// PutQuestionGroupRequest defines model for PutQuestionGroupRequest.
+type PutQuestionGroupRequest struct {
 	Description *string            `json:"description,omitempty"`
 	Due         openapi_types.Date `json:"due"`
 	Name        string             `json:"name"`
 }
 
-// QuestionGroupMetadataResponse defines model for QuestionGroupMetadataResponse.
-type QuestionGroupMetadataResponse struct {
-	Description *string            `json:"description,omitempty"`
-	Due         openapi_types.Date `json:"due"`
-	Id          int                `json:"id"`
-	Name        string             `json:"name"`
+// PutQuestionRequest defines model for PutQuestionRequest.
+type PutQuestionRequest struct {
+	union json.RawMessage
 }
 
-// QuestionGroupRequest defines model for QuestionGroupRequest.
-type QuestionGroupRequest struct {
-	Description *string            `json:"description,omitempty"`
-	Due         openapi_types.Date `json:"due"`
-	Name        string             `json:"name"`
-	Questions   []QuestionRequest  `json:"questions"`
+// PutSingleChoiceQuestionRequest defines model for PutSingleChoiceQuestionRequest.
+type PutSingleChoiceQuestionRequest struct {
+	Description *string                            `json:"description,omitempty"`
+	IsOpen      bool                               `json:"isOpen"`
+	IsPublic    bool                               `json:"isPublic"`
+	Options     []PutOptionRequest                 `json:"options"`
+	Title       string                             `json:"title"`
+	Type        PutSingleChoiceQuestionRequestType `json:"type"`
 }
+
+// PutSingleChoiceQuestionRequestType defines model for PutSingleChoiceQuestionRequest.Type.
+type PutSingleChoiceQuestionRequestType string
 
 // QuestionGroupResponse defines model for QuestionGroupResponse.
 type QuestionGroupResponse struct {
 	Description *string            `json:"description,omitempty"`
 	Due         openapi_types.Date `json:"due"`
-	Id          int                `json:"id"`
 	Name        string             `json:"name"`
 	Questions   []QuestionResponse `json:"questions"`
-}
-
-// QuestionRequest defines model for QuestionRequest.
-type QuestionRequest struct {
-	union json.RawMessage
 }
 
 // QuestionRequestBase defines model for QuestionRequestBase.
@@ -593,19 +644,6 @@ type SingleChoiceAnswerResponse struct {
 
 // SingleChoiceAnswerResponseType defines model for SingleChoiceAnswerResponse.Type.
 type SingleChoiceAnswerResponseType string
-
-// SingleChoiceQuestionRequest defines model for SingleChoiceQuestionRequest.
-type SingleChoiceQuestionRequest struct {
-	Description *string                         `json:"description,omitempty"`
-	IsOpen      bool                            `json:"isOpen"`
-	IsPublic    bool                            `json:"isPublic"`
-	Options     []OptionRequest                 `json:"options"`
-	Title       string                          `json:"title"`
-	Type        SingleChoiceQuestionRequestType `json:"type"`
-}
-
-// SingleChoiceQuestionRequestType defines model for SingleChoiceQuestionRequest.Type.
-type SingleChoiceQuestionRequestType string
 
 // SingleChoiceQuestionResponse defines model for SingleChoiceQuestionResponse.
 type SingleChoiceQuestionResponse struct {
@@ -971,7 +1009,7 @@ type AdminPostImageMultipartRequestBody AdminPostImageMultipartBody
 type AdminPostPaymentJSONRequestBody = PaymentRequest
 
 // AdminPostQuestionGroupJSONRequestBody defines body for AdminPostQuestionGroup for application/json ContentType.
-type AdminPostQuestionGroupJSONRequestBody = QuestionGroupRequest
+type AdminPostQuestionGroupJSONRequestBody = PostQuestionGroupRequest
 
 // AdminPostRollCallJSONRequestBody defines body for AdminPostRollCall for application/json ContentType.
 type AdminPostRollCallJSONRequestBody = RollCallRequest
@@ -986,10 +1024,10 @@ type AdminPutImageMultipartRequestBody AdminPutImageMultipartBody
 type AdminPutPaymentJSONRequestBody = PaymentRequest
 
 // AdminPutQuestionGroupMetadataJSONRequestBody defines body for AdminPutQuestionGroupMetadata for application/json ContentType.
-type AdminPutQuestionGroupMetadataJSONRequestBody = QuestionGroupMetadataRequest
+type AdminPutQuestionGroupMetadataJSONRequestBody = PutQuestionGroupRequest
 
 // AdminPutQuestionJSONRequestBody defines body for AdminPutQuestion for application/json ContentType.
-type AdminPutQuestionJSONRequestBody = QuestionRequest
+type AdminPutQuestionJSONRequestBody = PutQuestionRequest
 
 // AdminPutRoomGroupJSONRequestBody defines body for AdminPutRoomGroup for application/json ContentType.
 type AdminPutRoomGroupJSONRequestBody = RoomGroupRequest
@@ -1019,7 +1057,7 @@ type PutEventJSONRequestBody = EventRequest
 type PostAnswersJSONRequestBody = PostAnswersJSONBody
 
 // AdminPostQuestionJSONRequestBody defines body for AdminPostQuestion for application/json ContentType.
-type AdminPostQuestionJSONRequestBody = QuestionRequest
+type AdminPostQuestionJSONRequestBody = PostQuestionRequest
 
 // PutReactionJSONRequestBody defines body for PutReaction for application/json ContentType.
 type PutReactionJSONRequestBody = RollCallReactionRequest
@@ -1431,22 +1469,22 @@ func (t *EventResponse) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsFreeTextQuestionRequest returns the union data inside the QuestionRequest as a FreeTextQuestionRequest
-func (t QuestionRequest) AsFreeTextQuestionRequest() (FreeTextQuestionRequest, error) {
+// AsFreeTextQuestionRequest returns the union data inside the PostQuestionRequest as a FreeTextQuestionRequest
+func (t PostQuestionRequest) AsFreeTextQuestionRequest() (FreeTextQuestionRequest, error) {
 	var body FreeTextQuestionRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromFreeTextQuestionRequest overwrites any union data inside the QuestionRequest as the provided FreeTextQuestionRequest
-func (t *QuestionRequest) FromFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
+// FromFreeTextQuestionRequest overwrites any union data inside the PostQuestionRequest as the provided FreeTextQuestionRequest
+func (t *PostQuestionRequest) FromFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeFreeTextQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided FreeTextQuestionRequest
-func (t *QuestionRequest) MergeFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
+// MergeFreeTextQuestionRequest performs a merge with any union data inside the PostQuestionRequest, using the provided FreeTextQuestionRequest
+func (t *PostQuestionRequest) MergeFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1457,22 +1495,22 @@ func (t *QuestionRequest) MergeFreeTextQuestionRequest(v FreeTextQuestionRequest
 	return err
 }
 
-// AsFreeNumberQuestionRequest returns the union data inside the QuestionRequest as a FreeNumberQuestionRequest
-func (t QuestionRequest) AsFreeNumberQuestionRequest() (FreeNumberQuestionRequest, error) {
+// AsFreeNumberQuestionRequest returns the union data inside the PostQuestionRequest as a FreeNumberQuestionRequest
+func (t PostQuestionRequest) AsFreeNumberQuestionRequest() (FreeNumberQuestionRequest, error) {
 	var body FreeNumberQuestionRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromFreeNumberQuestionRequest overwrites any union data inside the QuestionRequest as the provided FreeNumberQuestionRequest
-func (t *QuestionRequest) FromFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
+// FromFreeNumberQuestionRequest overwrites any union data inside the PostQuestionRequest as the provided FreeNumberQuestionRequest
+func (t *PostQuestionRequest) FromFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeFreeNumberQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided FreeNumberQuestionRequest
-func (t *QuestionRequest) MergeFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
+// MergeFreeNumberQuestionRequest performs a merge with any union data inside the PostQuestionRequest, using the provided FreeNumberQuestionRequest
+func (t *PostQuestionRequest) MergeFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1483,22 +1521,22 @@ func (t *QuestionRequest) MergeFreeNumberQuestionRequest(v FreeNumberQuestionReq
 	return err
 }
 
-// AsSingleChoiceQuestionRequest returns the union data inside the QuestionRequest as a SingleChoiceQuestionRequest
-func (t QuestionRequest) AsSingleChoiceQuestionRequest() (SingleChoiceQuestionRequest, error) {
-	var body SingleChoiceQuestionRequest
+// AsPostSingleChoiceQuestionRequest returns the union data inside the PostQuestionRequest as a PostSingleChoiceQuestionRequest
+func (t PostQuestionRequest) AsPostSingleChoiceQuestionRequest() (PostSingleChoiceQuestionRequest, error) {
+	var body PostSingleChoiceQuestionRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromSingleChoiceQuestionRequest overwrites any union data inside the QuestionRequest as the provided SingleChoiceQuestionRequest
-func (t *QuestionRequest) FromSingleChoiceQuestionRequest(v SingleChoiceQuestionRequest) error {
+// FromPostSingleChoiceQuestionRequest overwrites any union data inside the PostQuestionRequest as the provided PostSingleChoiceQuestionRequest
+func (t *PostQuestionRequest) FromPostSingleChoiceQuestionRequest(v PostSingleChoiceQuestionRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeSingleChoiceQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided SingleChoiceQuestionRequest
-func (t *QuestionRequest) MergeSingleChoiceQuestionRequest(v SingleChoiceQuestionRequest) error {
+// MergePostSingleChoiceQuestionRequest performs a merge with any union data inside the PostQuestionRequest, using the provided PostSingleChoiceQuestionRequest
+func (t *PostQuestionRequest) MergePostSingleChoiceQuestionRequest(v PostSingleChoiceQuestionRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1509,22 +1547,22 @@ func (t *QuestionRequest) MergeSingleChoiceQuestionRequest(v SingleChoiceQuestio
 	return err
 }
 
-// AsMultipleChoiceQuestionRequest returns the union data inside the QuestionRequest as a MultipleChoiceQuestionRequest
-func (t QuestionRequest) AsMultipleChoiceQuestionRequest() (MultipleChoiceQuestionRequest, error) {
-	var body MultipleChoiceQuestionRequest
+// AsPostMultipleChoiceQuestionRequest returns the union data inside the PostQuestionRequest as a PostMultipleChoiceQuestionRequest
+func (t PostQuestionRequest) AsPostMultipleChoiceQuestionRequest() (PostMultipleChoiceQuestionRequest, error) {
+	var body PostMultipleChoiceQuestionRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromMultipleChoiceQuestionRequest overwrites any union data inside the QuestionRequest as the provided MultipleChoiceQuestionRequest
-func (t *QuestionRequest) FromMultipleChoiceQuestionRequest(v MultipleChoiceQuestionRequest) error {
+// FromPostMultipleChoiceQuestionRequest overwrites any union data inside the PostQuestionRequest as the provided PostMultipleChoiceQuestionRequest
+func (t *PostQuestionRequest) FromPostMultipleChoiceQuestionRequest(v PostMultipleChoiceQuestionRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeMultipleChoiceQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided MultipleChoiceQuestionRequest
-func (t *QuestionRequest) MergeMultipleChoiceQuestionRequest(v MultipleChoiceQuestionRequest) error {
+// MergePostMultipleChoiceQuestionRequest performs a merge with any union data inside the PostQuestionRequest, using the provided PostMultipleChoiceQuestionRequest
+func (t *PostQuestionRequest) MergePostMultipleChoiceQuestionRequest(v PostMultipleChoiceQuestionRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1535,12 +1573,126 @@ func (t *QuestionRequest) MergeMultipleChoiceQuestionRequest(v MultipleChoiceQue
 	return err
 }
 
-func (t QuestionRequest) MarshalJSON() ([]byte, error) {
+func (t PostQuestionRequest) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *QuestionRequest) UnmarshalJSON(b []byte) error {
+func (t *PostQuestionRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsFreeTextQuestionRequest returns the union data inside the PutQuestionRequest as a FreeTextQuestionRequest
+func (t PutQuestionRequest) AsFreeTextQuestionRequest() (FreeTextQuestionRequest, error) {
+	var body FreeTextQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFreeTextQuestionRequest overwrites any union data inside the PutQuestionRequest as the provided FreeTextQuestionRequest
+func (t *PutQuestionRequest) FromFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFreeTextQuestionRequest performs a merge with any union data inside the PutQuestionRequest, using the provided FreeTextQuestionRequest
+func (t *PutQuestionRequest) MergeFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFreeNumberQuestionRequest returns the union data inside the PutQuestionRequest as a FreeNumberQuestionRequest
+func (t PutQuestionRequest) AsFreeNumberQuestionRequest() (FreeNumberQuestionRequest, error) {
+	var body FreeNumberQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFreeNumberQuestionRequest overwrites any union data inside the PutQuestionRequest as the provided FreeNumberQuestionRequest
+func (t *PutQuestionRequest) FromFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFreeNumberQuestionRequest performs a merge with any union data inside the PutQuestionRequest, using the provided FreeNumberQuestionRequest
+func (t *PutQuestionRequest) MergeFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPutSingleChoiceQuestionRequest returns the union data inside the PutQuestionRequest as a PutSingleChoiceQuestionRequest
+func (t PutQuestionRequest) AsPutSingleChoiceQuestionRequest() (PutSingleChoiceQuestionRequest, error) {
+	var body PutSingleChoiceQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPutSingleChoiceQuestionRequest overwrites any union data inside the PutQuestionRequest as the provided PutSingleChoiceQuestionRequest
+func (t *PutQuestionRequest) FromPutSingleChoiceQuestionRequest(v PutSingleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePutSingleChoiceQuestionRequest performs a merge with any union data inside the PutQuestionRequest, using the provided PutSingleChoiceQuestionRequest
+func (t *PutQuestionRequest) MergePutSingleChoiceQuestionRequest(v PutSingleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPutMultipleChoiceQuestionRequest returns the union data inside the PutQuestionRequest as a PutMultipleChoiceQuestionRequest
+func (t PutQuestionRequest) AsPutMultipleChoiceQuestionRequest() (PutMultipleChoiceQuestionRequest, error) {
+	var body PutMultipleChoiceQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPutMultipleChoiceQuestionRequest overwrites any union data inside the PutQuestionRequest as the provided PutMultipleChoiceQuestionRequest
+func (t *PutQuestionRequest) FromPutMultipleChoiceQuestionRequest(v PutMultipleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePutMultipleChoiceQuestionRequest performs a merge with any union data inside the PutQuestionRequest, using the provided PutMultipleChoiceQuestionRequest
+func (t *PutQuestionRequest) MergePutMultipleChoiceQuestionRequest(v PutMultipleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t PutQuestionRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *PutQuestionRequest) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

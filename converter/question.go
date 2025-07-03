@@ -10,13 +10,13 @@ import (
 )
 
 var questionSchemaToModel = copier.TypeConverter{
-	SrcType: api.QuestionRequest{},
+	SrcType: api.PostQuestionRequest{},
 	DstType: model.Question{},
 	Fn: func(src any) (any, error) {
-		req, ok := src.(api.QuestionRequest)
+		req, ok := src.(api.PostQuestionRequest)
 
 		if !ok {
-			return nil, errors.New("src is not an api.QuestionRequest")
+			return nil, errors.New("src is not an api.PostQuestionRequest")
 		}
 
 		var dst model.Question
@@ -45,7 +45,7 @@ var questionSchemaToModel = copier.TypeConverter{
 			}
 
 		case model.SingleChoiceQuestion:
-			singleChoiceQuestionRequest, err := req.AsSingleChoiceQuestionRequest()
+			singleChoiceQuestionRequest, err := req.AsPostSingleChoiceQuestionRequest()
 			if err != nil {
 				return nil, err
 			}
@@ -55,7 +55,7 @@ var questionSchemaToModel = copier.TypeConverter{
 			}
 
 		case model.MultipleChoiceQuestion:
-			multipleChoiceQuestionRequest, err := req.AsMultipleChoiceQuestionRequest()
+			multipleChoiceQuestionRequest, err := req.AsPostMultipleChoiceQuestionRequest()
 			if err != nil {
 				return nil, err
 			}

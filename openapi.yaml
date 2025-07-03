@@ -424,7 +424,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/QuestionGroupRequest"
+              $ref: "#/components/schemas/PostQuestionGroupRequest"
       responses:
         "201":
           description: Created
@@ -453,14 +453,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/QuestionGroupMetadataRequest"
+              $ref: "#/components/schemas/PutQuestionGroupRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/QuestionGroupMetadataResponse"
+                $ref: "#/components/schemas/QuestionGroupResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -502,7 +502,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/QuestionRequest"
+              $ref: "#/components/schemas/PostQuestionRequest"
       responses:
         "201":
           description: Created
@@ -532,7 +532,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/QuestionRequest"
+              $ref: "#/components/schemas/PutQuestionRequest"
       responses:
         "200":
           description: OK
@@ -1737,7 +1737,7 @@ components:
       required:
         - content
         - sendAt
-    QuestionGroupMetadataRequest:
+    PutQuestionGroupRequest:
       type: object
       properties:
         name:
@@ -1750,32 +1750,22 @@ components:
       required:
         - name
         - due
-    QuestionGroupMetadataResponse:
+    PostQuestionGroupRequest:
       type: object
       allOf:
-        - $ref: "#/components/schemas/QuestionGroupMetadataRequest"
-        - type: object
-          properties:
-            id:
-              type: integer
-          required:
-            - id
-    QuestionGroupRequest:
-      type: object
-      allOf:
-        - $ref: "#/components/schemas/QuestionGroupMetadataRequest"
+        - $ref: "#/components/schemas/PutQuestionGroupRequest"
         - type: object
           properties:
             questions:
               type: array
               items:
-                $ref: "#/components/schemas/QuestionRequest"
+                $ref: "#/components/schemas/PostQuestionRequest"
           required:
             - questions
     QuestionGroupResponse:
       type: object
       allOf:
-        - $ref: "#/components/schemas/QuestionGroupMetadataResponse"
+        - $ref: "#/components/schemas/PostQuestionGroupRequest"
         - type: object
           properties:
             questions:
@@ -1799,12 +1789,18 @@ components:
         - title
         - isPublic
         - isOpen
-    QuestionRequest:
+    PostQuestionRequest:
       oneOf:
         - $ref: "#/components/schemas/FreeTextQuestionRequest"
         - $ref: "#/components/schemas/FreeNumberQuestionRequest"
-        - $ref: "#/components/schemas/SingleChoiceQuestionRequest"
-        - $ref: "#/components/schemas/MultipleChoiceQuestionRequest"
+        - $ref: "#/components/schemas/PostSingleChoiceQuestionRequest"
+        - $ref: "#/components/schemas/PostMultipleChoiceQuestionRequest"
+    PutQuestionRequest:
+      oneOf:
+        - $ref: "#/components/schemas/FreeTextQuestionRequest"
+        - $ref: "#/components/schemas/FreeNumberQuestionRequest"
+        - $ref: "#/components/schemas/PutSingleChoiceQuestionRequest"
+        - $ref: "#/components/schemas/PutMultipleChoiceQuestionRequest"
     QuestionResponse:
       oneOf:
         - $ref: "#/components/schemas/FreeTextQuestionResponse"
@@ -1888,7 +1884,7 @@ components:
         - isPublic
         - isOpen
 
-    SingleChoiceQuestionRequest:
+    PostSingleChoiceQuestionRequest:
       type: object
       allOf:
         - $ref: "#/components/schemas/QuestionRequestBase"
@@ -1901,7 +1897,24 @@ components:
             options:
               type: array
               items:
-                $ref: "#/components/schemas/OptionRequest"
+                $ref: "#/components/schemas/PostOptionRequest"
+          required:
+            - type
+            - options
+    PutSingleChoiceQuestionRequest:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - single
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/PutOptionRequest"
           required:
             - type
             - options
@@ -1936,7 +1949,7 @@ components:
         - isOpen
         - options
 
-    MultipleChoiceQuestionRequest:
+    PostMultipleChoiceQuestionRequest:
       type: object
       allOf:
         - $ref: "#/components/schemas/QuestionRequestBase"
@@ -1949,7 +1962,24 @@ components:
             options:
               type: array
               items:
-                $ref: "#/components/schemas/OptionRequest"
+                $ref: "#/components/schemas/PostOptionRequest"
+          required:
+            - type
+            - options
+    PutMultipleChoiceQuestionRequest:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - multiple
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/PutOptionRequest"
           required:
             - type
             - options
@@ -1983,17 +2013,27 @@ components:
         - isPublic
         - isOpen
         - options
-    OptionRequest:
+    PostOptionRequest:
       type: object
       properties:
         content:
           type: string
       required:
         - content
+    PutOptionRequest:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/PostOptionRequest"
+        - type: object
+          properties:
+            id:
+              type: integer
+          required:
+            - id
     OptionResponse:
       type: object
       allOf:
-        - $ref: "#/components/schemas/OptionRequest"
+        - $ref: "#/components/schemas/PostOptionRequest"
         - type: object
           properties:
             id:
