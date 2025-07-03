@@ -441,10 +441,10 @@ paths:
   /api/admin/question-groups/{questionGroupId}:
     put:
       summary: 質問グループを更新（管理者用）
-      description: 質問グループを更新します。グループに属する質問や、その選択肢も同時に更新できます。（質問と選択肢はIDが指定されている場合に更新され、IDがない場合は新規作成されます）
+      description: 質問グループを更新します。グループに属する質問は編集できません。
       tags:
         - Questions
-      operationId: adminPutQuestionGroup
+      operationId: adminPutQuestionGroupMetadata
       parameters:
         - $ref: "#/components/parameters/QuestionGroupId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -453,14 +453,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/QuestionGroupRequest"
+              $ref: "#/components/schemas/QuestionGroupMetadataRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/QuestionGroupResponse"
+                $ref: "#/components/schemas/QuestionGroupMetadataResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -1750,49 +1750,53 @@ components:
       required:
         - content
         - sendAt
+    QuestionGroupMetadataRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        due:
+          type: string
+          format: date
+      required:
+        - name
+        - due
+    QuestionGroupMetadataResponse:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/QuestionGroupMetadataRequest"
+        - type: object
+          properties:
+            id:
+              type: integer
+          required:
+            - id
     QuestionGroupRequest:
       type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        due:
-          type: string
-          format: date
-        questions:
-          type: array
-          items:
-            $ref: "#/components/schemas/QuestionRequest"
-      required:
-        - name
-        - description
-        - due
-        - questions
+      allOf:
+        - $ref: "#/components/schemas/QuestionGroupMetadataRequest"
+        - type: object
+          properties:
+            questions:
+              type: array
+              items:
+                $ref: "#/components/schemas/QuestionRequest"
+          required:
+            - questions
     QuestionGroupResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
-          nullable: true
-        due:
-          type: string
-          format: date
-        questions:
-          type: array
-          items:
-            $ref: "#/components/schemas/QuestionResponse"
-      required:
-        - id
-        - name
-        - description
-        - due
-        - questions
+      allOf:
+        - $ref: "#/components/schemas/QuestionGroupMetadataResponse"
+        - type: object
+          properties:
+            questions:
+              type: array
+              items:
+                $ref: "#/components/schemas/QuestionResponse"
+          required:
+            - questions
     QuestionRequest:
       oneOf:
         - $ref: "#/components/schemas/FreeTextQuestionRequest"

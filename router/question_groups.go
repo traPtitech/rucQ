@@ -103,7 +103,7 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId api.QuestionGroupId, params api.AdminPutQuestionGroupParams) error {
+func (s *Server) AdminPutQuestionGroupMetadata(e echo.Context, questionGroupId api.QuestionGroupId, params api.AdminPutQuestionGroupMetadataParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -116,7 +116,7 @@ func (s *Server) AdminPutQuestionGroup(e echo.Context, questionGroupId api.Quest
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	var req api.AdminPutQuestionGroupJSONRequestBody
+	var req api.AdminPutQuestionGroupMetadataJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Errorf("failed to bind request body: %v", err)

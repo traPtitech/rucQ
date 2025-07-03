@@ -479,9 +479,24 @@ type PaymentResponse struct {
 	UserId     string `json:"userId"`
 }
 
+// QuestionGroupMetadataRequest defines model for QuestionGroupMetadataRequest.
+type QuestionGroupMetadataRequest struct {
+	Description *string            `json:"description,omitempty"`
+	Due         openapi_types.Date `json:"due"`
+	Name        string             `json:"name"`
+}
+
+// QuestionGroupMetadataResponse defines model for QuestionGroupMetadataResponse.
+type QuestionGroupMetadataResponse struct {
+	Description *string            `json:"description,omitempty"`
+	Due         openapi_types.Date `json:"due"`
+	Id          int                `json:"id"`
+	Name        string             `json:"name"`
+}
+
 // QuestionGroupRequest defines model for QuestionGroupRequest.
 type QuestionGroupRequest struct {
-	Description *string            `json:"description"`
+	Description *string            `json:"description,omitempty"`
 	Due         openapi_types.Date `json:"due"`
 	Name        string             `json:"name"`
 	Questions   []QuestionRequest  `json:"questions"`
@@ -489,7 +504,7 @@ type QuestionGroupRequest struct {
 
 // QuestionGroupResponse defines model for QuestionGroupResponse.
 type QuestionGroupResponse struct {
-	Description *string            `json:"description"`
+	Description *string            `json:"description,omitempty"`
 	Due         openapi_types.Date `json:"due"`
 	Id          int                `json:"id"`
 	Name        string             `json:"name"`
@@ -800,8 +815,8 @@ type AdminDeleteQuestionGroupParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// AdminPutQuestionGroupParams defines parameters for AdminPutQuestionGroup.
-type AdminPutQuestionGroupParams struct {
+// AdminPutQuestionGroupMetadataParams defines parameters for AdminPutQuestionGroupMetadata.
+type AdminPutQuestionGroupMetadataParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
@@ -986,8 +1001,8 @@ type AdminPutOptionJSONRequestBody = OptionRequest
 // AdminPutPaymentJSONRequestBody defines body for AdminPutPayment for application/json ContentType.
 type AdminPutPaymentJSONRequestBody = PaymentRequest
 
-// AdminPutQuestionGroupJSONRequestBody defines body for AdminPutQuestionGroup for application/json ContentType.
-type AdminPutQuestionGroupJSONRequestBody = QuestionGroupRequest
+// AdminPutQuestionGroupMetadataJSONRequestBody defines body for AdminPutQuestionGroupMetadata for application/json ContentType.
+type AdminPutQuestionGroupMetadataJSONRequestBody = QuestionGroupMetadataRequest
 
 // AdminPutQuestionJSONRequestBody defines body for AdminPutQuestion for application/json ContentType.
 type AdminPutQuestionJSONRequestBody = QuestionRequest
@@ -1709,7 +1724,7 @@ type ServerInterface interface {
 	AdminDeleteQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params AdminDeleteQuestionGroupParams) error
 	// 質問グループを更新（管理者用）
 	// (PUT /api/admin/question-groups/{questionGroupId})
-	AdminPutQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupParams) error
+	AdminPutQuestionGroupMetadata(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupMetadataParams) error
 	// 質問を削除（管理者用）
 	// (DELETE /api/admin/questions/{questionId})
 	AdminDeleteQuestion(ctx echo.Context, questionId QuestionId, params AdminDeleteQuestionParams) error
@@ -2394,8 +2409,8 @@ func (w *ServerInterfaceWrapper) AdminDeleteQuestionGroup(ctx echo.Context) erro
 	return err
 }
 
-// AdminPutQuestionGroup converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminPutQuestionGroup(ctx echo.Context) error {
+// AdminPutQuestionGroupMetadata converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutQuestionGroupMetadata(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "questionGroupId" -------------
 	var questionGroupId QuestionGroupId
@@ -2406,7 +2421,7 @@ func (w *ServerInterfaceWrapper) AdminPutQuestionGroup(ctx echo.Context) error {
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminPutQuestionGroupParams
+	var params AdminPutQuestionGroupMetadataParams
 
 	headers := ctx.Request().Header
 	// ------------- Optional header parameter "X-Forwarded-User" -------------
@@ -2426,7 +2441,7 @@ func (w *ServerInterfaceWrapper) AdminPutQuestionGroup(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminPutQuestionGroup(ctx, questionGroupId, params)
+	err = w.Handler.AdminPutQuestionGroupMetadata(ctx, questionGroupId, params)
 	return err
 }
 
@@ -3501,7 +3516,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/api/admin/options/:optionId", wrapper.AdminPutOption)
 	router.PUT(baseURL+"/api/admin/payments/:paymentId", wrapper.AdminPutPayment)
 	router.DELETE(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminDeleteQuestionGroup)
-	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroup)
+	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroupMetadata)
 	router.DELETE(baseURL+"/api/admin/questions/:questionId", wrapper.AdminDeleteQuestion)
 	router.PUT(baseURL+"/api/admin/questions/:questionId", wrapper.AdminPutQuestion)
 	router.GET(baseURL+"/api/admin/questions/:questionId/answers", wrapper.AdminGetAnswers)
