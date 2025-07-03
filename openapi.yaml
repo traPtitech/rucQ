@@ -567,55 +567,6 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/admin/options/{optionId}:
-    put:
-      summary: 選択肢を更新（管理者用）
-      tags:
-        - Questions
-      operationId: adminPutOption
-      parameters:
-        - $ref: "#/components/parameters/OptionId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/OptionRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OptionResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-    delete:
-      summary: 選択肢を削除（管理者用）
-      tags:
-        - Questions
-      operationId: adminDeleteOption
-      parameters:
-        - $ref: "#/components/parameters/OptionId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      responses:
-        "204":
-          $ref: "#/components/responses/NoContent"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
   /api/admin/questions/{questionId}/answers:
     get:
       summary: 質問の回答を取得（管理者用）

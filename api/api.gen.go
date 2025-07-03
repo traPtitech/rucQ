@@ -647,9 +647,6 @@ type EventId = int
 // ImageId defines model for ImageId.
 type ImageId = int
 
-// OptionId defines model for OptionId.
-type OptionId = int
-
 // PaymentId defines model for PaymentId.
 type PaymentId = int
 
@@ -783,18 +780,6 @@ type AdminPutImageMultipartBody struct {
 
 // AdminPutImageParams defines parameters for AdminPutImage.
 type AdminPutImageParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
-// AdminDeleteOptionParams defines parameters for AdminDeleteOption.
-type AdminDeleteOptionParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
-// AdminPutOptionParams defines parameters for AdminPutOption.
-type AdminPutOptionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
@@ -999,9 +984,6 @@ type AdminPostRoomGroupJSONRequestBody = RoomGroupRequest
 
 // AdminPutImageMultipartRequestBody defines body for AdminPutImage for multipart/form-data ContentType.
 type AdminPutImageMultipartRequestBody AdminPutImageMultipartBody
-
-// AdminPutOptionJSONRequestBody defines body for AdminPutOption for application/json ContentType.
-type AdminPutOptionJSONRequestBody = OptionRequest
 
 // AdminPutPaymentJSONRequestBody defines body for AdminPutPayment for application/json ContentType.
 type AdminPutPaymentJSONRequestBody = PaymentRequest
@@ -1718,12 +1700,6 @@ type ServerInterface interface {
 	// 画像を更新（管理者用）
 	// (PUT /api/admin/images/{imageId})
 	AdminPutImage(ctx echo.Context, imageId ImageId, params AdminPutImageParams) error
-	// 選択肢を削除（管理者用）
-	// (DELETE /api/admin/options/{optionId})
-	AdminDeleteOption(ctx echo.Context, optionId OptionId, params AdminDeleteOptionParams) error
-	// 選択肢を更新（管理者用）
-	// (PUT /api/admin/options/{optionId})
-	AdminPutOption(ctx echo.Context, optionId OptionId, params AdminPutOptionParams) error
 	// 支払い情報を更新（管理者用）
 	// (PUT /api/admin/payments/{paymentId})
 	AdminPutPayment(ctx echo.Context, paymentId PaymentId, params AdminPutPaymentParams) error
@@ -2273,78 +2249,6 @@ func (w *ServerInterfaceWrapper) AdminPutImage(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPutImage(ctx, imageId, params)
-	return err
-}
-
-// AdminDeleteOption converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminDeleteOption(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "optionId" -------------
-	var optionId OptionId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "optionId", ctx.Param("optionId"), &optionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter optionId: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminDeleteOptionParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminDeleteOption(ctx, optionId, params)
-	return err
-}
-
-// AdminPutOption converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminPutOption(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "optionId" -------------
-	var optionId OptionId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "optionId", ctx.Param("optionId"), &optionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter optionId: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminPutOptionParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminPutOption(ctx, optionId, params)
 	return err
 }
 
@@ -3566,8 +3470,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/admin/camps/:campId/room-groups", wrapper.AdminPostRoomGroup)
 	router.DELETE(baseURL+"/api/admin/images/:imageId", wrapper.AdminDeleteImage)
 	router.PUT(baseURL+"/api/admin/images/:imageId", wrapper.AdminPutImage)
-	router.DELETE(baseURL+"/api/admin/options/:optionId", wrapper.AdminDeleteOption)
-	router.PUT(baseURL+"/api/admin/options/:optionId", wrapper.AdminPutOption)
 	router.PUT(baseURL+"/api/admin/payments/:paymentId", wrapper.AdminPutPayment)
 	router.DELETE(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminDeleteQuestionGroup)
 	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroupMetadata)
