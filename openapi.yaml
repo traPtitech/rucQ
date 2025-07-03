@@ -1768,11 +1768,14 @@ components:
         - $ref: "#/components/schemas/PostQuestionGroupRequest"
         - type: object
           properties:
+            id:
+              type: integer
             questions:
               type: array
               items:
                 $ref: "#/components/schemas/QuestionResponse"
           required:
+            - id
             - questions
     QuestionRequestBase:
       type: object

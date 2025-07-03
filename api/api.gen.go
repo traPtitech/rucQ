@@ -551,6 +551,7 @@ type PutSingleChoiceQuestionRequestType string
 type QuestionGroupResponse struct {
 	Description *string            `json:"description,omitempty"`
 	Due         openapi_types.Date `json:"due"`
+	Id          int                `json:"id"`
 	Name        string             `json:"name"`
 	Questions   []QuestionResponse `json:"questions"`
 }
