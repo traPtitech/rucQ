@@ -257,14 +257,11 @@ type FreeNumberAnswerResponseType string
 
 // FreeNumberQuestionRequest defines model for FreeNumberQuestionRequest.
 type FreeNumberQuestionRequest struct {
-	Description *string `json:"description"`
-
-	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id       *int                          `json:"id,omitempty"`
-	IsOpen   bool                          `json:"isOpen"`
-	IsPublic bool                          `json:"isPublic"`
-	Title    string                        `json:"title"`
-	Type     FreeNumberQuestionRequestType `json:"type"`
+	Description *string                       `json:"description,omitempty"`
+	IsOpen      bool                          `json:"isOpen"`
+	IsPublic    bool                          `json:"isPublic"`
+	Title       string                        `json:"title"`
+	Type        FreeNumberQuestionRequestType `json:"type"`
 }
 
 // FreeNumberQuestionRequestType defines model for FreeNumberQuestionRequest.Type.
@@ -307,14 +304,11 @@ type FreeTextAnswerResponseType string
 
 // FreeTextQuestionRequest defines model for FreeTextQuestionRequest.
 type FreeTextQuestionRequest struct {
-	Description *string `json:"description"`
-
-	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id       *int                        `json:"id,omitempty"`
-	IsOpen   bool                        `json:"isOpen"`
-	IsPublic bool                        `json:"isPublic"`
-	Title    string                      `json:"title"`
-	Type     FreeTextQuestionRequestType `json:"type"`
+	Description *string                     `json:"description,omitempty"`
+	IsOpen      bool                        `json:"isOpen"`
+	IsPublic    bool                        `json:"isPublic"`
+	Title       string                      `json:"title"`
+	Type        FreeTextQuestionRequestType `json:"type"`
 }
 
 // FreeTextQuestionRequestType defines model for FreeTextQuestionRequest.Type.
@@ -393,15 +387,12 @@ type MultipleChoiceAnswerResponseType string
 
 // MultipleChoiceQuestionRequest defines model for MultipleChoiceQuestionRequest.
 type MultipleChoiceQuestionRequest struct {
-	Description *string `json:"description"`
-
-	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id       *int                              `json:"id,omitempty"`
-	IsOpen   bool                              `json:"isOpen"`
-	IsPublic bool                              `json:"isPublic"`
-	Options  []OptionRequest                   `json:"options"`
-	Title    string                            `json:"title"`
-	Type     MultipleChoiceQuestionRequestType `json:"type"`
+	Description *string                           `json:"description,omitempty"`
+	IsOpen      bool                              `json:"isOpen"`
+	IsPublic    bool                              `json:"isPublic"`
+	Options     []OptionRequest                   `json:"options"`
+	Title       string                            `json:"title"`
+	Type        MultipleChoiceQuestionRequestType `json:"type"`
 }
 
 // MultipleChoiceQuestionRequestType defines model for MultipleChoiceQuestionRequest.Type.
@@ -516,6 +507,14 @@ type QuestionRequest struct {
 	union json.RawMessage
 }
 
+// QuestionRequestBase defines model for QuestionRequestBase.
+type QuestionRequestBase struct {
+	Description *string `json:"description,omitempty"`
+	IsOpen      bool    `json:"isOpen"`
+	IsPublic    bool    `json:"isPublic"`
+	Title       string  `json:"title"`
+}
+
 // QuestionResponse defines model for QuestionResponse.
 type QuestionResponse struct {
 	union json.RawMessage
@@ -600,15 +599,12 @@ type SingleChoiceAnswerResponseType string
 
 // SingleChoiceQuestionRequest defines model for SingleChoiceQuestionRequest.
 type SingleChoiceQuestionRequest struct {
-	Description *string `json:"description"`
-
-	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id       *int                            `json:"id,omitempty"`
-	IsOpen   bool                            `json:"isOpen"`
-	IsPublic bool                            `json:"isPublic"`
-	Options  []OptionRequest                 `json:"options"`
-	Title    string                          `json:"title"`
-	Type     SingleChoiceQuestionRequestType `json:"type"`
+	Description *string                         `json:"description,omitempty"`
+	IsOpen      bool                            `json:"isOpen"`
+	IsPublic    bool                            `json:"isPublic"`
+	Options     []OptionRequest                 `json:"options"`
+	Title       string                          `json:"title"`
+	Type        SingleChoiceQuestionRequestType `json:"type"`
 }
 
 // SingleChoiceQuestionRequestType defines model for SingleChoiceQuestionRequest.Type.
@@ -950,6 +946,12 @@ type GetMyAnswersParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// AdminPostQuestionParams defines parameters for AdminPostQuestion.
+type AdminPostQuestionParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // DeleteReactionParams defines parameters for DeleteReaction.
 type DeleteReactionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -1033,6 +1035,9 @@ type PostEventJSONRequestBody = EventRequest
 
 // PutEventJSONRequestBody defines body for PutEvent for application/json ContentType.
 type PutEventJSONRequestBody = EventRequest
+
+// AdminPostQuestionJSONRequestBody defines body for AdminPostQuestion for application/json ContentType.
+type AdminPostQuestionJSONRequestBody = QuestionRequest
 
 // PutReactionJSONRequestBody defines body for PutReaction for application/json ContentType.
 type PutReactionJSONRequestBody = RollCallReactionRequest
@@ -1812,6 +1817,9 @@ type ServerInterface interface {
 	// ある質問グループに対する自分の回答を取得
 	// (GET /api/me/question-groups/{questionGroupId}/answers)
 	GetMyAnswers(ctx echo.Context, questionGroupId QuestionGroupId, params GetMyAnswersParams) error
+	// 質問を追加
+	// (POST /api/question-groups/{questionGroupId}/questions)
+	AdminPostQuestion(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPostQuestionParams) error
 	// 質問の回答一覧を取得
 	// (GET /api/questions/{questionId}/answers)
 	GetAnswers(ctx echo.Context, questionId QuestionId) error
@@ -3307,6 +3315,42 @@ func (w *ServerInterfaceWrapper) GetMyAnswers(ctx echo.Context) error {
 	return err
 }
 
+// AdminPostQuestion converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostQuestion(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionGroupId" -------------
+	var questionGroupId QuestionGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostQuestionParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostQuestion(ctx, questionGroupId, params)
+	return err
+}
+
 // GetAnswers converts echo context to params.
 func (w *ServerInterfaceWrapper) GetAnswers(ctx echo.Context) error {
 	var err error
@@ -3546,6 +3590,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/images/:imageId", wrapper.GetImage)
 	router.GET(baseURL+"/api/me", wrapper.GetMe)
 	router.GET(baseURL+"/api/me/question-groups/:questionGroupId/answers", wrapper.GetMyAnswers)
+	router.POST(baseURL+"/api/question-groups/:questionGroupId/questions", wrapper.AdminPostQuestion)
 	router.GET(baseURL+"/api/questions/:questionId/answers", wrapper.GetAnswers)
 	router.DELETE(baseURL+"/api/reactions/:reactionId", wrapper.DeleteReaction)
 	router.PUT(baseURL+"/api/reactions/:reactionId", wrapper.PutReaction)

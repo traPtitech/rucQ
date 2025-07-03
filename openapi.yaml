@@ -488,6 +488,36 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/question-groups/{questionGroupId}/questions:
+    post:
+      summary: 質問を追加
+      tags:
+        - Questions
+      operationId: adminPostQuestion
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+        - $ref: "#/components/parameters/QuestionGroupId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /api/admin/questions/{questionId}:
     put:
       summary: 質問を更新（管理者用）
@@ -1797,6 +1827,21 @@ components:
                 $ref: "#/components/schemas/QuestionResponse"
           required:
             - questions
+    QuestionRequestBase:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
+      required:
+        - title
+        - isPublic
+        - isOpen
     QuestionRequest:
       oneOf:
         - $ref: "#/components/schemas/FreeTextQuestionRequest"
@@ -1812,29 +1857,16 @@ components:
 
     FreeTextQuestionRequest:
       type: object
-      properties:
-        id:
-          type: integer
-          description: 質問ID（編集時のみ、新規作成時は不要）
-        title:
-          type: string
-        description:
-          type: string
-          nullable: true
-        type:
-          type: string
-          enum:
-            - free_text
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-      required:
-        - title
-        - description
-        - type
-        - isPublic
-        - isOpen
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - free_text
+          required:
+            - type
     FreeTextQuestionResponse:
       type: object
       properties:
@@ -1863,29 +1895,16 @@ components:
 
     FreeNumberQuestionRequest:
       type: object
-      properties:
-        id:
-          type: integer
-          description: 質問ID（編集時のみ、新規作成時は不要）
-        title:
-          type: string
-        description:
-          type: string
-          nullable: true
-        type:
-          type: string
-          enum:
-            - free_number
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-      required:
-        - title
-        - description
-        - type
-        - isPublic
-        - isOpen
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - free_number
+          required:
+            - type
     FreeNumberQuestionResponse:
       type: object
       properties:
@@ -1914,34 +1933,21 @@ components:
 
     SingleChoiceQuestionRequest:
       type: object
-      properties:
-        id:
-          type: integer
-          description: 質問ID（編集時のみ、新規作成時は不要）
-        title:
-          type: string
-        description:
-          type: string
-          nullable: true
-        type:
-          type: string
-          enum:
-            - single
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-        options:
-          type: array
-          items:
-            $ref: "#/components/schemas/OptionRequest"
-      required:
-        - title
-        - description
-        - type
-        - isPublic
-        - isOpen
-        - options
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - single
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/OptionRequest"
+          required:
+            - type
+            - options
     SingleChoiceQuestionResponse:
       type: object
       properties:
@@ -1975,34 +1981,21 @@ components:
 
     MultipleChoiceQuestionRequest:
       type: object
-      properties:
-        id:
-          type: integer
-          description: 質問ID（編集時のみ、新規作成時は不要）
-        title:
-          type: string
-        description:
-          type: string
-          nullable: true
-        type:
-          type: string
-          enum:
-            - multiple
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-        options:
-          type: array
-          items:
-            $ref: "#/components/schemas/OptionRequest"
-      required:
-        - title
-        - description
-        - type
-        - isPublic
-        - isOpen
-        - options
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - multiple
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/OptionRequest"
+          required:
+            - type
+            - options
     MultipleChoiceQuestionResponse:
       type: object
       properties:
