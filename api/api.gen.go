@@ -886,12 +886,6 @@ type AdminPostMessageParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// PostAnswerParams defines parameters for PostAnswer.
-type PostAnswerParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
 // PutAnswerParams defines parameters for PutAnswer.
 type PutAnswerParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -942,6 +936,15 @@ type GetMeParams struct {
 
 // GetMyAnswersParams defines parameters for GetMyAnswers.
 type GetMyAnswersParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// PostAnswersJSONBody defines parameters for PostAnswers.
+type PostAnswersJSONBody = []AnswerRequest
+
+// PostAnswersParams defines parameters for PostAnswers.
+type PostAnswersParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
@@ -1024,9 +1027,6 @@ type AdminPutUserJSONRequestBody = UserRequest
 // AdminPostMessageJSONRequestBody defines body for AdminPostMessage for application/json ContentType.
 type AdminPostMessageJSONRequestBody = MessageRequest
 
-// PostAnswerJSONRequestBody defines body for PostAnswer for application/json ContentType.
-type PostAnswerJSONRequestBody = AnswerRequest
-
 // PutAnswerJSONRequestBody defines body for PutAnswer for application/json ContentType.
 type PutAnswerJSONRequestBody = AnswerRequest
 
@@ -1035,6 +1035,9 @@ type PostEventJSONRequestBody = EventRequest
 
 // PutEventJSONRequestBody defines body for PutEvent for application/json ContentType.
 type PutEventJSONRequestBody = EventRequest
+
+// PostAnswersJSONRequestBody defines body for PostAnswers for application/json ContentType.
+type PostAnswersJSONRequestBody = PostAnswersJSONBody
 
 // AdminPostQuestionJSONRequestBody defines body for AdminPostQuestion for application/json ContentType.
 type AdminPostQuestionJSONRequestBody = QuestionRequest
@@ -1763,9 +1766,6 @@ type ServerInterface interface {
 	// ユーザーにDMを送信（管理者用）
 	// (POST /api/admin/users/{userId}/messages)
 	AdminPostMessage(ctx echo.Context, userId UserId, params AdminPostMessageParams) error
-	// 質問に回答する
-	// (POST /api/answers)
-	PostAnswer(ctx echo.Context, params PostAnswerParams) error
 	// 自分の回答を更新
 	// (PUT /api/answers/{answerId})
 	PutAnswer(ctx echo.Context, answerId AnswerId, params PutAnswerParams) error
@@ -1817,6 +1817,9 @@ type ServerInterface interface {
 	// ある質問グループに対する自分の回答を取得
 	// (GET /api/me/question-groups/{questionGroupId}/answers)
 	GetMyAnswers(ctx echo.Context, questionGroupId QuestionGroupId, params GetMyAnswersParams) error
+	// 質問に回答する
+	// (POST /api/question-groups/{questionGroupId}/answers)
+	PostAnswers(ctx echo.Context, questionGroupId QuestionGroupId, params PostAnswersParams) error
 	// 質問を追加
 	// (POST /api/question-groups/{questionGroupId}/questions)
 	AdminPostQuestion(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPostQuestionParams) error
@@ -2848,35 +2851,6 @@ func (w *ServerInterfaceWrapper) AdminPostMessage(ctx echo.Context) error {
 	return err
 }
 
-// PostAnswer converts echo context to params.
-func (w *ServerInterfaceWrapper) PostAnswer(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostAnswerParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostAnswer(ctx, params)
-	return err
-}
-
 // PutAnswer converts echo context to params.
 func (w *ServerInterfaceWrapper) PutAnswer(ctx echo.Context) error {
 	var err error
@@ -3315,6 +3289,42 @@ func (w *ServerInterfaceWrapper) GetMyAnswers(ctx echo.Context) error {
 	return err
 }
 
+// PostAnswers converts echo context to params.
+func (w *ServerInterfaceWrapper) PostAnswers(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionGroupId" -------------
+	var questionGroupId QuestionGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostAnswersParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostAnswers(ctx, questionGroupId, params)
+	return err
+}
+
 // AdminPostQuestion converts echo context to params.
 func (w *ServerInterfaceWrapper) AdminPostQuestion(ctx echo.Context) error {
 	var err error
@@ -3572,7 +3582,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/admin/users/:userId", wrapper.AdminGetUser)
 	router.PUT(baseURL+"/api/admin/users/:userId", wrapper.AdminPutUser)
 	router.POST(baseURL+"/api/admin/users/:userId/messages", wrapper.AdminPostMessage)
-	router.POST(baseURL+"/api/answers", wrapper.PostAnswer)
 	router.PUT(baseURL+"/api/answers/:answerId", wrapper.PutAnswer)
 	router.GET(baseURL+"/api/camps", wrapper.GetCamps)
 	router.GET(baseURL+"/api/camps/:campId/events", wrapper.GetEvents)
@@ -3590,6 +3599,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/images/:imageId", wrapper.GetImage)
 	router.GET(baseURL+"/api/me", wrapper.GetMe)
 	router.GET(baseURL+"/api/me/question-groups/:questionGroupId/answers", wrapper.GetMyAnswers)
+	router.POST(baseURL+"/api/question-groups/:questionGroupId/answers", wrapper.PostAnswers)
 	router.POST(baseURL+"/api/question-groups/:questionGroupId/questions", wrapper.AdminPostQuestion)
 	router.GET(baseURL+"/api/questions/:questionId/answers", wrapper.GetAnswers)
 	router.DELETE(baseURL+"/api/reactions/:reactionId", wrapper.DeleteReaction)

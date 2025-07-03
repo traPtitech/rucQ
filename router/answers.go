@@ -75,7 +75,7 @@ func (s *Server) PutAnswer(e echo.Context, _ api.AnswerId, params api.PutAnswerP
 	// 	return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	// }
 
-	var res AnswerBody // TODO: Answer を AnswerBody に修正
+	var res any
 
 	// if err := copier.Copy(&res, &answer); err != nil {
 	// 	e.Logger().Errorf("failed to copy model to response: %v", err)
@@ -104,26 +104,6 @@ func (s *Server) PutAnswer(e echo.Context, _ api.AnswerId, params api.PutAnswerP
 	return e.JSON(http.StatusOK, res)
 }
 
-// PostAnswer アンケート回答作成
-// (POST /answers)
-func (s *Server) PostAnswer(_ echo.Context, _ api.PostAnswerParams) error {
+func (s *Server) PostAnswers(_ echo.Context, _ api.QuestionGroupId, _ api.PostAnswersParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
 }
-
-// AnswerBody defines model for Answer.
-// TODO: この型定義は oapi-codegen が生成する型と合わせる必要がある
-type AnswerBody struct {
-	Content    *string `json:"content,omitempty"` // 仮の型。実際の型に合わせる
-	Id         *int    `json:"id,omitempty"`
-	QuestionId *int    `json:"questionId,omitempty"`
-	UserId     *string `json:"userId,omitempty"`
-}
-
-// TODO: 以下の関数は、oapi-codegen が生成する型に合わせて修正する必要がある
-// func (a *AnswerBody) FromAnswerContent1(content []string) error {
-//  return errors.New("not implemented")
-// }
-//
-// func (a *AnswerBody) FromAnswerContent0(content string) error {
-//  return errors.New("not implemented")
-// }

@@ -683,27 +683,33 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/answers:
+  /api/question-groups/{questionGroupId}/answers:
     post:
       summary: 質問に回答する
+      description: 質問グループに対する回答を作成します。複数の質問に対する回答を一度に送信できます。
       tags:
         - Questions
-      operationId: postAnswer
+      operationId: postAnswers
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
+        - $ref: "#/components/parameters/QuestionGroupId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AnswerRequest"
+              type: array
+              items:
+                $ref: "#/components/schemas/AnswerRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnswerResponse"
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnswerResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
