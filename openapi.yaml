@@ -1986,23 +1986,20 @@ components:
     OptionRequest:
       type: object
       properties:
-        id:
-          type: integer
-          description: 選択肢ID（編集時のみ、新規作成時は不要）
         content:
           type: string
       required:
         - content
     OptionResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        content:
-          type: string
-      required:
-        - id
-        - content
+      allOf:
+        - $ref: "#/components/schemas/OptionRequest"
+        - type: object
+          properties:
+            id:
+              type: integer
+          required:
+            - id
     AnswerRequest:
       oneOf:
         - $ref: "#/components/schemas/FreeTextAnswerRequest"

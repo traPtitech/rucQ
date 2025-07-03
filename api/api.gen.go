@@ -442,9 +442,6 @@ type OfficialEventResponseType string
 // OptionRequest defines model for OptionRequest.
 type OptionRequest struct {
 	Content string `json:"content"`
-
-	// Id 選択肢ID（編集時のみ、新規作成時は不要）
-	Id *int `json:"id,omitempty"`
 }
 
 // OptionResponse defines model for OptionResponse.
