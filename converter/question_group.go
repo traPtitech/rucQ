@@ -11,13 +11,13 @@ import (
 )
 
 var questionGroupSchemaToModel = copier.TypeConverter{
-	SrcType: api.QuestionGroupRequest{},
+	SrcType: api.PostQuestionGroupRequest{},
 	DstType: model.QuestionGroup{},
 	Fn: func(src any) (any, error) {
-		req, ok := src.(api.QuestionGroupRequest)
+		req, ok := src.(api.PostQuestionGroupRequest)
 
 		if !ok {
-			return nil, errors.New("src is not an api.QuestionGroupRequest")
+			return nil, errors.New("src is not an api.PostQuestionGroupRequest")
 		}
 
 		var dst model.QuestionGroup

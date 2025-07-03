@@ -60,11 +60,6 @@ func (s *Server) AdminDeleteRoom(_ echo.Context, _ api.RoomId, _ api.AdminDelete
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteRoom not implemented")
 }
 
-// AdminDeleteOption 選択肢を削除（管理者用）
-func (s *Server) AdminDeleteOption(_ echo.Context, _ api.OptionId, _ api.AdminDeleteOptionParams) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteOption not implemented")
-}
-
 // AdminGetAnswers 回答の一覧を取得（管理者用）
 func (s *Server) AdminGetAnswers(_ echo.Context, _ api.QuestionId, _ api.AdminGetAnswersParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetAnswers not implemented")
@@ -133,4 +128,8 @@ func (s *Server) PostRollCallReaction(_ echo.Context, _ api.RollCallId, _ api.Po
 // StreamRollCallReactions 点呼のリアクションをストリーミング
 func (s *Server) StreamRollCallReactions(_ echo.Context, _ api.RollCallId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "StreamRollCallReactions not implemented")
+}
+
+func (s *Server) AdminPostQuestion(_ echo.Context, _ api.QuestionGroupId, _ api.AdminPostQuestionParams) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostQuestion not implemented")
 }

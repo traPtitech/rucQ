@@ -424,7 +424,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/QuestionGroupRequest"
+              $ref: "#/components/schemas/PostQuestionGroupRequest"
       responses:
         "201":
           description: Created
@@ -441,10 +441,10 @@ paths:
   /api/admin/question-groups/{questionGroupId}:
     put:
       summary: 質問グループを更新（管理者用）
-      description: 質問グループを更新します。グループに属する質問や、その選択肢も同時に更新できます。（質問と選択肢はIDが指定されている場合に更新され、IDがない場合は新規作成されます）
+      description: 質問グループを更新します。グループに属する質問は編集できません。
       tags:
         - Questions
-      operationId: adminPutQuestionGroup
+      operationId: adminPutQuestionGroupMetadata
       parameters:
         - $ref: "#/components/parameters/QuestionGroupId"
         - $ref: "#/components/parameters/X-Forwarded-User"
@@ -453,7 +453,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/QuestionGroupRequest"
+              $ref: "#/components/schemas/PutQuestionGroupRequest"
       responses:
         "200":
           description: OK
@@ -488,6 +488,36 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/question-groups/{questionGroupId}/questions:
+    post:
+      summary: 質問を追加
+      tags:
+        - Questions
+      operationId: adminPostQuestion
+      parameters:
+        - $ref: "#/components/parameters/X-Forwarded-User"
+        - $ref: "#/components/parameters/QuestionGroupId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostQuestionRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /api/admin/questions/{questionId}:
     put:
       summary: 質問を更新（管理者用）
@@ -502,7 +532,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/QuestionRequest"
+              $ref: "#/components/schemas/PutQuestionRequest"
       responses:
         "200":
           description: OK
@@ -525,55 +555,6 @@ paths:
       operationId: adminDeleteQuestion
       parameters:
         - $ref: "#/components/parameters/QuestionId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      responses:
-        "204":
-          $ref: "#/components/responses/NoContent"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-  /api/admin/options/{optionId}:
-    put:
-      summary: 選択肢を更新（管理者用）
-      tags:
-        - Questions
-      operationId: adminPutOption
-      parameters:
-        - $ref: "#/components/parameters/OptionId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/OptionRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OptionResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
-    delete:
-      summary: 選択肢を削除（管理者用）
-      tags:
-        - Questions
-      operationId: adminDeleteOption
-      parameters:
-        - $ref: "#/components/parameters/OptionId"
         - $ref: "#/components/parameters/X-Forwarded-User"
       responses:
         "204":
@@ -653,27 +634,33 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/answers:
+  /api/question-groups/{questionGroupId}/answers:
     post:
       summary: 質問に回答する
+      description: 質問グループに対する回答を作成します。複数の質問に対する回答を一度に送信できます。
       tags:
         - Questions
-      operationId: postAnswer
+      operationId: postAnswers
       parameters:
         - $ref: "#/components/parameters/X-Forwarded-User"
+        - $ref: "#/components/parameters/QuestionGroupId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AnswerRequest"
+              type: array
+              items:
+                $ref: "#/components/schemas/AnswerRequest"
       responses:
         "201":
           description: Created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AnswerResponse"
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnswerResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "404":
@@ -1750,55 +1737,70 @@ components:
       required:
         - content
         - sendAt
-    QuestionGroupRequest:
+    PutQuestionGroupRequest:
       type: object
       properties:
         name:
           type: string
         description:
           type: string
-          nullable: true
         due:
           type: string
           format: date
-        questions:
-          type: array
-          items:
-            $ref: "#/components/schemas/QuestionRequest"
       required:
         - name
-        - description
         - due
-        - questions
+    PostQuestionGroupRequest:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/PutQuestionGroupRequest"
+        - type: object
+          properties:
+            questions:
+              type: array
+              items:
+                $ref: "#/components/schemas/PostQuestionRequest"
+          required:
+            - questions
     QuestionGroupResponse:
       type: object
+      allOf:
+        - $ref: "#/components/schemas/PostQuestionGroupRequest"
+        - type: object
+          properties:
+            questions:
+              type: array
+              items:
+                $ref: "#/components/schemas/QuestionResponse"
+          required:
+            - questions
+    QuestionRequestBase:
+      type: object
       properties:
-        id:
-          type: integer
-        name:
+        title:
           type: string
         description:
           type: string
-          nullable: true
-        due:
-          type: string
-          format: date
-        questions:
-          type: array
-          items:
-            $ref: "#/components/schemas/QuestionResponse"
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
       required:
-        - id
-        - name
-        - description
-        - due
-        - questions
-    QuestionRequest:
+        - title
+        - isPublic
+        - isOpen
+    PostQuestionRequest:
       oneOf:
         - $ref: "#/components/schemas/FreeTextQuestionRequest"
         - $ref: "#/components/schemas/FreeNumberQuestionRequest"
-        - $ref: "#/components/schemas/SingleChoiceQuestionRequest"
-        - $ref: "#/components/schemas/MultipleChoiceQuestionRequest"
+        - $ref: "#/components/schemas/PostSingleChoiceQuestionRequest"
+        - $ref: "#/components/schemas/PostMultipleChoiceQuestionRequest"
+    PutQuestionRequest:
+      oneOf:
+        - $ref: "#/components/schemas/FreeTextQuestionRequest"
+        - $ref: "#/components/schemas/FreeNumberQuestionRequest"
+        - $ref: "#/components/schemas/PutSingleChoiceQuestionRequest"
+        - $ref: "#/components/schemas/PutMultipleChoiceQuestionRequest"
     QuestionResponse:
       oneOf:
         - $ref: "#/components/schemas/FreeTextQuestionResponse"
@@ -1808,29 +1810,16 @@ components:
 
     FreeTextQuestionRequest:
       type: object
-      properties:
-        id:
-          type: integer
-          description: 質問ID（編集時のみ、新規作成時は不要）
-        title:
-          type: string
-        description:
-          type: string
-          nullable: true
-        type:
-          type: string
-          enum:
-            - free_text
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-      required:
-        - title
-        - description
-        - type
-        - isPublic
-        - isOpen
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - free_text
+          required:
+            - type
     FreeTextQuestionResponse:
       type: object
       properties:
@@ -1859,29 +1848,16 @@ components:
 
     FreeNumberQuestionRequest:
       type: object
-      properties:
-        id:
-          type: integer
-          description: 質問ID（編集時のみ、新規作成時は不要）
-        title:
-          type: string
-        description:
-          type: string
-          nullable: true
-        type:
-          type: string
-          enum:
-            - free_number
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-      required:
-        - title
-        - description
-        - type
-        - isPublic
-        - isOpen
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - free_number
+          required:
+            - type
     FreeNumberQuestionResponse:
       type: object
       properties:
@@ -1908,36 +1884,40 @@ components:
         - isPublic
         - isOpen
 
-    SingleChoiceQuestionRequest:
+    PostSingleChoiceQuestionRequest:
       type: object
-      properties:
-        id:
-          type: integer
-          description: 質問ID（編集時のみ、新規作成時は不要）
-        title:
-          type: string
-        description:
-          type: string
-          nullable: true
-        type:
-          type: string
-          enum:
-            - single
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-        options:
-          type: array
-          items:
-            $ref: "#/components/schemas/OptionRequest"
-      required:
-        - title
-        - description
-        - type
-        - isPublic
-        - isOpen
-        - options
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - single
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/PostOptionRequest"
+          required:
+            - type
+            - options
+    PutSingleChoiceQuestionRequest:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - single
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/PutOptionRequest"
+          required:
+            - type
+            - options
     SingleChoiceQuestionResponse:
       type: object
       properties:
@@ -1969,36 +1949,40 @@ components:
         - isOpen
         - options
 
-    MultipleChoiceQuestionRequest:
+    PostMultipleChoiceQuestionRequest:
       type: object
-      properties:
-        id:
-          type: integer
-          description: 質問ID（編集時のみ、新規作成時は不要）
-        title:
-          type: string
-        description:
-          type: string
-          nullable: true
-        type:
-          type: string
-          enum:
-            - multiple
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-        options:
-          type: array
-          items:
-            $ref: "#/components/schemas/OptionRequest"
-      required:
-        - title
-        - description
-        - type
-        - isPublic
-        - isOpen
-        - options
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - multiple
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/PostOptionRequest"
+          required:
+            - type
+            - options
+    PutMultipleChoiceQuestionRequest:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/QuestionRequestBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - multiple
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/PutOptionRequest"
+          required:
+            - type
+            - options
     MultipleChoiceQuestionResponse:
       type: object
       properties:
@@ -2029,26 +2013,33 @@ components:
         - isPublic
         - isOpen
         - options
-    OptionRequest:
+    PostOptionRequest:
       type: object
       properties:
-        id:
-          type: integer
-          description: 選択肢ID（編集時のみ、新規作成時は不要）
         content:
           type: string
       required:
         - content
+    PutOptionRequest:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/PostOptionRequest"
+        - type: object
+          properties:
+            id:
+              type: integer
+          required:
+            - id
     OptionResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        content:
-          type: string
-      required:
-        - id
-        - content
+      allOf:
+        - $ref: "#/components/schemas/PostOptionRequest"
+        - type: object
+          properties:
+            id:
+              type: integer
+          required:
+            - id
     AnswerRequest:
       oneOf:
         - $ref: "#/components/schemas/FreeTextAnswerRequest"

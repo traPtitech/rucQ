@@ -104,11 +104,6 @@ const (
 	MultipleChoiceAnswerResponseTypeMultiple MultipleChoiceAnswerResponseType = "multiple"
 )
 
-// Defines values for MultipleChoiceQuestionRequestType.
-const (
-	MultipleChoiceQuestionRequestTypeMultiple MultipleChoiceQuestionRequestType = "multiple"
-)
-
 // Defines values for MultipleChoiceQuestionResponseType.
 const (
 	MultipleChoiceQuestionResponseTypeMultiple MultipleChoiceQuestionResponseType = "multiple"
@@ -124,6 +119,26 @@ const (
 	OfficialEventResponseTypeOfficial OfficialEventResponseType = "official"
 )
 
+// Defines values for PostMultipleChoiceQuestionRequestType.
+const (
+	PostMultipleChoiceQuestionRequestTypeMultiple PostMultipleChoiceQuestionRequestType = "multiple"
+)
+
+// Defines values for PostSingleChoiceQuestionRequestType.
+const (
+	PostSingleChoiceQuestionRequestTypeSingle PostSingleChoiceQuestionRequestType = "single"
+)
+
+// Defines values for PutMultipleChoiceQuestionRequestType.
+const (
+	Multiple PutMultipleChoiceQuestionRequestType = "multiple"
+)
+
+// Defines values for PutSingleChoiceQuestionRequestType.
+const (
+	PutSingleChoiceQuestionRequestTypeSingle PutSingleChoiceQuestionRequestType = "single"
+)
+
 // Defines values for SingleChoiceAnswerRequestType.
 const (
 	SingleChoiceAnswerRequestTypeSingle SingleChoiceAnswerRequestType = "single"
@@ -134,14 +149,9 @@ const (
 	SingleChoiceAnswerResponseTypeSingle SingleChoiceAnswerResponseType = "single"
 )
 
-// Defines values for SingleChoiceQuestionRequestType.
-const (
-	SingleChoiceQuestionRequestTypeSingle SingleChoiceQuestionRequestType = "single"
-)
-
 // Defines values for SingleChoiceQuestionResponseType.
 const (
-	SingleChoiceQuestionResponseTypeSingle SingleChoiceQuestionResponseType = "single"
+	Single SingleChoiceQuestionResponseType = "single"
 )
 
 // AnswerRequest defines model for AnswerRequest.
@@ -257,14 +267,11 @@ type FreeNumberAnswerResponseType string
 
 // FreeNumberQuestionRequest defines model for FreeNumberQuestionRequest.
 type FreeNumberQuestionRequest struct {
-	Description *string `json:"description"`
-
-	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id       *int                          `json:"id,omitempty"`
-	IsOpen   bool                          `json:"isOpen"`
-	IsPublic bool                          `json:"isPublic"`
-	Title    string                        `json:"title"`
-	Type     FreeNumberQuestionRequestType `json:"type"`
+	Description *string                       `json:"description,omitempty"`
+	IsOpen      bool                          `json:"isOpen"`
+	IsPublic    bool                          `json:"isPublic"`
+	Title       string                        `json:"title"`
+	Type        FreeNumberQuestionRequestType `json:"type"`
 }
 
 // FreeNumberQuestionRequestType defines model for FreeNumberQuestionRequest.Type.
@@ -307,14 +314,11 @@ type FreeTextAnswerResponseType string
 
 // FreeTextQuestionRequest defines model for FreeTextQuestionRequest.
 type FreeTextQuestionRequest struct {
-	Description *string `json:"description"`
-
-	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id       *int                        `json:"id,omitempty"`
-	IsOpen   bool                        `json:"isOpen"`
-	IsPublic bool                        `json:"isPublic"`
-	Title    string                      `json:"title"`
-	Type     FreeTextQuestionRequestType `json:"type"`
+	Description *string                     `json:"description,omitempty"`
+	IsOpen      bool                        `json:"isOpen"`
+	IsPublic    bool                        `json:"isPublic"`
+	Title       string                      `json:"title"`
+	Type        FreeTextQuestionRequestType `json:"type"`
 }
 
 // FreeTextQuestionRequestType defines model for FreeTextQuestionRequest.Type.
@@ -391,22 +395,6 @@ type MultipleChoiceAnswerResponse struct {
 // MultipleChoiceAnswerResponseType defines model for MultipleChoiceAnswerResponse.Type.
 type MultipleChoiceAnswerResponseType string
 
-// MultipleChoiceQuestionRequest defines model for MultipleChoiceQuestionRequest.
-type MultipleChoiceQuestionRequest struct {
-	Description *string `json:"description"`
-
-	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id       *int                              `json:"id,omitempty"`
-	IsOpen   bool                              `json:"isOpen"`
-	IsPublic bool                              `json:"isPublic"`
-	Options  []OptionRequest                   `json:"options"`
-	Title    string                            `json:"title"`
-	Type     MultipleChoiceQuestionRequestType `json:"type"`
-}
-
-// MultipleChoiceQuestionRequestType defines model for MultipleChoiceQuestionRequest.Type.
-type MultipleChoiceQuestionRequestType string
-
 // MultipleChoiceQuestionResponse defines model for MultipleChoiceQuestionResponse.
 type MultipleChoiceQuestionResponse struct {
 	Description *string                            `json:"description"`
@@ -448,14 +436,6 @@ type OfficialEventResponse struct {
 // OfficialEventResponseType defines model for OfficialEventResponse.Type.
 type OfficialEventResponseType string
 
-// OptionRequest defines model for OptionRequest.
-type OptionRequest struct {
-	Content string `json:"content"`
-
-	// Id 選択肢ID（編集時のみ、新規作成時は不要）
-	Id *int `json:"id,omitempty"`
-}
-
 // OptionResponse defines model for OptionResponse.
 type OptionResponse struct {
 	Content string `json:"content"`
@@ -479,26 +459,108 @@ type PaymentResponse struct {
 	UserId     string `json:"userId"`
 }
 
-// QuestionGroupRequest defines model for QuestionGroupRequest.
-type QuestionGroupRequest struct {
-	Description *string            `json:"description"`
+// PostMultipleChoiceQuestionRequest defines model for PostMultipleChoiceQuestionRequest.
+type PostMultipleChoiceQuestionRequest struct {
+	Description *string                               `json:"description,omitempty"`
+	IsOpen      bool                                  `json:"isOpen"`
+	IsPublic    bool                                  `json:"isPublic"`
+	Options     []PostOptionRequest                   `json:"options"`
+	Title       string                                `json:"title"`
+	Type        PostMultipleChoiceQuestionRequestType `json:"type"`
+}
+
+// PostMultipleChoiceQuestionRequestType defines model for PostMultipleChoiceQuestionRequest.Type.
+type PostMultipleChoiceQuestionRequestType string
+
+// PostOptionRequest defines model for PostOptionRequest.
+type PostOptionRequest struct {
+	Content string `json:"content"`
+}
+
+// PostQuestionGroupRequest defines model for PostQuestionGroupRequest.
+type PostQuestionGroupRequest struct {
+	Description *string               `json:"description,omitempty"`
+	Due         openapi_types.Date    `json:"due"`
+	Name        string                `json:"name"`
+	Questions   []PostQuestionRequest `json:"questions"`
+}
+
+// PostQuestionRequest defines model for PostQuestionRequest.
+type PostQuestionRequest struct {
+	union json.RawMessage
+}
+
+// PostSingleChoiceQuestionRequest defines model for PostSingleChoiceQuestionRequest.
+type PostSingleChoiceQuestionRequest struct {
+	Description *string                             `json:"description,omitempty"`
+	IsOpen      bool                                `json:"isOpen"`
+	IsPublic    bool                                `json:"isPublic"`
+	Options     []PostOptionRequest                 `json:"options"`
+	Title       string                              `json:"title"`
+	Type        PostSingleChoiceQuestionRequestType `json:"type"`
+}
+
+// PostSingleChoiceQuestionRequestType defines model for PostSingleChoiceQuestionRequest.Type.
+type PostSingleChoiceQuestionRequestType string
+
+// PutMultipleChoiceQuestionRequest defines model for PutMultipleChoiceQuestionRequest.
+type PutMultipleChoiceQuestionRequest struct {
+	Description *string                              `json:"description,omitempty"`
+	IsOpen      bool                                 `json:"isOpen"`
+	IsPublic    bool                                 `json:"isPublic"`
+	Options     []PutOptionRequest                   `json:"options"`
+	Title       string                               `json:"title"`
+	Type        PutMultipleChoiceQuestionRequestType `json:"type"`
+}
+
+// PutMultipleChoiceQuestionRequestType defines model for PutMultipleChoiceQuestionRequest.Type.
+type PutMultipleChoiceQuestionRequestType string
+
+// PutOptionRequest defines model for PutOptionRequest.
+type PutOptionRequest struct {
+	Content string `json:"content"`
+	Id      int    `json:"id"`
+}
+
+// PutQuestionGroupRequest defines model for PutQuestionGroupRequest.
+type PutQuestionGroupRequest struct {
+	Description *string            `json:"description,omitempty"`
 	Due         openapi_types.Date `json:"due"`
 	Name        string             `json:"name"`
-	Questions   []QuestionRequest  `json:"questions"`
 }
+
+// PutQuestionRequest defines model for PutQuestionRequest.
+type PutQuestionRequest struct {
+	union json.RawMessage
+}
+
+// PutSingleChoiceQuestionRequest defines model for PutSingleChoiceQuestionRequest.
+type PutSingleChoiceQuestionRequest struct {
+	Description *string                            `json:"description,omitempty"`
+	IsOpen      bool                               `json:"isOpen"`
+	IsPublic    bool                               `json:"isPublic"`
+	Options     []PutOptionRequest                 `json:"options"`
+	Title       string                             `json:"title"`
+	Type        PutSingleChoiceQuestionRequestType `json:"type"`
+}
+
+// PutSingleChoiceQuestionRequestType defines model for PutSingleChoiceQuestionRequest.Type.
+type PutSingleChoiceQuestionRequestType string
 
 // QuestionGroupResponse defines model for QuestionGroupResponse.
 type QuestionGroupResponse struct {
-	Description *string            `json:"description"`
+	Description *string            `json:"description,omitempty"`
 	Due         openapi_types.Date `json:"due"`
-	Id          int                `json:"id"`
 	Name        string             `json:"name"`
 	Questions   []QuestionResponse `json:"questions"`
 }
 
-// QuestionRequest defines model for QuestionRequest.
-type QuestionRequest struct {
-	union json.RawMessage
+// QuestionRequestBase defines model for QuestionRequestBase.
+type QuestionRequestBase struct {
+	Description *string `json:"description,omitempty"`
+	IsOpen      bool    `json:"isOpen"`
+	IsPublic    bool    `json:"isPublic"`
+	Title       string  `json:"title"`
 }
 
 // QuestionResponse defines model for QuestionResponse.
@@ -583,22 +645,6 @@ type SingleChoiceAnswerResponse struct {
 // SingleChoiceAnswerResponseType defines model for SingleChoiceAnswerResponse.Type.
 type SingleChoiceAnswerResponseType string
 
-// SingleChoiceQuestionRequest defines model for SingleChoiceQuestionRequest.
-type SingleChoiceQuestionRequest struct {
-	Description *string `json:"description"`
-
-	// Id 質問ID（編集時のみ、新規作成時は不要）
-	Id       *int                            `json:"id,omitempty"`
-	IsOpen   bool                            `json:"isOpen"`
-	IsPublic bool                            `json:"isPublic"`
-	Options  []OptionRequest                 `json:"options"`
-	Title    string                          `json:"title"`
-	Type     SingleChoiceQuestionRequestType `json:"type"`
-}
-
-// SingleChoiceQuestionRequestType defines model for SingleChoiceQuestionRequest.Type.
-type SingleChoiceQuestionRequestType string
-
 // SingleChoiceQuestionResponse defines model for SingleChoiceQuestionResponse.
 type SingleChoiceQuestionResponse struct {
 	Description *string                          `json:"description"`
@@ -635,9 +681,6 @@ type EventId = int
 
 // ImageId defines model for ImageId.
 type ImageId = int
-
-// OptionId defines model for OptionId.
-type OptionId = int
 
 // PaymentId defines model for PaymentId.
 type PaymentId = int
@@ -776,18 +819,6 @@ type AdminPutImageParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// AdminDeleteOptionParams defines parameters for AdminDeleteOption.
-type AdminDeleteOptionParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
-// AdminPutOptionParams defines parameters for AdminPutOption.
-type AdminPutOptionParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
 // AdminPutPaymentParams defines parameters for AdminPutPayment.
 type AdminPutPaymentParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -800,8 +831,8 @@ type AdminDeleteQuestionGroupParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// AdminPutQuestionGroupParams defines parameters for AdminPutQuestionGroup.
-type AdminPutQuestionGroupParams struct {
+// AdminPutQuestionGroupMetadataParams defines parameters for AdminPutQuestionGroupMetadata.
+type AdminPutQuestionGroupMetadataParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
@@ -875,12 +906,6 @@ type AdminPostMessageParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// PostAnswerParams defines parameters for PostAnswer.
-type PostAnswerParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
 // PutAnswerParams defines parameters for PutAnswer.
 type PutAnswerParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -935,6 +960,21 @@ type GetMyAnswersParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// PostAnswersJSONBody defines parameters for PostAnswers.
+type PostAnswersJSONBody = []AnswerRequest
+
+// PostAnswersParams defines parameters for PostAnswers.
+type PostAnswersParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostQuestionParams defines parameters for AdminPostQuestion.
+type AdminPostQuestionParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // DeleteReactionParams defines parameters for DeleteReaction.
 type DeleteReactionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -969,7 +1009,7 @@ type AdminPostImageMultipartRequestBody AdminPostImageMultipartBody
 type AdminPostPaymentJSONRequestBody = PaymentRequest
 
 // AdminPostQuestionGroupJSONRequestBody defines body for AdminPostQuestionGroup for application/json ContentType.
-type AdminPostQuestionGroupJSONRequestBody = QuestionGroupRequest
+type AdminPostQuestionGroupJSONRequestBody = PostQuestionGroupRequest
 
 // AdminPostRollCallJSONRequestBody defines body for AdminPostRollCall for application/json ContentType.
 type AdminPostRollCallJSONRequestBody = RollCallRequest
@@ -980,17 +1020,14 @@ type AdminPostRoomGroupJSONRequestBody = RoomGroupRequest
 // AdminPutImageMultipartRequestBody defines body for AdminPutImage for multipart/form-data ContentType.
 type AdminPutImageMultipartRequestBody AdminPutImageMultipartBody
 
-// AdminPutOptionJSONRequestBody defines body for AdminPutOption for application/json ContentType.
-type AdminPutOptionJSONRequestBody = OptionRequest
-
 // AdminPutPaymentJSONRequestBody defines body for AdminPutPayment for application/json ContentType.
 type AdminPutPaymentJSONRequestBody = PaymentRequest
 
-// AdminPutQuestionGroupJSONRequestBody defines body for AdminPutQuestionGroup for application/json ContentType.
-type AdminPutQuestionGroupJSONRequestBody = QuestionGroupRequest
+// AdminPutQuestionGroupMetadataJSONRequestBody defines body for AdminPutQuestionGroupMetadata for application/json ContentType.
+type AdminPutQuestionGroupMetadataJSONRequestBody = PutQuestionGroupRequest
 
 // AdminPutQuestionJSONRequestBody defines body for AdminPutQuestion for application/json ContentType.
-type AdminPutQuestionJSONRequestBody = QuestionRequest
+type AdminPutQuestionJSONRequestBody = PutQuestionRequest
 
 // AdminPutRoomGroupJSONRequestBody defines body for AdminPutRoomGroup for application/json ContentType.
 type AdminPutRoomGroupJSONRequestBody = RoomGroupRequest
@@ -1007,9 +1044,6 @@ type AdminPutUserJSONRequestBody = UserRequest
 // AdminPostMessageJSONRequestBody defines body for AdminPostMessage for application/json ContentType.
 type AdminPostMessageJSONRequestBody = MessageRequest
 
-// PostAnswerJSONRequestBody defines body for PostAnswer for application/json ContentType.
-type PostAnswerJSONRequestBody = AnswerRequest
-
 // PutAnswerJSONRequestBody defines body for PutAnswer for application/json ContentType.
 type PutAnswerJSONRequestBody = AnswerRequest
 
@@ -1018,6 +1052,12 @@ type PostEventJSONRequestBody = EventRequest
 
 // PutEventJSONRequestBody defines body for PutEvent for application/json ContentType.
 type PutEventJSONRequestBody = EventRequest
+
+// PostAnswersJSONRequestBody defines body for PostAnswers for application/json ContentType.
+type PostAnswersJSONRequestBody = PostAnswersJSONBody
+
+// AdminPostQuestionJSONRequestBody defines body for AdminPostQuestion for application/json ContentType.
+type AdminPostQuestionJSONRequestBody = PostQuestionRequest
 
 // PutReactionJSONRequestBody defines body for PutReaction for application/json ContentType.
 type PutReactionJSONRequestBody = RollCallReactionRequest
@@ -1429,22 +1469,22 @@ func (t *EventResponse) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsFreeTextQuestionRequest returns the union data inside the QuestionRequest as a FreeTextQuestionRequest
-func (t QuestionRequest) AsFreeTextQuestionRequest() (FreeTextQuestionRequest, error) {
+// AsFreeTextQuestionRequest returns the union data inside the PostQuestionRequest as a FreeTextQuestionRequest
+func (t PostQuestionRequest) AsFreeTextQuestionRequest() (FreeTextQuestionRequest, error) {
 	var body FreeTextQuestionRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromFreeTextQuestionRequest overwrites any union data inside the QuestionRequest as the provided FreeTextQuestionRequest
-func (t *QuestionRequest) FromFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
+// FromFreeTextQuestionRequest overwrites any union data inside the PostQuestionRequest as the provided FreeTextQuestionRequest
+func (t *PostQuestionRequest) FromFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeFreeTextQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided FreeTextQuestionRequest
-func (t *QuestionRequest) MergeFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
+// MergeFreeTextQuestionRequest performs a merge with any union data inside the PostQuestionRequest, using the provided FreeTextQuestionRequest
+func (t *PostQuestionRequest) MergeFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1455,22 +1495,22 @@ func (t *QuestionRequest) MergeFreeTextQuestionRequest(v FreeTextQuestionRequest
 	return err
 }
 
-// AsFreeNumberQuestionRequest returns the union data inside the QuestionRequest as a FreeNumberQuestionRequest
-func (t QuestionRequest) AsFreeNumberQuestionRequest() (FreeNumberQuestionRequest, error) {
+// AsFreeNumberQuestionRequest returns the union data inside the PostQuestionRequest as a FreeNumberQuestionRequest
+func (t PostQuestionRequest) AsFreeNumberQuestionRequest() (FreeNumberQuestionRequest, error) {
 	var body FreeNumberQuestionRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromFreeNumberQuestionRequest overwrites any union data inside the QuestionRequest as the provided FreeNumberQuestionRequest
-func (t *QuestionRequest) FromFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
+// FromFreeNumberQuestionRequest overwrites any union data inside the PostQuestionRequest as the provided FreeNumberQuestionRequest
+func (t *PostQuestionRequest) FromFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeFreeNumberQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided FreeNumberQuestionRequest
-func (t *QuestionRequest) MergeFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
+// MergeFreeNumberQuestionRequest performs a merge with any union data inside the PostQuestionRequest, using the provided FreeNumberQuestionRequest
+func (t *PostQuestionRequest) MergeFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1481,22 +1521,22 @@ func (t *QuestionRequest) MergeFreeNumberQuestionRequest(v FreeNumberQuestionReq
 	return err
 }
 
-// AsSingleChoiceQuestionRequest returns the union data inside the QuestionRequest as a SingleChoiceQuestionRequest
-func (t QuestionRequest) AsSingleChoiceQuestionRequest() (SingleChoiceQuestionRequest, error) {
-	var body SingleChoiceQuestionRequest
+// AsPostSingleChoiceQuestionRequest returns the union data inside the PostQuestionRequest as a PostSingleChoiceQuestionRequest
+func (t PostQuestionRequest) AsPostSingleChoiceQuestionRequest() (PostSingleChoiceQuestionRequest, error) {
+	var body PostSingleChoiceQuestionRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromSingleChoiceQuestionRequest overwrites any union data inside the QuestionRequest as the provided SingleChoiceQuestionRequest
-func (t *QuestionRequest) FromSingleChoiceQuestionRequest(v SingleChoiceQuestionRequest) error {
+// FromPostSingleChoiceQuestionRequest overwrites any union data inside the PostQuestionRequest as the provided PostSingleChoiceQuestionRequest
+func (t *PostQuestionRequest) FromPostSingleChoiceQuestionRequest(v PostSingleChoiceQuestionRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeSingleChoiceQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided SingleChoiceQuestionRequest
-func (t *QuestionRequest) MergeSingleChoiceQuestionRequest(v SingleChoiceQuestionRequest) error {
+// MergePostSingleChoiceQuestionRequest performs a merge with any union data inside the PostQuestionRequest, using the provided PostSingleChoiceQuestionRequest
+func (t *PostQuestionRequest) MergePostSingleChoiceQuestionRequest(v PostSingleChoiceQuestionRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1507,22 +1547,22 @@ func (t *QuestionRequest) MergeSingleChoiceQuestionRequest(v SingleChoiceQuestio
 	return err
 }
 
-// AsMultipleChoiceQuestionRequest returns the union data inside the QuestionRequest as a MultipleChoiceQuestionRequest
-func (t QuestionRequest) AsMultipleChoiceQuestionRequest() (MultipleChoiceQuestionRequest, error) {
-	var body MultipleChoiceQuestionRequest
+// AsPostMultipleChoiceQuestionRequest returns the union data inside the PostQuestionRequest as a PostMultipleChoiceQuestionRequest
+func (t PostQuestionRequest) AsPostMultipleChoiceQuestionRequest() (PostMultipleChoiceQuestionRequest, error) {
+	var body PostMultipleChoiceQuestionRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromMultipleChoiceQuestionRequest overwrites any union data inside the QuestionRequest as the provided MultipleChoiceQuestionRequest
-func (t *QuestionRequest) FromMultipleChoiceQuestionRequest(v MultipleChoiceQuestionRequest) error {
+// FromPostMultipleChoiceQuestionRequest overwrites any union data inside the PostQuestionRequest as the provided PostMultipleChoiceQuestionRequest
+func (t *PostQuestionRequest) FromPostMultipleChoiceQuestionRequest(v PostMultipleChoiceQuestionRequest) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeMultipleChoiceQuestionRequest performs a merge with any union data inside the QuestionRequest, using the provided MultipleChoiceQuestionRequest
-func (t *QuestionRequest) MergeMultipleChoiceQuestionRequest(v MultipleChoiceQuestionRequest) error {
+// MergePostMultipleChoiceQuestionRequest performs a merge with any union data inside the PostQuestionRequest, using the provided PostMultipleChoiceQuestionRequest
+func (t *PostQuestionRequest) MergePostMultipleChoiceQuestionRequest(v PostMultipleChoiceQuestionRequest) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1533,12 +1573,126 @@ func (t *QuestionRequest) MergeMultipleChoiceQuestionRequest(v MultipleChoiceQue
 	return err
 }
 
-func (t QuestionRequest) MarshalJSON() ([]byte, error) {
+func (t PostQuestionRequest) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *QuestionRequest) UnmarshalJSON(b []byte) error {
+func (t *PostQuestionRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsFreeTextQuestionRequest returns the union data inside the PutQuestionRequest as a FreeTextQuestionRequest
+func (t PutQuestionRequest) AsFreeTextQuestionRequest() (FreeTextQuestionRequest, error) {
+	var body FreeTextQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFreeTextQuestionRequest overwrites any union data inside the PutQuestionRequest as the provided FreeTextQuestionRequest
+func (t *PutQuestionRequest) FromFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFreeTextQuestionRequest performs a merge with any union data inside the PutQuestionRequest, using the provided FreeTextQuestionRequest
+func (t *PutQuestionRequest) MergeFreeTextQuestionRequest(v FreeTextQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFreeNumberQuestionRequest returns the union data inside the PutQuestionRequest as a FreeNumberQuestionRequest
+func (t PutQuestionRequest) AsFreeNumberQuestionRequest() (FreeNumberQuestionRequest, error) {
+	var body FreeNumberQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFreeNumberQuestionRequest overwrites any union data inside the PutQuestionRequest as the provided FreeNumberQuestionRequest
+func (t *PutQuestionRequest) FromFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFreeNumberQuestionRequest performs a merge with any union data inside the PutQuestionRequest, using the provided FreeNumberQuestionRequest
+func (t *PutQuestionRequest) MergeFreeNumberQuestionRequest(v FreeNumberQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPutSingleChoiceQuestionRequest returns the union data inside the PutQuestionRequest as a PutSingleChoiceQuestionRequest
+func (t PutQuestionRequest) AsPutSingleChoiceQuestionRequest() (PutSingleChoiceQuestionRequest, error) {
+	var body PutSingleChoiceQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPutSingleChoiceQuestionRequest overwrites any union data inside the PutQuestionRequest as the provided PutSingleChoiceQuestionRequest
+func (t *PutQuestionRequest) FromPutSingleChoiceQuestionRequest(v PutSingleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePutSingleChoiceQuestionRequest performs a merge with any union data inside the PutQuestionRequest, using the provided PutSingleChoiceQuestionRequest
+func (t *PutQuestionRequest) MergePutSingleChoiceQuestionRequest(v PutSingleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPutMultipleChoiceQuestionRequest returns the union data inside the PutQuestionRequest as a PutMultipleChoiceQuestionRequest
+func (t PutQuestionRequest) AsPutMultipleChoiceQuestionRequest() (PutMultipleChoiceQuestionRequest, error) {
+	var body PutMultipleChoiceQuestionRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPutMultipleChoiceQuestionRequest overwrites any union data inside the PutQuestionRequest as the provided PutMultipleChoiceQuestionRequest
+func (t *PutQuestionRequest) FromPutMultipleChoiceQuestionRequest(v PutMultipleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePutMultipleChoiceQuestionRequest performs a merge with any union data inside the PutQuestionRequest, using the provided PutMultipleChoiceQuestionRequest
+func (t *PutQuestionRequest) MergePutMultipleChoiceQuestionRequest(v PutMultipleChoiceQuestionRequest) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t PutQuestionRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *PutQuestionRequest) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -1695,12 +1849,6 @@ type ServerInterface interface {
 	// 画像を更新（管理者用）
 	// (PUT /api/admin/images/{imageId})
 	AdminPutImage(ctx echo.Context, imageId ImageId, params AdminPutImageParams) error
-	// 選択肢を削除（管理者用）
-	// (DELETE /api/admin/options/{optionId})
-	AdminDeleteOption(ctx echo.Context, optionId OptionId, params AdminDeleteOptionParams) error
-	// 選択肢を更新（管理者用）
-	// (PUT /api/admin/options/{optionId})
-	AdminPutOption(ctx echo.Context, optionId OptionId, params AdminPutOptionParams) error
 	// 支払い情報を更新（管理者用）
 	// (PUT /api/admin/payments/{paymentId})
 	AdminPutPayment(ctx echo.Context, paymentId PaymentId, params AdminPutPaymentParams) error
@@ -1709,7 +1857,7 @@ type ServerInterface interface {
 	AdminDeleteQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params AdminDeleteQuestionGroupParams) error
 	// 質問グループを更新（管理者用）
 	// (PUT /api/admin/question-groups/{questionGroupId})
-	AdminPutQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupParams) error
+	AdminPutQuestionGroupMetadata(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupMetadataParams) error
 	// 質問を削除（管理者用）
 	// (DELETE /api/admin/questions/{questionId})
 	AdminDeleteQuestion(ctx echo.Context, questionId QuestionId, params AdminDeleteQuestionParams) error
@@ -1743,9 +1891,6 @@ type ServerInterface interface {
 	// ユーザーにDMを送信（管理者用）
 	// (POST /api/admin/users/{userId}/messages)
 	AdminPostMessage(ctx echo.Context, userId UserId, params AdminPostMessageParams) error
-	// 質問に回答する
-	// (POST /api/answers)
-	PostAnswer(ctx echo.Context, params PostAnswerParams) error
 	// 自分の回答を更新
 	// (PUT /api/answers/{answerId})
 	PutAnswer(ctx echo.Context, answerId AnswerId, params PutAnswerParams) error
@@ -1797,6 +1942,12 @@ type ServerInterface interface {
 	// ある質問グループに対する自分の回答を取得
 	// (GET /api/me/question-groups/{questionGroupId}/answers)
 	GetMyAnswers(ctx echo.Context, questionGroupId QuestionGroupId, params GetMyAnswersParams) error
+	// 質問に回答する
+	// (POST /api/question-groups/{questionGroupId}/answers)
+	PostAnswers(ctx echo.Context, questionGroupId QuestionGroupId, params PostAnswersParams) error
+	// 質問を追加
+	// (POST /api/question-groups/{questionGroupId}/questions)
+	AdminPostQuestion(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPostQuestionParams) error
 	// 質問の回答一覧を取得
 	// (GET /api/questions/{questionId}/answers)
 	GetAnswers(ctx echo.Context, questionId QuestionId) error
@@ -2250,78 +2401,6 @@ func (w *ServerInterfaceWrapper) AdminPutImage(ctx echo.Context) error {
 	return err
 }
 
-// AdminDeleteOption converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminDeleteOption(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "optionId" -------------
-	var optionId OptionId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "optionId", ctx.Param("optionId"), &optionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter optionId: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminDeleteOptionParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminDeleteOption(ctx, optionId, params)
-	return err
-}
-
-// AdminPutOption converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminPutOption(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "optionId" -------------
-	var optionId OptionId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "optionId", ctx.Param("optionId"), &optionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter optionId: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminPutOptionParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminPutOption(ctx, optionId, params)
-	return err
-}
-
 // AdminPutPayment converts echo context to params.
 func (w *ServerInterfaceWrapper) AdminPutPayment(ctx echo.Context) error {
 	var err error
@@ -2394,8 +2473,8 @@ func (w *ServerInterfaceWrapper) AdminDeleteQuestionGroup(ctx echo.Context) erro
 	return err
 }
 
-// AdminPutQuestionGroup converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminPutQuestionGroup(ctx echo.Context) error {
+// AdminPutQuestionGroupMetadata converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPutQuestionGroupMetadata(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "questionGroupId" -------------
 	var questionGroupId QuestionGroupId
@@ -2406,7 +2485,7 @@ func (w *ServerInterfaceWrapper) AdminPutQuestionGroup(ctx echo.Context) error {
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminPutQuestionGroupParams
+	var params AdminPutQuestionGroupMetadataParams
 
 	headers := ctx.Request().Header
 	// ------------- Optional header parameter "X-Forwarded-User" -------------
@@ -2426,7 +2505,7 @@ func (w *ServerInterfaceWrapper) AdminPutQuestionGroup(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminPutQuestionGroup(ctx, questionGroupId, params)
+	err = w.Handler.AdminPutQuestionGroupMetadata(ctx, questionGroupId, params)
 	return err
 }
 
@@ -2822,35 +2901,6 @@ func (w *ServerInterfaceWrapper) AdminPostMessage(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPostMessage(ctx, userId, params)
-	return err
-}
-
-// PostAnswer converts echo context to params.
-func (w *ServerInterfaceWrapper) PostAnswer(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params PostAnswerParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostAnswer(ctx, params)
 	return err
 }
 
@@ -3292,6 +3342,78 @@ func (w *ServerInterfaceWrapper) GetMyAnswers(ctx echo.Context) error {
 	return err
 }
 
+// PostAnswers converts echo context to params.
+func (w *ServerInterfaceWrapper) PostAnswers(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionGroupId" -------------
+	var questionGroupId QuestionGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PostAnswersParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostAnswers(ctx, questionGroupId, params)
+	return err
+}
+
+// AdminPostQuestion converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostQuestion(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionGroupId" -------------
+	var questionGroupId QuestionGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostQuestionParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostQuestion(ctx, questionGroupId, params)
+	return err
+}
+
 // GetAnswers converts echo context to params.
 func (w *ServerInterfaceWrapper) GetAnswers(ctx echo.Context) error {
 	var err error
@@ -3497,11 +3619,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/admin/camps/:campId/room-groups", wrapper.AdminPostRoomGroup)
 	router.DELETE(baseURL+"/api/admin/images/:imageId", wrapper.AdminDeleteImage)
 	router.PUT(baseURL+"/api/admin/images/:imageId", wrapper.AdminPutImage)
-	router.DELETE(baseURL+"/api/admin/options/:optionId", wrapper.AdminDeleteOption)
-	router.PUT(baseURL+"/api/admin/options/:optionId", wrapper.AdminPutOption)
 	router.PUT(baseURL+"/api/admin/payments/:paymentId", wrapper.AdminPutPayment)
 	router.DELETE(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminDeleteQuestionGroup)
-	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroup)
+	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroupMetadata)
 	router.DELETE(baseURL+"/api/admin/questions/:questionId", wrapper.AdminDeleteQuestion)
 	router.PUT(baseURL+"/api/admin/questions/:questionId", wrapper.AdminPutQuestion)
 	router.GET(baseURL+"/api/admin/questions/:questionId/answers", wrapper.AdminGetAnswers)
@@ -3513,7 +3633,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/admin/users/:userId", wrapper.AdminGetUser)
 	router.PUT(baseURL+"/api/admin/users/:userId", wrapper.AdminPutUser)
 	router.POST(baseURL+"/api/admin/users/:userId/messages", wrapper.AdminPostMessage)
-	router.POST(baseURL+"/api/answers", wrapper.PostAnswer)
 	router.PUT(baseURL+"/api/answers/:answerId", wrapper.PutAnswer)
 	router.GET(baseURL+"/api/camps", wrapper.GetCamps)
 	router.GET(baseURL+"/api/camps/:campId/events", wrapper.GetEvents)
@@ -3531,6 +3650,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/images/:imageId", wrapper.GetImage)
 	router.GET(baseURL+"/api/me", wrapper.GetMe)
 	router.GET(baseURL+"/api/me/question-groups/:questionGroupId/answers", wrapper.GetMyAnswers)
+	router.POST(baseURL+"/api/question-groups/:questionGroupId/answers", wrapper.PostAnswers)
+	router.POST(baseURL+"/api/question-groups/:questionGroupId/questions", wrapper.AdminPostQuestion)
 	router.GET(baseURL+"/api/questions/:questionId/answers", wrapper.GetAnswers)
 	router.DELETE(baseURL+"/api/reactions/:reactionId", wrapper.DeleteReaction)
 	router.PUT(baseURL+"/api/reactions/:reactionId", wrapper.PutReaction)
