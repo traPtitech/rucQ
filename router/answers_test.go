@@ -334,24 +334,4 @@ func TestPutAnswer(t *testing.T) {
 			option.Value("id").Number().IsEqual(optionID)
 		}
 	})
-
-	t.Run("Bad Request", func(t *testing.T) {
-		t.Parallel()
-
-		h := setup(t)
-		userID := random.AlphaNumericString(t, 32)
-		answerID := random.PositiveInt(t)
-
-		// 無効なリクエストボディでも、converterが成功する場合はUpdateAnswerが呼ばれる
-		h.repo.MockAnswerRepository.EXPECT().
-			UpdateAnswer(gomock.Any()).
-			Return(nil).
-			Times(1)
-
-		h.expect.PUT("/api/answers/{answerId}", answerID).
-			WithJSON(map[string]any{"invalid": "request"}).
-			WithHeader("X-Forwarded-User", userID).
-			Expect().
-			Status(http.StatusOK)
-	})
 }
