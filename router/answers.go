@@ -79,97 +79,45 @@ func (s *Server) PostAnswers(
 }
 
 // PutAnswer アンケート回答編集
-func (s *Server) PutAnswer(e echo.Context, _ api.AnswerId, params api.PutAnswerParams) error {
+func (s *Server) PutAnswer(
+	e echo.Context,
+	answerID api.AnswerId,
+	params api.PutAnswerParams,
+) error {
 	if params.XForwardedUser == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
 	}
+
 	var req api.PutAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	// user, err := s.repo.GetOrCreateUser(*params.XForwardedUser)
+	answer, err := converter.Convert[model.Answer](req)
 
-	// if err != nil {
-	// 	e.Logger().Errorf("failed to get or create user: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert request body: %v", err)
 
-	// 	return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	// }
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
 
-	// answer, err := s.repo.GetOrCreateAnswer(&repository.GetAnswerQuery{
-	// 	QuestionID: uint(answerID),
-	// 	UserID:     user.ID,
-	// })
+	answer.ID = uint(answerID)
+	answer.UserID = *params.XForwardedUser
 
-	// if err != nil {
-	// 	e.Logger().Errorf("failed to get or create answer: %v", err)
+	if err := s.repo.UpdateAnswer(&answer); err != nil {
+		e.Logger().Errorf("failed to update answer: %v", err)
 
-	// 	return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	// }
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
 
-	// _, err = s.repo.GetQuestionByID(uint(answerID))
+	res, err := converter.Convert[api.AnswerResponse](answer)
 
-	// if err != nil {
-	// 	e.Logger().Errorf("failed to get question: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
 
-	// 	return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	// }
-
-	// TODO: リクエストボディの型が変わったため、以下の処理を修正する
-	// if req.Content != nil {
-	//  if question.Type == string(QuestionTypeMultiple) {
-	//   content, err := req.Content.AsPutAnswerRequestContent1()
-	//
-	//   if err != nil {
-	//    return e.JSON(http.StatusBadRequest, err)
-	//   }
-	//
-	//   contentStrSlice := []string(content)
-	//   answer.Content = &contentStrSlice
-	//  } else {
-	//   content, err := req.Content.AsPutAnswerRequestContent0()
-	//
-	//   if err != nil {
-	//    return e.JSON(http.StatusBadRequest, err)
-	//   }
-	//
-	//   contentStrSlice := []string{string(content)}
-	//   answer.Content = &contentStrSlice
-	//  }
-	// }
-
-	// if err := s.repo.UpdateAnswer(answer); err != nil {
-	// 	e.Logger().Errorf("failed to update answer: %v", err)
-
-	// 	return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	// }
-
-	var res any
-
-	// if err := copier.Copy(&res, &answer); err != nil {
-	// 	e.Logger().Errorf("failed to copy model to response: %v", err)
-
-	// 	return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	// }
-
-	// TODO: リクエストボディの型が変わったため、以下の処理を修正する
-	// if answer.Content != nil {
-	//  if question.Type == string(QuestionTypeMultiple) {
-	//   if err := res.Content.FromAnswerContent1(*answer.Content); err != nil {
-	//    e.Logger().Errorf("failed to convert content: %v", err)
-	//
-	//    return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	//   }
-	//  } else {
-	//   if err := res.Content.FromAnswerContent0((*answer.Content)[0]); err != nil {
-	//    e.Logger().Errorf("failed to convert content: %v", err)
-	//
-	//    return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	//   }
-	// }
-
-	// res.UserTraqId = *params.XForwardedUser // TODO: AnswerBody に UserTraqId がないためコメントアウト
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
 
 	return e.JSON(http.StatusOK, res)
 }
