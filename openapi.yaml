@@ -488,7 +488,7 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /api/question-groups/{questionGroupId}/questions:
+  /api/admin/question-groups/{questionGroupId}/questions:
     post:
       summary: 質問を追加
       tags:

@@ -842,6 +842,12 @@ type AdminPutQuestionGroupMetadataParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// AdminPostQuestionParams defines parameters for AdminPostQuestion.
+type AdminPostQuestionParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // AdminDeleteQuestionParams defines parameters for AdminDeleteQuestion.
 type AdminDeleteQuestionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -974,12 +980,6 @@ type PostAnswersParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// AdminPostQuestionParams defines parameters for AdminPostQuestion.
-type AdminPostQuestionParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
 // DeleteReactionParams defines parameters for DeleteReaction.
 type DeleteReactionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -1031,6 +1031,9 @@ type AdminPutPaymentJSONRequestBody = PaymentRequest
 // AdminPutQuestionGroupMetadataJSONRequestBody defines body for AdminPutQuestionGroupMetadata for application/json ContentType.
 type AdminPutQuestionGroupMetadataJSONRequestBody = PutQuestionGroupRequest
 
+// AdminPostQuestionJSONRequestBody defines body for AdminPostQuestion for application/json ContentType.
+type AdminPostQuestionJSONRequestBody = PostQuestionRequest
+
 // AdminPutQuestionJSONRequestBody defines body for AdminPutQuestion for application/json ContentType.
 type AdminPutQuestionJSONRequestBody = PutQuestionRequest
 
@@ -1060,9 +1063,6 @@ type PutEventJSONRequestBody = EventRequest
 
 // PostAnswersJSONRequestBody defines body for PostAnswers for application/json ContentType.
 type PostAnswersJSONRequestBody = PostAnswersJSONBody
-
-// AdminPostQuestionJSONRequestBody defines body for AdminPostQuestion for application/json ContentType.
-type AdminPostQuestionJSONRequestBody = PostQuestionRequest
 
 // PutReactionJSONRequestBody defines body for PutReaction for application/json ContentType.
 type PutReactionJSONRequestBody = RollCallReactionRequest
@@ -1863,6 +1863,9 @@ type ServerInterface interface {
 	// 質問グループを更新（管理者用）
 	// (PUT /api/admin/question-groups/{questionGroupId})
 	AdminPutQuestionGroupMetadata(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupMetadataParams) error
+	// 質問を追加
+	// (POST /api/admin/question-groups/{questionGroupId}/questions)
+	AdminPostQuestion(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPostQuestionParams) error
 	// 質問を削除（管理者用）
 	// (DELETE /api/admin/questions/{questionId})
 	AdminDeleteQuestion(ctx echo.Context, questionId QuestionId, params AdminDeleteQuestionParams) error
@@ -1950,9 +1953,6 @@ type ServerInterface interface {
 	// 質問に回答する
 	// (POST /api/question-groups/{questionGroupId}/answers)
 	PostAnswers(ctx echo.Context, questionGroupId QuestionGroupId, params PostAnswersParams) error
-	// 質問を追加
-	// (POST /api/question-groups/{questionGroupId}/questions)
-	AdminPostQuestion(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPostQuestionParams) error
 	// 質問の回答一覧を取得
 	// (GET /api/questions/{questionId}/answers)
 	GetAnswers(ctx echo.Context, questionId QuestionId) error
@@ -2511,6 +2511,42 @@ func (w *ServerInterfaceWrapper) AdminPutQuestionGroupMetadata(ctx echo.Context)
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPutQuestionGroupMetadata(ctx, questionGroupId, params)
+	return err
+}
+
+// AdminPostQuestion converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostQuestion(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionGroupId" -------------
+	var questionGroupId QuestionGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostQuestionParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostQuestion(ctx, questionGroupId, params)
 	return err
 }
 
@@ -3383,42 +3419,6 @@ func (w *ServerInterfaceWrapper) PostAnswers(ctx echo.Context) error {
 	return err
 }
 
-// AdminPostQuestion converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminPostQuestion(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "questionGroupId" -------------
-	var questionGroupId QuestionGroupId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminPostQuestionParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminPostQuestion(ctx, questionGroupId, params)
-	return err
-}
-
 // GetAnswers converts echo context to params.
 func (w *ServerInterfaceWrapper) GetAnswers(ctx echo.Context) error {
 	var err error
@@ -3627,6 +3627,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/api/admin/payments/:paymentId", wrapper.AdminPutPayment)
 	router.DELETE(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminDeleteQuestionGroup)
 	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroupMetadata)
+	router.POST(baseURL+"/api/admin/question-groups/:questionGroupId/questions", wrapper.AdminPostQuestion)
 	router.DELETE(baseURL+"/api/admin/questions/:questionId", wrapper.AdminDeleteQuestion)
 	router.PUT(baseURL+"/api/admin/questions/:questionId", wrapper.AdminPutQuestion)
 	router.GET(baseURL+"/api/admin/questions/:questionId/answers", wrapper.AdminGetAnswers)
@@ -3656,7 +3657,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/me", wrapper.GetMe)
 	router.GET(baseURL+"/api/me/question-groups/:questionGroupId/answers", wrapper.GetMyAnswers)
 	router.POST(baseURL+"/api/question-groups/:questionGroupId/answers", wrapper.PostAnswers)
-	router.POST(baseURL+"/api/question-groups/:questionGroupId/questions", wrapper.AdminPostQuestion)
 	router.GET(baseURL+"/api/questions/:questionId/answers", wrapper.GetAnswers)
 	router.DELETE(baseURL+"/api/reactions/:reactionId", wrapper.DeleteReaction)
 	router.PUT(baseURL+"/api/reactions/:reactionId", wrapper.PutReaction)

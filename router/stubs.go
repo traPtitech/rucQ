@@ -169,11 +169,3 @@ func (s *Server) PostRollCallReaction(
 func (s *Server) StreamRollCallReactions(_ echo.Context, _ api.RollCallId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "StreamRollCallReactions not implemented")
 }
-
-func (s *Server) AdminPostQuestion(
-	_ echo.Context,
-	_ api.QuestionGroupId,
-	_ api.AdminPostQuestionParams,
-) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostQuestion not implemented")
-}
