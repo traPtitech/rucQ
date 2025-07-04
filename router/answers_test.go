@@ -8,6 +8,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -122,5 +123,62 @@ func TestPostAnswers(t *testing.T) {
 			option.Keys().ContainsOnly("id", "content")
 			option.Value("id").Number().IsEqual(optionID)
 		}
+	})
+}
+
+func TestGetMyAnswers(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		questionGroupID := random.PositiveInt(t)
+
+		freeTextContent := random.AlphaNumericString(t, 50)
+		freeNumberContent := random.Float64(t)
+		answers := []model.Answer{
+			{
+				QuestionID:      uint(random.PositiveInt(t)),
+				UserID:          userID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &freeTextContent,
+			},
+			{
+				QuestionID:        uint(random.PositiveInt(t)),
+				UserID:            userID,
+				Type:              model.FreeNumberQuestion,
+				FreeNumberContent: &freeNumberContent,
+			},
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswersByUserAndQuestionGroup(gomock.Any(), userID, uint(questionGroupID)).
+			Return(answers, nil).
+			Times(1)
+
+		res := h.expect.GET("/api/me/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusOK).JSON().Array()
+
+		res.Length().IsEqual(len(answers))
+
+		freeTextRes := res.Value(0).Object()
+		freeTextRes.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
+		freeTextRes.Value("type").String().IsEqual(string(model.FreeTextQuestion))
+		freeTextRes.Value("userId").String().IsEqual(userID)
+		freeTextRes.Value("questionId").Number().IsEqual(answers[0].QuestionID)
+		freeTextRes.Value("content").String().IsEqual(freeTextContent)
+
+		freeNumberRes := res.Value(1).Object()
+		freeNumberRes.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
+		freeNumberRes.Value("type").String().IsEqual(string(model.FreeNumberQuestion))
+		freeNumberRes.Value("userId").String().IsEqual(userID)
+		freeNumberRes.Value("questionId").Number().IsEqual(answers[1].QuestionID)
+		freeNumberRes.Value("content").
+			Number().
+			InRange(freeNumberContent-0.0001, freeNumberContent+0.0001)
 	})
 }
