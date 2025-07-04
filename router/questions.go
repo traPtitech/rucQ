@@ -159,15 +159,17 @@ func (s *Server) AdminPutQuestion(
 		return e.JSON(http.StatusBadRequest, err)
 	}
 
-	var questionModel model.Question
+	question, err := converter.Convert[model.Question](req)
 
-	if err := copier.Copy(&questionModel, &req); err != nil {
-		e.Logger().Errorf("failed to copy request to model: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert request to model: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateQuestion(e.Request().Context(), uint(questionID), &questionModel); err != nil {
+	question.ID = uint(questionID)
+
+	if err := s.repo.UpdateQuestion(e.Request().Context(), uint(questionID), &question); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Not found")
 		}
@@ -177,16 +179,13 @@ func (s *Server) AdminPutQuestion(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var questionResponse api.QuestionResponse
+	res, err := converter.Convert[api.QuestionResponse](question)
 
-	if err := copier.Copy(&questionResponse, &questionModel); err != nil {
-		e.Logger().Errorf("failed to copy model to response: %v", err)
+	if err != nil {
+		e.Logger().Errorf("failed to convert model to response: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	// TODO: questionResponse.Id is not available in new Question structure
-	// questionResponse.Id = questionId
-
-	return e.JSON(http.StatusOK, &questionResponse)
+	return e.JSON(http.StatusOK, &res)
 }
