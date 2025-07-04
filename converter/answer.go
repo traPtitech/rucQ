@@ -22,66 +22,35 @@ var answerSchemaToModel = copier.TypeConverter{
 
 		var dst model.Answer
 
-		// まずTypeを判定するため、一旦FreeTextAnswerRequestに変換する
-		freeTextAnswerRequest, err := req.AsFreeTextAnswerRequest()
-
-		if err != nil {
-			return nil, err
-		}
-
-		switch model.QuestionType(freeTextAnswerRequest.Type) {
-		case model.FreeTextQuestion:
+		if freeTextAnswerRequest, err := req.AsFreeTextAnswerRequest(); err == nil && freeTextAnswerRequest.Type == api.FreeTextAnswerRequestTypeFreeText {
 			if err := copier.Copy(&dst, &freeTextAnswerRequest); err != nil {
 				return nil, err
 			}
 
 			dst.FreeTextContent = &freeTextAnswerRequest.Content
-
-		case model.FreeNumberQuestion:
-			freeNumberAnswerRequest, err := req.AsFreeNumberAnswerRequest()
-
-			if err != nil {
-				return nil, err
-			}
-
+		} else if freeNumberAnswerRequest, err := req.AsFreeNumberAnswerRequest(); err == nil && freeNumberAnswerRequest.Type == api.FreeNumberAnswerRequestTypeFreeNumber {
 			if err := copier.Copy(&dst, &freeNumberAnswerRequest); err != nil {
 				return nil, err
 			}
 
 			content := float64(freeNumberAnswerRequest.Content)
 			dst.FreeNumberContent = &content
-
-		case model.SingleChoiceQuestion:
-			singleChoiceAnswerRequest, err := req.AsSingleChoiceAnswerRequest()
-
-			if err != nil {
-				return nil, err
-			}
-
+		} else if singleChoiceAnswerRequest, err := req.AsSingleChoiceAnswerRequest(); err == nil && singleChoiceAnswerRequest.Type == api.SingleChoiceAnswerRequestTypeSingle {
 			if err := copier.Copy(&dst, &singleChoiceAnswerRequest); err != nil {
 				return nil, err
 			}
 
 			dst.SelectedOptions = []model.Option{{Model: gorm.Model{ID: uint(singleChoiceAnswerRequest.OptionId)}}}
-
-		case model.MultipleChoiceQuestion:
-			multipleChoiceAnswerRequest, err := req.AsMultipleChoiceAnswerRequest()
-
-			if err != nil {
-				return nil, err
-			}
-
+		} else if multipleChoiceAnswerRequest, err := req.AsMultipleChoiceAnswerRequest(); err == nil && multipleChoiceAnswerRequest.Type == api.MultipleChoiceAnswerRequestTypeMultiple {
 			if err := copier.Copy(&dst, &multipleChoiceAnswerRequest); err != nil {
 				return nil, err
 			}
 
 			dst.SelectedOptions = make([]model.Option, len(multipleChoiceAnswerRequest.OptionIds))
-
 			for i, optionId := range multipleChoiceAnswerRequest.OptionIds {
 				dst.SelectedOptions[i] = model.Option{Model: gorm.Model{ID: uint(optionId)}}
 			}
-
-		default:
+		} else {
 			return nil, errors.New("unknown answer type")
 		}
 

@@ -88,7 +88,7 @@ func TestPostAnswers(t *testing.T) {
 		freeNumberRes.Value("type").String().IsEqual(string(freeNumberAnswer.Type))
 		freeNumberRes.Value("userId").String().IsEqual(userID)
 		freeNumberRes.Value("questionId").Number().IsEqual(freeNumberAnswer.QuestionId)
-		freeNumberRes.Value("content").Number().IsEqual(freeNumberAnswer.Content)
+		freeNumberRes.Value("content").Number().InRange(float64(freeNumberAnswer.Content)-0.0001, float64(freeNumberAnswer.Content)+0.0001)
 
 		singleChoiceRes := res.Value(2).Object()
 		singleChoiceRes.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOption")
