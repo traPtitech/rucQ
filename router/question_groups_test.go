@@ -357,6 +357,17 @@ func TestAdminPutQuestionGroupMetadata(t *testing.T) {
 			UpdateQuestionGroup(gomock.Any(), uint(questionGroupID), gomock.Any()).
 			Return(nil).
 			Times(1)
+		h.repo.MockQuestionGroupRepository.EXPECT().
+			GetQuestionGroup(uint(questionGroupID)).
+			Return(&model.QuestionGroup{
+				Model: gorm.Model{
+					ID: uint(questionGroupID),
+				},
+				Name:        updateQuestionGroup.Name,
+				Description: updateQuestionGroup.Description,
+				Due:         updateQuestionGroup.Due.Time,
+			}, nil).
+			Times(1)
 
 		res := h.expect.PUT("/api/admin/question-groups/{questionGroupId}",
 			questionGroupID).

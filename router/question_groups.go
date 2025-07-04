@@ -121,7 +121,15 @@ func (s *Server) AdminPutQuestionGroupMetadata(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	res, err := converter.Convert[api.QuestionGroupResponse](questionGroup)
+	updatedQuestionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupId))
+
+	if err != nil {
+		e.Logger().Errorf("failed to get updated question group: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[api.QuestionGroupResponse](updatedQuestionGroup)
 
 	if err != nil {
 		e.Logger().Errorf("failed to convert response body: %v", err)
