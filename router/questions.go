@@ -106,7 +106,7 @@ func (s *Server) AdminPostQuestion(
 	var req api.AdminPostQuestionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
+		return e.JSON(http.StatusBadRequest, "Invalid request body")
 	}
 
 	question, err := converter.Convert[model.Question](req)
