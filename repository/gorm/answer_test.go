@@ -23,8 +23,18 @@ func TestCreateAnswers(t *testing.T) {
 		freeTextContent := random.AlphaNumericString(t, 20)
 		freeNumberQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.FreeNumberQuestion)
 		freeNumberContent := random.Float64(t)
-		singleChoiceQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.SingleChoiceQuestion)
-		multipleChoiceQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.MultipleChoiceQuestion)
+		singleChoiceQuestion := mustCreateQuestion(
+			t,
+			r,
+			questionGroup.ID,
+			model.SingleChoiceQuestion,
+		)
+		multipleChoiceQuestion := mustCreateQuestion(
+			t,
+			r,
+			questionGroup.ID,
+			model.MultipleChoiceQuestion,
+		)
 		answers := []model.Answer{
 			{
 				QuestionID:      freeTextQuestion.ID,

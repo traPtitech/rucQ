@@ -94,7 +94,11 @@ func (r *Repository) AddCampParticipant(ctx context.Context, campID uint, user *
 	return nil
 }
 
-func (r *Repository) RemoveCampParticipant(ctx context.Context, campID uint, user *model.User) error {
+func (r *Repository) RemoveCampParticipant(
+	ctx context.Context,
+	campID uint,
+	user *model.User,
+) error {
 	camp, err := gorm.G[*model.Camp](r.db).Where(&model.Camp{
 		Model: gorm.Model{
 			ID: campID,

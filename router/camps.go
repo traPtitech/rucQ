@@ -108,7 +108,11 @@ func (s *Server) GetCamp(e echo.Context, campID api.CampId) error {
 
 // AdminPutCamp キャンプ情報編集
 // (PUT /api/admin/camps/{campId})
-func (s *Server) AdminPutCamp(e echo.Context, campID api.CampId, params api.AdminPutCampParams) error {
+func (s *Server) AdminPutCamp(
+	e echo.Context,
+	campID api.CampId,
+	params api.AdminPutCampParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -157,7 +161,11 @@ func (s *Server) AdminPutCamp(e echo.Context, campID api.CampId, params api.Admi
 
 // AdminDeleteCamp キャンプ削除
 // (DELETE /api/admin/camps/{campId})
-func (s *Server) AdminDeleteCamp(e echo.Context, campID api.CampId, params api.AdminDeleteCampParams) error {
+func (s *Server) AdminDeleteCamp(
+	e echo.Context,
+	campID api.CampId,
+	params api.AdminDeleteCampParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -179,7 +187,11 @@ func (s *Server) AdminDeleteCamp(e echo.Context, campID api.CampId, params api.A
 }
 
 // PostCampRegister 合宿に登録
-func (s *Server) PostCampRegister(e echo.Context, campID api.CampId, params api.PostCampRegisterParams) error {
+func (s *Server) PostCampRegister(
+	e echo.Context,
+	campID api.CampId,
+	params api.PostCampRegisterParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -199,7 +211,11 @@ func (s *Server) PostCampRegister(e echo.Context, campID api.CampId, params api.
 }
 
 // DeleteCampRegister 合宿登録を取り消し
-func (s *Server) DeleteCampRegister(e echo.Context, campID api.CampId, params api.DeleteCampRegisterParams) error {
+func (s *Server) DeleteCampRegister(
+	e echo.Context,
+	campID api.CampId,
+	params api.DeleteCampRegisterParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {

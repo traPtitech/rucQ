@@ -81,7 +81,9 @@ func TestAdminPostCamp(t *testing.T) {
 		}
 		username := random.AlphaNumericString(t, 32)
 
-		h.repo.MockUserRepository.EXPECT().GetOrCreateUser(gomock.Any(), username).Return(&model.User{IsStaff: true}, nil)
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil)
 		h.repo.MockCampRepository.EXPECT().CreateCamp(gomock.Any()).Return(nil)
 
 		res := h.expect.POST("/api/admin/camps").

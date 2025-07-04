@@ -22,7 +22,8 @@ var answerSchemaToModel = copier.TypeConverter{
 
 		var dst model.Answer
 
-		if freeTextAnswerRequest, err := req.AsFreeTextAnswerRequest(); err == nil && freeTextAnswerRequest.Type == api.FreeTextAnswerRequestTypeFreeText {
+		if freeTextAnswerRequest, err := req.AsFreeTextAnswerRequest(); err == nil &&
+			freeTextAnswerRequest.Type == api.FreeTextAnswerRequestTypeFreeText {
 			if err := copier.Copy(&dst, &freeTextAnswerRequest); err != nil {
 				return nil, err
 			}

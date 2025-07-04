@@ -64,7 +64,10 @@ func TestPostAnswers(t *testing.T) {
 			multipleChoiceReq,
 		}
 
-		h.repo.MockAnswerRepository.EXPECT().CreateAnswers(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+		h.repo.MockAnswerRepository.EXPECT().
+			CreateAnswers(gomock.Any(), gomock.Any()).
+			Return(nil).
+			Times(1)
 
 		res := h.expect.POST("/api/question-groups/{questionGroupId}/answers", questionGroupID).
 			WithJSON(api.PostAnswersJSONRequestBody(req)).
@@ -88,7 +91,9 @@ func TestPostAnswers(t *testing.T) {
 		freeNumberRes.Value("type").String().IsEqual(string(freeNumberAnswer.Type))
 		freeNumberRes.Value("userId").String().IsEqual(userID)
 		freeNumberRes.Value("questionId").Number().IsEqual(freeNumberAnswer.QuestionId)
-		freeNumberRes.Value("content").Number().InRange(float64(freeNumberAnswer.Content)-0.0001, float64(freeNumberAnswer.Content)+0.0001)
+		freeNumberRes.Value("content").
+			Number().
+			InRange(float64(freeNumberAnswer.Content)-0.0001, float64(freeNumberAnswer.Content)+0.0001)
 
 		singleChoiceRes := res.Value(2).Object()
 		singleChoiceRes.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOption")
@@ -101,7 +106,8 @@ func TestPostAnswers(t *testing.T) {
 		singleChoiceSelectedOption.Value("id").Number().IsEqual(singleChoiceAnswer.OptionId)
 
 		multipleChoiceRes := res.Value(3).Object()
-		multipleChoiceRes.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOptions")
+		multipleChoiceRes.Keys().
+			ContainsOnly("id", "type", "userId", "questionId", "selectedOptions")
 		multipleChoiceRes.Value("type").String().IsEqual(string(multipleChoiceAnswer.Type))
 		multipleChoiceRes.Value("userId").String().IsEqual(userID)
 		multipleChoiceRes.Value("questionId").Number().IsEqual(multipleChoiceAnswer.QuestionId)

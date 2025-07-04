@@ -50,7 +50,11 @@ func (s *Server) GetStaffs(e echo.Context) error {
 }
 
 // AdminPutUser ユーザー情報を更新（管理者用）
-func (s *Server) AdminPutUser(e echo.Context, targetUserID string, params api.AdminPutUserParams) error {
+func (s *Server) AdminPutUser(
+	e echo.Context,
+	targetUserID string,
+	params api.AdminPutUserParams,
+) error {
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {

@@ -32,7 +32,11 @@ func (s *Server) GetQuestionGroups(e echo.Context, campID api.CampId) error {
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) AdminPostQuestionGroup(e echo.Context, campID api.CampId, params api.AdminPostQuestionGroupParams) error {
+func (s *Server) AdminPostQuestionGroup(
+	e echo.Context,
+	campID api.CampId,
+	params api.AdminPostQuestionGroupParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -80,7 +84,11 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, campID api.CampId, param
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) AdminPutQuestionGroupMetadata(e echo.Context, questionGroupId api.QuestionGroupId, params api.AdminPutQuestionGroupMetadataParams) error {
+func (s *Server) AdminPutQuestionGroupMetadata(
+	e echo.Context,
+	questionGroupId api.QuestionGroupId,
+	params api.AdminPutQuestionGroupMetadataParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -134,7 +142,11 @@ func (s *Server) AdminPutQuestionGroupMetadata(e echo.Context, questionGroupId a
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) AdminDeleteQuestionGroup(e echo.Context, questionGroupId api.QuestionGroupId, params api.AdminDeleteQuestionGroupParams) error {
+func (s *Server) AdminDeleteQuestionGroup(
+	e echo.Context,
+	questionGroupId api.QuestionGroupId,
+	params api.AdminDeleteQuestionGroupParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {

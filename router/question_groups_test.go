@@ -63,7 +63,10 @@ func TestGetQuestionGroups(t *testing.T) {
 			CampID:      uint(campID),
 		}
 
-		h.repo.MockQuestionGroupRepository.EXPECT().GetQuestionGroups(gomock.Any(), uint(campID)).Return([]model.QuestionGroup{questionGroup1, questionGroup2}, nil).Times(1)
+		h.repo.MockQuestionGroupRepository.EXPECT().
+			GetQuestionGroups(gomock.Any(), uint(campID)).
+			Return([]model.QuestionGroup{questionGroup1, questionGroup2}, nil).
+			Times(1)
 
 		res := h.expect.GET("/api/camps/{campId}/question-groups", campID).
 			Expect().
@@ -222,7 +225,9 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		}
 		username := random.AlphaNumericString(t, 32)
 
-		h.repo.MockUserRepository.EXPECT().GetOrCreateUser(gomock.Any(), username).Return(&model.User{IsStaff: true}, nil)
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil)
 		h.repo.MockQuestionGroupRepository.EXPECT().CreateQuestionGroup(gomock.Any()).Return(nil)
 
 		res := h.expect.POST("/api/admin/camps/1/question-groups").
@@ -282,15 +287,25 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		// Verify options for SingleChoiceQuestion
 		singleChoiceOptions := singleChoiceRes.Value("options").Array()
 		singleChoiceOptions.Length().IsEqual(2)
-		singleChoiceOptions.Value(0).Object().Value("content").String().IsEqual(singleChoiceQuestion.Options[0].Content)
-		singleChoiceOptions.Value(1).Object().Value("content").String().IsEqual(singleChoiceQuestion.Options[1].Content)
+		singleChoiceOptions.Value(0).
+			Object().
+			Value("content").
+			String().
+			IsEqual(singleChoiceQuestion.Options[0].Content)
+		singleChoiceOptions.Value(1).
+			Object().
+			Value("content").
+			String().
+			IsEqual(singleChoiceQuestion.Options[1].Content)
 
 		// Verify MultipleChoiceQuestion
 		multipleChoiceRes := questionsArray.Value(3).Object()
 		multipleChoiceRes.Value("title").String().IsEqual(multipleChoiceQuestion.Title)
 
 		if multipleChoiceQuestion.Description != nil {
-			multipleChoiceRes.Value("description").String().IsEqual(*multipleChoiceQuestion.Description)
+			multipleChoiceRes.Value("description").
+				String().
+				IsEqual(*multipleChoiceQuestion.Description)
 		}
 
 		multipleChoiceRes.Value("type").String().IsEqual(string(multipleChoiceQuestion.Type))
@@ -300,8 +315,20 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		// Verify options for MultipleChoiceQuestion
 		multipleChoiceOptions := multipleChoiceRes.Value("options").Array()
 		multipleChoiceOptions.Length().IsEqual(3)
-		multipleChoiceOptions.Value(0).Object().Value("content").String().IsEqual(multipleChoiceQuestion.Options[0].Content)
-		multipleChoiceOptions.Value(1).Object().Value("content").String().IsEqual(multipleChoiceQuestion.Options[1].Content)
-		multipleChoiceOptions.Value(2).Object().Value("content").String().IsEqual(multipleChoiceQuestion.Options[2].Content)
+		multipleChoiceOptions.Value(0).
+			Object().
+			Value("content").
+			String().
+			IsEqual(multipleChoiceQuestion.Options[0].Content)
+		multipleChoiceOptions.Value(1).
+			Object().
+			Value("content").
+			String().
+			IsEqual(multipleChoiceQuestion.Options[1].Content)
+		multipleChoiceOptions.Value(2).
+			Object().
+			Value("content").
+			String().
+			IsEqual(multipleChoiceQuestion.Options[2].Content)
 	})
 }

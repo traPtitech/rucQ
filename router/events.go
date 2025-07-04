@@ -52,7 +52,8 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if (eventModel.Type == model.EventTypeOfficial || eventModel.Type == model.EventTypeMoment) && !user.IsStaff {
+	if (eventModel.Type == model.EventTypeOfficial || eventModel.Type == model.EventTypeMoment) &&
+		!user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -121,7 +122,8 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if (existingEvent.Type == model.EventTypeOfficial || existingEvent.Type == model.EventTypeMoment) && !user.IsStaff {
+	if (existingEvent.Type == model.EventTypeOfficial || existingEvent.Type == model.EventTypeMoment) &&
+		!user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -139,7 +141,8 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 
 	newEvent.ID = existingEvent.ID
 
-	if (newEvent.Type == model.EventTypeOfficial || newEvent.Type == model.EventTypeMoment) && !user.IsStaff {
+	if (newEvent.Type == model.EventTypeOfficial || newEvent.Type == model.EventTypeMoment) &&
+		!user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -160,7 +163,11 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 	return e.JSON(http.StatusOK, &response)
 }
 
-func (s *Server) DeleteEvent(e echo.Context, eventID api.EventId, params api.DeleteEventParams) error {
+func (s *Server) DeleteEvent(
+	e echo.Context,
+	eventID api.EventId,
+	params api.DeleteEventParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 	if err != nil {
 		e.Logger().Errorf("failed to get or create user: %v", err)
@@ -175,7 +182,8 @@ func (s *Server) DeleteEvent(e echo.Context, eventID api.EventId, params api.Del
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if (deleteEvent.Type == model.EventTypeOfficial || deleteEvent.Type == model.EventTypeMoment) && !user.IsStaff {
+	if (deleteEvent.Type == model.EventTypeOfficial || deleteEvent.Type == model.EventTypeMoment) &&
+		!user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
