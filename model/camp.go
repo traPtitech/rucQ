@@ -10,7 +10,7 @@ type Camp struct {
 	gorm.Model
 	DisplayID          string
 	Name               string
-	Description        string
+	Guidebook          string
 	IsDraft            bool
 	IsPaymentOpen      bool
 	IsRegistrationOpen bool

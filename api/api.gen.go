@@ -166,27 +166,31 @@ type AnswerResponse struct {
 
 // CampRequest defines model for CampRequest.
 type CampRequest struct {
-	DateEnd            openapi_types.Date `json:"dateEnd"`
-	DateStart          openapi_types.Date `json:"dateStart"`
-	Description        string             `json:"description"`
-	DisplayId          string             `json:"displayId"`
-	IsDraft            bool               `json:"isDraft"`
-	IsPaymentOpen      bool               `json:"isPaymentOpen"`
-	IsRegistrationOpen bool               `json:"isRegistrationOpen"`
-	Name               string             `json:"name"`
+	DateEnd   openapi_types.Date `json:"dateEnd"`
+	DateStart openapi_types.Date `json:"dateStart"`
+	DisplayId string             `json:"displayId"`
+
+	// Guidebook 合宿のしおり（Markdown形式）
+	Guidebook          string `json:"guidebook"`
+	IsDraft            bool   `json:"isDraft"`
+	IsPaymentOpen      bool   `json:"isPaymentOpen"`
+	IsRegistrationOpen bool   `json:"isRegistrationOpen"`
+	Name               string `json:"name"`
 }
 
 // CampResponse defines model for CampResponse.
 type CampResponse struct {
-	DateEnd            openapi_types.Date `json:"dateEnd"`
-	DateStart          openapi_types.Date `json:"dateStart"`
-	Description        string             `json:"description"`
-	DisplayId          string             `json:"displayId"`
-	Id                 int                `json:"id"`
-	IsDraft            bool               `json:"isDraft"`
-	IsPaymentOpen      bool               `json:"isPaymentOpen"`
-	IsRegistrationOpen bool               `json:"isRegistrationOpen"`
-	Name               string             `json:"name"`
+	DateEnd   openapi_types.Date `json:"dateEnd"`
+	DateStart openapi_types.Date `json:"dateStart"`
+	DisplayId string             `json:"displayId"`
+
+	// Guidebook 合宿のしおり（Markdown形式）
+	Guidebook          string `json:"guidebook"`
+	Id                 int    `json:"id"`
+	IsDraft            bool   `json:"isDraft"`
+	IsPaymentOpen      bool   `json:"isPaymentOpen"`
+	IsRegistrationOpen bool   `json:"isRegistrationOpen"`
+	Name               string `json:"name"`
 }
 
 // DashboardResponse defines model for DashboardResponse.
@@ -279,7 +283,7 @@ type FreeNumberQuestionRequestType string
 
 // FreeNumberQuestionResponse defines model for FreeNumberQuestionResponse.
 type FreeNumberQuestionResponse struct {
-	Description *string                        `json:"description"`
+	Description *string                        `json:"description,omitempty"`
 	Id          int                            `json:"id"`
 	IsOpen      bool                           `json:"isOpen"`
 	IsPublic    bool                           `json:"isPublic"`
@@ -326,7 +330,7 @@ type FreeTextQuestionRequestType string
 
 // FreeTextQuestionResponse defines model for FreeTextQuestionResponse.
 type FreeTextQuestionResponse struct {
-	Description *string                      `json:"description"`
+	Description *string                      `json:"description,omitempty"`
 	Id          int                          `json:"id"`
 	IsOpen      bool                         `json:"isOpen"`
 	IsPublic    bool                         `json:"isPublic"`
@@ -397,7 +401,7 @@ type MultipleChoiceAnswerResponseType string
 
 // MultipleChoiceQuestionResponse defines model for MultipleChoiceQuestionResponse.
 type MultipleChoiceQuestionResponse struct {
-	Description *string                            `json:"description"`
+	Description *string                            `json:"description,omitempty"`
 	Id          int                                `json:"id"`
 	IsOpen      bool                               `json:"isOpen"`
 	IsPublic    bool                               `json:"isPublic"`
@@ -648,7 +652,7 @@ type SingleChoiceAnswerResponseType string
 
 // SingleChoiceQuestionResponse defines model for SingleChoiceQuestionResponse.
 type SingleChoiceQuestionResponse struct {
-	Description *string                          `json:"description"`
+	Description *string                          `json:"description,omitempty"`
 	Id          int                              `json:"id"`
 	IsOpen      bool                             `json:"isOpen"`
 	IsPublic    bool                             `json:"isPublic"`
