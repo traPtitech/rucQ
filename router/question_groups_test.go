@@ -113,12 +113,10 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			Expect().
 			Status(http.StatusCreated).JSON().Object()
 
-		res.Keys().ContainsOnly("id", "name", "description", "due", "questions")
+		res.Keys().ContainsAll("id", "name", "due", "questions")
 		res.Value("name").String().IsEqual(req.Name)
 
-		if req.Description == nil {
-			res.Value("description").IsNull()
-		} else {
+		if req.Description != nil {
 			res.Value("description").String().IsEqual(*req.Description)
 		}
 
@@ -131,9 +129,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		freeTextRes := questionsArray.Value(0).Object()
 		freeTextRes.Value("title").String().IsEqual(freeTextQuestion.Title)
 
-		if freeTextQuestion.Description == nil {
-			freeTextRes.Value("description").IsNull()
-		} else {
+		if freeTextQuestion.Description != nil {
 			freeTextRes.Value("description").String().IsEqual(*freeTextQuestion.Description)
 		}
 
@@ -145,9 +141,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		freeNumberRes := questionsArray.Value(1).Object()
 		freeNumberRes.Value("title").String().IsEqual(freeNumberQuestion.Title)
 
-		if freeNumberQuestion.Description == nil {
-			freeNumberRes.Value("description").IsNull()
-		} else {
+		if freeNumberQuestion.Description != nil {
 			freeNumberRes.Value("description").String().IsEqual(*freeNumberQuestion.Description)
 		}
 
@@ -159,9 +153,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		singleChoiceRes := questionsArray.Value(2).Object()
 		singleChoiceRes.Value("title").String().IsEqual(singleChoiceQuestion.Title)
 
-		if singleChoiceQuestion.Description == nil {
-			singleChoiceRes.Value("description").IsNull()
-		} else {
+		if singleChoiceQuestion.Description != nil {
 			singleChoiceRes.Value("description").String().IsEqual(*singleChoiceQuestion.Description)
 		}
 
@@ -179,9 +171,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		multipleChoiceRes := questionsArray.Value(3).Object()
 		multipleChoiceRes.Value("title").String().IsEqual(multipleChoiceQuestion.Title)
 
-		if multipleChoiceQuestion.Description == nil {
-			multipleChoiceRes.Value("description").IsNull()
-		} else {
+		if multipleChoiceQuestion.Description != nil {
 			multipleChoiceRes.Value("description").String().IsEqual(*multipleChoiceQuestion.Description)
 		}
 

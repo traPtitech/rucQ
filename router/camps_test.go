@@ -46,12 +46,12 @@ func TestGetCamps(t *testing.T) {
 		val := res.Value(0).Object()
 
 		val.Keys().ContainsOnly(
-			"id", "displayId", "name", "description", "isDraft", "isPaymentOpen",
+			"id", "displayId", "name", "guidebook", "isDraft", "isPaymentOpen",
 			"isRegistrationOpen", "dateStart", "dateEnd")
 		val.Value("id").Number().IsEqual(camp.ID)
 		val.Value("displayId").String().IsEqual(camp.DisplayID)
 		val.Value("name").String().IsEqual(camp.Name)
-		val.Value("description").String().IsEqual(camp.Guidebook)
+		val.Value("guidebook").String().IsEqual(camp.Guidebook)
 		val.Value("isDraft").Boolean().IsEqual(camp.IsDraft)
 		val.Value("isPaymentOpen").Boolean().IsEqual(camp.IsPaymentOpen)
 		val.Value("isRegistrationOpen").Boolean().IsEqual(camp.IsRegistrationOpen)
