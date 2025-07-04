@@ -7,6 +7,8 @@ func Convert[T any](src any) (T, error) {
 
 	err := copier.CopyWithOption(&dst, src, copier.Option{
 		Converters: []copier.TypeConverter{
+			answerSchemaToModel,
+			answerModelToSchema,
 			campSchemaToModel,
 			campModelToSchema,
 			eventSchemaToModel,

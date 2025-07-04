@@ -32,11 +32,30 @@ func Bool(t *testing.T) bool {
 	return rand.UintN(2) == 0
 }
 
+func Float32(t *testing.T) float32 {
+	t.Helper()
+
+	return float32(rand.NormFloat64())
+}
+
+func Float64(t *testing.T) float64 {
+	t.Helper()
+
+	return rand.NormFloat64()
+}
+
+// intの範囲に収まる正の整数を返す
 func PositiveInt(t *testing.T) int {
 	t.Helper()
 
-	// intの範囲に収まる正の整数を生成
-	return int(rand.UintN(math.MaxInt)) + 1
+	return PositiveIntN(t, math.MaxInt)
+}
+
+// [1, n]の整数を返す
+func PositiveIntN(t *testing.T, n uint) int {
+	t.Helper()
+
+	return int(rand.UintN(n)) + 1
 }
 
 func PtrOrNil[T any](t *testing.T, value T) *T {

@@ -1,9 +1,15 @@
 package gorm
 
-import "github.com/traPtitech/rucQ/model"
+import (
+	"context"
 
-func (r *Repository) CreateAnswer(answer *model.Answer) error {
-	if err := r.db.Create(answer).Error; err != nil {
+	"gorm.io/gorm"
+
+	"github.com/traPtitech/rucQ/model"
+)
+
+func (r *Repository) CreateAnswers(ctx context.Context, answers *[]model.Answer) error {
+	if err := gorm.G[[]model.Answer](r.db).Create(ctx, answers); err != nil {
 		return err
 	}
 

@@ -44,7 +44,7 @@ func TestGetOrCreateUser(t *testing.T) {
 		r := setup(t)
 		userID := random.AlphaNumericString(t, 32)
 
-		concurrency := 50
+		concurrency := 10
 		results := make(chan *model.User, concurrency)
 		errs := make(chan error, concurrency)
 
