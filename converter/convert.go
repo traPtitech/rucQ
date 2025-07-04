@@ -16,7 +16,8 @@ func Convert[T any](src any) (T, error) {
 			postQuestionGroupSchemaToModel,
 			putQuestionGroupSchemaToModel,
 			questionGroupModelToSchema,
-			questionSchemaToModel,
+			postQuestionSchemaToModel,
+			putQuestionSchemaToModel,
 			questionModelToSchema,
 		},
 	})

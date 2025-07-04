@@ -29,7 +29,7 @@ var postQuestionGroupSchemaToModel = copier.TypeConverter{
 		// Questions配列を手動で変換
 		dst.Questions = make([]model.Question, len(req.Questions))
 		for i, questionReq := range req.Questions {
-			convertedQuestion, err := questionSchemaToModel.Fn(questionReq)
+			convertedQuestion, err := postQuestionSchemaToModel.Fn(questionReq)
 			if err != nil {
 				return nil, err
 			}

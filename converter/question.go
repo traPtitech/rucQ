@@ -9,7 +9,7 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-var questionSchemaToModel = copier.TypeConverter{
+var postQuestionSchemaToModel = copier.TypeConverter{
 	SrcType: api.PostQuestionRequest{},
 	DstType: model.Question{},
 	Fn: func(src any) (any, error) {
@@ -65,6 +65,46 @@ var questionSchemaToModel = copier.TypeConverter{
 			}
 
 		default:
+			return nil, errors.New("unknown question type")
+		}
+
+		return dst, nil
+	},
+}
+
+var putQuestionSchemaToModel = copier.TypeConverter{
+	SrcType: api.PutQuestionRequest{},
+	DstType: model.Question{},
+	Fn: func(src any) (any, error) {
+		req, ok := src.(api.PutQuestionRequest)
+
+		if !ok {
+			return nil, errors.New("src is not an api.PutQuestionRequest")
+		}
+
+		var dst model.Question
+
+		if freeTextQuestionRequest, err := req.AsFreeTextQuestionRequest(); err == nil &&
+			freeTextQuestionRequest.Type == api.FreeTextQuestionRequestTypeFreeText {
+			if err := copier.Copy(&dst, &freeTextQuestionRequest); err != nil {
+				return nil, err
+			}
+		} else if freeNumberQuestionRequest, err := req.AsFreeNumberQuestionRequest(); err == nil &&
+			freeNumberQuestionRequest.Type == api.FreeNumberQuestionRequestTypeFreeNumber {
+			if err := copier.Copy(&dst, &freeNumberQuestionRequest); err != nil {
+				return nil, err
+			}
+		} else if singleChoiceQuestionRequest, err := req.AsPutSingleChoiceQuestionRequest(); err == nil &&
+			singleChoiceQuestionRequest.Type == api.PutSingleChoiceQuestionRequestType(api.SingleChoiceAnswerResponseTypeSingle) {
+			if err := copier.Copy(&dst, &singleChoiceQuestionRequest); err != nil {
+				return nil, err
+			}
+		} else if multipleChoiceQuestionRequest, err := req.AsPutMultipleChoiceQuestionRequest(); err == nil &&
+			multipleChoiceQuestionRequest.Type == api.PutMultipleChoiceQuestionRequestType(api.MultipleChoiceAnswerRequestTypeMultiple) {
+			if err := copier.Copy(&dst, &multipleChoiceQuestionRequest); err != nil {
+				return nil, err
+			}
+		} else {
 			return nil, errors.New("unknown question type")
 		}
 
