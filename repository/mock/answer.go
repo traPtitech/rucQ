@@ -10,6 +10,7 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 
 	model "github.com/traPtitech/rucQ/model"
@@ -40,18 +41,18 @@ func (m *MockAnswerRepository) EXPECT() *MockAnswerRepositoryMockRecorder {
 	return m.recorder
 }
 
-// CreateAnswer mocks base method.
-func (m *MockAnswerRepository) CreateAnswer(answer *model.Answer) error {
+// CreateAnswers mocks base method.
+func (m *MockAnswerRepository) CreateAnswers(ctx context.Context, answers *[]model.Answer) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAnswer", answer)
+	ret := m.ctrl.Call(m, "CreateAnswers", ctx, answers)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateAnswer indicates an expected call of CreateAnswer.
-func (mr *MockAnswerRepositoryMockRecorder) CreateAnswer(answer any) *gomock.Call {
+// CreateAnswers indicates an expected call of CreateAnswers.
+func (mr *MockAnswerRepositoryMockRecorder) CreateAnswers(ctx, answers any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAnswer", reflect.TypeOf((*MockAnswerRepository)(nil).CreateAnswer), answer)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAnswers", reflect.TypeOf((*MockAnswerRepository)(nil).CreateAnswers), ctx, answers)
 }
 
 // GetAnswerByID mocks base method.

@@ -6,7 +6,41 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/converter"
+	"github.com/traPtitech/rucQ/model"
 )
+
+func (s *Server) PostAnswers(e echo.Context, _ api.QuestionGroupId, _ api.PostAnswersParams) error {
+	var req api.PostAnswersJSONRequestBody
+
+	if err := e.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	answers, err := converter.Convert[[]model.Answer](req)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert request body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if err := s.repo.CreateAnswers(e.Request().Context(), &answers); err != nil {
+		e.Logger().Errorf("failed to create answers: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[[]api.AnswerResponse](answers)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusCreated, res)
+}
 
 // PutAnswer アンケート回答編集
 func (s *Server) PutAnswer(e echo.Context, _ api.AnswerId, params api.PutAnswerParams) error {
@@ -102,8 +136,4 @@ func (s *Server) PutAnswer(e echo.Context, _ api.AnswerId, params api.PutAnswerP
 	// res.UserTraqId = *params.XForwardedUser // TODO: AnswerBody に UserTraqId がないためコメントアウト
 
 	return e.JSON(http.StatusOK, res)
-}
-
-func (s *Server) PostAnswers(_ echo.Context, _ api.QuestionGroupId, _ api.PostAnswersParams) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
 }
