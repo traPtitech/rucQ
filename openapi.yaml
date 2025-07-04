@@ -1832,7 +1832,6 @@ components:
           type: string
         description:
           type: string
-          nullable: true
         type:
           type: string
           enum:
@@ -1844,7 +1843,6 @@ components:
       required:
         - id
         - title
-        - description
         - type
         - isPublic
         - isOpen
@@ -1870,7 +1868,6 @@ components:
           type: string
         description:
           type: string
-          nullable: true
         type:
           type: string
           enum:
@@ -1882,7 +1879,6 @@ components:
       required:
         - id
         - title
-        - description
         - type
         - isPublic
         - isOpen
@@ -1930,7 +1926,6 @@ components:
           type: string
         description:
           type: string
-          nullable: true
         type:
           type: string
           enum:
@@ -1946,7 +1941,6 @@ components:
       required:
         - id
         - title
-        - description
         - type
         - isPublic
         - isOpen
@@ -1995,7 +1989,6 @@ components:
           type: string
         description:
           type: string
-          nullable: true
         type:
           type: string
           enum:
@@ -2011,7 +2004,6 @@ components:
       required:
         - id
         - title
-        - description
         - type
         - isPublic
         - isOpen

@@ -279,7 +279,7 @@ type FreeNumberQuestionRequestType string
 
 // FreeNumberQuestionResponse defines model for FreeNumberQuestionResponse.
 type FreeNumberQuestionResponse struct {
-	Description *string                        `json:"description"`
+	Description *string                        `json:"description,omitempty"`
 	Id          int                            `json:"id"`
 	IsOpen      bool                           `json:"isOpen"`
 	IsPublic    bool                           `json:"isPublic"`
@@ -326,7 +326,7 @@ type FreeTextQuestionRequestType string
 
 // FreeTextQuestionResponse defines model for FreeTextQuestionResponse.
 type FreeTextQuestionResponse struct {
-	Description *string                      `json:"description"`
+	Description *string                      `json:"description,omitempty"`
 	Id          int                          `json:"id"`
 	IsOpen      bool                         `json:"isOpen"`
 	IsPublic    bool                         `json:"isPublic"`
@@ -397,7 +397,7 @@ type MultipleChoiceAnswerResponseType string
 
 // MultipleChoiceQuestionResponse defines model for MultipleChoiceQuestionResponse.
 type MultipleChoiceQuestionResponse struct {
-	Description *string                            `json:"description"`
+	Description *string                            `json:"description,omitempty"`
 	Id          int                                `json:"id"`
 	IsOpen      bool                               `json:"isOpen"`
 	IsPublic    bool                               `json:"isPublic"`
@@ -648,7 +648,7 @@ type SingleChoiceAnswerResponseType string
 
 // SingleChoiceQuestionResponse defines model for SingleChoiceQuestionResponse.
 type SingleChoiceQuestionResponse struct {
-	Description *string                          `json:"description"`
+	Description *string                          `json:"description,omitempty"`
 	Id          int                              `json:"id"`
 	IsOpen      bool                             `json:"isOpen"`
 	IsPublic    bool                             `json:"isPublic"`
