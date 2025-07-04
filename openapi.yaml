@@ -1445,8 +1445,9 @@ components:
           type: string
         name:
           type: string
-        description:
+        guidebook:
           type: string
+          description: 合宿のしおり（Markdown形式）
         isDraft:
           type: boolean
         isRegistrationOpen:
@@ -1462,7 +1463,7 @@ components:
       required:
         - displayId
         - name
-        - description
+        - guidebook
         - isDraft
         - isRegistrationOpen
         - isPaymentOpen
@@ -1477,8 +1478,9 @@ components:
           type: string
         name:
           type: string
-        description:
+        guidebook:
           type: string
+          description: 合宿のしおり（Markdown形式）
         isDraft:
           type: boolean
         isRegistrationOpen:
@@ -1495,7 +1497,7 @@ components:
         - id
         - displayId
         - name
-        - description
+        - guidebook
         - isDraft
         - isRegistrationOpen
         - isPaymentOpen

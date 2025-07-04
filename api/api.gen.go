@@ -166,27 +166,31 @@ type AnswerResponse struct {
 
 // CampRequest defines model for CampRequest.
 type CampRequest struct {
-	DateEnd            openapi_types.Date `json:"dateEnd"`
-	DateStart          openapi_types.Date `json:"dateStart"`
-	Description        string             `json:"description"`
-	DisplayId          string             `json:"displayId"`
-	IsDraft            bool               `json:"isDraft"`
-	IsPaymentOpen      bool               `json:"isPaymentOpen"`
-	IsRegistrationOpen bool               `json:"isRegistrationOpen"`
-	Name               string             `json:"name"`
+	DateEnd   openapi_types.Date `json:"dateEnd"`
+	DateStart openapi_types.Date `json:"dateStart"`
+	DisplayId string             `json:"displayId"`
+
+	// Guidebook 合宿のしおり（Markdown形式）
+	Guidebook          string `json:"guidebook"`
+	IsDraft            bool   `json:"isDraft"`
+	IsPaymentOpen      bool   `json:"isPaymentOpen"`
+	IsRegistrationOpen bool   `json:"isRegistrationOpen"`
+	Name               string `json:"name"`
 }
 
 // CampResponse defines model for CampResponse.
 type CampResponse struct {
-	DateEnd            openapi_types.Date `json:"dateEnd"`
-	DateStart          openapi_types.Date `json:"dateStart"`
-	Description        string             `json:"description"`
-	DisplayId          string             `json:"displayId"`
-	Id                 int                `json:"id"`
-	IsDraft            bool               `json:"isDraft"`
-	IsPaymentOpen      bool               `json:"isPaymentOpen"`
-	IsRegistrationOpen bool               `json:"isRegistrationOpen"`
-	Name               string             `json:"name"`
+	DateEnd   openapi_types.Date `json:"dateEnd"`
+	DateStart openapi_types.Date `json:"dateStart"`
+	DisplayId string             `json:"displayId"`
+
+	// Guidebook 合宿のしおり（Markdown形式）
+	Guidebook          string `json:"guidebook"`
+	Id                 int    `json:"id"`
+	IsDraft            bool   `json:"isDraft"`
+	IsPaymentOpen      bool   `json:"isPaymentOpen"`
+	IsRegistrationOpen bool   `json:"isRegistrationOpen"`
+	Name               string `json:"name"`
 }
 
 // DashboardResponse defines model for DashboardResponse.

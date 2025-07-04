@@ -81,7 +81,7 @@ func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
 	camp := &model.Camp{
 		DisplayID:          random.AlphaNumericString(t, 10),
 		Name:               random.AlphaNumericString(t, 20),
-		Description:        random.AlphaNumericString(t, 100),
+		Guidebook:        random.AlphaNumericString(t, 100),
 		IsDraft:            random.Bool(t),
 		IsPaymentOpen:      random.Bool(t),
 		IsRegistrationOpen: random.Bool(t),
