@@ -69,7 +69,17 @@ func TestUpdateQuestion(t *testing.T) {
 		newDescription := random.PtrOrNil(t, random.AlphaNumericString(t, 25))
 		newIsPublic := random.Bool(t)
 		newIsOpen := random.Bool(t)
-		newOptionContent := random.AlphaNumericString(t, 15)
+
+		updatedOptions := make([]model.Option, len(question.Options))
+		for i, option := range question.Options {
+			updatedOptions[i] = model.Option{
+				Model: gorm.Model{
+					ID: option.ID, // 既存のOptionを更新する
+				},
+				Content: random.AlphaNumericString(t, 15),
+			}
+		}
+
 		newQuestion := model.Question{
 			Type:            model.SingleChoiceQuestion,
 			QuestionGroupID: questionGroup.ID,
@@ -77,14 +87,7 @@ func TestUpdateQuestion(t *testing.T) {
 			Description:     newDescription,
 			IsPublic:        newIsPublic,
 			IsOpen:          newIsOpen,
-			Options: []model.Option{
-				{
-					Model: gorm.Model{
-						ID: question.Options[0].ID, // 既存のOptionを更新する
-					},
-					Content: newOptionContent,
-				},
-			},
+			Options:         updatedOptions,
 		}
 
 		err := r.UpdateQuestion(t.Context(), question.ID, &newQuestion)
@@ -102,8 +105,12 @@ func TestUpdateQuestion(t *testing.T) {
 		assert.Equal(t, newDescription, retrievedQuestion.Description)
 		assert.Equal(t, newIsPublic, retrievedQuestion.IsPublic)
 		assert.Equal(t, newIsOpen, retrievedQuestion.IsOpen)
-		assert.Len(t, retrievedQuestion.Options, 1)
-		assert.Equal(t, question.Options[0].ID, retrievedQuestion.Options[0].ID)
-		assert.Equal(t, newOptionContent, retrievedQuestion.Options[0].Content)
+		assert.Len(t, retrievedQuestion.Options, len(question.Options)) // 元のOptionと同じ個数
+
+		// 各Optionが正しく更新されているかチェック
+		for i, updatedOption := range updatedOptions {
+			assert.Equal(t, updatedOption.ID, retrievedQuestion.Options[i].ID)
+			assert.Equal(t, updatedOption.Content, retrievedQuestion.Options[i].Content)
+		}
 	})
 }
