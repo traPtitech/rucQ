@@ -1,10 +1,11 @@
 package gorm
 
 import (
+	"context"
+
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
-	"github.com/traPtitech/rucQ/repository"
 )
 
 func (r *Repository) CreateQuestion(question *model.Question) error {
@@ -43,22 +44,16 @@ func (r *Repository) DeleteQuestionByID(id uint) error {
 	return nil
 }
 
-func (r *Repository) UpdateQuestion(questionID uint, question *model.Question) error {
-	if err := r.db.Where(&model.Question{
-		Model: gorm.Model{
-			ID: questionID,
-		},
-	}).Omit("Options").Updates(question).Error; err != nil {
+func (r *Repository) UpdateQuestion(
+	ctx context.Context,
+	questionID uint,
+	question *model.Question,
+) error {
+	question.ID = questionID
+
+	if err := r.db.WithContext(ctx).Session(&gorm.Session{FullSaveAssociations: true}).Select("*").Updates(question).Error; err != nil {
 		return err
 	}
-
-	options, err := r.GetOptions(&repository.GetOptionsQuery{QuestionID: &questionID})
-
-	if err != nil {
-		return err
-	}
-
-	question.Options = options
 
 	return nil
 }

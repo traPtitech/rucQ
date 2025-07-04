@@ -10,6 +10,7 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 
 	model "github.com/traPtitech/rucQ/model"
@@ -99,15 +100,15 @@ func (mr *MockQuestionRepositoryMockRecorder) GetQuestions() *gomock.Call {
 }
 
 // UpdateQuestion mocks base method.
-func (m *MockQuestionRepository) UpdateQuestion(questionID uint, question *model.Question) error {
+func (m *MockQuestionRepository) UpdateQuestion(ctx context.Context, questionID uint, question *model.Question) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateQuestion", questionID, question)
+	ret := m.ctrl.Call(m, "UpdateQuestion", ctx, questionID, question)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateQuestion indicates an expected call of UpdateQuestion.
-func (mr *MockQuestionRepositoryMockRecorder) UpdateQuestion(questionID, question any) *gomock.Call {
+func (mr *MockQuestionRepositoryMockRecorder) UpdateQuestion(ctx, questionID, question any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuestion", reflect.TypeOf((*MockQuestionRepository)(nil).UpdateQuestion), questionID, question)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuestion", reflect.TypeOf((*MockQuestionRepository)(nil).UpdateQuestion), ctx, questionID, question)
 }

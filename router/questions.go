@@ -167,7 +167,7 @@ func (s *Server) AdminPutQuestion(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateQuestion(uint(questionId), &questionModel); err != nil {
+	if err := s.repo.UpdateQuestion(e.Request().Context(), uint(questionId), &questionModel); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Not found")
 		}
