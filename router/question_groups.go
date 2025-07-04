@@ -32,7 +32,7 @@ func (s *Server) GetQuestionGroups(e echo.Context, campID api.CampId) error {
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api.AdminPostQuestionGroupParams) error {
+func (s *Server) AdminPostQuestionGroup(e echo.Context, campID api.CampId, params api.AdminPostQuestionGroupParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -53,15 +53,15 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api
 		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
 
-	var questionGroup model.QuestionGroup
-
-	questionGroup, err = converter.Convert[model.QuestionGroup](req)
+	questionGroup, err := converter.Convert[model.QuestionGroup](req)
 
 	if err != nil {
 		e.Logger().Errorf("failed to convert request body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
+
+	questionGroup.CampID = uint(campID)
 
 	if err := s.repo.CreateQuestionGroup(&questionGroup); err != nil {
 		e.Logger().Errorf("failed to create question group: %v", err)
