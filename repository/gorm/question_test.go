@@ -87,7 +87,7 @@ func TestUpdateQuestion(t *testing.T) {
 			},
 		}
 
-		err := r.UpdateQuestion(t.Context(), question.ID, newQuestion)
+		err := r.UpdateQuestion(t.Context(), question.ID, &newQuestion)
 
 		assert.NoError(t, err)
 

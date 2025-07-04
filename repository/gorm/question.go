@@ -47,11 +47,11 @@ func (r *Repository) DeleteQuestionByID(id uint) error {
 func (r *Repository) UpdateQuestion(
 	ctx context.Context,
 	questionID uint,
-	question model.Question,
+	question *model.Question,
 ) error {
-	if _, err := gorm.G[model.Question](r.db).
-		Where("id = ?", questionID).
-		Updates(ctx, question); err != nil {
+	question.ID = questionID
+
+	if err := r.db.WithContext(ctx).Session(&gorm.Session{FullSaveAssociations: true}).Select("*").Updates(question).Error; err != nil {
 		return err
 	}
 

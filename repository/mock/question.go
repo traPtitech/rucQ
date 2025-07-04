@@ -100,7 +100,7 @@ func (mr *MockQuestionRepositoryMockRecorder) GetQuestions() *gomock.Call {
 }
 
 // UpdateQuestion mocks base method.
-func (m *MockQuestionRepository) UpdateQuestion(ctx context.Context, questionID uint, question model.Question) error {
+func (m *MockQuestionRepository) UpdateQuestion(ctx context.Context, questionID uint, question *model.Question) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateQuestion", ctx, questionID, question)
 	ret0, _ := ret[0].(error)
