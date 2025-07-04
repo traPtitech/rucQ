@@ -182,3 +182,160 @@ func TestGetMyAnswers(t *testing.T) {
 			InRange(freeNumberContent-0.0001, freeNumberContent+0.0001)
 	})
 }
+
+func TestPutAnswer(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success with FreeText", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		answerID := random.PositiveInt(t)
+
+		freeTextAnswer := api.FreeTextAnswerRequest{
+			Type:       api.FreeTextAnswerRequestTypeFreeText,
+			QuestionId: random.PositiveInt(t),
+			Content:    random.AlphaNumericString(t, 50),
+		}
+		var req api.AnswerRequest
+		err := req.FromFreeTextAnswerRequest(freeTextAnswer)
+		require.NoError(t, err)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			UpdateAnswer(gomock.Any()).
+			Return(nil).
+			Times(1)
+
+		res := h.expect.PUT("/api/answers/{answerId}", answerID).
+			WithJSON(api.PutAnswerJSONRequestBody(req)).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusOK).JSON().Object()
+
+		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
+		res.Value("id").Number().IsEqual(answerID)
+		res.Value("type").String().IsEqual(string(freeTextAnswer.Type))
+		res.Value("userId").String().IsEqual(userID)
+		res.Value("questionId").Number().IsEqual(freeTextAnswer.QuestionId)
+		res.Value("content").String().IsEqual(freeTextAnswer.Content)
+	})
+
+	t.Run("Success with FreeNumber", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		answerID := random.PositiveInt(t)
+
+		freeNumberAnswer := api.FreeNumberAnswerRequest{
+			Type:       api.FreeNumberAnswerRequestTypeFreeNumber,
+			QuestionId: random.PositiveInt(t),
+			Content:    random.Float32(t),
+		}
+		var req api.AnswerRequest
+		err := req.FromFreeNumberAnswerRequest(freeNumberAnswer)
+		require.NoError(t, err)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			UpdateAnswer(gomock.Any()).
+			Return(nil).
+			Times(1)
+
+		res := h.expect.PUT("/api/answers/{answerId}", answerID).
+			WithJSON(api.PutAnswerJSONRequestBody(req)).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusOK).JSON().Object()
+
+		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
+		res.Value("id").Number().IsEqual(answerID)
+		res.Value("type").String().IsEqual(string(freeNumberAnswer.Type))
+		res.Value("userId").String().IsEqual(userID)
+		res.Value("questionId").Number().IsEqual(freeNumberAnswer.QuestionId)
+		res.Value("content").
+			Number().
+			InRange(float64(freeNumberAnswer.Content)-0.0001, float64(freeNumberAnswer.Content)+0.0001)
+	})
+
+	t.Run("Success with SingleChoice", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		answerID := random.PositiveInt(t)
+
+		singleChoiceAnswer := api.SingleChoiceAnswerRequest{
+			Type:       api.SingleChoiceAnswerRequestTypeSingle,
+			QuestionId: random.PositiveInt(t),
+			OptionId:   random.PositiveInt(t),
+		}
+		var req api.AnswerRequest
+		err := req.FromSingleChoiceAnswerRequest(singleChoiceAnswer)
+		require.NoError(t, err)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			UpdateAnswer(gomock.Any()).
+			Return(nil).
+			Times(1)
+
+		res := h.expect.PUT("/api/answers/{answerId}", answerID).
+			WithJSON(api.PutAnswerJSONRequestBody(req)).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusOK).JSON().Object()
+
+		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOption")
+		res.Value("id").Number().IsEqual(answerID)
+		res.Value("type").String().IsEqual(string(singleChoiceAnswer.Type))
+		res.Value("userId").String().IsEqual(userID)
+		res.Value("questionId").Number().IsEqual(singleChoiceAnswer.QuestionId)
+
+		selectedOption := res.Value("selectedOption").Object()
+		selectedOption.Keys().ContainsOnly("id", "content")
+		selectedOption.Value("id").Number().IsEqual(singleChoiceAnswer.OptionId)
+	})
+
+	t.Run("Success with MultipleChoice", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		answerID := random.PositiveInt(t)
+
+		multipleChoiceAnswer := api.MultipleChoiceAnswerRequest{
+			Type:       api.MultipleChoiceAnswerRequestTypeMultiple,
+			QuestionId: random.PositiveInt(t),
+			OptionIds:  []int{random.PositiveInt(t), random.PositiveInt(t)},
+		}
+		var req api.AnswerRequest
+		err := req.FromMultipleChoiceAnswerRequest(multipleChoiceAnswer)
+		require.NoError(t, err)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			UpdateAnswer(gomock.Any()).
+			Return(nil).
+			Times(1)
+
+		res := h.expect.PUT("/api/answers/{answerId}", answerID).
+			WithJSON(api.PutAnswerJSONRequestBody(req)).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusOK).JSON().Object()
+
+		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOptions")
+		res.Value("id").Number().IsEqual(answerID)
+		res.Value("type").String().IsEqual(string(multipleChoiceAnswer.Type))
+		res.Value("userId").String().IsEqual(userID)
+		res.Value("questionId").Number().IsEqual(multipleChoiceAnswer.QuestionId)
+
+		selectedOptions := res.Value("selectedOptions").Array()
+		selectedOptions.Length().IsEqual(len(multipleChoiceAnswer.OptionIds))
+
+		for i, optionID := range multipleChoiceAnswer.OptionIds {
+			option := selectedOptions.Value(i).Object()
+			option.Keys().ContainsOnly("id", "content")
+			option.Value("id").Number().IsEqual(optionID)
+		}
+	})
+}
