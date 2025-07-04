@@ -11,6 +11,6 @@ type QuestionGroupRepository interface {
 	CreateQuestionGroup(questionGroup *model.QuestionGroup) error
 	GetQuestionGroups(ctx context.Context, campID uint) ([]model.QuestionGroup, error)
 	GetQuestionGroup(ID uint) (*model.QuestionGroup, error)
-	UpdateQuestionGroup(ID uint, questionGroup *model.QuestionGroup) error
+	UpdateQuestionGroup(ctx context.Context, questionGroupID uint, questionGroup model.QuestionGroup) error
 	DeleteQuestionGroup(ID uint) error
 }

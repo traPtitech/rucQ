@@ -44,11 +44,8 @@ func (r *Repository) GetQuestionGroup(ID uint) (*model.QuestionGroup, error) {
 	return &questionGroup, nil
 }
 
-func (r *Repository) UpdateQuestionGroup(ID uint, questionGroup *model.QuestionGroup) error {
-	if err := r.db.
-		Where("id = ?", ID).
-		Updates(questionGroup).
-		Error; err != nil {
+func (r *Repository) UpdateQuestionGroup(ctx context.Context, questionGroupID uint, questionGroup model.QuestionGroup) error {
+	if _, err := gorm.G[model.QuestionGroup](r.db).Where("id = ?", questionGroupID).Select("name", "description", "due").Updates(ctx, questionGroup); err != nil {
 		return err
 	}
 

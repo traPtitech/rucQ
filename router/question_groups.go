@@ -117,7 +117,7 @@ func (s *Server) AdminPutQuestionGroupMetadata(e echo.Context, questionGroupId a
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateQuestionGroup(uint(questionGroupId), updateQuestionGroup); err != nil {
+	if err := s.repo.UpdateQuestionGroup(e.Request().Context(), uint(questionGroupId), *updateQuestionGroup); err != nil {
 		e.Logger().Errorf("failed to update question group: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")

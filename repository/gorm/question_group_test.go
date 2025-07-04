@@ -157,3 +157,32 @@ func TestCreateQuestionGroup(t *testing.T) {
 		}
 	})
 }
+
+func TestUpdateQuestionGroup(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		newQuestionGroup := model.QuestionGroup{
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
+			Due:         random.Time(t),
+		}
+
+		err := r.UpdateQuestionGroup(t.Context(), questionGroup.ID, newQuestionGroup)
+
+		assert.NoError(t, err)
+
+		updatedQuestionGroup, err := r.GetQuestionGroup(questionGroup.ID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, newQuestionGroup.Name, updatedQuestionGroup.Name)
+		assert.Equal(t, newQuestionGroup.Description, updatedQuestionGroup.Description)
+		assert.WithinDuration(t, newQuestionGroup.Due, updatedQuestionGroup.Due, time.Second)
+		assert.Equal(t, camp.ID, updatedQuestionGroup.CampID)
+	})
+}
