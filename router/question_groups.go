@@ -12,8 +12,8 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-func (s *Server) GetQuestionGroups(e echo.Context, _ api.CampId) error {
-	questionGroups, err := s.repo.GetQuestionGroups()
+func (s *Server) GetQuestionGroups(e echo.Context, campID api.CampId) error {
+	questionGroups, err := s.repo.GetQuestionGroups(e.Request().Context(), uint(campID))
 
 	if err != nil {
 		e.Logger().Errorf("failed to get question groups: %v", err)
