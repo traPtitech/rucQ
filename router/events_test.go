@@ -82,7 +82,11 @@ func TestGetEvents(t *testing.T) {
 			officialEvent,
 		}, nil)
 
-		res := h.expect.GET("/api/camps/{campId}/events", campID).Expect().Status(http.StatusOK).JSON().Array()
+		res := h.expect.GET("/api/camps/{campId}/events", campID).
+			Expect().
+			Status(http.StatusOK).
+			JSON().
+			Array()
 
 		res.Length().IsEqual(3)
 
@@ -111,7 +115,8 @@ func TestGetEvents(t *testing.T) {
 		res2.Value("time").String().AsDateTime().IsEqual(momentEvent.TimeStart)
 
 		res3 := res.Value(2).Object()
-		res3.Keys().ContainsOnly("id", "type", "name", "description", "location", "timeStart", "timeEnd")
+		res3.Keys().
+			ContainsOnly("id", "type", "name", "description", "location", "timeStart", "timeEnd")
 		res3.Value("id").Number().IsEqual(officialEvent.ID)
 		res3.Value("type").String().IsEqual(string(model.EventTypeOfficial))
 		res3.Value("name").String().IsEqual(officialEvent.Name)

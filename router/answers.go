@@ -10,7 +10,11 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-func (s *Server) PostAnswers(e echo.Context, _ api.QuestionGroupId, params api.PostAnswersParams) error {
+func (s *Server) PostAnswers(
+	e echo.Context,
+	_ api.QuestionGroupId,
+	params api.PostAnswersParams,
+) error {
 	var req api.PostAnswersJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {

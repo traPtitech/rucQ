@@ -97,7 +97,11 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) AdminPutRoom(e echo.Context, roomId api.RoomId, params api.AdminPutRoomParams) error {
+func (s *Server) AdminPutRoom(
+	e echo.Context,
+	roomId api.RoomId,
+	params api.AdminPutRoomParams,
+) error {
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {

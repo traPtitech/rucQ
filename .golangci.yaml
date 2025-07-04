@@ -13,6 +13,7 @@ formatters:
   enable:
     - gofmt
     - goimports
+    - golines
 
   settings:
     goimports:

@@ -100,15 +100,15 @@ func (mr *MockQuestionGroupRepositoryMockRecorder) GetQuestionGroups(ctx, campID
 }
 
 // UpdateQuestionGroup mocks base method.
-func (m *MockQuestionGroupRepository) UpdateQuestionGroup(ID uint, questionGroup *model.QuestionGroup) error {
+func (m *MockQuestionGroupRepository) UpdateQuestionGroup(ctx context.Context, questionGroupID uint, questionGroup model.QuestionGroup) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateQuestionGroup", ID, questionGroup)
+	ret := m.ctrl.Call(m, "UpdateQuestionGroup", ctx, questionGroupID, questionGroup)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateQuestionGroup indicates an expected call of UpdateQuestionGroup.
-func (mr *MockQuestionGroupRepositoryMockRecorder) UpdateQuestionGroup(ID, questionGroup any) *gomock.Call {
+func (mr *MockQuestionGroupRepositoryMockRecorder) UpdateQuestionGroup(ctx, questionGroupID, questionGroup any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuestionGroup", reflect.TypeOf((*MockQuestionGroupRepository)(nil).UpdateQuestionGroup), ID, questionGroup)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateQuestionGroup", reflect.TypeOf((*MockQuestionGroupRepository)(nil).UpdateQuestionGroup), ctx, questionGroupID, questionGroup)
 }

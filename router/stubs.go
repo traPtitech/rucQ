@@ -11,7 +11,11 @@ import (
 // 欠けているメソッドのスタブ実装
 
 // AdminDeleteImage 画像を削除（管理者用）
-func (s *Server) AdminDeleteImage(_ echo.Context, _ api.ImageId, _ api.AdminDeleteImageParams) error {
+func (s *Server) AdminDeleteImage(
+	_ echo.Context,
+	_ api.ImageId,
+	_ api.AdminDeleteImageParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteImage not implemented")
 }
 
@@ -26,32 +30,56 @@ func (s *Server) AdminPostImage(_ echo.Context, _ api.CampId, _ api.AdminPostIma
 }
 
 // AdminGetPayments 支払い情報の一覧を取得（管理者用）
-func (s *Server) AdminGetPayments(_ echo.Context, _ api.CampId, _ api.AdminGetPaymentsParams) error {
+func (s *Server) AdminGetPayments(
+	_ echo.Context,
+	_ api.CampId,
+	_ api.AdminGetPaymentsParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetPayments not implemented")
 }
 
 // AdminPutPayment 支払い情報を更新（管理者用）
-func (s *Server) AdminPutPayment(_ echo.Context, _ api.PaymentId, _ api.AdminPutPaymentParams) error {
+func (s *Server) AdminPutPayment(
+	_ echo.Context,
+	_ api.PaymentId,
+	_ api.AdminPutPaymentParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutPayment not implemented")
 }
 
 // AdminPostRollCall 点呼を作成（管理者用）
-func (s *Server) AdminPostRollCall(_ echo.Context, _ api.CampId, _ api.AdminPostRollCallParams) error {
+func (s *Server) AdminPostRollCall(
+	_ echo.Context,
+	_ api.CampId,
+	_ api.AdminPostRollCallParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostRollCall not implemented")
 }
 
 // AdminPostRoomGroup 部屋グループを作成（管理者用）
-func (s *Server) AdminPostRoomGroup(_ echo.Context, _ api.CampId, _ api.AdminPostRoomGroupParams) error {
+func (s *Server) AdminPostRoomGroup(
+	_ echo.Context,
+	_ api.CampId,
+	_ api.AdminPostRoomGroupParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostRoomGroup not implemented")
 }
 
 // AdminDeleteRoomGroup 部屋グループを削除（管理者用）
-func (s *Server) AdminDeleteRoomGroup(_ echo.Context, _ api.RoomGroupId, _ api.AdminDeleteRoomGroupParams) error {
+func (s *Server) AdminDeleteRoomGroup(
+	_ echo.Context,
+	_ api.RoomGroupId,
+	_ api.AdminDeleteRoomGroupParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteRoomGroup not implemented")
 }
 
 // AdminPutRoomGroup 部屋グループを更新（管理者用）
-func (s *Server) AdminPutRoomGroup(_ echo.Context, _ api.RoomGroupId, _ api.AdminPutRoomGroupParams) error {
+func (s *Server) AdminPutRoomGroup(
+	_ echo.Context,
+	_ api.RoomGroupId,
+	_ api.AdminPutRoomGroupParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutRoomGroup not implemented")
 }
 
@@ -61,7 +89,11 @@ func (s *Server) AdminDeleteRoom(_ echo.Context, _ api.RoomId, _ api.AdminDelete
 }
 
 // AdminGetAnswers 回答の一覧を取得（管理者用）
-func (s *Server) AdminGetAnswers(_ echo.Context, _ api.QuestionId, _ api.AdminGetAnswersParams) error {
+func (s *Server) AdminGetAnswers(
+	_ echo.Context,
+	_ api.QuestionId,
+	_ api.AdminGetAnswersParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetAnswers not implemented")
 }
 
@@ -106,7 +138,11 @@ func (s *Server) GetAnswers(_ echo.Context, _ api.QuestionId) error {
 }
 
 // DeleteReaction リアクションを削除
-func (s *Server) DeleteReaction(_ echo.Context, _ api.RollCallId, _ api.DeleteReactionParams) error {
+func (s *Server) DeleteReaction(
+	_ echo.Context,
+	_ api.RollCallId,
+	_ api.DeleteReactionParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "DeleteReaction not implemented")
 }
 
@@ -121,7 +157,11 @@ func (s *Server) GetRollCallReactions(_ echo.Context, _ api.RollCallId) error {
 }
 
 // PostRollCallReaction 点呼にリアクション
-func (s *Server) PostRollCallReaction(_ echo.Context, _ api.RollCallId, _ api.PostRollCallReactionParams) error {
+func (s *Server) PostRollCallReaction(
+	_ echo.Context,
+	_ api.RollCallId,
+	_ api.PostRollCallReactionParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "PostRollCallReaction not implemented")
 }
 
@@ -130,6 +170,10 @@ func (s *Server) StreamRollCallReactions(_ echo.Context, _ api.RollCallId) error
 	return echo.NewHTTPError(http.StatusNotImplemented, "StreamRollCallReactions not implemented")
 }
 
-func (s *Server) AdminPostQuestion(_ echo.Context, _ api.QuestionGroupId, _ api.AdminPostQuestionParams) error {
+func (s *Server) AdminPostQuestion(
+	_ echo.Context,
+	_ api.QuestionGroupId,
+	_ api.AdminPostQuestionParams,
+) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostQuestion not implemented")
 }

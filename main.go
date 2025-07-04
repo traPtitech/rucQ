@@ -31,7 +31,13 @@ func main() {
 	password := os.Getenv("NS_MARIADB_PASSWORD")
 	host := os.Getenv("NS_MARIADB_HOSTNAME")
 	database := os.Getenv("NS_MARIADB_DATABASE")
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Asia%%2FTokyo", user, password, host, database)
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Asia%%2FTokyo",
+		user,
+		password,
+		host,
+		database,
+	)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		TranslateError: true,
 	})

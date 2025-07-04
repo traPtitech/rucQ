@@ -11,7 +11,11 @@ import (
 )
 
 // AdminPostPayment 支払い情報を作成（管理者用）
-func (s *Server) AdminPostPayment(e echo.Context, campID api.CampId, params api.AdminPostPaymentParams) error {
+func (s *Server) AdminPostPayment(
+	e echo.Context,
+	campID api.CampId,
+	params api.AdminPostPaymentParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {

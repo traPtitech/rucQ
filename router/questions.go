@@ -31,7 +31,11 @@ func (s *Server) GetQuestions(e echo.Context) error {
 	return e.JSON(http.StatusOK, questionsResponse)
 }
 
-func (s *Server) AdminDeleteQuestion(e echo.Context, questionId api.QuestionId, params api.AdminDeleteQuestionParams) error {
+func (s *Server) AdminDeleteQuestion(
+	e echo.Context,
+	questionId api.QuestionId,
+	params api.AdminDeleteQuestionParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -81,7 +85,11 @@ func (s *Server) GetQuestion(e echo.Context, questionID api.QuestionId) error {
 	return e.JSON(http.StatusOK, &questionResponse)
 }
 
-func (s *Server) AdminPutQuestion(e echo.Context, questionId api.QuestionId, params api.AdminPutQuestionParams) error {
+func (s *Server) AdminPutQuestion(
+	e echo.Context,
+	questionId api.QuestionId,
+	params api.AdminPutQuestionParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {

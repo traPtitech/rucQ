@@ -27,9 +27,11 @@ func TestAdminPostPayment(t *testing.T) {
 		}
 		adminUserID := random.AlphaNumericString(t, 32)
 
-		h.repo.MockUserRepository.EXPECT().GetOrCreateUser(gomock.Any(), adminUserID).Return(&model.User{
-			IsStaff: true,
-		}, nil)
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(&model.User{
+				IsStaff: true,
+			}, nil)
 		h.repo.MockPaymentRepository.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(nil)
 
 		res := h.expect.POST("/api/admin/camps/{campId}/payments", campID).

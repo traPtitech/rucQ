@@ -1,10 +1,8 @@
 package router
 
 import (
-	"errors"
 	"net/http"
 
-	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
@@ -32,7 +30,11 @@ func (s *Server) GetQuestionGroups(e echo.Context, campID api.CampId) error {
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api.AdminPostQuestionGroupParams) error {
+func (s *Server) AdminPostQuestionGroup(
+	e echo.Context,
+	campID api.CampId,
+	params api.AdminPostQuestionGroupParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -53,15 +55,15 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api
 		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
 
-	var questionGroup model.QuestionGroup
-
-	questionGroup, err = converter.Convert[model.QuestionGroup](req)
+	questionGroup, err := converter.Convert[model.QuestionGroup](req)
 
 	if err != nil {
 		e.Logger().Errorf("failed to convert request body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
+
+	questionGroup.CampID = uint(campID)
 
 	if err := s.repo.CreateQuestionGroup(&questionGroup); err != nil {
 		e.Logger().Errorf("failed to create question group: %v", err)
@@ -80,7 +82,11 @@ func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) AdminPutQuestionGroupMetadata(e echo.Context, questionGroupId api.QuestionGroupId, params api.AdminPutQuestionGroupMetadataParams) error {
+func (s *Server) AdminPutQuestionGroupMetadata(
+	e echo.Context,
+	questionGroupId api.QuestionGroupId,
+	params api.AdminPutQuestionGroupMetadataParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -101,29 +107,29 @@ func (s *Server) AdminPutQuestionGroupMetadata(e echo.Context, questionGroupId a
 		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
 
-	updateQuestionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupId))
+	questionGroup, err := converter.Convert[model.QuestionGroup](req)
 
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Not found")
-		}
-		e.Logger().Errorf("failed to get question group: %v", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	if err := copier.Copy(&updateQuestionGroup, req); err != nil {
-		e.Logger().Errorf("failed to copy request body: %v", err)
+		e.Logger().Errorf("failed to convert request body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateQuestionGroup(uint(questionGroupId), updateQuestionGroup); err != nil {
+	if err := s.repo.UpdateQuestionGroup(e.Request().Context(), uint(questionGroupId), questionGroup); err != nil {
 		e.Logger().Errorf("failed to update question group: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	res, err := converter.Convert[api.QuestionGroupResponse](*updateQuestionGroup)
+	updatedQuestionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupId))
+
+	if err != nil {
+		e.Logger().Errorf("failed to get updated question group: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[api.QuestionGroupResponse](updatedQuestionGroup)
 
 	if err != nil {
 		e.Logger().Errorf("failed to convert response body: %v", err)
@@ -134,7 +140,11 @@ func (s *Server) AdminPutQuestionGroupMetadata(e echo.Context, questionGroupId a
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) AdminDeleteQuestionGroup(e echo.Context, questionGroupId api.QuestionGroupId, params api.AdminDeleteQuestionGroupParams) error {
+func (s *Server) AdminDeleteQuestionGroup(
+	e echo.Context,
+	questionGroupId api.QuestionGroupId,
+	params api.AdminDeleteQuestionGroupParams,
+) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {

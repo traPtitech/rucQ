@@ -32,10 +32,13 @@ func setup(t *testing.T) *Repository {
 			return fmt.Sprintf("root:password@tcp(%s:%s)/database", host, port.Port())
 		}),
 	}
-	container, err := testcontainers.GenericContainer(t.Context(), testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
+	container, err := testcontainers.GenericContainer(
+		t.Context(),
+		testcontainers.GenericContainerRequest{
+			ContainerRequest: req,
+			Started:          true,
+		},
+	)
 
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -103,7 +106,12 @@ func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
 func mustCreateEvent(t *testing.T, r *Repository, campID uint) model.Event {
 	t.Helper()
 
-	eventType := random.SelectFrom(t, model.EventTypeDuration, model.EventTypeMoment, model.EventTypeOfficial)
+	eventType := random.SelectFrom(
+		t,
+		model.EventTypeDuration,
+		model.EventTypeMoment,
+		model.EventTypeOfficial,
+	)
 
 	var event *model.Event
 
@@ -184,7 +192,12 @@ func mustCreateQuestionGroup(t *testing.T, r *Repository, campID uint) model.Que
 	return *questionGroup
 }
 
-func mustCreateQuestion(t *testing.T, r *Repository, questionGroupID uint, questionType model.QuestionType) model.Question {
+func mustCreateQuestion(
+	t *testing.T,
+	r *Repository,
+	questionGroupID uint,
+	questionType model.QuestionType,
+) model.Question {
 	t.Helper()
 
 	question := &model.Question{
