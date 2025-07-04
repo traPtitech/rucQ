@@ -80,3 +80,72 @@ func TestAdminPostQuestion(t *testing.T) {
 		option.Value("content").IsEqual(singleChoiceQuestion.Options[0].Content)
 	})
 }
+
+func TestAdminPutQuestion(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success (Single Choice)", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		questionID := uint(random.PositiveInt(t))
+		title := random.AlphaNumericString(t, 15)
+		description := random.PtrOrNil(t, random.AlphaNumericString(t, 25))
+		isPublic := random.Bool(t)
+		isOpen := random.Bool(t)
+		optionContent := random.AlphaNumericString(t, 10)
+
+		req := api.PutSingleChoiceQuestionRequest{
+			Type:        api.PutSingleChoiceQuestionRequestTypeSingle,
+			Title:       title,
+			Description: description,
+			IsPublic:    isPublic,
+			IsOpen:      isOpen,
+			Options: []api.PutOptionRequest{
+				{
+					Content: optionContent,
+				},
+			},
+		}
+
+		userID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().GetOrCreateUser(gomock.Any(), userID).Return(&model.User{
+			IsStaff: true,
+		}, nil).Times(1)
+		h.repo.MockQuestionRepository.EXPECT().
+			UpdateQuestion(gomock.Any(), questionID, gomock.Any()).
+			Return(nil).
+			Times(1)
+
+		res := h.expect.PUT("/api/admin/questions/{questionID}", questionID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusOK).
+			JSON().
+			Object()
+
+		res.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "options")
+		res.Value("type").IsEqual(api.PutSingleChoiceQuestionRequestTypeSingle)
+		res.Value("title").IsEqual(title)
+
+		if description != nil {
+			res.Value("description").IsEqual(*description)
+		} else {
+			res.Keys().NotContainsAny("description")
+		}
+
+		res.Value("isPublic").IsEqual(isPublic)
+		res.Value("isOpen").IsEqual(isOpen)
+
+		options := res.Value("options").Array()
+
+		options.Length().IsEqual(len(req.Options))
+
+		option := options.Value(0).Object()
+
+		option.Keys().ContainsOnly("id", "content")
+		option.Value("content").IsEqual(optionContent)
+	})
+}
