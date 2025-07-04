@@ -1767,7 +1767,7 @@ components:
     QuestionGroupResponse:
       type: object
       allOf:
-        - $ref: "#/components/schemas/PostQuestionGroupRequest"
+        - $ref: "#/components/schemas/PutQuestionGroupRequest"
         - type: object
           properties:
             id:
