@@ -22,7 +22,7 @@ func TestCreateCamp(t *testing.T) {
 		camp := model.Camp{
 			DisplayID:          random.AlphaNumericString(t, 10),
 			Name:               random.AlphaNumericString(t, 20),
-			Guidebook:        random.AlphaNumericString(t, 100),
+			Guidebook:          random.AlphaNumericString(t, 100),
 			IsDraft:            random.Bool(t),
 			IsPaymentOpen:      random.Bool(t),
 			IsRegistrationOpen: random.Bool(t),
