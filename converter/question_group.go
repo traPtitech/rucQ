@@ -10,7 +10,7 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-var questionGroupSchemaToModel = copier.TypeConverter{
+var postQuestionGroupSchemaToModel = copier.TypeConverter{
 	SrcType: api.PostQuestionGroupRequest{},
 	DstType: model.QuestionGroup{},
 	Fn: func(src any) (any, error) {
@@ -38,6 +38,28 @@ var questionGroupSchemaToModel = copier.TypeConverter{
 				return nil, errors.New("failed to convert question")
 			}
 			dst.Questions[i] = question
+		}
+
+		dst.Due = req.Due.Time // types.Dateからtime.Timeへの変換
+
+		return dst, nil
+	},
+}
+
+var putQuestionGroupSchemaToModel = copier.TypeConverter{
+	SrcType: api.PutQuestionGroupRequest{},
+	DstType: model.QuestionGroup{},
+	Fn: func(src any) (any, error) {
+		req, ok := src.(api.PutQuestionGroupRequest)
+
+		if !ok {
+			return nil, errors.New("src is not an api.PutQuestionGroupRequest")
+		}
+
+		var dst model.QuestionGroup
+
+		if err := copier.Copy(&dst, &req); err != nil {
+			return nil, err
 		}
 
 		dst.Due = req.Due.Time // types.Dateからtime.Timeへの変換
