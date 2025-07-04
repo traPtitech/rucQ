@@ -50,17 +50,15 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{
-			"http://localhost:5173", // フロントエンド
-			"http://localhost:8081", // Swagger UI
-		},
-	}))
+	debug := os.Getenv("RUCQ_DEBUG") == "true"
+
+	if debug {
+		e.Use(middleware.CORS())
+	}
 
 	// botがtraQからのイベントを受け取るエンドポイントを設定
 	e.POST("/api/traq-events", router.TraqEventHandler)
 
-	debug := os.Getenv("RUCQ_DEBUG") == "true"
 	repo := gormRepository.NewGormRepository(db)
 
 	api.RegisterHandlers(e, router.NewServer(repo, debug))
