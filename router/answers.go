@@ -91,7 +91,7 @@ func (s *Server) PutAnswer(
 	var req api.PutAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	answer, err := converter.Convert[model.Answer](req)
