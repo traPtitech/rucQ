@@ -214,6 +214,7 @@ func TestPutAnswer(t *testing.T) {
 			Status(http.StatusOK).JSON().Object()
 
 		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
+		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual(string(freeTextAnswer.Type))
 		res.Value("userId").String().IsEqual(userID)
 		res.Value("questionId").Number().IsEqual(freeTextAnswer.QuestionId)
@@ -248,6 +249,7 @@ func TestPutAnswer(t *testing.T) {
 			Status(http.StatusOK).JSON().Object()
 
 		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
+		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual(string(freeNumberAnswer.Type))
 		res.Value("userId").String().IsEqual(userID)
 		res.Value("questionId").Number().IsEqual(freeNumberAnswer.QuestionId)
@@ -284,6 +286,7 @@ func TestPutAnswer(t *testing.T) {
 			Status(http.StatusOK).JSON().Object()
 
 		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOption")
+		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual(string(singleChoiceAnswer.Type))
 		res.Value("userId").String().IsEqual(userID)
 		res.Value("questionId").Number().IsEqual(singleChoiceAnswer.QuestionId)
@@ -321,6 +324,7 @@ func TestPutAnswer(t *testing.T) {
 			Status(http.StatusOK).JSON().Object()
 
 		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOptions")
+		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual(string(multipleChoiceAnswer.Type))
 		res.Value("userId").String().IsEqual(userID)
 		res.Value("questionId").Number().IsEqual(multipleChoiceAnswer.QuestionId)
