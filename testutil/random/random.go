@@ -32,6 +32,12 @@ func Bool(t *testing.T) bool {
 	return rand.UintN(2) == 0
 }
 
+func Float32(t *testing.T) float32 {
+	t.Helper()
+
+	return float32(rand.NormFloat64())
+}
+
 func Float64(t *testing.T) float64 {
 	t.Helper()
 

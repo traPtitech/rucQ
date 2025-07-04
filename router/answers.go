@@ -10,7 +10,7 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-func (s *Server) PostAnswers(e echo.Context, _ api.QuestionGroupId, _ api.PostAnswersParams) error {
+func (s *Server) PostAnswers(e echo.Context, _ api.QuestionGroupId, params api.PostAnswersParams) error {
 	var req api.PostAnswersJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
@@ -23,6 +23,10 @@ func (s *Server) PostAnswers(e echo.Context, _ api.QuestionGroupId, _ api.PostAn
 		e.Logger().Errorf("failed to convert request body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	for i := range answers {
+		answers[i].UserID = *params.XForwardedUser
 	}
 
 	if err := s.repo.CreateAnswers(e.Request().Context(), &answers); err != nil {
