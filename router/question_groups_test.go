@@ -36,7 +36,7 @@ func TestGetQuestionGroups(t *testing.T) {
 					Model: gorm.Model{
 						ID: uint(random.PositiveInt(t)),
 					},
-					Type:        model.FreeTextQuestion,
+					Type:        model.SingleChoiceQuestion,
 					Title:       random.AlphaNumericString(t, 30),
 					Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 					IsPublic:    random.Bool(t),
