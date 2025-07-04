@@ -10,6 +10,34 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
+func (s *Server) GetMyAnswers(
+	e echo.Context,
+	questionGroupId api.QuestionGroupId,
+	params api.GetMyAnswersParams,
+) error {
+	answers, err := s.repo.GetAnswersByUserAndQuestionGroup(
+		e.Request().Context(),
+		*params.XForwardedUser,
+		uint(questionGroupId),
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get answers: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[[]api.AnswerResponse](answers)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, res)
+}
+
 func (s *Server) PostAnswers(
 	e echo.Context,
 	_ api.QuestionGroupId,
