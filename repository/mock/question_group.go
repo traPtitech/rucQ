@@ -10,6 +10,7 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 
 	model "github.com/traPtitech/rucQ/model"
@@ -84,18 +85,18 @@ func (mr *MockQuestionGroupRepositoryMockRecorder) GetQuestionGroup(ID any) *gom
 }
 
 // GetQuestionGroups mocks base method.
-func (m *MockQuestionGroupRepository) GetQuestionGroups() ([]model.QuestionGroup, error) {
+func (m *MockQuestionGroupRepository) GetQuestionGroups(ctx context.Context, campID uint) ([]model.QuestionGroup, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetQuestionGroups")
+	ret := m.ctrl.Call(m, "GetQuestionGroups", ctx, campID)
 	ret0, _ := ret[0].([]model.QuestionGroup)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetQuestionGroups indicates an expected call of GetQuestionGroups.
-func (mr *MockQuestionGroupRepositoryMockRecorder) GetQuestionGroups() *gomock.Call {
+func (mr *MockQuestionGroupRepositoryMockRecorder) GetQuestionGroups(ctx, campID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuestionGroups", reflect.TypeOf((*MockQuestionGroupRepository)(nil).GetQuestionGroups))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuestionGroups", reflect.TypeOf((*MockQuestionGroupRepository)(nil).GetQuestionGroups), ctx, campID)
 }
 
 // UpdateQuestionGroup mocks base method.

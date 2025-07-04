@@ -8,11 +8,129 @@ import (
 	"github.com/oapi-codegen/runtime/types"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
+
+func TestGetQuestionGroups(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := random.PositiveInt(t)
+
+		questionGroup1 := model.QuestionGroup{
+			Model: gorm.Model{
+				ID: uint(random.PositiveInt(t)),
+			},
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
+			Due:         random.Time(t),
+			Questions: []model.Question{
+				{
+					Model: gorm.Model{
+						ID: uint(random.PositiveInt(t)),
+					},
+					Type:        model.SingleChoiceQuestion,
+					Title:       random.AlphaNumericString(t, 30),
+					Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
+					IsPublic:    random.Bool(t),
+					IsOpen:      random.Bool(t),
+					Options: []model.Option{
+						{
+							Model: gorm.Model{
+								ID: uint(random.PositiveInt(t)),
+							},
+							Content: random.AlphaNumericString(t, 20),
+						},
+					},
+				},
+			},
+		}
+
+		questionGroup2 := model.QuestionGroup{
+			Model: gorm.Model{
+				ID: uint(random.PositiveInt(t)),
+			},
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
+			Due:         random.Time(t),
+			CampID:      uint(campID),
+		}
+
+		h.repo.MockQuestionGroupRepository.EXPECT().GetQuestionGroups(gomock.Any(), uint(campID)).Return([]model.QuestionGroup{questionGroup1, questionGroup2}, nil).Times(1)
+
+		res := h.expect.GET("/api/camps/{campId}/question-groups", campID).
+			Expect().
+			Status(http.StatusOK).JSON().Array()
+
+		res.Length().IsEqual(2)
+
+		res1 := res.Value(0).Object()
+
+		res1.Keys().ContainsAll("id", "name", "due")
+		res1.Value("id").Number().IsEqual(questionGroup1.ID)
+		res1.Value("name").String().IsEqual(questionGroup1.Name)
+
+		if questionGroup1.Description != nil {
+			res1.Value("description").String().IsEqual(*questionGroup1.Description)
+		} else {
+			res1.Keys().NotContainsAny("description")
+		}
+
+		res1.Value("due").String().IsEqual(questionGroup1.Due.Format(time.DateOnly))
+
+		questions := res1.Value("questions").Array()
+
+		questions.Length().IsEqual(1)
+
+		question := questions.Value(0).Object()
+
+		question.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "options")
+		question.Value("id").Number().IsEqual(questionGroup1.Questions[0].ID)
+		question.Value("type").String().IsEqual(string(questionGroup1.Questions[0].Type))
+		question.Value("title").String().IsEqual(questionGroup1.Questions[0].Title)
+
+		if questionGroup1.Questions[0].Description != nil {
+			question.Value("description").String().IsEqual(*questionGroup1.Questions[0].Description)
+		} else {
+			question.Keys().NotContainsAny("description")
+		}
+
+		question.Value("isPublic").Boolean().IsEqual(questionGroup1.Questions[0].IsPublic)
+		question.Value("isOpen").Boolean().IsEqual(questionGroup1.Questions[0].IsOpen)
+
+		options := question.Value("options").Array()
+
+		options.Length().IsEqual(1)
+
+		option := options.Value(0).Object()
+
+		option.Keys().ContainsAll("id", "content")
+
+		option.Value("id").Number().IsEqual(questionGroup1.Questions[0].Options[0].ID)
+		option.Value("content").String().IsEqual(questionGroup1.Questions[0].Options[0].Content)
+
+		res2 := res.Value(1).Object()
+
+		res2.Keys().ContainsAll("id", "name", "due")
+		res2.Value("id").Number().IsEqual(questionGroup2.ID)
+		res2.Value("name").String().IsEqual(questionGroup2.Name)
+
+		if questionGroup2.Description != nil {
+			res2.Value("description").String().IsEqual(*questionGroup2.Description)
+		} else {
+			res2.Keys().NotContainsAny("description")
+		}
+
+		res2.Value("due").String().IsEqual(questionGroup2.Due.Format(time.DateOnly))
+	})
+}
 
 func TestAdminPostQuestionGroup(t *testing.T) {
 	t.Parallel()

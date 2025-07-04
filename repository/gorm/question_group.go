@@ -1,6 +1,12 @@
 package gorm
 
-import "github.com/traPtitech/rucQ/model"
+import (
+	"context"
+
+	"gorm.io/gorm"
+
+	"github.com/traPtitech/rucQ/model"
+)
 
 func (r *Repository) CreateQuestionGroup(questionGroup *model.QuestionGroup) error {
 	if err := r.db.Create(questionGroup).Error; err != nil {
@@ -10,14 +16,13 @@ func (r *Repository) CreateQuestionGroup(questionGroup *model.QuestionGroup) err
 	return nil
 }
 
-func (r *Repository) GetQuestionGroups() ([]model.QuestionGroup, error) {
-	var questionGroups []model.QuestionGroup
+func (r *Repository) GetQuestionGroups(ctx context.Context, campID uint) ([]model.QuestionGroup, error) {
+	questionGroups, err := gorm.G[model.QuestionGroup](r.db).
+		Preload("Questions.Options", nil).
+		Where("camp_id = ?", campID).
+		Find(ctx)
 
-	if err := r.db.
-		Preload("Questions").
-		Preload("Questions.Options").
-		Find(&questionGroups).
-		Error; err != nil {
+	if err != nil {
 		return nil, err
 	}
 

@@ -12,8 +12,8 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-func (s *Server) GetQuestionGroups(e echo.Context, _ api.CampId) error {
-	questionGroups, err := s.repo.GetQuestionGroups()
+func (s *Server) GetQuestionGroups(e echo.Context, campID api.CampId) error {
+	questionGroups, err := s.repo.GetQuestionGroups(e.Request().Context(), uint(campID))
 
 	if err != nil {
 		e.Logger().Errorf("failed to get question groups: %v", err)
@@ -22,29 +22,6 @@ func (s *Server) GetQuestionGroups(e echo.Context, _ api.CampId) error {
 	}
 
 	res, err := converter.Convert[[]api.QuestionGroupResponse](questionGroups)
-
-	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	return e.JSON(http.StatusOK, res)
-}
-
-func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID api.QuestionGroupId) error {
-	questionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupID))
-
-	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Not found")
-		}
-
-		e.Logger().Errorf("failed to get question group: %v", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	res, err := converter.Convert[api.QuestionGroupResponse](*questionGroup)
 
 	if err != nil {
 		e.Logger().Errorf("failed to convert response body: %v", err)

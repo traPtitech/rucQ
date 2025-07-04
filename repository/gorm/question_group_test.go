@@ -10,6 +10,52 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+func TestGetQuestionGroups(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		questionGroup1 := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup1.ID, model.SingleChoiceQuestion)
+		questionGroup2 := mustCreateQuestionGroup(t, r, camp.ID)
+
+		questionGroups, err := r.GetQuestionGroups(t.Context(), camp.ID)
+
+		assert.NoError(t, err)
+		assert.Len(t, questionGroups, 2)
+		assert.NotZero(t, questionGroup1.ID)
+		assert.Equal(t, questionGroup1.Name, questionGroups[0].Name)
+		assert.Equal(t, questionGroup1.Description, questionGroups[0].Description)
+		assert.Equal(t, questionGroup1.Due, questionGroups[0].Due)
+		assert.Equal(t, camp.ID, questionGroups[0].CampID)
+		assert.Len(t, questionGroups[0].Questions, 1)
+		assert.NotZero(t, questionGroups[0].Questions[0].ID)
+		assert.Equal(t, question.Type, questionGroups[0].Questions[0].Type)
+		assert.Equal(t, question.Title, questionGroups[0].Questions[0].Title)
+		assert.Equal(t, question.Description, questionGroups[0].Questions[0].Description)
+		assert.Equal(t, question.IsPublic, questionGroups[0].Questions[0].IsPublic)
+		assert.Equal(t, question.IsOpen, questionGroups[0].Questions[0].IsOpen)
+		assert.Equal(t, questionGroup1.ID, questionGroups[0].Questions[0].QuestionGroupID)
+		assert.NotZero(t, len(questionGroups[0].Questions[0].Options))
+
+		for _, option := range questionGroups[0].Questions[0].Options {
+			assert.NotZero(t, option.ID)
+			assert.NotEmpty(t, option.Content)
+			assert.Equal(t, questionGroups[0].Questions[0].ID, option.QuestionID)
+		}
+
+		assert.NotZero(t, questionGroup2.ID)
+		assert.Equal(t, questionGroup2.Name, questionGroups[1].Name)
+		assert.Equal(t, questionGroup2.Description, questionGroups[1].Description)
+		assert.Equal(t, questionGroup2.Due, questionGroups[1].Due)
+		assert.Equal(t, camp.ID, questionGroups[1].CampID)
+		assert.Len(t, questionGroups[1].Questions, 0)
+	})
+}
+
 func TestCreateQuestionGroup(t *testing.T) {
 	t.Parallel()
 
