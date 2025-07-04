@@ -32,29 +32,6 @@ func (s *Server) GetQuestionGroups(e echo.Context, campID api.CampId) error {
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) GetQuestionGroup(e echo.Context, questionGroupID api.QuestionGroupId) error {
-	questionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupID))
-
-	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Not found")
-		}
-
-		e.Logger().Errorf("failed to get question group: %v", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	res, err := converter.Convert[api.QuestionGroupResponse](*questionGroup)
-
-	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	return e.JSON(http.StatusOK, res)
-}
-
 func (s *Server) AdminPostQuestionGroup(e echo.Context, _ api.CampId, params api.AdminPostQuestionGroupParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
