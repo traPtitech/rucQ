@@ -34,7 +34,7 @@ func (s *Server) GetQuestions(e echo.Context) error {
 
 func (s *Server) AdminDeleteQuestion(
 	e echo.Context,
-	questionId api.QuestionId,
+	questionID api.QuestionId,
 	params api.AdminDeleteQuestionParams,
 ) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
@@ -49,7 +49,7 @@ func (s *Server) AdminDeleteQuestion(
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	if err := s.repo.DeleteQuestionByID(uint(questionId)); err != nil {
+	if err := s.repo.DeleteQuestionByID(uint(questionID)); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Not found")
 		}
@@ -138,7 +138,7 @@ func (s *Server) AdminPostQuestion(
 
 func (s *Server) AdminPutQuestion(
 	e echo.Context,
-	questionId api.QuestionId,
+	questionID api.QuestionId,
 	params api.AdminPutQuestionParams,
 ) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
@@ -167,7 +167,7 @@ func (s *Server) AdminPutQuestion(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateQuestion(e.Request().Context(), uint(questionId), &questionModel); err != nil {
+	if err := s.repo.UpdateQuestion(e.Request().Context(), uint(questionID), &questionModel); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Not found")
 		}
