@@ -332,3 +332,48 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			IsEqual(multipleChoiceQuestion.Options[2].Content)
 	})
 }
+
+func TestAdminPutQuestionGroupMetadata(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		questionGroupID := random.PositiveInt(t)
+		userID := random.AlphaNumericString(t, 32)
+
+		updateQuestionGroup := api.AdminPutQuestionGroupMetadataJSONRequestBody{
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
+			Due:         types.Date{Time: random.Time(t)},
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+		h.repo.MockQuestionGroupRepository.EXPECT().
+			UpdateQuestionGroup(gomock.Any(), uint(questionGroupID), gomock.Any()).
+			Return(nil).
+			Times(1)
+
+		res := h.expect.PUT("/api/admin/question-groups/{questionGroupId}",
+			questionGroupID).
+			WithJSON(updateQuestionGroup).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusOK).JSON().Object()
+
+		res.Keys().ContainsAll("id", "name", "due")
+		res.Value("name").String().IsEqual(updateQuestionGroup.Name)
+
+		if updateQuestionGroup.Description != nil {
+			res.Value("description").String().IsEqual(*updateQuestionGroup.Description)
+		} else {
+			res.Keys().NotContainsAny("description")
+		}
+
+		res.Value("due").String().IsEqual(updateQuestionGroup.Due.Format(time.DateOnly))
+	})
+}
