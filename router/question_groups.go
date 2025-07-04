@@ -1,10 +1,8 @@
 package router
 
 import (
-	"errors"
 	"net/http"
 
-	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
@@ -109,29 +107,21 @@ func (s *Server) AdminPutQuestionGroupMetadata(
 		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
 	}
 
-	updateQuestionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupId))
+	questionGroup, err := converter.Convert[model.QuestionGroup](req)
 
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Not found")
-		}
-		e.Logger().Errorf("failed to get question group: %v", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	if err := copier.Copy(&updateQuestionGroup, req); err != nil {
-		e.Logger().Errorf("failed to copy request body: %v", err)
+		e.Logger().Errorf("failed to convert request body: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateQuestionGroup(e.Request().Context(), uint(questionGroupId), *updateQuestionGroup); err != nil {
+	if err := s.repo.UpdateQuestionGroup(e.Request().Context(), uint(questionGroupId), questionGroup); err != nil {
 		e.Logger().Errorf("failed to update question group: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	res, err := converter.Convert[api.QuestionGroupResponse](*updateQuestionGroup)
+	res, err := converter.Convert[api.QuestionGroupResponse](questionGroup)
 
 	if err != nil {
 		e.Logger().Errorf("failed to convert response body: %v", err)
