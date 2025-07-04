@@ -26,14 +26,21 @@ func (r *Repository) GetAnswerByID(id uint) (*model.Answer, error) {
 	return &answer, nil
 }
 
-func (r *Repository) GetAnswersByUserAndQuestionGroup(ctx context.Context, userID string, questionGroupID uint) ([]model.Answer, error) {
-	var answers []model.Answer
+func (r *Repository) GetAnswersByUserAndQuestionGroup(
+	ctx context.Context,
+	userID string,
+	questionGroupID uint,
+) ([]model.Answer, error) {
+	answers, err := gorm.G[model.Answer](r.db).
+		Where("user_id = ? AND question_id IN (?)", userID,
+			r.db.Model(&model.Question{}).
+				Select("id").
+				Where("question_group_id = ?", questionGroupID),
+		).
+		Preload("SelectedOptions", nil).
+		Find(ctx)
 
-	if err := r.db.WithContext(ctx).
-		Joins("JOIN questions ON answers.question_id = questions.id").
-		Where("answers.user_id = ? AND questions.question_group_id = ?", userID, questionGroupID).
-		Preload("SelectedOptions").
-		Find(&answers).Error; err != nil {
+	if err != nil {
 		return nil, err
 	}
 
