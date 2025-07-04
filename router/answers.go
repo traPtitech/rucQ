@@ -10,6 +10,14 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
+func (s *Server) GetMyAnswers(
+	_ echo.Context,
+	_ api.QuestionGroupId,
+	_ api.GetMyAnswersParams,
+) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "GetMyAnswers not implemented")
+}
+
 func (s *Server) PostAnswers(
 	e echo.Context,
 	_ api.QuestionGroupId,
