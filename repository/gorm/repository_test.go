@@ -18,6 +18,8 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+const initAndStartLogCount = 2
+
 func setup(t *testing.T) *Repository {
 	t.Helper()
 
@@ -29,7 +31,7 @@ func setup(t *testing.T) *Repository {
 			"MYSQL_DATABASE":      "database",
 		},
 		WaitingFor: wait.ForAll(
-			wait.ForLog("ready for connections").WithOccurrence(2), // 初期化と本起動の2回
+			wait.ForLog("ready for connections").WithOccurrence(initAndStartLogCount), // 初期化と本起動の2回
 			wait.ForSQL("3306/tcp", "mysql", func(host string, port nat.Port) string {
 				return fmt.Sprintf("root:password@tcp(%s:%s)/database", host, port.Port())
 			}),
