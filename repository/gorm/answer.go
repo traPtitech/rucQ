@@ -16,10 +16,13 @@ func (r *Repository) CreateAnswers(ctx context.Context, answers *[]model.Answer)
 	return nil
 }
 
-func (r *Repository) GetAnswerByID(id uint) (*model.Answer, error) {
-	var answer model.Answer
+func (r *Repository) GetAnswerByID(ctx context.Context, id uint) (*model.Answer, error) {
+	answer, err := gorm.G[model.Answer](r.db).
+		Preload("SelectedOptions", nil).
+		Where("id = ?", id).
+		First(ctx)
 
-	if err := r.db.First(&answer, id).Error; err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -47,8 +50,12 @@ func (r *Repository) GetAnswersByUserAndQuestionGroup(
 	return answers, nil
 }
 
-func (r *Repository) UpdateAnswer(answer *model.Answer) error {
-	if err := r.db.Save(answer).Error; err != nil {
+func (r *Repository) UpdateAnswer(ctx context.Context, answerID uint, answer *model.Answer) error {
+	if _, err := gorm.G[*model.Answer](r.db).Omit("SelectedOptions").Where("id = ?", answerID).Updates(ctx, answer); err != nil {
+		return err
+	}
+
+	if err := r.db.WithContext(ctx).Model(answer).Association("SelectedOptions").Replace(answer.SelectedOptions); err != nil {
 		return err
 	}
 

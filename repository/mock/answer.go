@@ -56,18 +56,18 @@ func (mr *MockAnswerRepositoryMockRecorder) CreateAnswers(ctx, answers any) *gom
 }
 
 // GetAnswerByID mocks base method.
-func (m *MockAnswerRepository) GetAnswerByID(id uint) (*model.Answer, error) {
+func (m *MockAnswerRepository) GetAnswerByID(ctx context.Context, id uint) (*model.Answer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAnswerByID", id)
+	ret := m.ctrl.Call(m, "GetAnswerByID", ctx, id)
 	ret0, _ := ret[0].(*model.Answer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAnswerByID indicates an expected call of GetAnswerByID.
-func (mr *MockAnswerRepositoryMockRecorder) GetAnswerByID(id any) *gomock.Call {
+func (mr *MockAnswerRepositoryMockRecorder) GetAnswerByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnswerByID", reflect.TypeOf((*MockAnswerRepository)(nil).GetAnswerByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnswerByID", reflect.TypeOf((*MockAnswerRepository)(nil).GetAnswerByID), ctx, id)
 }
 
 // GetAnswersByUserAndQuestionGroup mocks base method.
@@ -86,15 +86,15 @@ func (mr *MockAnswerRepositoryMockRecorder) GetAnswersByUserAndQuestionGroup(ctx
 }
 
 // UpdateAnswer mocks base method.
-func (m *MockAnswerRepository) UpdateAnswer(answer *model.Answer) error {
+func (m *MockAnswerRepository) UpdateAnswer(ctx context.Context, answerID uint, answer *model.Answer) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAnswer", answer)
+	ret := m.ctrl.Call(m, "UpdateAnswer", ctx, answerID, answer)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateAnswer indicates an expected call of UpdateAnswer.
-func (mr *MockAnswerRepositoryMockRecorder) UpdateAnswer(answer any) *gomock.Call {
+func (mr *MockAnswerRepositoryMockRecorder) UpdateAnswer(ctx, answerID, answer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAnswer", reflect.TypeOf((*MockAnswerRepository)(nil).UpdateAnswer), answer)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAnswer", reflect.TypeOf((*MockAnswerRepository)(nil).UpdateAnswer), ctx, answerID, answer)
 }
