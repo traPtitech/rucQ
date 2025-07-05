@@ -18,6 +18,8 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+const initAndStartLogCount = 2
+
 func setup(t *testing.T) *Repository {
 	t.Helper()
 
@@ -28,9 +30,12 @@ func setup(t *testing.T) *Repository {
 			"MYSQL_ROOT_PASSWORD": "password",
 			"MYSQL_DATABASE":      "database",
 		},
-		WaitingFor: wait.ForSQL("3306", "mysql", func(host string, port nat.Port) string {
-			return fmt.Sprintf("root:password@tcp(%s:%s)/database", host, port.Port())
-		}),
+		WaitingFor: wait.ForAll(
+			wait.ForLog("ready for connections").WithOccurrence(initAndStartLogCount), // 初期化と本起動の2回
+			wait.ForSQL("3306/tcp", "mysql", func(host string, port nat.Port) string {
+				return fmt.Sprintf("root:password@tcp(%s:%s)/database", host, port.Port())
+			}),
+		),
 	}
 	container, err := testcontainers.GenericContainer(
 		t.Context(),
@@ -39,18 +44,15 @@ func setup(t *testing.T) *Repository {
 			Started:          true,
 		},
 	)
-
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		testcontainers.CleanupContainer(t, container)
 	})
 
 	port, err := container.MappedPort(t.Context(), "3306")
-
 	require.NoError(t, err)
 
 	loc, err := time.LoadLocation("Asia/Tokyo")
-
 	require.NoError(t, err)
 
 	config := mysql.NewConfig()
@@ -66,11 +68,9 @@ func setup(t *testing.T) *Repository {
 	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
 		TranslateError: true,
 	})
-
 	require.NoError(t, err)
 
 	err = migration.Migrate(db)
-
 	require.NoError(t, err)
 
 	return NewGormRepository(db)
