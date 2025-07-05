@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -54,6 +55,12 @@ func main() {
 
 	if debug {
 		e.Use(middleware.CORS())
+	} else {
+		allowOrigins := strings.Split(os.Getenv("RUCQ_CORS_ALLOW_ORIGINS"), ",")
+
+		e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+			AllowOrigins: allowOrigins,
+		}))
 	}
 
 	// botがtraQからのイベントを受け取るエンドポイントを設定
