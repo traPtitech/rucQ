@@ -2,11 +2,10 @@ package gorm
 
 import (
 	"database/sql"
-	"io"
-	"log"
 	"testing"
 	"time"
 
+	"github.com/docker/go-connections/nat"
 	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
@@ -23,21 +22,32 @@ import (
 func setup(t *testing.T) *Repository {
 	t.Helper()
 
-	// MySQLドライバーのログを標準ライブラリで無効化（より良いアプローチ）
-	mysql.SetLogger(log.New(io.Discard, "", 0))
-
 	req := testcontainers.ContainerRequest{
 		Image:        "mariadb:latest",
 		ExposedPorts: []string{"3306/tcp"},
 		Env: map[string]string{
 			"MYSQL_ROOT_PASSWORD": "password",
 			"MYSQL_DATABASE":      "database",
+			// MySQL側の設定でunexpected EOFを防ぐ
+			"MYSQL_WAIT_TIMEOUT":                   "600",
+			"MYSQL_INTERACTIVE_TIMEOUT":            "600",
+			"MYSQL_NET_READ_TIMEOUT":               "30",
+			"MYSQL_NET_WRITE_TIMEOUT":              "30",
+			"MYSQL_MAX_CONNECTIONS":                "100",
+			"MYSQL_MAX_CONNECT_ERRORS":             "10000",
+			"MYSQL_CONNECT_TIMEOUT":                "10",
+			"MYSQL_INNODB_BUFFER_POOL_SIZE":        "64M",
+			"MYSQL_INNODB_LOG_FILE_SIZE":           "16M",
+			"MYSQL_INNODB_FLUSH_LOG_AT_TRX_COMMIT": "2",
 		},
-		// testcontainersの組み込み待機戦略を活用（ログ + ポート）
+		// より強固な健全性チェック設定
 		WaitingFor: wait.ForAll(
 			wait.ForLog("ready for connections").WithOccurrence(2), // 初期化と本起動の2回
 			wait.ForListeningPort("3306/tcp"),
-		).WithStartupTimeout(90 * time.Second),
+			wait.ForSQL("3306/tcp", "mysql", func(host string, port nat.Port) string {
+				return "root:password@tcp(" + host + ":" + port.Port() + ")/database"
+			}).WithQuery("SELECT 1").WithStartupTimeout(60*time.Second),
+		).WithStartupTimeout(120 * time.Second),
 	}
 	container, err := testcontainers.GenericContainer(
 		t.Context(),
@@ -54,7 +64,7 @@ func setup(t *testing.T) *Repository {
 	port, err := container.MappedPort(t.Context(), "3306")
 	require.NoError(t, err)
 
-	// データベース接続設定
+	// データベース接続設定（unexpected EOF対策）
 	loc, err := time.LoadLocation("Asia/Tokyo")
 	require.NoError(t, err)
 
@@ -67,17 +77,33 @@ func setup(t *testing.T) *Repository {
 	config.Collation = "utf8mb4_general_ci"
 	config.ParseTime = true
 	config.Loc = loc
-	config.Timeout = 10 * time.Second
-	config.ReadTimeout = 10 * time.Second
-	config.WriteTimeout = 10 * time.Second
+
+	// 接続とタイムアウト設定を強化
+	config.Timeout = 30 * time.Second      // 接続タイムアウト
+	config.ReadTimeout = 30 * time.Second  // 読み取りタイムアウト
+	config.WriteTimeout = 30 * time.Second // 書き込みタイムアウト
+
+	// 接続の安定性向上のためのパラメータ
+	config.Params = map[string]string{
+		"charset":   "utf8mb4",
+		"parseTime": "True",
+		"loc":       "Asia/Tokyo",
+		// 接続エラーの処理を改善
+		"interpolateParams": "true",
+		"autocommit":        "true",
+		// 接続の健全性チェック
+		"checkConnLiveness": "true",
+		"maxAllowedPacket":  "67108864", // 64MB
+	}
 
 	conn, err := sql.Open("mysql", config.FormatDSN())
 	require.NoError(t, err)
 
-	// 接続プールの設定
-	conn.SetMaxOpenConns(1)
-	conn.SetMaxIdleConns(0)
-	conn.SetConnMaxLifetime(5 * time.Minute)
+	// 接続プールの設定を慎重に調整
+	conn.SetMaxOpenConns(5)                   // 少し増やす
+	conn.SetMaxIdleConns(2)                   // アイドル接続を維持
+	conn.SetConnMaxLifetime(30 * time.Minute) // 接続の寿命を長く
+	conn.SetConnMaxIdleTime(10 * time.Minute) // アイドル時間を設定
 
 	t.Cleanup(func() {
 		conn.Close()
