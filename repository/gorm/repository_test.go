@@ -1,8 +1,9 @@
 package gorm
 
 import (
-	"context"
 	"database/sql"
+	"io"
+	"log"
 	"testing"
 	"time"
 
@@ -19,40 +20,11 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
-// MySQLドライバーのログを完全に無効化するためのnullLogger
-type nullLogger struct{}
-
-func (nullLogger) Print(v ...interface{}) {}
-
-// MySQL接続を確実に確認する関数
-func waitForMySQL(dsn string, timeout time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	ticker := time.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-ticker.C:
-			if db, err := sql.Open("mysql", dsn); err == nil {
-				if err := db.Ping(); err == nil {
-					db.Close()
-					return nil
-				}
-				db.Close()
-			}
-		}
-	}
-}
-
 func setup(t *testing.T) *Repository {
 	t.Helper()
 
-	// MySQLドライバーのログを完全に無効化
-	mysql.SetLogger(nullLogger{})
+	// MySQLドライバーのログを標準ライブラリで無効化（より良いアプローチ）
+	mysql.SetLogger(log.New(io.Discard, "", 0))
 
 	req := testcontainers.ContainerRequest{
 		Image:        "mariadb:latest",
@@ -61,8 +33,11 @@ func setup(t *testing.T) *Repository {
 			"MYSQL_ROOT_PASSWORD": "password",
 			"MYSQL_DATABASE":      "database",
 		},
-		// TCPポートのListening確認のみ（SQL接続確認は独自実装）
-		WaitingFor: wait.ForListeningPort("3306/tcp").WithStartupTimeout(60 * time.Second),
+		// testcontainersの組み込み待機戦略を活用（ログ + ポート）
+		WaitingFor: wait.ForAll(
+			wait.ForLog("ready for connections").WithOccurrence(2), // 初期化と本起動の2回
+			wait.ForListeningPort("3306/tcp"),
+		).WithStartupTimeout(90 * time.Second),
 	}
 	container, err := testcontainers.GenericContainer(
 		t.Context(),
@@ -96,16 +71,10 @@ func setup(t *testing.T) *Repository {
 	config.ReadTimeout = 10 * time.Second
 	config.WriteTimeout = 10 * time.Second
 
-	dsn := config.FormatDSN()
-
-	// 独自のMySQL接続確認を実行
-	err = waitForMySQL(dsn, 30*time.Second)
-	require.NoError(t, err, "MySQL接続の確認に失敗しました")
-
-	conn, err := sql.Open("mysql", dsn)
+	conn, err := sql.Open("mysql", config.FormatDSN())
 	require.NoError(t, err)
 
-	// 接続プールの最小限設定
+	// 接続プールの設定
 	conn.SetMaxOpenConns(1)
 	conn.SetMaxIdleConns(0)
 	conn.SetConnMaxLifetime(5 * time.Minute)
