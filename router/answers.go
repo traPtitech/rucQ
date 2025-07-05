@@ -102,10 +102,9 @@ func (s *Server) PutAnswer(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	answer.ID = uint(answerID)
 	answer.UserID = *params.XForwardedUser
 
-	if err := s.repo.UpdateAnswer(e.Request().Context(), &answer); err != nil {
+	if err := s.repo.UpdateAnswer(e.Request().Context(), uint(answerID), &answer); err != nil {
 		e.Logger().Errorf("failed to update answer: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")

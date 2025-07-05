@@ -47,8 +47,8 @@ func (r *Repository) GetAnswersByUserAndQuestionGroup(
 	return answers, nil
 }
 
-func (r *Repository) UpdateAnswer(ctx context.Context, answer *model.Answer) error {
-	if err := r.db.Save(answer).Error; err != nil {
+func (r *Repository) UpdateAnswer(ctx context.Context, answerID uint, answer *model.Answer) error {
+	if _, err := gorm.G[*model.Answer](r.db).Where("id = ?", answerID).Updates(ctx, answer); err != nil {
 		return err
 	}
 

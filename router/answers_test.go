@@ -191,7 +191,7 @@ func TestPutAnswer(t *testing.T) {
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
-		answerID := random.PositiveInt(t)
+		answerID := uint(random.PositiveInt(t))
 
 		freeTextAnswer := api.FreeTextAnswerRequest{
 			Type:       api.FreeTextAnswerRequestTypeFreeText,
@@ -203,7 +203,7 @@ func TestPutAnswer(t *testing.T) {
 		require.NoError(t, err)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			UpdateAnswer(gomock.Any(), gomock.Any()).
+			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -226,7 +226,7 @@ func TestPutAnswer(t *testing.T) {
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
-		answerID := random.PositiveInt(t)
+		answerID := uint(random.PositiveInt(t))
 
 		freeNumberAnswer := api.FreeNumberAnswerRequest{
 			Type:       api.FreeNumberAnswerRequestTypeFreeNumber,
@@ -238,7 +238,7 @@ func TestPutAnswer(t *testing.T) {
 		require.NoError(t, err)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			UpdateAnswer(gomock.Any(), gomock.Any()).
+			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -263,7 +263,7 @@ func TestPutAnswer(t *testing.T) {
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
-		answerID := random.PositiveInt(t)
+		answerID := uint(random.PositiveInt(t))
 
 		singleChoiceAnswer := api.SingleChoiceAnswerRequest{
 			Type:       api.SingleChoiceAnswerRequestTypeSingle,
@@ -275,7 +275,7 @@ func TestPutAnswer(t *testing.T) {
 		require.NoError(t, err)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			UpdateAnswer(gomock.Any(), gomock.Any()).
+			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -301,7 +301,7 @@ func TestPutAnswer(t *testing.T) {
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
-		answerID := random.PositiveInt(t)
+		answerID := uint(random.PositiveInt(t))
 
 		multipleChoiceAnswer := api.MultipleChoiceAnswerRequest{
 			Type:       api.MultipleChoiceAnswerRequestTypeMultiple,
@@ -313,7 +313,7 @@ func TestPutAnswer(t *testing.T) {
 		require.NoError(t, err)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			UpdateAnswer(gomock.Any(), gomock.Any()).
+			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			Return(nil).
 			Times(1)
 
