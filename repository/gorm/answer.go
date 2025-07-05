@@ -47,7 +47,7 @@ func (r *Repository) GetAnswersByUserAndQuestionGroup(
 	return answers, nil
 }
 
-func (r *Repository) UpdateAnswer(answer *model.Answer) error {
+func (r *Repository) UpdateAnswer(ctx context.Context, answer *model.Answer) error {
 	if err := r.db.Save(answer).Error; err != nil {
 		return err
 	}

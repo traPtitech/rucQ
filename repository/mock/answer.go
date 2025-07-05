@@ -86,15 +86,15 @@ func (mr *MockAnswerRepositoryMockRecorder) GetAnswersByUserAndQuestionGroup(ctx
 }
 
 // UpdateAnswer mocks base method.
-func (m *MockAnswerRepository) UpdateAnswer(answer *model.Answer) error {
+func (m *MockAnswerRepository) UpdateAnswer(ctx context.Context, answer *model.Answer) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateAnswer", answer)
+	ret := m.ctrl.Call(m, "UpdateAnswer", ctx, answer)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateAnswer indicates an expected call of UpdateAnswer.
-func (mr *MockAnswerRepositoryMockRecorder) UpdateAnswer(answer any) *gomock.Call {
+func (mr *MockAnswerRepositoryMockRecorder) UpdateAnswer(ctx, answer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAnswer", reflect.TypeOf((*MockAnswerRepository)(nil).UpdateAnswer), answer)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAnswer", reflect.TypeOf((*MockAnswerRepository)(nil).UpdateAnswer), ctx, answer)
 }

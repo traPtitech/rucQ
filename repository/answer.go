@@ -15,5 +15,5 @@ type AnswerRepository interface {
 		userID string,
 		questionGroupID uint,
 	) ([]model.Answer, error)
-	UpdateAnswer(answer *model.Answer) error
+	UpdateAnswer(ctx context.Context, answer *model.Answer) error
 }

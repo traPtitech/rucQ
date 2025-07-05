@@ -203,7 +203,7 @@ func TestPutAnswer(t *testing.T) {
 		require.NoError(t, err)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			UpdateAnswer(gomock.Any()).
+			UpdateAnswer(gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -238,7 +238,7 @@ func TestPutAnswer(t *testing.T) {
 		require.NoError(t, err)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			UpdateAnswer(gomock.Any()).
+			UpdateAnswer(gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -275,7 +275,7 @@ func TestPutAnswer(t *testing.T) {
 		require.NoError(t, err)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			UpdateAnswer(gomock.Any()).
+			UpdateAnswer(gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -313,7 +313,7 @@ func TestPutAnswer(t *testing.T) {
 		require.NoError(t, err)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			UpdateAnswer(gomock.Any()).
+			UpdateAnswer(gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
