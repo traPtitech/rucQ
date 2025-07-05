@@ -55,7 +55,7 @@ func (r *Repository) UpdateAnswer(ctx context.Context, answerID uint, answer *mo
 		return err
 	}
 
-	if err := r.db.Model(answer).Association("SelectedOptions").Replace(answer.SelectedOptions); err != nil {
+	if err := r.db.WithContext(ctx).Model(answer).Association("SelectedOptions").Replace(answer.SelectedOptions); err != nil {
 		return err
 	}
 
