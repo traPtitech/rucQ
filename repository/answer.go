@@ -9,7 +9,7 @@ import (
 
 type AnswerRepository interface {
 	CreateAnswers(ctx context.Context, answers *[]model.Answer) error
-	GetAnswerByID(id uint) (*model.Answer, error)
+	GetAnswerByID(ctx context.Context, id uint) (*model.Answer, error)
 	GetAnswersByUserAndQuestionGroup(
 		ctx context.Context,
 		userID string,
