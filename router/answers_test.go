@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
@@ -204,7 +205,11 @@ func TestPutAnswer(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
-			Return(nil).
+			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
+				answer.ID = id
+
+				return nil
+			}).
 			Times(1)
 
 		res := h.expect.PUT("/api/answers/{answerId}", answerID).
@@ -239,7 +244,11 @@ func TestPutAnswer(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
-			Return(nil).
+			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
+				answer.ID = id
+
+				return nil
+			}).
 			Times(1)
 
 		res := h.expect.PUT("/api/answers/{answerId}", answerID).
@@ -265,10 +274,11 @@ func TestPutAnswer(t *testing.T) {
 		userID := random.AlphaNumericString(t, 32)
 		answerID := uint(random.PositiveInt(t))
 
+		optionID := random.PositiveInt(t)
 		singleChoiceAnswer := api.SingleChoiceAnswerRequest{
 			Type:       api.SingleChoiceAnswerRequestTypeSingle,
 			QuestionId: random.PositiveInt(t),
-			OptionId:   random.PositiveInt(t),
+			OptionId:   optionID,
 		}
 		var req api.AnswerRequest
 		err := req.FromSingleChoiceAnswerRequest(singleChoiceAnswer)
@@ -276,7 +286,19 @@ func TestPutAnswer(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
-			Return(nil).
+			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
+				answer.ID = id
+				answer.SelectedOptions = []model.Option{
+					{
+						Model: gorm.Model{
+							ID: uint(optionID),
+						},
+						Content: random.AlphaNumericString(t, 20),
+					},
+				}
+
+				return nil
+			}).
 			Times(1)
 
 		res := h.expect.PUT("/api/answers/{answerId}", answerID).
@@ -294,6 +316,7 @@ func TestPutAnswer(t *testing.T) {
 		selectedOption := res.Value("selectedOption").Object()
 		selectedOption.Keys().ContainsOnly("id", "content")
 		selectedOption.Value("id").Number().IsEqual(singleChoiceAnswer.OptionId)
+		selectedOption.Value("content").String().NotEmpty()
 	})
 
 	t.Run("Success with MultipleChoice", func(t *testing.T) {
@@ -303,10 +326,12 @@ func TestPutAnswer(t *testing.T) {
 		userID := random.AlphaNumericString(t, 32)
 		answerID := uint(random.PositiveInt(t))
 
+		optionID1 := random.PositiveInt(t)
+		optionID2 := random.PositiveInt(t)
 		multipleChoiceAnswer := api.MultipleChoiceAnswerRequest{
 			Type:       api.MultipleChoiceAnswerRequestTypeMultiple,
 			QuestionId: random.PositiveInt(t),
-			OptionIds:  []int{random.PositiveInt(t), random.PositiveInt(t)},
+			OptionIds:  []int{optionID1, optionID2},
 		}
 		var req api.AnswerRequest
 		err := req.FromMultipleChoiceAnswerRequest(multipleChoiceAnswer)
@@ -314,7 +339,25 @@ func TestPutAnswer(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
-			Return(nil).
+			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
+				answer.ID = id
+				answer.SelectedOptions = []model.Option{
+					{
+						Model: gorm.Model{
+							ID: uint(optionID1),
+						},
+						Content: random.AlphaNumericString(t, 20),
+					},
+					{
+						Model: gorm.Model{
+							ID: uint(optionID2),
+						},
+						Content: random.AlphaNumericString(t, 20),
+					},
+				}
+
+				return nil
+			}).
 			Times(1)
 
 		res := h.expect.PUT("/api/answers/{answerId}", answerID).
@@ -336,6 +379,7 @@ func TestPutAnswer(t *testing.T) {
 			option := selectedOptions.Value(i).Object()
 			option.Keys().ContainsOnly("id", "content")
 			option.Value("id").Number().IsEqual(optionID)
+			option.Value("content").String().NotEmpty()
 		}
 	})
 }
