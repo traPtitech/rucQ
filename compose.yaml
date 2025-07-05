@@ -1,6 +1,5 @@
 services:
   mariadb:
-    container_name: rucQ_mariadb
     image: mariadb:11.8.2-noble
     ports:
       - "3306:3306"
@@ -13,7 +12,6 @@ services:
       retries: 10
 
   swagger:
-    container_name: rucQ_swagger
     image: swaggerapi/swagger-ui:v5.25.3
     ports:
       - "8081:8080"
@@ -23,3 +21,12 @@ services:
       - type: bind
         source: ./
         target: /openapi/
+
+  adminer:
+    image: adminer:5.3.0
+    ports:
+      - "8082:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: mariadb
+    depends_on:
+      - mariadb
