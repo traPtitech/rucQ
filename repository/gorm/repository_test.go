@@ -1,7 +1,7 @@
 package gorm
 
 import (
-	"database/sql"
+	"fmt"
 	"testing"
 	"time"
 
@@ -12,7 +12,6 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/model"
@@ -28,26 +27,13 @@ func setup(t *testing.T) *Repository {
 		Env: map[string]string{
 			"MYSQL_ROOT_PASSWORD": "password",
 			"MYSQL_DATABASE":      "database",
-			// MySQL側の設定でunexpected EOFを防ぐ
-			"MYSQL_WAIT_TIMEOUT":                   "600",
-			"MYSQL_INTERACTIVE_TIMEOUT":            "600",
-			"MYSQL_NET_READ_TIMEOUT":               "30",
-			"MYSQL_NET_WRITE_TIMEOUT":              "30",
-			"MYSQL_MAX_CONNECTIONS":                "100",
-			"MYSQL_MAX_CONNECT_ERRORS":             "10000",
-			"MYSQL_CONNECT_TIMEOUT":                "10",
-			"MYSQL_INNODB_BUFFER_POOL_SIZE":        "64M",
-			"MYSQL_INNODB_LOG_FILE_SIZE":           "16M",
-			"MYSQL_INNODB_FLUSH_LOG_AT_TRX_COMMIT": "2",
 		},
-		// より強固な健全性チェック設定
 		WaitingFor: wait.ForAll(
 			wait.ForLog("ready for connections").WithOccurrence(2), // 初期化と本起動の2回
-			wait.ForListeningPort("3306/tcp"),
 			wait.ForSQL("3306/tcp", "mysql", func(host string, port nat.Port) string {
-				return "root:password@tcp(" + host + ":" + port.Port() + ")/database"
-			}).WithQuery("SELECT 1").WithStartupTimeout(60*time.Second),
-		).WithStartupTimeout(120 * time.Second),
+				return fmt.Sprintf("root:password@tcp(%s:%s)/database", host, port.Port())
+			}),
+		),
 	}
 	container, err := testcontainers.GenericContainer(
 		t.Context(),
@@ -64,7 +50,6 @@ func setup(t *testing.T) *Repository {
 	port, err := container.MappedPort(t.Context(), "3306")
 	require.NoError(t, err)
 
-	// データベース接続設定（unexpected EOF対策）
 	loc, err := time.LoadLocation("Asia/Tokyo")
 	require.NoError(t, err)
 
@@ -78,42 +63,8 @@ func setup(t *testing.T) *Repository {
 	config.ParseTime = true
 	config.Loc = loc
 
-	// 接続とタイムアウト設定を強化
-	config.Timeout = 30 * time.Second      // 接続タイムアウト
-	config.ReadTimeout = 30 * time.Second  // 読み取りタイムアウト
-	config.WriteTimeout = 30 * time.Second // 書き込みタイムアウト
-
-	// 接続の安定性向上のためのパラメータ
-	config.Params = map[string]string{
-		"charset":   "utf8mb4",
-		"parseTime": "True",
-		"loc":       "Asia/Tokyo",
-		// 接続エラーの処理を改善
-		"interpolateParams": "true",
-		"autocommit":        "true",
-		// 接続の健全性チェック
-		"checkConnLiveness": "true",
-		"maxAllowedPacket":  "67108864", // 64MB
-	}
-
-	conn, err := sql.Open("mysql", config.FormatDSN())
-	require.NoError(t, err)
-
-	// 接続プールの設定を慎重に調整
-	conn.SetMaxOpenConns(5)                   // 少し増やす
-	conn.SetMaxIdleConns(2)                   // アイドル接続を維持
-	conn.SetConnMaxLifetime(30 * time.Minute) // 接続の寿命を長く
-	conn.SetConnMaxIdleTime(10 * time.Minute) // アイドル時間を設定
-
-	t.Cleanup(func() {
-		conn.Close()
-	})
-
-	db, err := gorm.Open(gormMysql.New(gormMysql.Config{
-		Conn: conn,
-	}), &gorm.Config{
+	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
 		TranslateError: true,
-		Logger:         logger.Default.LogMode(logger.Silent),
 	})
 	require.NoError(t, err)
 
