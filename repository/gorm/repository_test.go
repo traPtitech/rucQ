@@ -1,25 +1,58 @@
 package gorm
 
 import (
-	"fmt"
+	"context"
+	"database/sql"
 	"testing"
 	"time"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+// MySQLドライバーのログを完全に無効化するためのnullLogger
+type nullLogger struct{}
+
+func (nullLogger) Print(v ...interface{}) {}
+
+// MySQL接続を確実に確認する関数
+func waitForMySQL(dsn string, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+			if db, err := sql.Open("mysql", dsn); err == nil {
+				if err := db.Ping(); err == nil {
+					db.Close()
+					return nil
+				}
+				db.Close()
+			}
+		}
+	}
+}
+
 func setup(t *testing.T) *Repository {
 	t.Helper()
+
+	// MySQLドライバーのログを完全に無効化
+	mysql.SetLogger(nullLogger{})
 
 	req := testcontainers.ContainerRequest{
 		Image:        "mariadb:latest",
@@ -28,9 +61,8 @@ func setup(t *testing.T) *Repository {
 			"MYSQL_ROOT_PASSWORD": "password",
 			"MYSQL_DATABASE":      "database",
 		},
-		WaitingFor: wait.ForSQL("3306", "mysql", func(host string, port nat.Port) string {
-			return fmt.Sprintf("root:password@tcp(%s:%s)/database", host, port.Port())
-		}),
+		// TCPポートのListening確認のみ（SQL接続確認は独自実装）
+		WaitingFor: wait.ForListeningPort("3306/tcp").WithStartupTimeout(60 * time.Second),
 	}
 	container, err := testcontainers.GenericContainer(
 		t.Context(),
@@ -39,18 +71,16 @@ func setup(t *testing.T) *Repository {
 			Started:          true,
 		},
 	)
-
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		testcontainers.CleanupContainer(t, container)
 	})
 
 	port, err := container.MappedPort(t.Context(), "3306")
-
 	require.NoError(t, err)
 
+	// データベース接続設定
 	loc, err := time.LoadLocation("Asia/Tokyo")
-
 	require.NoError(t, err)
 
 	config := mysql.NewConfig()
@@ -62,15 +92,37 @@ func setup(t *testing.T) *Repository {
 	config.Collation = "utf8mb4_general_ci"
 	config.ParseTime = true
 	config.Loc = loc
+	config.Timeout = 10 * time.Second
+	config.ReadTimeout = 10 * time.Second
+	config.WriteTimeout = 10 * time.Second
 
-	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
-		TranslateError: true,
+	dsn := config.FormatDSN()
+
+	// 独自のMySQL接続確認を実行
+	err = waitForMySQL(dsn, 30*time.Second)
+	require.NoError(t, err, "MySQL接続の確認に失敗しました")
+
+	conn, err := sql.Open("mysql", dsn)
+	require.NoError(t, err)
+
+	// 接続プールの最小限設定
+	conn.SetMaxOpenConns(1)
+	conn.SetMaxIdleConns(0)
+	conn.SetConnMaxLifetime(5 * time.Minute)
+
+	t.Cleanup(func() {
+		conn.Close()
 	})
 
+	db, err := gorm.Open(gormMysql.New(gormMysql.Config{
+		Conn: conn,
+	}), &gorm.Config{
+		TranslateError: true,
+		Logger:         logger.Default.LogMode(logger.Silent),
+	})
 	require.NoError(t, err)
 
 	err = migration.Migrate(db)
-
 	require.NoError(t, err)
 
 	return NewGormRepository(db)
