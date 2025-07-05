@@ -59,5 +59,13 @@ func (r *Repository) UpdateAnswer(ctx context.Context, answerID uint, answer *mo
 		return err
 	}
 
+	// 更新後のデータを取得してanswerに反映
+	updatedAnswer, err := r.GetAnswerByID(ctx, answerID)
+	if err != nil {
+		return err
+	}
+
+	*answer = *updatedAnswer
+
 	return nil
 }

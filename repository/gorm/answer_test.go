@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
@@ -218,14 +219,24 @@ func TestUpdateAnswer(t *testing.T) {
 		require.NotZero(t, createdAnswer.ID)
 
 		// 選択肢を変更してアップデート
-		createdAnswer.SelectedOptions = []model.Option{singleChoiceQuestion.Options[1]}
+		createdAnswer.SelectedOptions = []model.Option{
+			{
+				Model: gorm.Model{
+					ID: singleChoiceQuestion.Options[1].ID,
+				},
+				Content: "", // IDのみを指定して更新
+			},
+		}
 
 		err = r.UpdateAnswer(t.Context(), createdAnswer.ID, &createdAnswer)
 		assert.NoError(t, err)
 
-		retrievedAnswer, err := r.GetAnswerByID(t.Context(), createdAnswer.ID)
-		assert.NoError(t, err)
-		assert.Equal(t, 1, len(retrievedAnswer.SelectedOptions))
-		assert.Equal(t, createdAnswer.SelectedOptions[0].ID, retrievedAnswer.SelectedOptions[0].ID)
+		assert.Equal(t, 1, len(createdAnswer.SelectedOptions))
+		assert.Equal(t, singleChoiceQuestion.Options[1].ID, createdAnswer.SelectedOptions[0].ID)
+		assert.Equal(
+			t,
+			singleChoiceQuestion.Options[1].Content,
+			createdAnswer.SelectedOptions[0].Content,
+		)
 	})
 }
