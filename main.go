@@ -47,9 +47,9 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 
-	debug := os.Getenv("RUCQ_DEBUG") == "true"
+	isDev := os.Getenv("RUCQ_ENV") == "development"
 
-	if debug {
+	if isDev {
 		e.Use(middleware.CORS())
 	} else {
 		allowOrigins := strings.Split(os.Getenv("RUCQ_CORS_ALLOW_ORIGINS"), ",")
@@ -64,7 +64,7 @@ func main() {
 
 	repo := gormRepository.NewGormRepository(db)
 
-	api.RegisterHandlers(e, router.NewServer(repo, debug))
+	api.RegisterHandlers(e, router.NewServer(repo, isDev))
 	e.Logger.Fatal(e.Start("0.0.0.0:8080"))
 
 }
