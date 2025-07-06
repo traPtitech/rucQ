@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -24,9 +23,6 @@ func main() {
 	if l, ok := e.Logger.(*log.Logger); ok {
 		l.SetHeader("${level}")
 	}
-
-	//nolint:errcheck // 開発環境でしか使用しないため、エラーは無視
-	godotenv.Load(".env", "bot.env")
 
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")

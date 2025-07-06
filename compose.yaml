@@ -25,8 +25,8 @@ services:
     image: mariadb:11.8.2-noble
     ports:
       - "3306:3306"
-    env_file:
-      - ./.env
+    environment:
+      MARIADB_ROOT_PASSWORD: password
     healthcheck:
       test: mariadb-admin ping -h 127.0.0.1 -u root -p$$MARIADB_ROOT_PASSWORD
       interval: 1s
