@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
-	"gorm.io/driver/mysql"
+	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/api"
@@ -24,18 +26,22 @@ func main() {
 		l.SetHeader("${level}")
 	}
 
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	host := os.Getenv("DB_HOST")
-	database := os.Getenv("DB_NAME")
-	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Asia%%2FTokyo",
-		user,
-		password,
-		host,
-		database,
-	)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+	loc, err := time.LoadLocation("Asia/Tokyo")
+
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+
+	config := mysql.NewConfig()
+	config.User = os.Getenv("DB_USER")
+	config.Passwd = os.Getenv("DB_PASSWORD")
+	config.Addr = fmt.Sprintf("%s:%s", os.Getenv("DB_HOST"), os.Getenv("DB_PORT"))
+	config.DBName = os.Getenv("DB_NAME")
+	config.ParseTime = true
+	config.Collation = "utf8mb4_general_ci"
+	config.Loc = loc
+	dsn := config.FormatDSN()
+	db, err := gorm.Open(gormMysql.Open(dsn), &gorm.Config{
 		TranslateError: true,
 	})
 
