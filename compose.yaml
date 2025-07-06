@@ -11,7 +11,7 @@ services:
       DB_HOST: mariadb
       DB_PORT: 3306
       DB_NAME: database
-      RUCQ_DEBUG: "true"
+      RUCQ_DEBUG: true
       RUCQ_CORS_ALLOW_ORIGINS: "*"
     depends_on:
       mariadb:
@@ -27,6 +27,7 @@ services:
       - "3306:3306"
     environment:
       MARIADB_ROOT_PASSWORD: password
+      MARIADB_DATABASE: database
     healthcheck:
       test: mariadb-admin ping -h 127.0.0.1 -u root -p$$MARIADB_ROOT_PASSWORD
       interval: 1s
