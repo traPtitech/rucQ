@@ -62,6 +62,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           tags: ${{ steps.meta.outputs.tags }}
           outputs: type=image,push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=platform-${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=platform-${{ matrix.platform }}
 
       - name: Export digest
         run: |
