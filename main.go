@@ -71,6 +71,6 @@ func main() {
 	repo := gormRepository.NewGormRepository(db)
 
 	api.RegisterHandlers(e, router.NewServer(repo, isDev))
-	e.Logger.Fatal(e.Start("0.0.0.0:8080"))
+	e.Logger.Fatal(e.Start("0.0.0.0:80"))
 
 }
