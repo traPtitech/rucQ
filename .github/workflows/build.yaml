@@ -67,6 +67,9 @@ jobs:
           retention-days: 1
 
   merge:
+    permissions:
+      contents: read
+      packages: write
     runs-on: ubuntu-latest
 
     needs:
