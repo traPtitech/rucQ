@@ -1,4 +1,26 @@
 services:
+  rucq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_NAME: database
+      RUCQ_DEBUG: "true"
+      RUCQ_CORS_ALLOW_ORIGINS: "*"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: .
+
   mariadb:
     image: mariadb:11.8.2-noble
     ports:
@@ -29,4 +51,5 @@ services:
     environment:
       ADMINER_DEFAULT_SERVER: mariadb
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy

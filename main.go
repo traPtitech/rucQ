@@ -28,10 +28,10 @@ func main() {
 	//nolint:errcheck // 開発環境でしか使用しないため、エラーは無視
 	godotenv.Load(".env", "bot.env")
 
-	user := os.Getenv("NS_MARIADB_USER")
-	password := os.Getenv("NS_MARIADB_PASSWORD")
-	host := os.Getenv("NS_MARIADB_HOSTNAME")
-	database := os.Getenv("NS_MARIADB_DATABASE")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	host := os.Getenv("DB_HOST")
+	database := os.Getenv("DB_NAME")
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Asia%%2FTokyo",
 		user,
@@ -69,6 +69,6 @@ func main() {
 	repo := gormRepository.NewGormRepository(db)
 
 	api.RegisterHandlers(e, router.NewServer(repo, debug))
-	e.Logger.Fatal(e.Start(os.Getenv("RUCQ_BACKEND_ADDR")))
+	e.Logger.Fatal(e.Start("0.0.0.0:8080"))
 
 }
