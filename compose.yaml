@@ -1,10 +1,33 @@
 services:
+  rucq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_NAME: database
+      RUCQ_ENV: "development"
+      RUCQ_CORS_ALLOW_ORIGINS: "*"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: .
+
   mariadb:
     image: mariadb:11.8.2-noble
     ports:
       - "3306:3306"
-    env_file:
-      - ./.env
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+      MARIADB_DATABASE: database
     healthcheck:
       test: mariadb-admin ping -h 127.0.0.1 -u root -p$$MARIADB_ROOT_PASSWORD
       interval: 1s
@@ -29,4 +52,5 @@ services:
     environment:
       ADMINER_DEFAULT_SERVER: mariadb
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy

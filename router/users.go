@@ -64,7 +64,7 @@ func (s *Server) AdminPutUser(
 	}
 
 	// 開発環境では管理者でなくてもユーザー情報を更新できるようにする
-	if !s.debug && !operator.IsStaff {
+	if !s.isDev && !operator.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 

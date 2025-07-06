@@ -4,9 +4,9 @@ import "github.com/traPtitech/rucQ/repository"
 
 type Server struct {
 	repo  repository.Repository
-	debug bool
+	isDev bool
 }
 
-func NewServer(repo repository.Repository, debug bool) *Server {
-	return &Server{repo: repo, debug: debug}
+func NewServer(repo repository.Repository, isDev bool) *Server {
+	return &Server{repo: repo, isDev: isDev}
 }
