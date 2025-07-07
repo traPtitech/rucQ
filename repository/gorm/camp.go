@@ -129,3 +129,23 @@ func (r *Repository) GetCampParticipants(ctx context.Context, campID uint) ([]mo
 
 	return camp.Participants, nil
 }
+
+func (r *Repository) IsCampParticipant(
+	ctx context.Context,
+	campID uint,
+	userID string,
+) (bool, error) {
+	// GORM Generics を使った実装
+	// 中間テーブルを直接クエリする方法
+	var count int64
+	err := r.db.WithContext(ctx).
+		Table("camp_participants").
+		Where("camp_id = ? AND user_id = ?", campID, userID).
+		Count(&count).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
