@@ -13,16 +13,17 @@ func (s *Server) GetDashboard(
 	campID api.CampId,
 	params api.GetDashboardParams,
 ) error {
-	// ユーザーがキャンプの参加者かどうかを確認
 	isParticipant, err := s.repo.IsCampParticipant(
 		e.Request().Context(),
 		uint(campID),
 		*params.XForwardedUser,
 	)
 	if err != nil {
+		e.Logger().Errorf("Failed to check camp participation: %v", err)
+
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,
-			"Failed to check camp participation",
+			"Internal server error",
 		)
 	}
 

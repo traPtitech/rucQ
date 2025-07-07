@@ -75,6 +75,6 @@ func TestGetDashboard(t *testing.T) {
 			Status(http.StatusInternalServerError).
 			JSON().
 			Object().
-			HasValue("message", "Failed to check camp participation")
+			HasValue("message", "Internal server error")
 	})
 }

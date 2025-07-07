@@ -135,9 +135,6 @@ func (r *Repository) IsCampParticipant(
 	campID uint,
 	userID string,
 ) (bool, error) {
-	// GORM Generics を使った実装
-	// 中間テーブルを直接クエリする方法
-	// 大文字・小文字を区別しないように UPPER() を使用
 	var count int64
 	err := r.db.WithContext(ctx).
 		Table("camp_participants").
