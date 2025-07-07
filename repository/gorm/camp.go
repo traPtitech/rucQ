@@ -137,10 +137,11 @@ func (r *Repository) IsCampParticipant(
 ) (bool, error) {
 	// GORM Generics を使った実装
 	// 中間テーブルを直接クエリする方法
+	// 大文字・小文字を区別しないように UPPER() を使用
 	var count int64
 	err := r.db.WithContext(ctx).
 		Table("camp_participants").
-		Where("camp_id = ? AND user_id = ?", campID, userID).
+		Where("camp_id = ? AND UPPER(user_id) = UPPER(?)", campID, userID).
 		Count(&count).Error
 
 	if err != nil {

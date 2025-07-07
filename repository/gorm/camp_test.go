@@ -1,6 +1,7 @@
 package gorm
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -86,7 +87,7 @@ func TestIsCampParticipant(t *testing.T) {
 		user := mustCreateUser(t, r)
 
 		// ユーザーをキャンプに参加させない
-		
+
 		// 参加者かどうかを確認
 		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
 		assert.NoError(t, err)
@@ -149,5 +150,90 @@ func TestIsCampParticipant(t *testing.T) {
 		isParticipant3, err := r.IsCampParticipant(t.Context(), camp.ID, user3.ID)
 		assert.NoError(t, err)
 		assert.True(t, isParticipant3)
+	})
+
+	t.Run("userIDの大文字・小文字が違う場合でもtrueを返す", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 参加受付を開く
+		camp.IsRegistrationOpen = true
+		err := r.UpdateCamp(camp.ID, &camp)
+		assert.NoError(t, err)
+
+		// ユーザーをキャンプに参加させる
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
+		assert.NoError(t, err)
+
+		// 参加者かどうかを確認（正しいID）
+		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
+		assert.NoError(t, err)
+		assert.True(t, isParticipant)
+
+		// 大文字・小文字を変更したIDで確認
+		// 例: "abc123" -> "ABC123"
+		wrongCaseUserID := strings.ToUpper(user.ID)
+		if wrongCaseUserID == user.ID {
+			// 全て大文字だった場合は小文字に変更
+			wrongCaseUserID = strings.ToLower(user.ID)
+		}
+
+		isParticipantWrongCase, err := r.IsCampParticipant(t.Context(), camp.ID, wrongCaseUserID)
+		assert.NoError(t, err)
+		assert.True(t, isParticipantWrongCase, "大文字・小文字が異なるuserIDでも参加者として認識されるはず")
+	})
+
+	t.Run("userIDの部分的な大文字・小文字変更でもtrueを返す", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 参加受付を開く
+		camp.IsRegistrationOpen = true
+		err := r.UpdateCamp(camp.ID, &camp)
+		assert.NoError(t, err)
+
+		// ユーザーをキャンプに参加させる
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
+		assert.NoError(t, err)
+
+		// 元のIDで確認
+		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
+		assert.NoError(t, err)
+		assert.True(t, isParticipant)
+
+		// userIDの一部分だけ大文字・小文字を変更
+		// 英字が含まれる場合のみテスト
+		if len(user.ID) > 0 {
+			runes := []rune(user.ID)
+			var modified bool
+			for i, r := range runes {
+				if r >= 'a' && r <= 'z' {
+					runes[i] = r - 32 // 小文字を大文字に
+					modified = true
+					break
+				} else if r >= 'A' && r <= 'Z' {
+					runes[i] = r + 32 // 大文字を小文字に
+					modified = true
+					break
+				}
+			}
+
+			if modified {
+				partiallyModifiedUserID := string(runes)
+				isParticipantPartial, err := r.IsCampParticipant(
+					t.Context(),
+					camp.ID,
+					partiallyModifiedUserID,
+				)
+				assert.NoError(t, err)
+				assert.True(t, isParticipantPartial, "部分的に大文字・小文字が異なるuserIDでも参加者として認識されるはず")
+			}
+		}
 	})
 }
