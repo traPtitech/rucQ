@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
@@ -64,16 +65,9 @@ func TestIsCampParticipant(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		user := mustCreateUser(t, r)
 
-		// 参加受付を開く
-		camp.IsRegistrationOpen = true
-		err := r.UpdateCamp(camp.ID, &camp)
-		assert.NoError(t, err)
+		err := r.AddCampParticipant(t.Context(), camp.ID, &user)
+		require.NoError(t, err)
 
-		// ユーザーをキャンプに参加させる
-		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
-		assert.NoError(t, err)
-
-		// 参加者かどうかを確認
 		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
 		assert.NoError(t, err)
 		assert.True(t, isParticipant)
@@ -86,9 +80,6 @@ func TestIsCampParticipant(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		user := mustCreateUser(t, r)
 
-		// ユーザーをキャンプに参加させない
-
-		// 参加者かどうかを確認
 		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
 		assert.NoError(t, err)
 		assert.False(t, isParticipant)
@@ -127,16 +118,11 @@ func TestIsCampParticipant(t *testing.T) {
 		user2 := mustCreateUser(t, r)
 		user3 := mustCreateUser(t, r)
 
-		// 参加受付を開く
-		camp.IsRegistrationOpen = true
-		err := r.UpdateCamp(camp.ID, &camp)
-		assert.NoError(t, err)
-
 		// user1とuser3を参加者に追加
-		err = r.AddCampParticipant(t.Context(), camp.ID, &user1)
-		assert.NoError(t, err)
+		err := r.AddCampParticipant(t.Context(), camp.ID, &user1)
+		require.NoError(t, err)
 		err = r.AddCampParticipant(t.Context(), camp.ID, &user3)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		// 参加者の確認
 		isParticipant1, err := r.IsCampParticipant(t.Context(), camp.ID, user1.ID)
@@ -159,19 +145,9 @@ func TestIsCampParticipant(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		user := mustCreateUser(t, r)
 
-		// 参加受付を開く
-		camp.IsRegistrationOpen = true
-		err := r.UpdateCamp(camp.ID, &camp)
-		assert.NoError(t, err)
-
 		// ユーザーをキャンプに参加させる
-		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
-		assert.NoError(t, err)
-
-		// 参加者かどうかを確認（正しいID）
-		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
-		assert.NoError(t, err)
-		assert.True(t, isParticipant)
+		err := r.AddCampParticipant(t.Context(), camp.ID, &user)
+		require.NoError(t, err)
 
 		// 大文字・小文字を変更したIDで確認
 		// 例: "abc123" -> "ABC123"
@@ -193,19 +169,8 @@ func TestIsCampParticipant(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		user := mustCreateUser(t, r)
 
-		// 参加受付を開く
-		camp.IsRegistrationOpen = true
-		err := r.UpdateCamp(camp.ID, &camp)
-		assert.NoError(t, err)
-
-		// ユーザーをキャンプに参加させる
-		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
-		assert.NoError(t, err)
-
-		// 元のIDで確認
-		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
-		assert.NoError(t, err)
-		assert.True(t, isParticipant)
+		err := r.AddCampParticipant(t.Context(), camp.ID, &user)
+		require.NoError(t, err)
 
 		// userIDの一部分だけ大文字・小文字を変更
 		// 英字が含まれる場合のみテスト
