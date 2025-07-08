@@ -26,3 +26,18 @@ func (r *Repository) GetPayments(ctx context.Context) ([]model.Payment, error) {
 
 	return payments, nil
 }
+
+func (r *Repository) UpdatePayment(
+	ctx context.Context,
+	paymentID uint,
+	payment *model.Payment,
+) error {
+	payment.ID = paymentID
+
+	_, err := gorm.G[*model.Payment](r.db).Where("id = ?", paymentID).Updates(ctx, payment)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -29,15 +29,6 @@ func (s *Server) AdminPostImage(_ echo.Context, _ api.CampId, _ api.AdminPostIma
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostImage not implemented")
 }
 
-// AdminPutPayment 支払い情報を更新（管理者用）
-func (s *Server) AdminPutPayment(
-	_ echo.Context,
-	_ api.PaymentId,
-	_ api.AdminPutPaymentParams,
-) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutPayment not implemented")
-}
-
 // AdminPostRollCall 点呼を作成（管理者用）
 func (s *Server) AdminPostRollCall(
 	_ echo.Context,

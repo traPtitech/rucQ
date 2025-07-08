@@ -152,3 +152,90 @@ func TestAdminGetPayments(t *testing.T) {
 			Expect().Status(http.StatusForbidden)
 	})
 }
+
+func TestAdminPutPayment(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		paymentID := random.PositiveInt(t)
+		campID := random.PositiveInt(t)
+		req := api.AdminPutPaymentJSONRequestBody{
+			Amount:     2000,
+			AmountPaid: 1500,
+			UserId:     random.AlphaNumericString(t, 32),
+			CampId:     campID,
+		}
+		adminUserID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(&model.User{
+				IsStaff: true,
+			}, nil)
+		h.repo.MockPaymentRepository.EXPECT().
+			UpdatePayment(gomock.Any(), uint(paymentID), gomock.Any()).
+			Return(nil)
+
+		res := h.expect.PUT("/api/admin/payments/{paymentId}", paymentID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().Status(http.StatusOK).JSON().Object()
+
+		res.Keys().ContainsOnly(
+			"id", "amount", "amountPaid", "userId", "campId")
+		res.Value("id").Number().IsEqual(paymentID)
+		res.Value("amount").Number().IsEqual(req.Amount)
+		res.Value("amountPaid").Number().IsEqual(req.AmountPaid)
+		res.Value("userId").String().IsEqual(req.UserId)
+		res.Value("campId").Number().IsEqual(campID)
+	})
+
+	t.Run("Forbidden", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		paymentID := random.PositiveInt(t)
+		campID := random.PositiveInt(t)
+		req := api.AdminPutPaymentJSONRequestBody{
+			Amount:     2000,
+			AmountPaid: 1500,
+			UserId:     random.AlphaNumericString(t, 32),
+			CampId:     campID,
+		}
+		userID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&model.User{
+				IsStaff: false, // 管理者ではないユーザー
+			}, nil)
+
+		h.expect.PUT("/api/admin/payments/{paymentId}", paymentID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().Status(http.StatusForbidden)
+	})
+
+	t.Run("Bad Request", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		paymentID := random.PositiveInt(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(&model.User{
+				IsStaff: true,
+			}, nil)
+
+		// 不正なJSONリクエスト
+		h.expect.PUT("/api/admin/payments/{paymentId}", paymentID).
+			WithText("invalid json").
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().Status(http.StatusBadRequest)
+	})
+}

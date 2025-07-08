@@ -109,3 +109,81 @@ func TestGetPayments(t *testing.T) {
 		assert.Empty(t, payments)
 	})
 }
+
+func TestUpdatePayment(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// テスト用のpaymentを作成
+		originalPayment := model.Payment{
+			Amount:     1000,
+			AmountPaid: 500,
+			UserID:     user.ID,
+			CampID:     camp.ID,
+		}
+
+		err := r.CreatePayment(t.Context(), &originalPayment)
+		require.NoError(t, err)
+		require.NotZero(t, originalPayment.ID)
+
+		// 更新用のデータ
+		updatedAmount := 2000
+		updatedAmountPaid := 1500
+		updatePayment := model.Payment{
+			Amount:     updatedAmount,
+			AmountPaid: updatedAmountPaid,
+			UserID:     user.ID,
+			CampID:     camp.ID,
+		}
+
+		// UpdatePaymentをテスト
+		err = r.UpdatePayment(t.Context(), originalPayment.ID, &updatePayment)
+		assert.NoError(t, err)
+
+		// 更新されたデータを取得して確認
+		payments, err := r.GetPayments(t.Context())
+		require.NoError(t, err)
+
+		var foundPayment *model.Payment
+		for _, p := range payments {
+			if p.ID == originalPayment.ID {
+				foundPayment = &p
+				break
+			}
+		}
+
+		require.NotNil(t, foundPayment, "updated payment should be found")
+		assert.Equal(t, updatedAmount, foundPayment.Amount)
+		assert.Equal(t, updatedAmountPaid, foundPayment.AmountPaid)
+		assert.Equal(t, user.ID, foundPayment.UserID)
+		assert.Equal(t, camp.ID, foundPayment.CampID)
+	})
+
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 存在しないIDでUpdatePaymentをテスト
+		nonExistentID := uint(99999)
+		updatePayment := model.Payment{
+			Amount:     1000,
+			AmountPaid: 500,
+			UserID:     user.ID,
+			CampID:     camp.ID,
+		}
+
+		err := r.UpdatePayment(t.Context(), nonExistentID, &updatePayment)
+		// GORMのUpdatesは存在しないレコードでもエラーを返さないことがある
+		// 実際のビジネスロジックではレコードの存在確認が必要な場合がある
+		assert.NoError(t, err)
+	})
+}

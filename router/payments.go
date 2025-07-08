@@ -97,3 +97,55 @@ func (s *Server) AdminPostPayment(
 
 	return e.JSON(http.StatusCreated, res)
 }
+
+// AdminPutPayment 支払い情報を更新（管理者用）
+func (s *Server) AdminPutPayment(
+	e echo.Context,
+	paymentID api.PaymentId,
+	params api.AdminPutPaymentParams,
+) error {
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	var req api.AdminPutPaymentJSONRequestBody
+
+	if err := e.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	payment, err := converter.Convert[model.Payment](req)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert request to model: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if err := s.repo.UpdatePayment(e.Request().Context(), uint(paymentID), &payment); err != nil {
+		e.Logger().Errorf("failed to update payment: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// 更新後のPaymentオブジェクトにIDを設定してレスポンスを作成
+	payment.ID = uint(paymentID)
+
+	res, err := converter.Convert[api.PaymentResponse](payment)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert model to response: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, res)
+}
