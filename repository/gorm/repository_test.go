@@ -247,3 +247,21 @@ func mustCreateUser(t *testing.T, r *Repository) model.User {
 
 	return *user
 }
+
+func mustCreatePayment(t *testing.T, r *Repository, userID string, campID uint) model.Payment {
+	t.Helper()
+
+	payment := model.Payment{
+		Amount:     random.PositiveInt(t),
+		AmountPaid: random.PositiveInt(t),
+		UserID:     userID,
+		CampID:     campID,
+	}
+
+	err := r.CreatePayment(t.Context(), &payment)
+
+	require.NoError(t, err)
+	require.NotZero(t, payment.ID)
+
+	return payment
+}

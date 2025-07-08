@@ -54,3 +54,32 @@ func (mr *MockPaymentRepositoryMockRecorder) CreatePayment(ctx, payment any) *go
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePayment", reflect.TypeOf((*MockPaymentRepository)(nil).CreatePayment), ctx, payment)
 }
+
+// GetPayments mocks base method.
+func (m *MockPaymentRepository) GetPayments(ctx context.Context, campID uint) ([]model.Payment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPayments", ctx, campID)
+	ret0, _ := ret[0].([]model.Payment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPayments indicates an expected call of GetPayments.
+func (mr *MockPaymentRepositoryMockRecorder) GetPayments(ctx, campID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPayments", reflect.TypeOf((*MockPaymentRepository)(nil).GetPayments), ctx, campID)
+}
+
+// UpdatePayment mocks base method.
+func (m *MockPaymentRepository) UpdatePayment(ctx context.Context, paymentID uint, payment *model.Payment) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePayment", ctx, paymentID, payment)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePayment indicates an expected call of UpdatePayment.
+func (mr *MockPaymentRepositoryMockRecorder) UpdatePayment(ctx, paymentID, payment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePayment", reflect.TypeOf((*MockPaymentRepository)(nil).UpdatePayment), ctx, paymentID, payment)
+}
