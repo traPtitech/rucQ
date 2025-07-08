@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/gommon/log"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/migration"
@@ -37,7 +38,15 @@ func main() {
 		port,
 		database,
 	)
+	isDev := os.Getenv("RUCQ_ENV") == "development"
+	gormLogLevel := logger.Silent
+
+	if isDev {
+		gormLogLevel = logger.Info
+	}
+
 	db, err := gorm.Open(gormMysql.Open(dsn), &gorm.Config{
+		Logger:         logger.Default.LogMode(gormLogLevel),
 		TranslateError: true,
 	})
 
@@ -48,8 +57,6 @@ func main() {
 	if err := migration.Migrate(db); err != nil {
 		e.Logger.Fatal(err)
 	}
-
-	isDev := os.Getenv("RUCQ_ENV") == "development"
 
 	if isDev {
 		e.Use(middleware.CORS())
