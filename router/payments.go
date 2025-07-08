@@ -119,7 +119,7 @@ func (s *Server) AdminPutPayment(
 	var req api.AdminPutPaymentJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	payment, err := converter.Convert[model.Payment](req)
