@@ -128,6 +128,21 @@ func (mr *MockCampRepositoryMockRecorder) GetCamps() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCamps", reflect.TypeOf((*MockCampRepository)(nil).GetCamps))
 }
 
+// IsCampParticipant mocks base method.
+func (m *MockCampRepository) IsCampParticipant(ctx context.Context, campID uint, userID string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsCampParticipant", ctx, campID, userID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsCampParticipant indicates an expected call of IsCampParticipant.
+func (mr *MockCampRepositoryMockRecorder) IsCampParticipant(ctx, campID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCampParticipant", reflect.TypeOf((*MockCampRepository)(nil).IsCampParticipant), ctx, campID, userID)
+}
+
 // RemoveCampParticipant mocks base method.
 func (m *MockCampRepository) RemoveCampParticipant(ctx context.Context, campID uint, user *model.User) error {
 	m.ctrl.T.Helper()
