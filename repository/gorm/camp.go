@@ -135,8 +135,23 @@ func (r *Repository) IsCampParticipant(
 	campID uint,
 	userID string,
 ) (bool, error) {
+	// まず、合宿が存在するかを確認
+	_, err := gorm.G[*model.Camp](r.db).Where(&model.Camp{
+		Model: gorm.Model{
+			ID: campID,
+		},
+	}).First(ctx)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, model.ErrNotFound
+		}
+		return false, err
+	}
+
+	// 合宿が存在する場合、参加者かどうかを確認
 	var count int64
-	err := r.db.WithContext(ctx).
+	err = r.db.WithContext(ctx).
 		Table("camp_participants").
 		Where("camp_id = ? AND UPPER(user_id) = UPPER(?)", campID, userID).
 		Count(&count).Error

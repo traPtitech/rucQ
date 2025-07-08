@@ -65,7 +65,12 @@ func TestIsCampParticipant(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		user := mustCreateUser(t, r)
 
-		err := r.AddCampParticipant(t.Context(), camp.ID, &user)
+		// 参加受付を開く
+		camp.IsRegistrationOpen = true
+		err := r.UpdateCamp(camp.ID, &camp)
+		require.NoError(t, err)
+
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
 		require.NoError(t, err)
 
 		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
@@ -85,15 +90,16 @@ func TestIsCampParticipant(t *testing.T) {
 		assert.False(t, isParticipant)
 	})
 
-	t.Run("存在しないキャンプIDを指定した場合はfalseを返す", func(t *testing.T) {
+	t.Run("存在しない合宿のIDを指定した場合はエラーを返す", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
 		user := mustCreateUser(t, r)
 
-		// 存在しないキャンプIDを指定
-		isParticipant, err := r.IsCampParticipant(t.Context(), 999999, user.ID)
-		assert.NoError(t, err)
+		// 存在しない合宿のIDを指定
+		isParticipant, err := r.IsCampParticipant(t.Context(), uint(random.PositiveInt(t)), user.ID)
+		assert.Error(t, err)
+		assert.Equal(t, model.ErrNotFound, err)
 		assert.False(t, isParticipant)
 	})
 
@@ -118,8 +124,13 @@ func TestIsCampParticipant(t *testing.T) {
 		user2 := mustCreateUser(t, r)
 		user3 := mustCreateUser(t, r)
 
+		// 参加受付を開く
+		camp.IsRegistrationOpen = true
+		err := r.UpdateCamp(camp.ID, &camp)
+		require.NoError(t, err)
+
 		// user1とuser3を参加者に追加
-		err := r.AddCampParticipant(t.Context(), camp.ID, &user1)
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user1)
 		require.NoError(t, err)
 		err = r.AddCampParticipant(t.Context(), camp.ID, &user3)
 		require.NoError(t, err)
@@ -145,8 +156,13 @@ func TestIsCampParticipant(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		user := mustCreateUser(t, r)
 
+		// 参加受付を開く
+		camp.IsRegistrationOpen = true
+		err := r.UpdateCamp(camp.ID, &camp)
+		require.NoError(t, err)
+
 		// ユーザーをキャンプに参加させる
-		err := r.AddCampParticipant(t.Context(), camp.ID, &user)
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
 		require.NoError(t, err)
 
 		// 大文字・小文字を変更したIDで確認
@@ -169,7 +185,12 @@ func TestIsCampParticipant(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		user := mustCreateUser(t, r)
 
-		err := r.AddCampParticipant(t.Context(), camp.ID, &user)
+		// 参加受付を開く
+		camp.IsRegistrationOpen = true
+		err := r.UpdateCamp(camp.ID, &camp)
+		require.NoError(t, err)
+
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
 		require.NoError(t, err)
 
 		// userIDの一部分だけ大文字・小文字を変更
