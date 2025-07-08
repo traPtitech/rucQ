@@ -10,6 +10,43 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
+// AdminGetPayments 支払い情報の一覧を取得（管理者用）
+func (s *Server) AdminGetPayments(
+	e echo.Context,
+	campID api.CampId,
+	params api.AdminGetPaymentsParams,
+) error {
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	payments, err := s.repo.GetPayments(e.Request().Context())
+
+	if err != nil {
+		e.Logger().Errorf("failed to get payments: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	response, err := converter.Convert[[]api.PaymentResponse](payments)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert payments to response: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, response)
+}
+
 // AdminPostPayment 支払い情報を作成（管理者用）
 func (s *Server) AdminPostPayment(
 	e echo.Context,
