@@ -54,7 +54,7 @@ func TestGetPayments(t *testing.T) {
 		payment2 := mustCreatePayment(t, r, user.ID, camp.ID)
 
 		// GetPaymentsをテスト
-		payments, err := r.GetPayments(t.Context())
+		payments, err := r.GetPayments(t.Context(), camp.ID)
 
 		assert.NoError(t, err)
 		assert.GreaterOrEqual(t, len(payments), 2) // 少なくとも作成した2つは存在する
@@ -86,12 +86,40 @@ func TestGetPayments(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
+		camp := mustCreateCamp(t, r)
 
 		// paymentが存在しない状態でGetPaymentsをテスト
-		payments, err := r.GetPayments(t.Context())
+		payments, err := r.GetPayments(t.Context(), camp.ID)
 
 		assert.NoError(t, err)
 		assert.Empty(t, payments)
+	})
+
+	t.Run("Filter by CampID", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp1 := mustCreateCamp(t, r)
+		camp2 := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 異なるcampのpaymentを作成
+		payment1 := mustCreatePayment(t, r, user.ID, camp1.ID)
+		payment2 := mustCreatePayment(t, r, user.ID, camp2.ID)
+
+		// camp1のpaymentのみ取得
+		paymentsForCamp1, err := r.GetPayments(t.Context(), camp1.ID)
+		assert.NoError(t, err)
+		assert.Len(t, paymentsForCamp1, 1)
+		assert.Equal(t, payment1.ID, paymentsForCamp1[0].ID)
+		assert.Equal(t, camp1.ID, paymentsForCamp1[0].CampID)
+
+		// camp2のpaymentのみ取得
+		paymentsForCamp2, err := r.GetPayments(t.Context(), camp2.ID)
+		assert.NoError(t, err)
+		assert.Len(t, paymentsForCamp2, 1)
+		assert.Equal(t, payment2.ID, paymentsForCamp2[0].ID)
+		assert.Equal(t, camp2.ID, paymentsForCamp2[0].CampID)
 	})
 }
 
@@ -123,7 +151,7 @@ func TestUpdatePayment(t *testing.T) {
 		assert.NoError(t, err)
 
 		// 更新されたデータを取得して確認
-		payments, err := r.GetPayments(t.Context())
+		payments, err := r.GetPayments(t.Context(), camp.ID)
 		require.NoError(t, err)
 
 		var foundPayment *model.Payment

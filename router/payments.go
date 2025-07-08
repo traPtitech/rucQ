@@ -28,7 +28,7 @@ func (s *Server) AdminGetPayments(
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	payments, err := s.repo.GetPayments(e.Request().Context())
+	payments, err := s.repo.GetPayments(e.Request().Context(), uint(campID))
 
 	if err != nil {
 		e.Logger().Errorf("failed to get payments: %v", err)

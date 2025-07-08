@@ -83,7 +83,7 @@ func TestAdminGetPayments(t *testing.T) {
 				IsStaff: true,
 			}, nil)
 		h.repo.MockPaymentRepository.EXPECT().
-			GetPayments(gomock.Any()).
+			GetPayments(gomock.Any(), uint(campID)).
 			Return(payments, nil)
 
 		res := h.expect.GET("/api/admin/camps/{campId}/payments", campID).
@@ -124,7 +124,7 @@ func TestAdminGetPayments(t *testing.T) {
 				IsStaff: true,
 			}, nil)
 		h.repo.MockPaymentRepository.EXPECT().
-			GetPayments(gomock.Any()).
+			GetPayments(gomock.Any(), uint(campID)).
 			Return([]model.Payment{}, nil)
 
 		res := h.expect.GET("/api/admin/camps/{campId}/payments", campID).

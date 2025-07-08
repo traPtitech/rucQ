@@ -18,8 +18,10 @@ func (r *Repository) CreatePayment(ctx context.Context, payment *model.Payment) 
 	return nil
 }
 
-func (r *Repository) GetPayments(ctx context.Context) ([]model.Payment, error) {
-	payments, err := gorm.G[model.Payment](r.db).Find(ctx)
+func (r *Repository) GetPayments(ctx context.Context, campID uint) ([]model.Payment, error) {
+	payments, err := gorm.G[model.Payment](r.db).
+		Where("camp_id = ?", campID).
+		Find(ctx)
 	if err != nil {
 		return nil, err
 	}
