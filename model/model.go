@@ -1,15 +1,11 @@
 package model
 
-import (
-	"errors"
-
-	"gorm.io/gorm"
-)
+import "errors"
 
 var (
 	ErrAlreadyExists = errors.New("already exists")
 	ErrForbidden     = errors.New("forbidden")
-	ErrNotFound      = gorm.ErrRecordNotFound
+	ErrNotFound      = errors.New("not found")
 )
 
 // 全モデルを書いておく

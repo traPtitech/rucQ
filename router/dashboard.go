@@ -1,11 +1,13 @@
 package router
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/model"
 )
 
 func (s *Server) GetDashboard(
@@ -19,6 +21,13 @@ func (s *Server) GetDashboard(
 		*params.XForwardedUser,
 	)
 	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return echo.NewHTTPError(
+				http.StatusNotFound,
+				"Camp not found",
+			)
+		}
+
 		e.Logger().Errorf("Failed to check camp participation: %v", err)
 
 		return echo.NewHTTPError(
