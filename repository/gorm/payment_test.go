@@ -50,23 +50,8 @@ func TestGetPayments(t *testing.T) {
 		user := mustCreateUser(t, r)
 
 		// テスト用のpaymentを複数作成
-		payment1 := model.Payment{
-			Amount:     random.PositiveInt(t),
-			AmountPaid: random.PositiveInt(t),
-			UserID:     user.ID,
-			CampID:     camp.ID,
-		}
-		payment2 := model.Payment{
-			Amount:     random.PositiveInt(t),
-			AmountPaid: random.PositiveInt(t),
-			UserID:     user.ID,
-			CampID:     camp.ID,
-		}
-
-		err := r.CreatePayment(t.Context(), &payment1)
-		require.NoError(t, err)
-		err = r.CreatePayment(t.Context(), &payment2)
-		require.NoError(t, err)
+		payment1 := mustCreatePayment(t, r, user.ID, camp.ID)
+		payment2 := mustCreatePayment(t, r, user.ID, camp.ID)
 
 		// GetPaymentsをテスト
 		payments, err := r.GetPayments(t.Context())
@@ -121,16 +106,7 @@ func TestUpdatePayment(t *testing.T) {
 		user := mustCreateUser(t, r)
 
 		// テスト用のpaymentを作成
-		originalPayment := model.Payment{
-			Amount:     1000,
-			AmountPaid: 500,
-			UserID:     user.ID,
-			CampID:     camp.ID,
-		}
-
-		err := r.CreatePayment(t.Context(), &originalPayment)
-		require.NoError(t, err)
-		require.NotZero(t, originalPayment.ID)
+		originalPayment := mustCreatePayment(t, r, user.ID, camp.ID)
 
 		// 更新用のデータ
 		updatedAmount := 2000
@@ -143,7 +119,7 @@ func TestUpdatePayment(t *testing.T) {
 		}
 
 		// UpdatePaymentをテスト
-		err = r.UpdatePayment(t.Context(), originalPayment.ID, &updatePayment)
+		err := r.UpdatePayment(t.Context(), originalPayment.ID, &updatePayment)
 		assert.NoError(t, err)
 
 		// 更新されたデータを取得して確認
