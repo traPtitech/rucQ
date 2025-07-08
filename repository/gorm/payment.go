@@ -17,3 +17,12 @@ func (r *Repository) CreatePayment(ctx context.Context, payment *model.Payment) 
 
 	return nil
 }
+
+func (r *Repository) GetPayments(ctx context.Context) ([]model.Payment, error) {
+	payments, err := gorm.G[model.Payment](r.db).Find(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return payments, nil
+}
