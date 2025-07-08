@@ -7,6 +7,7 @@ import (
 
 	"go.uber.org/mock/gomock"
 
+	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -55,6 +56,27 @@ func TestGetDashboard(t *testing.T) {
 			JSON().
 			Object().
 			HasValue("message", "User is not a participant of this camp")
+	})
+
+	t.Run("Not Found - Camp does not exist", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := random.PositiveInt(t)
+		userID := random.AlphaNumericString(t, 32)
+
+		// モックの設定: キャンプが存在しない場合
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), uint(campID), userID).
+			Return(false, model.ErrNotFound)
+
+		h.expect.GET("/api/camps/{campId}/me", campID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusNotFound).
+			JSON().
+			Object().
+			HasValue("message", "Camp not found")
 	})
 
 	t.Run("Internal Server Error - Repository error", func(t *testing.T) {
