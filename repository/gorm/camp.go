@@ -153,7 +153,7 @@ func (r *Repository) IsCampParticipant(
 	var count int64
 	err = r.db.WithContext(ctx).
 		Table("camp_participants").
-		Where("camp_id = ? AND UPPER(user_id) = UPPER(?)", campID, userID).
+		Where("camp_id = ? AND user_id = ?", campID, userID).
 		Count(&count).Error
 
 	if err != nil {
