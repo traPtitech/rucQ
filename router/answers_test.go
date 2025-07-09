@@ -458,6 +458,17 @@ func TestAdminGetAnswers(t *testing.T) {
 			},
 		}
 
+		// スタッフユーザーを設定
+		staffUser := &model.User{
+			ID:      userID,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(staffUser, nil).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswersByQuestionID(gomock.Any(), uint(questionID)).
 			Return(answers, nil).
@@ -525,12 +536,67 @@ func TestAdminGetAnswers(t *testing.T) {
 		}
 	})
 
-	t.Run("Empty Result", func(t *testing.T) {
+	t.Run("Forbidden - Non-Staff User", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
 		questionID := random.PositiveInt(t)
+
+		// 非スタッフユーザーを設定
+		nonStaffUser := &model.User{
+			ID:      userID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(nonStaffUser, nil).
+			Times(1)
+
+		h.expect.GET("/api/admin/questions/{questionId}/answers", questionID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusForbidden).JSON().Object().
+			Value("message").String().IsEqual("Forbidden")
+	})
+
+	t.Run("InternalServerError - User Repository Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(nil, gorm.ErrRecordNotFound).
+			Times(1)
+
+		h.expect.GET("/api/admin/questions/{questionId}/answers", questionID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusInternalServerError).JSON().Object().
+			Value("message").String().IsEqual("Internal server error")
+	})
+
+	t.Run("EmptyResult", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
+
+		// スタッフユーザーを設定
+		staffUser := &model.User{
+			ID:      userID,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(staffUser, nil).
+			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswersByQuestionID(gomock.Any(), uint(questionID)).
@@ -545,12 +611,23 @@ func TestAdminGetAnswers(t *testing.T) {
 		res.Length().IsEqual(0)
 	})
 
-	t.Run("Repository Error", func(t *testing.T) {
+	t.Run("RepositoryError", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
 		questionID := random.PositiveInt(t)
+
+		// スタッフユーザーを設定
+		staffUser := &model.User{
+			ID:      userID,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(staffUser, nil).
+			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswersByQuestionID(gomock.Any(), uint(questionID)).
