@@ -668,7 +668,7 @@ func TestAdminPutAnswer(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), uint(answerID), gomock.Any()).
-			DoAndReturn(func(ctx any, id uint, answer *model.Answer) error {
+			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
 				answer.ID = id
 				answer.FreeTextContent = &updatedContent
 				return nil
@@ -721,7 +721,7 @@ func TestAdminPutAnswer(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), uint(answerID), gomock.Any()).
-			DoAndReturn(func(ctx any, id uint, answer *model.Answer) error {
+			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
 				answer.ID = id
 				answer.FreeNumberContent = &updatedContent
 				return nil
@@ -782,7 +782,7 @@ func TestAdminPutAnswer(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), uint(answerID), gomock.Any()).
-			DoAndReturn(func(ctx any, id uint, answer *model.Answer) error {
+			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
 				answer.ID = id
 				answer.SelectedOptions = []model.Option{option}
 				return nil
@@ -852,7 +852,7 @@ func TestAdminPutAnswer(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), uint(answerID), gomock.Any()).
-			DoAndReturn(func(ctx any, id uint, answer *model.Answer) error {
+			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
 				answer.ID = id
 				answer.SelectedOptions = options
 				return nil
