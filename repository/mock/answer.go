@@ -70,6 +70,21 @@ func (mr *MockAnswerRepositoryMockRecorder) GetAnswerByID(ctx, id any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnswerByID", reflect.TypeOf((*MockAnswerRepository)(nil).GetAnswerByID), ctx, id)
 }
 
+// GetAnswersByQuestionID mocks base method.
+func (m *MockAnswerRepository) GetAnswersByQuestionID(ctx context.Context, questionID uint) ([]model.Answer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAnswersByQuestionID", ctx, questionID)
+	ret0, _ := ret[0].([]model.Answer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAnswersByQuestionID indicates an expected call of GetAnswersByQuestionID.
+func (mr *MockAnswerRepositoryMockRecorder) GetAnswersByQuestionID(ctx, questionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnswersByQuestionID", reflect.TypeOf((*MockAnswerRepository)(nil).GetAnswersByQuestionID), ctx, questionID)
+}
+
 // GetAnswersByUserAndQuestionGroup mocks base method.
 func (m *MockAnswerRepository) GetAnswersByUserAndQuestionGroup(ctx context.Context, userID string, questionGroupID uint) ([]model.Answer, error) {
 	m.ctrl.T.Helper()

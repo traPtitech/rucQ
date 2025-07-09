@@ -70,15 +70,6 @@ func (s *Server) AdminDeleteRoom(_ echo.Context, _ api.RoomId, _ api.AdminDelete
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteRoom not implemented")
 }
 
-// AdminGetAnswers 回答の一覧を取得（管理者用）
-func (s *Server) AdminGetAnswers(
-	_ echo.Context,
-	_ api.QuestionId,
-	_ api.AdminGetAnswersParams,
-) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetAnswers not implemented")
-}
-
 // AdminPutAnswer 管理者が回答を更新
 func (s *Server) AdminPutAnswer(_ echo.Context, _ api.AnswerId, _ api.AdminPutAnswerParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutAnswer not implemented")

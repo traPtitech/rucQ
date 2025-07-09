@@ -120,3 +120,12 @@ func (s *Server) PutAnswer(
 
 	return e.JSON(http.StatusOK, res)
 }
+
+// AdminGetAnswers 回答の一覧を取得（管理者用）
+func (s *Server) AdminGetAnswers(
+	_ echo.Context,
+	_ api.QuestionId,
+	_ api.AdminGetAnswersParams,
+) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetAnswers not implemented")
+}

@@ -240,3 +240,116 @@ func TestUpdateAnswer(t *testing.T) {
 		)
 	})
 }
+
+func TestGetAnswersByQuestionID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user1 := mustCreateUser(t, r)
+		user2 := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion)
+		freeTextContent1 := random.AlphaNumericString(t, 20)
+		freeTextContent2 := random.AlphaNumericString(t, 20)
+
+		// 同じ質問に対する複数のAnswerを作成
+		answers := []model.Answer{
+			{
+				QuestionID:      question.ID,
+				UserID:          user1.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &freeTextContent1,
+			},
+			{
+				QuestionID:      question.ID,
+				UserID:          user2.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &freeTextContent2,
+			},
+		}
+
+		err := r.CreateAnswers(t.Context(), &answers)
+		require.NoError(t, err)
+
+		// QuestionIDでAnswerを取得
+		retrievedAnswers, err := r.GetAnswersByQuestionID(t.Context(), question.ID)
+		assert.NoError(t, err)
+		assert.Len(t, retrievedAnswers, 2)
+
+		// 結果を検証
+		answerMap := make(map[string]model.Answer)
+		for _, answer := range retrievedAnswers {
+			answerMap[answer.UserID] = answer
+		}
+
+		assert.Contains(t, answerMap, user1.ID)
+		assert.Contains(t, answerMap, user2.ID)
+		assert.Equal(t, question.ID, answerMap[user1.ID].QuestionID)
+		assert.Equal(t, question.ID, answerMap[user2.ID].QuestionID)
+		assert.Equal(t, freeTextContent1, *answerMap[user1.ID].FreeTextContent)
+		assert.Equal(t, freeTextContent2, *answerMap[user2.ID].FreeTextContent)
+	})
+
+	t.Run("No Answers", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion)
+
+		// Answerが存在しない質問に対するクエリ
+		answers, err := r.GetAnswersByQuestionID(t.Context(), question.ID)
+		assert.NoError(t, err)
+		assert.Empty(t, answers)
+	})
+
+	t.Run("With SelectedOptions", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		singleChoiceQuestion := mustCreateQuestion(
+			t,
+			r,
+			questionGroup.ID,
+			model.SingleChoiceQuestion,
+		)
+
+		answers := []model.Answer{
+			{
+				QuestionID: singleChoiceQuestion.ID,
+				UserID:     user.ID,
+				Type:       model.SingleChoiceQuestion,
+				SelectedOptions: []model.Option{
+					singleChoiceQuestion.Options[0],
+				},
+			},
+		}
+
+		err := r.CreateAnswers(t.Context(), &answers)
+		require.NoError(t, err)
+
+		// QuestionIDでAnswerを取得（SelectedOptionsも含む）
+		retrievedAnswers, err := r.GetAnswersByQuestionID(t.Context(), singleChoiceQuestion.ID)
+		assert.NoError(t, err)
+		assert.Len(t, retrievedAnswers, 1)
+		assert.Len(t, retrievedAnswers[0].SelectedOptions, 1)
+		assert.Equal(
+			t,
+			singleChoiceQuestion.Options[0].ID,
+			retrievedAnswers[0].SelectedOptions[0].ID,
+		)
+		assert.Equal(
+			t,
+			singleChoiceQuestion.Options[0].Content,
+			retrievedAnswers[0].SelectedOptions[0].Content,
+		)
+	})
+}
