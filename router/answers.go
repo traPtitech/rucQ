@@ -165,3 +165,58 @@ func (s *Server) AdminGetAnswers(
 
 	return e.JSON(http.StatusOK, res)
 }
+
+func (s *Server) AdminPutAnswer(
+	e echo.Context,
+	answerID api.AnswerId,
+	params api.AdminPutAnswerParams,
+) error {
+	if params.XForwardedUser == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
+	}
+
+	user, err := s.repo.GetOrCreateUser(
+		e.Request().Context(),
+		*params.XForwardedUser,
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	var req api.AdminPutAnswerJSONRequestBody
+
+	if err := e.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+	}
+
+	answer, err := converter.Convert[model.Answer](req)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert request body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if err := s.repo.UpdateAnswer(e.Request().Context(), uint(answerID), &answer); err != nil {
+		e.Logger().Errorf("failed to update answer: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[api.AnswerResponse](answer)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, res)
+}
