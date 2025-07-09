@@ -123,9 +123,45 @@ func (s *Server) PutAnswer(
 
 // AdminGetAnswers 回答の一覧を取得（管理者用）
 func (s *Server) AdminGetAnswers(
-	_ echo.Context,
-	_ api.QuestionId,
-	_ api.AdminGetAnswersParams,
+	e echo.Context,
+	questionID api.QuestionId,
+	params api.AdminGetAnswersParams,
 ) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetAnswers not implemented")
+	user, err := s.repo.GetOrCreateUser(
+		e.Request().Context(),
+		*params.XForwardedUser,
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	answers, err := s.repo.GetAnswersByQuestionID(
+		e.Request().Context(),
+		uint(questionID),
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get answers: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[[]api.AnswerResponse](answers)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, res)
 }
