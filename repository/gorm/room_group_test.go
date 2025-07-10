@@ -10,6 +10,22 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+func mustCreateRoomGroup(t *testing.T, r *Repository, campID uint) *model.RoomGroup {
+	t.Helper()
+
+	roomGroup := &model.RoomGroup{
+		Name:   random.AlphaNumericString(t, 20),
+		CampID: campID,
+	}
+
+	err := r.CreateRoomGroup(context.Background(), roomGroup)
+	if err != nil {
+		t.Fatalf("failed to create room group: %v", err)
+	}
+
+	return roomGroup
+}
+
 func TestCreateRoomGroup(t *testing.T) {
 	t.Parallel()
 
@@ -70,5 +86,114 @@ func TestCreateRoomGroup(t *testing.T) {
 		err := r.CreateRoomGroup(context.Background(), nil)
 
 		assert.Error(t, err)
+	})
+}
+
+func TestUpdateRoomGroup(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+
+		newName := random.AlphaNumericString(t, 25)
+		updatedRoomGroup := &model.RoomGroup{
+			Name:   newName,
+			CampID: camp.ID,
+		}
+
+		err := r.UpdateRoomGroup(context.Background(), roomGroup.ID, updatedRoomGroup)
+
+		assert.NoError(t, err)
+
+		// 更新が正しく反映されているか確認
+		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), roomGroup.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, newName, retrievedRoomGroup.Name)
+		assert.Equal(t, camp.ID, retrievedRoomGroup.CampID)
+	})
+
+	t.Run("Non-existent RoomGroup", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		nonExistentID := uint(random.PositiveInt(t))
+
+		updatedRoomGroup := &model.RoomGroup{
+			Name:   random.AlphaNumericString(t, 20),
+			CampID: camp.ID,
+		}
+
+		err := r.UpdateRoomGroup(context.Background(), nonExistentID, updatedRoomGroup)
+
+		// 存在しないIDでもGORMのUpdatesはエラーを返さない（影響された行数が0になるだけ）
+		assert.NoError(t, err)
+	})
+
+	t.Run("Nil RoomGroup", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+
+		err := r.UpdateRoomGroup(context.Background(), roomGroup.ID, nil)
+
+		assert.Error(t, err)
+	})
+
+	t.Run("Update with different CampID", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp1 := mustCreateCamp(t, r)
+		camp2 := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp1.ID)
+
+		updatedRoomGroup := &model.RoomGroup{
+			Name:   random.AlphaNumericString(t, 20),
+			CampID: camp2.ID,
+		}
+
+		err := r.UpdateRoomGroup(context.Background(), roomGroup.ID, updatedRoomGroup)
+
+		assert.NoError(t, err)
+	})
+}
+
+func TestGetRoomGroupByID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+
+		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), roomGroup.ID)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, retrievedRoomGroup)
+		assert.Equal(t, roomGroup.ID, retrievedRoomGroup.ID)
+		assert.Equal(t, roomGroup.Name, retrievedRoomGroup.Name)
+		assert.Equal(t, roomGroup.CampID, retrievedRoomGroup.CampID)
+		assert.NotNil(t, retrievedRoomGroup.Rooms) // Preloadされていることを確認
+	})
+
+	t.Run("Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentID := uint(random.PositiveInt(t))
+
+		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), nonExistentID)
+
+		assert.Error(t, err)
+		assert.Nil(t, retrievedRoomGroup)
 	})
 }
