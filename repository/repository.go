@@ -8,6 +8,7 @@ type Repository interface {
 	PaymentRepository
 	QuestionRepository
 	QuestionGroupRepository
+	RoomGroupRepository
 	RoomRepository
 	UserRepository
 }
