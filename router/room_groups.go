@@ -95,23 +95,15 @@ func (s *Server) AdminPutRoomGroup(
 	}
 
 	if err := s.repo.UpdateRoomGroup(e.Request().Context(), uint(roomGroupID), &roomGroup); err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Room group not found")
+		}
 		e.Logger().Errorf("failed to update room group: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	// 更新後のデータを取得（存在確認も兼ねる）
-	updatedRoomGroup, err := s.repo.GetRoomGroupByID(e.Request().Context(), uint(roomGroupID))
-	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Room group not found")
-		}
-		e.Logger().Errorf("failed to get updated room group: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	res, err := converter.Convert[api.RoomGroupResponse](*updatedRoomGroup)
+	res, err := converter.Convert[api.RoomGroupResponse](roomGroup)
 	if err != nil {
 		e.Logger().Errorf("failed to convert response body: %v", err)
 

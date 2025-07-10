@@ -22,10 +22,15 @@ func (r *Repository) UpdateRoomGroup(
 	roomGroupID uint,
 	roomGroup *model.RoomGroup,
 ) error {
-	if _, err := gorm.G[*model.RoomGroup](r.db).
+	rowsAffected, err := gorm.G[*model.RoomGroup](r.db).
 		Where("id = ?", roomGroupID).
-		Updates(ctx, roomGroup); err != nil {
+		Updates(ctx, roomGroup)
+	if err != nil {
 		return err
+	}
+
+	if rowsAffected == 0 {
+		return model.ErrNotFound
 	}
 
 	return nil

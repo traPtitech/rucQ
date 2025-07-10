@@ -130,8 +130,7 @@ func TestUpdateRoomGroup(t *testing.T) {
 
 		err := r.UpdateRoomGroup(context.Background(), nonExistentID, updatedRoomGroup)
 
-		// 存在しないIDでもGORMのUpdatesはエラーを返さない（影響された行数が0になるだけ）
-		assert.NoError(t, err)
+		assert.ErrorIs(t, err, model.ErrNotFound)
 	})
 
 	t.Run("Nil RoomGroup", func(t *testing.T) {
