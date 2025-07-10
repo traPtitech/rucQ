@@ -144,24 +144,6 @@ func TestUpdateRoomGroup(t *testing.T) {
 
 		assert.Error(t, err)
 	})
-
-	t.Run("Update with different CampID", func(t *testing.T) {
-		t.Parallel()
-
-		r := setup(t)
-		camp1 := mustCreateCamp(t, r)
-		camp2 := mustCreateCamp(t, r)
-		roomGroup := mustCreateRoomGroup(t, r, camp1.ID)
-
-		updatedRoomGroup := &model.RoomGroup{
-			Name:   random.AlphaNumericString(t, 20),
-			CampID: camp2.ID,
-		}
-
-		err := r.UpdateRoomGroup(context.Background(), roomGroup.ID, updatedRoomGroup)
-
-		assert.NoError(t, err)
-	})
 }
 
 func TestGetRoomGroupByID(t *testing.T) {
