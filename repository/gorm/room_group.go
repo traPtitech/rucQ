@@ -22,18 +22,19 @@ func (r *Repository) UpdateRoomGroup(
 	roomGroupID uint,
 	roomGroup *model.RoomGroup,
 ) error {
-	if _, err := gorm.G[*model.RoomGroup](r.db).Where(&model.RoomGroup{
-		Model: gorm.Model{
-			ID: roomGroupID,
-		},
-	}).Updates(ctx, roomGroup); err != nil {
+	if _, err := gorm.G[*model.RoomGroup](r.db).
+		Where("id = ?", roomGroupID).
+		Updates(ctx, roomGroup); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (r *Repository) GetRoomGroupByID(ctx context.Context, roomGroupID uint) (*model.RoomGroup, error) {
+func (r *Repository) GetRoomGroupByID(
+	ctx context.Context,
+	roomGroupID uint,
+) (*model.RoomGroup, error) {
 	roomGroup, err := gorm.G[model.RoomGroup](r.db).
 		Preload("Rooms", nil).
 		Where("id = ?", roomGroupID).
