@@ -148,10 +148,6 @@ func TestAdminPutRoomGroup(t *testing.T) {
 		roomGroupID := random.PositiveInt(t)
 		campID := uint(random.PositiveInt(t))
 
-		existingRoomGroup := &model.RoomGroup{
-			Name:   random.AlphaNumericString(t, 15),
-			CampID: campID,
-		}
 		updatedRoomGroup := &model.RoomGroup{
 			Name:   req.Name,
 			CampID: campID,
@@ -160,9 +156,6 @@ func TestAdminPutRoomGroup(t *testing.T) {
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), username).
 			Return(&model.User{IsStaff: true}, nil)
-		h.repo.MockRoomGroupRepository.EXPECT().
-			GetRoomGroupByID(gomock.Any(), uint(roomGroupID)).
-			Return(existingRoomGroup, nil)
 		h.repo.MockRoomGroupRepository.EXPECT().
 			UpdateRoomGroup(gomock.Any(), uint(roomGroupID), gomock.Any()).
 			Return(nil)
@@ -217,8 +210,11 @@ func TestAdminPutRoomGroup(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(&model.User{IsStaff: true}, nil)
 		h.repo.MockRoomGroupRepository.EXPECT().
+			UpdateRoomGroup(gomock.Any(), uint(roomGroupID), gomock.Any()).
+			Return(nil)
+		h.repo.MockRoomGroupRepository.EXPECT().
 			GetRoomGroupByID(gomock.Any(), uint(roomGroupID)).
-			Return(nil, errors.New("not found"))
+			Return(nil, model.ErrNotFound)
 
 		h.expect.PUT("/api/admin/room-groups/{roomGroupId}", roomGroupID).
 			WithJSON(req).
@@ -234,19 +230,10 @@ func TestAdminPutRoomGroup(t *testing.T) {
 
 		username := random.AlphaNumericString(t, 32)
 		roomGroupID := random.PositiveInt(t)
-		campID := uint(random.PositiveInt(t))
-
-		existingRoomGroup := &model.RoomGroup{
-			Name:   random.AlphaNumericString(t, 15),
-			CampID: campID,
-		}
 
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), username).
 			Return(&model.User{IsStaff: true}, nil)
-		h.repo.MockRoomGroupRepository.EXPECT().
-			GetRoomGroupByID(gomock.Any(), uint(roomGroupID)).
-			Return(existingRoomGroup, nil)
 
 		h.expect.PUT("/api/admin/room-groups/{roomGroupId}", roomGroupID).
 			WithJSON("invalid json").
@@ -265,19 +252,10 @@ func TestAdminPutRoomGroup(t *testing.T) {
 		}
 		username := random.AlphaNumericString(t, 32)
 		roomGroupID := random.PositiveInt(t)
-		campID := uint(random.PositiveInt(t))
-
-		existingRoomGroup := &model.RoomGroup{
-			Name:   random.AlphaNumericString(t, 15),
-			CampID: campID,
-		}
 
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), username).
 			Return(&model.User{IsStaff: true}, nil)
-		h.repo.MockRoomGroupRepository.EXPECT().
-			GetRoomGroupByID(gomock.Any(), uint(roomGroupID)).
-			Return(existingRoomGroup, nil)
 		h.repo.MockRoomGroupRepository.EXPECT().
 			UpdateRoomGroup(gomock.Any(), uint(roomGroupID), gomock.Any()).
 			Return(errors.New("database error"))

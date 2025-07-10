@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
@@ -39,6 +40,9 @@ func (r *Repository) GetRoomGroupByID(ctx context.Context, roomGroupID uint) (*m
 		First(ctx)
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, model.ErrNotFound
+		}
 		return nil, err
 	}
 
