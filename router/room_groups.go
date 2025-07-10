@@ -61,3 +61,69 @@ func (s *Server) AdminPostRoomGroup(
 
 	return e.JSON(http.StatusCreated, res)
 }
+
+func (s *Server) AdminPutRoomGroup(
+	e echo.Context,
+	roomGroupID api.RoomGroupId,
+	params api.AdminPutRoomGroupParams,
+) error {
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	// 既存のRoomGroupを取得して存在確認
+	existingRoomGroup, err := s.repo.GetRoomGroupByID(e.Request().Context(), uint(roomGroupID))
+	if err != nil {
+		e.Logger().Errorf("failed to get room group: %v", err)
+
+		return echo.NewHTTPError(http.StatusNotFound, "Room group not found")
+	}
+
+	var req api.AdminPutRoomGroupJSONRequestBody
+
+	if err := e.Bind(&req); err != nil {
+		e.Logger().Errorf("failed to bind request body: %v", err)
+
+		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+	}
+
+	roomGroup, err := converter.Convert[model.RoomGroup](req)
+	if err != nil {
+		e.Logger().Errorf("failed to convert request body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// CampIDは変更不可（既存のものを保持）
+	roomGroup.CampID = existingRoomGroup.CampID
+
+	if err := s.repo.UpdateRoomGroup(e.Request().Context(), uint(roomGroupID), &roomGroup); err != nil {
+		e.Logger().Errorf("failed to update room group: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// 更新後のデータを取得
+	updatedRoomGroup, err := s.repo.GetRoomGroupByID(e.Request().Context(), uint(roomGroupID))
+	if err != nil {
+		e.Logger().Errorf("failed to get updated room group: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[api.RoomGroupResponse](*updatedRoomGroup)
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, res)
+}
