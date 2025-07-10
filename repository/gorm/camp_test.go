@@ -67,7 +67,7 @@ func TestIsCampParticipant(t *testing.T) {
 
 		// 参加受付を開く
 		camp.IsRegistrationOpen = true
-		err := r.UpdateCamp(camp.ID, &camp)
+		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
 		require.NoError(t, err)
 
 		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
@@ -126,7 +126,7 @@ func TestIsCampParticipant(t *testing.T) {
 
 		// 参加受付を開く
 		camp.IsRegistrationOpen = true
-		err := r.UpdateCamp(camp.ID, &camp)
+		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
 		require.NoError(t, err)
 
 		// user1とuser3を参加者に追加
@@ -158,7 +158,7 @@ func TestIsCampParticipant(t *testing.T) {
 
 		// 参加受付を開く
 		camp.IsRegistrationOpen = true
-		err := r.UpdateCamp(camp.ID, &camp)
+		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
 		require.NoError(t, err)
 
 		// ユーザーをキャンプに参加させる
@@ -187,7 +187,7 @@ func TestIsCampParticipant(t *testing.T) {
 
 		// 参加受付を開く
 		camp.IsRegistrationOpen = true
-		err := r.UpdateCamp(camp.ID, &camp)
+		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
 		require.NoError(t, err)
 
 		err = r.AddCampParticipant(t.Context(), camp.ID, &user)

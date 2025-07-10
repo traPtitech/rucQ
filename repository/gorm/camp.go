@@ -48,12 +48,11 @@ func (r *Repository) GetCampByID(id uint) (*model.Camp, error) {
 	return &camp, nil
 }
 
-func (r *Repository) UpdateCamp(campID uint, camp *model.Camp) error {
-	if err := r.db.Where(&model.Camp{
-		Model: gorm.Model{
-			ID: campID,
-		},
-	}).Updates(camp).Error; err != nil {
+func (r *Repository) UpdateCamp(ctx context.Context, campID uint, camp *model.Camp) error {
+	if _, err := gorm.G[model.Camp](r.db).
+		Where("id = ?", campID).
+		Select("*").
+		Updates(ctx, *camp); err != nil {
 		return err
 	}
 
