@@ -55,6 +55,133 @@ func TestGetCamps(t *testing.T) {
 	})
 }
 
+func TestUpdateCamp(t *testing.T) {
+	t.Parallel()
+
+	t.Run("成功", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+
+		// 更新するデータを準備
+		newName := random.AlphaNumericString(t, 30)
+		newGuidebook := random.AlphaNumericString(t, 200)
+		newIsDraft := !camp.IsDraft
+		newIsPaymentOpen := !camp.IsPaymentOpen
+		newIsRegistrationOpen := !camp.IsRegistrationOpen
+		newDateStart := random.Time(t)
+		newDateEnd := newDateStart.Add(time.Duration(random.PositiveInt(t)))
+
+		updatedCamp := model.Camp{
+			DisplayID:          camp.DisplayID, // DisplayIDは更新しない
+			Name:               newName,
+			Guidebook:          newGuidebook,
+			IsDraft:            newIsDraft,
+			IsPaymentOpen:      newIsPaymentOpen,
+			IsRegistrationOpen: newIsRegistrationOpen,
+			DateStart:          newDateStart,
+			DateEnd:            newDateEnd,
+		}
+
+		err := r.UpdateCamp(t.Context(), camp.ID, &updatedCamp)
+		require.NoError(t, err)
+
+		// 更新後のデータを取得して確認
+		retrievedCamp, err := r.GetCampByID(camp.ID)
+		require.NoError(t, err)
+
+		assert.Equal(t, camp.ID, retrievedCamp.ID)
+		assert.Equal(t, camp.DisplayID, retrievedCamp.DisplayID)
+		assert.Equal(t, newName, retrievedCamp.Name)
+		assert.Equal(t, newGuidebook, retrievedCamp.Guidebook)
+		assert.Equal(t, newIsDraft, retrievedCamp.IsDraft)
+		assert.Equal(t, newIsPaymentOpen, retrievedCamp.IsPaymentOpen)
+		assert.Equal(t, newIsRegistrationOpen, retrievedCamp.IsRegistrationOpen)
+		// 時刻の比較は秒単位で行う（MySQLの時刻精度の問題を回避）
+		assert.WithinDuration(t, newDateStart, retrievedCamp.DateStart, time.Second)
+		assert.WithinDuration(t, newDateEnd, retrievedCamp.DateEnd, time.Second)
+	})
+
+	t.Run("存在しないキャンプIDでの更新はエラーを返さない", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentID := uint(random.PositiveInt(t))
+
+		camp := model.Camp{
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          random.Time(t),
+			DateEnd:            random.Time(t),
+		}
+
+		// GORMのUpdatesは対象レコードが存在しない場合でもエラーを返さない
+		err := r.UpdateCamp(t.Context(), nonExistentID, &camp)
+		assert.NoError(t, err)
+	})
+
+	t.Run("部分更新", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+
+		// 名前だけを更新するためのマップを使用
+		// Select("*")を使用しているため、構造体の場合はゼロ値も更新される
+		err := r.db.Model(&model.Camp{}).
+			Where("id = ?", camp.ID).
+			Update("name", random.AlphaNumericString(t, 25)).Error
+		require.NoError(t, err)
+
+		// 更新後のデータを取得して確認
+		retrievedCamp, err := r.GetCampByID(camp.ID)
+		require.NoError(t, err)
+
+		// 他のフィールドは元のまま
+		assert.Equal(t, camp.DisplayID, retrievedCamp.DisplayID)
+		assert.Equal(t, camp.Guidebook, retrievedCamp.Guidebook)
+		assert.Equal(t, camp.IsDraft, retrievedCamp.IsDraft)
+		assert.Equal(t, camp.IsPaymentOpen, retrievedCamp.IsPaymentOpen)
+		assert.Equal(t, camp.IsRegistrationOpen, retrievedCamp.IsRegistrationOpen)
+		assert.WithinDuration(t, camp.DateStart, retrievedCamp.DateStart, time.Second)
+		assert.WithinDuration(t, camp.DateEnd, retrievedCamp.DateEnd, time.Second)
+	})
+
+	t.Run("ゼロ値での更新", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+
+		// Select("*")を使用しているため、ゼロ値でも更新される
+		zeroValueUpdate := model.Camp{
+			Name:               "", // 空文字列
+			Guidebook:          "", // 空文字列
+			IsDraft:            false,
+			IsPaymentOpen:      false,
+			IsRegistrationOpen: false,
+		}
+
+		err := r.UpdateCamp(t.Context(), camp.ID, &zeroValueUpdate)
+		require.NoError(t, err)
+
+		// 更新後のデータを取得して確認
+		retrievedCamp, err := r.GetCampByID(camp.ID)
+		require.NoError(t, err)
+
+		// ゼロ値が設定されていることを確認
+		assert.Equal(t, "", retrievedCamp.Name)
+		assert.Equal(t, "", retrievedCamp.Guidebook)
+		assert.False(t, retrievedCamp.IsDraft)
+		assert.False(t, retrievedCamp.IsPaymentOpen)
+		assert.False(t, retrievedCamp.IsRegistrationOpen)
+	})
+}
+
 func TestIsCampParticipant(t *testing.T) {
 	t.Parallel()
 
