@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 	"time"
@@ -103,5 +104,166 @@ func TestAdminPostCamp(t *testing.T) {
 		res.Value("isRegistrationOpen").Boolean().IsEqual(req.IsRegistrationOpen)
 		res.Value("dateStart").String().IsEqual(req.DateStart.Format(time.DateOnly))
 		res.Value("dateEnd").String().IsEqual(req.DateEnd.Format(time.DateOnly))
+	})
+}
+
+func TestAdminPutCamp(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		dateStart := random.Time(t)
+		dateEnd := dateStart.Add(time.Duration(random.PositiveInt(t)))
+		req := api.AdminPutCampJSONRequestBody{
+			DisplayId:          random.AlphaNumericString(t, 10),
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          types.Date{Time: dateStart},
+			DateEnd:            types.Date{Time: dateEnd},
+		}
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil)
+		h.repo.MockCampRepository.EXPECT().
+			UpdateCamp(gomock.Any(), uint(campID), gomock.Any()).
+			Return(nil)
+
+		res := h.expect.PUT("/api/admin/camps/{campId}", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusOK).JSON().Object()
+
+		res.Keys().ContainsOnly(
+			"id", "displayId", "name", "guidebook", "isDraft", "isPaymentOpen",
+			"isRegistrationOpen", "dateStart", "dateEnd")
+		res.Value("id").Number().IsEqual(campID)
+		res.Value("displayId").String().IsEqual(req.DisplayId)
+		res.Value("name").String().IsEqual(req.Name)
+		res.Value("guidebook").String().IsEqual(req.Guidebook)
+		res.Value("isDraft").Boolean().IsEqual(req.IsDraft)
+		res.Value("isPaymentOpen").Boolean().IsEqual(req.IsPaymentOpen)
+		res.Value("isRegistrationOpen").Boolean().IsEqual(req.IsRegistrationOpen)
+		res.Value("dateStart").String().IsEqual(req.DateStart.Format(time.DateOnly))
+		res.Value("dateEnd").String().IsEqual(req.DateEnd.Format(time.DateOnly))
+	})
+
+	t.Run("Unauthorized", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		dateStart := random.Time(t)
+		dateEnd := dateStart.Add(time.Duration(random.PositiveInt(t)))
+		req := api.AdminPutCampJSONRequestBody{
+			DisplayId:          random.AlphaNumericString(t, 10),
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          types.Date{Time: dateStart},
+			DateEnd:            types.Date{Time: dateEnd},
+		}
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: false}, nil)
+
+		h.expect.PUT("/api/admin/camps/{campId}", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusForbidden)
+	})
+
+	t.Run("Bad Request", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil)
+
+		h.expect.PUT("/api/admin/camps/{campId}", campID).
+			WithJSON("invalid json").
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusBadRequest)
+	})
+
+	t.Run("UpdateCamp Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		dateStart := random.Time(t)
+		dateEnd := dateStart.Add(time.Duration(random.PositiveInt(t)))
+		req := api.AdminPutCampJSONRequestBody{
+			DisplayId:          random.AlphaNumericString(t, 10),
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          types.Date{Time: dateStart},
+			DateEnd:            types.Date{Time: dateEnd},
+		}
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil)
+		h.repo.MockCampRepository.EXPECT().
+			UpdateCamp(gomock.Any(), uint(campID), gomock.Any()).
+			Return(errors.New("update error"))
+
+		h.expect.PUT("/api/admin/camps/{campId}", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("GetOrCreateUser Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		dateStart := random.Time(t)
+		dateEnd := dateStart.Add(time.Duration(random.PositiveInt(t)))
+		req := api.AdminPutCampJSONRequestBody{
+			DisplayId:          random.AlphaNumericString(t, 10),
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          types.Date{Time: dateStart},
+			DateEnd:            types.Date{Time: dateEnd},
+		}
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(nil, errors.New("user error"))
+
+		h.expect.PUT("/api/admin/camps/{campId}", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
 	})
 }
