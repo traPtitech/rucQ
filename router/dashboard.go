@@ -22,6 +22,8 @@ func (s *Server) GetDashboard(
 	)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("camp with ID %d not found", campID)
+
 			return echo.NewHTTPError(
 				http.StatusNotFound,
 				"Camp not found",
@@ -37,6 +39,8 @@ func (s *Server) GetDashboard(
 	}
 
 	if !isParticipant {
+		e.Logger().Warnf("user %s is not a participant of camp %d", *params.XForwardedUser, campID)
+
 		return echo.NewHTTPError(http.StatusNotFound, "User is not a participant of this camp")
 	}
 

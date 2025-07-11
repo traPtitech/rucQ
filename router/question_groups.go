@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -44,15 +45,20 @@ func (s *Server) AdminPostQuestionGroup(
 	}
 
 	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostQuestionGroupJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Errorf("failed to bind request body: %v", err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
 
-		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			fmt.Sprintf("Failed to bind request body: %v", err),
+		)
 	}
 
 	questionGroup, err := converter.Convert[model.QuestionGroup](req)
@@ -96,15 +102,20 @@ func (s *Server) AdminPutQuestionGroupMetadata(
 	}
 
 	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutQuestionGroupMetadataJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Errorf("failed to bind request body: %v", err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
 
-		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			fmt.Sprintf("Failed to bind request body: %v", err),
+		)
 	}
 
 	questionGroup, err := converter.Convert[model.QuestionGroup](req)
@@ -154,6 +165,8 @@ func (s *Server) AdminDeleteQuestionGroup(
 	}
 
 	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 

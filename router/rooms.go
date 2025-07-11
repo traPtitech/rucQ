@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/jinzhu/copier"
@@ -21,13 +22,20 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	}
 
 	if !operator.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			fmt.Sprintf("Failed to bind request body: %v", err),
+		)
 	}
 
 	var roomModel model.Room
@@ -91,20 +99,29 @@ func (s *Server) AdminPutRoom(
 	}
 
 	if !operator.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			fmt.Sprintf("Failed to bind request body: %v", err),
+		)
 	}
 
 	roomModel, err := s.repo.GetRoomByID(uint(roomId))
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Not found")
+			e.Logger().Warnf("room with ID %d not found", roomId)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Room not found")
 		}
 
 		e.Logger().Errorf("failed to get room: %v", err)

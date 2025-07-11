@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -46,7 +47,12 @@ func (s *Server) PostAnswers(
 	var req api.PostAnswersJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			fmt.Sprintf("Failed to bind request body: %v", err),
+		)
 	}
 
 	answers, err := converter.Convert[[]model.Answer](req)
@@ -91,7 +97,12 @@ func (s *Server) PutAnswer(
 	var req api.PutAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			fmt.Sprintf("Failed to bind request body: %v", err),
+		)
 	}
 
 	answer, err := converter.Convert[model.Answer](req)
@@ -187,13 +198,20 @@ func (s *Server) AdminPutAnswer(
 	}
 
 	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			fmt.Sprintf("Failed to bind request body: %v", err),
+		)
 	}
 
 	answer, err := converter.Convert[model.Answer](req)
