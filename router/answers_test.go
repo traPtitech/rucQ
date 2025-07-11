@@ -966,10 +966,10 @@ func TestAdminPutAnswer(t *testing.T) {
 
 		h.expect.PUT("/api/admin/answers/{answerId}", answerID).
 			WithHeader("X-Forwarded-User", userID).
+			WithHeader("Content-Type", "application/json").
 			WithText("invalid json").
 			Expect().
-			Status(http.StatusBadRequest).JSON().Object().
-			Value("message").String().IsEqual("Invalid request body")
+			Status(http.StatusBadRequest)
 	})
 
 	t.Run("InternalServerError - User Repository Error", func(t *testing.T) {

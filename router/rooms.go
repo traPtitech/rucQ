@@ -11,26 +11,6 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-func (s *Server) GetRooms(e echo.Context) error {
-	rooms, err := s.repo.GetRooms()
-
-	if err != nil {
-		e.Logger().Errorf("failed to get rooms: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	var res []api.RoomResponse
-
-	if err := copier.Copy(&res, &rooms); err != nil {
-		e.Logger().Errorf("failed to copy models to response: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	return e.JSON(http.StatusOK, res)
-}
-
 func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) error {
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
@@ -41,13 +21,17 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	}
 
 	if !operator.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return err
 	}
 
 	var roomModel model.Room
@@ -111,20 +95,26 @@ func (s *Server) AdminPutRoom(
 	}
 
 	if !operator.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return err
 	}
 
 	roomModel, err := s.repo.GetRoomByID(uint(roomId))
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Not found")
+			e.Logger().Warnf("room with ID %d not found", roomId)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Room not found")
 		}
 
 		e.Logger().Errorf("failed to get room: %v", err)

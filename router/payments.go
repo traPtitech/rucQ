@@ -62,13 +62,17 @@ func (s *Server) AdminPostPayment(
 	}
 
 	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostPaymentJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return err
 	}
 
 	payment, err := converter.Convert[model.Payment](req)
@@ -113,13 +117,17 @@ func (s *Server) AdminPutPayment(
 	}
 
 	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutPaymentJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return err
 	}
 
 	payment, err := converter.Convert[model.Payment](req)

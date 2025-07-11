@@ -34,13 +34,17 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 	var req api.PostEventJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return err
 	}
 
 	eventModel, err := converter.Convert[model.Event](req)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		e.Logger().Errorf("failed to convert request to model: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	eventModel.CampID = uint(campID)
@@ -54,6 +58,12 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 
 	if (eventModel.Type == model.EventTypeOfficial || eventModel.Type == model.EventTypeMoment) &&
 		!user.IsStaff {
+		e.Logger().Warnf(
+			"user %s is not permitted to create event of type %s",
+			*params.XForwardedUser,
+			eventModel.Type,
+		)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -124,25 +134,41 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 
 	if (existingEvent.Type == model.EventTypeOfficial || existingEvent.Type == model.EventTypeMoment) &&
 		!user.IsStaff {
+		e.Logger().Warnf(
+			"user %s is not permitted to update event of type %s",
+			*params.XForwardedUser,
+			existingEvent.Type,
+		)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.PutEventJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return err
 	}
 
 	newEvent, err := converter.Convert[model.Event](req)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		e.Logger().Errorf("failed to convert request to model: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	newEvent.ID = existingEvent.ID
 
 	if (newEvent.Type == model.EventTypeOfficial || newEvent.Type == model.EventTypeMoment) &&
 		!user.IsStaff {
+		e.Logger().Warnf(
+			"user %s is not permitted to update event to type %s",
+			*params.XForwardedUser,
+			newEvent.Type,
+		)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -184,6 +210,12 @@ func (s *Server) DeleteEvent(
 
 	if (deleteEvent.Type == model.EventTypeOfficial || deleteEvent.Type == model.EventTypeMoment) &&
 		!user.IsStaff {
+		e.Logger().Warnf(
+			"user %s is not permitted to delete event of type %s",
+			*params.XForwardedUser,
+			deleteEvent.Type,
+		)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 

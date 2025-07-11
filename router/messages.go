@@ -19,8 +19,9 @@ func (s *Server) AdminPostMessage(
 ) error {
 	var req api.AdminPostMessageJSONRequestBody
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Errorf("failed to bind request: %v", err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		e.Logger().Warnf("failed to bind request: %v", err)
+
+		return err
 	}
 
 	// スタッフだけがbotを用いてdmを送信できるようにする
@@ -32,6 +33,8 @@ func (s *Server) AdminPostMessage(
 	}
 	// スタッフじゃなければはじく
 	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 

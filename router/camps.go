@@ -38,7 +38,9 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	var req api.AdminPostCampJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return err
 	}
 
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
@@ -50,6 +52,8 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	}
 
 	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -87,7 +91,9 @@ func (s *Server) GetCamp(e echo.Context, campID api.CampId) error {
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Not found")
+			e.Logger().Warnf("camp with ID %d not found", campID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
 		e.Logger().Errorf("failed to get camp: %v", err)
@@ -122,19 +128,23 @@ func (s *Server) AdminPutCamp(
 	}
 
 	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutCampJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		return e.JSON(http.StatusBadRequest, err)
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return err
 	}
 
 	newCamp, err := converter.Convert[model.Camp](req)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get camp: %v", err)
+		e.Logger().Errorf("failed to convert request to model: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -175,11 +185,15 @@ func (s *Server) AdminDeleteCamp(
 	}
 
 	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	// TODO: Not found エラーのハンドリングを追加
 	if err := s.repo.DeleteCamp(e.Request().Context(), uint(campID)); err != nil {
+		e.Logger().Errorf("failed to delete camp: %v", err)
+
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 

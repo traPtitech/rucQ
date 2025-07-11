@@ -234,6 +234,7 @@ func TestAdminPutPayment(t *testing.T) {
 
 		// 不正なJSONリクエスト
 		h.expect.PUT("/api/admin/payments/{paymentId}", paymentID).
+			WithHeader("Content-Type", "application/json").
 			WithText("invalid json").
 			WithHeader("X-Forwarded-User", adminUserID).
 			Expect().Status(http.StatusBadRequest)

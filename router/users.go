@@ -65,6 +65,8 @@ func (s *Server) AdminPutUser(
 
 	// 開発環境では管理者でなくてもユーザー情報を更新できるようにする
 	if !s.isDev && !operator.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -79,9 +81,9 @@ func (s *Server) AdminPutUser(
 	var req api.AdminPutUserJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Errorf("failed to bind request: %v", err)
+		e.Logger().Warnf("failed to bind request: %v", err)
 
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request")
+		return err
 	}
 
 	if err := copier.Copy(targetUser, &req); err != nil {
