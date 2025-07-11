@@ -350,3 +350,169 @@ func TestIsCampParticipant(t *testing.T) {
 		}
 	})
 }
+
+func TestAddCampParticipant(t *testing.T) {
+	t.Parallel()
+
+	t.Run("成功: 参加受付が開いている場合", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 参加受付を開く
+		camp.IsRegistrationOpen = true
+		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
+		require.NoError(t, err)
+
+		// ユーザーを参加者に追加
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
+		assert.NoError(t, err)
+
+		// 参加者が追加されていることを確認
+		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
+		assert.NoError(t, err)
+		assert.True(t, isParticipant)
+
+		// 参加者リストからも確認
+		participants, err := r.GetCampParticipants(t.Context(), camp.ID)
+		assert.NoError(t, err)
+		assert.Len(t, participants, 1)
+		assert.Equal(t, user.ID, participants[0].ID)
+	})
+
+	t.Run("エラー: 参加受付が閉じている場合", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 参加受付を閉じる
+		camp.IsRegistrationOpen = false
+		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
+		require.NoError(t, err)
+
+		// ユーザーを参加者に追加しようとする
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
+		assert.Error(t, err)
+		assert.Equal(t, model.ErrForbidden, err)
+
+		// 参加者が追加されていないことを確認
+		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
+		assert.NoError(t, err)
+		assert.False(t, isParticipant)
+	})
+
+	t.Run("エラー: 存在しない合宿ID", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		user := mustCreateUser(t, r)
+
+		// 存在しない合宿IDを使用
+		nonExistentCampID := uint(random.PositiveInt(t))
+
+		err := r.AddCampParticipant(t.Context(), nonExistentCampID, &user)
+		assert.Error(t, err)
+		assert.Equal(t, model.ErrNotFound, err)
+	})
+
+	t.Run("成功: 同じユーザーを複数回追加しても重複しない", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 参加受付を開く
+		camp.IsRegistrationOpen = true
+		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
+		require.NoError(t, err)
+
+		// 同じユーザーを2回追加
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
+		assert.NoError(t, err)
+
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
+		assert.NoError(t, err) // 重複追加でもエラーにならない
+
+		// 参加者リストに1つだけ追加されていることを確認
+		participants, err := r.GetCampParticipants(t.Context(), camp.ID)
+		assert.NoError(t, err)
+		assert.Len(t, participants, 1)
+		assert.Equal(t, user.ID, participants[0].ID)
+	})
+
+	t.Run("成功: 複数のユーザーを追加", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user1 := mustCreateUser(t, r)
+		user2 := mustCreateUser(t, r)
+		user3 := mustCreateUser(t, r)
+
+		// 参加受付を開く
+		camp.IsRegistrationOpen = true
+		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
+		require.NoError(t, err)
+
+		// 複数のユーザーを追加
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user1)
+		assert.NoError(t, err)
+
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user2)
+		assert.NoError(t, err)
+
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user3)
+		assert.NoError(t, err)
+
+		// 全員が参加者として追加されていることを確認
+		participants, err := r.GetCampParticipants(t.Context(), camp.ID)
+		assert.NoError(t, err)
+		assert.Len(t, participants, 3)
+
+		participantIDs := make([]string, 3)
+		for i, p := range participants {
+			participantIDs[i] = p.ID
+		}
+
+		assert.Contains(t, participantIDs, user1.ID)
+		assert.Contains(t, participantIDs, user2.ID)
+		assert.Contains(t, participantIDs, user3.ID)
+	})
+
+	t.Run("成功: 参加受付を後から開いた場合", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 最初は参加受付が閉じている状態で作成されている可能性があるため、明示的に閉じる
+		camp.IsRegistrationOpen = false
+		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
+		require.NoError(t, err)
+
+		// 参加受付が閉じている状態では追加できない
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
+		assert.Error(t, err)
+		assert.Equal(t, model.ErrForbidden, err)
+
+		// 参加受付を開く
+		camp.IsRegistrationOpen = true
+		err = r.UpdateCamp(t.Context(), camp.ID, &camp)
+		require.NoError(t, err)
+
+		// 今度は追加できるはず
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
+		assert.NoError(t, err)
+
+		// 参加者が追加されていることを確認
+		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
+		assert.NoError(t, err)
+		assert.True(t, isParticipant)
+	})
+}
