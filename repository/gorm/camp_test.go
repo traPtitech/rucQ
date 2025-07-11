@@ -103,27 +103,6 @@ func TestUpdateCamp(t *testing.T) {
 		assert.WithinDuration(t, newDateEnd, retrievedCamp.DateEnd, time.Second)
 	})
 
-	t.Run("存在しないキャンプIDでの更新はエラーを返さない", func(t *testing.T) {
-		t.Parallel()
-
-		r := setup(t)
-		nonExistentID := uint(random.PositiveInt(t))
-
-		camp := model.Camp{
-			Name:               random.AlphaNumericString(t, 20),
-			Guidebook:          random.AlphaNumericString(t, 100),
-			IsDraft:            random.Bool(t),
-			IsPaymentOpen:      random.Bool(t),
-			IsRegistrationOpen: random.Bool(t),
-			DateStart:          random.Time(t),
-			DateEnd:            random.Time(t),
-		}
-
-		// GORMのUpdatesは対象レコードが存在しない場合でもエラーを返さない
-		err := r.UpdateCamp(t.Context(), nonExistentID, &camp)
-		assert.NoError(t, err)
-	})
-
 	t.Run("部分更新", func(t *testing.T) {
 		t.Parallel()
 
@@ -179,6 +158,27 @@ func TestUpdateCamp(t *testing.T) {
 		assert.False(t, retrievedCamp.IsDraft)
 		assert.False(t, retrievedCamp.IsPaymentOpen)
 		assert.False(t, retrievedCamp.IsRegistrationOpen)
+	})
+
+	t.Run("存在しない合宿での更新はエラーになる", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentID := uint(random.PositiveInt(t))
+
+		camp := model.Camp{
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          random.Time(t),
+			DateEnd:            random.Time(t),
+		}
+
+		err := r.UpdateCamp(t.Context(), nonExistentID, &camp)
+		assert.Error(t, err)
+		assert.Equal(t, model.ErrNotFound, err)
 	})
 }
 

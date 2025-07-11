@@ -49,11 +49,17 @@ func (r *Repository) GetCampByID(id uint) (*model.Camp, error) {
 }
 
 func (r *Repository) UpdateCamp(ctx context.Context, campID uint, camp *model.Camp) error {
-	if _, err := gorm.G[*model.Camp](r.db).
+	rowsAffected, err := gorm.G[*model.Camp](r.db).
 		Where("id = ?", campID).
 		Select("*").
-		Updates(ctx, camp); err != nil {
+		Updates(ctx, camp)
+
+	if err != nil {
 		return err
+	}
+
+	if rowsAffected == 0 {
+		return model.ErrNotFound
 	}
 
 	return nil
