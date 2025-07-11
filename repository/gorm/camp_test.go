@@ -416,7 +416,7 @@ func TestAddCampParticipant(t *testing.T) {
 
 		err := r.AddCampParticipant(t.Context(), nonExistentCampID, &user)
 		assert.Error(t, err)
-		// GORMのFirstメソッドは該当レコードがない場合、gorm.ErrRecordNotFoundを返すはず
+		assert.Equal(t, model.ErrNotFound, err)
 	})
 
 	t.Run("成功: 同じユーザーを複数回追加しても重複しない", func(t *testing.T) {

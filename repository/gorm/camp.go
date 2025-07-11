@@ -77,6 +77,10 @@ func (r *Repository) AddCampParticipant(ctx context.Context, campID uint, user *
 	}).First(ctx)
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.ErrNotFound
+		}
+
 		return err
 	}
 
