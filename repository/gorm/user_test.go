@@ -76,7 +76,7 @@ func TestUpdateUser(t *testing.T) {
 		r := setup(t)
 		user := mustCreateUser(t, r)
 
-		user.IsStaff = random.Bool(t)
+		user.IsStaff = !user.IsStaff
 		err := r.UpdateUser(t.Context(), &user)
 		assert.NoError(t, err)
 
