@@ -11,26 +11,6 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-func (s *Server) GetRooms(e echo.Context) error {
-	rooms, err := s.repo.GetRooms()
-
-	if err != nil {
-		e.Logger().Errorf("failed to get rooms: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	var res []api.RoomResponse
-
-	if err := copier.Copy(&res, &rooms); err != nil {
-		e.Logger().Errorf("failed to copy models to response: %v", err)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	return e.JSON(http.StatusOK, res)
-}
-
 func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) error {
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
