@@ -63,7 +63,7 @@ func (r *Repository) GetStaffs() ([]model.User, error) {
 }
 
 func (r *Repository) UpdateUser(ctx context.Context, user *model.User) error {
-	_, err := gorm.G[*model.User](r.db).Updates(ctx, user)
+	_, err := gorm.G[*model.User](r.db).Select("isStaff").Updates(ctx, user)
 
 	return err
 }
