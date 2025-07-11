@@ -214,8 +214,19 @@ func (s *Server) PostCampRegister(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	// TODO: Forbidden、 Not found エラーのハンドリングを追加
 	if err := s.repo.AddCampParticipant(e.Request().Context(), uint(campID), user); err != nil {
+		if errors.Is(err, model.ErrForbidden) {
+			e.Logger().Warnf("registration for camp %d is closed", campID)
+
+			return echo.NewHTTPError(http.StatusForbidden, "Registration for this camp is closed")
+		}
+
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("camp with ID %d not found", campID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
+
 		e.Logger().Errorf("failed to add camp participant: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")

@@ -267,3 +267,126 @@ func TestAdminPutCamp(t *testing.T) {
 			Status(http.StatusInternalServerError)
 	})
 }
+
+func TestPostCampRegister(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+		user := &model.User{
+			ID:      username,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			AddCampParticipant(gomock.Any(), uint(campID), user).
+			Return(nil)
+
+		h.expect.POST("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNoContent)
+	})
+
+	t.Run("GetOrCreateUser Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(nil, errors.New("user error"))
+
+		h.expect.POST("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("Registration Closed", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+		user := &model.User{
+			ID:      username,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			AddCampParticipant(gomock.Any(), uint(campID), user).
+			Return(model.ErrForbidden)
+
+		h.expect.POST("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusForbidden).
+			JSON().
+			Object().
+			HasValue("message", "Registration for this camp is closed")
+	})
+
+	t.Run("Camp Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+		user := &model.User{
+			ID:      username,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			AddCampParticipant(gomock.Any(), uint(campID), user).
+			Return(model.ErrNotFound)
+
+		h.expect.POST("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNotFound).
+			JSON().
+			Object().
+			HasValue("message", "Camp not found")
+	})
+
+	t.Run("AddCampParticipant Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+		user := &model.User{
+			ID:      username,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			AddCampParticipant(gomock.Any(), uint(campID), user).
+			Return(errors.New("participant error"))
+
+		h.expect.POST("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+}
