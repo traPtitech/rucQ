@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/jinzhu/copier"
@@ -84,10 +83,7 @@ func (s *Server) AdminPutUser(
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Warnf("failed to bind request: %v", err)
 
-		return echo.NewHTTPError(
-			http.StatusBadRequest,
-			fmt.Sprintf("Failed to bind request: %v", err),
-		)
+		return err
 	}
 
 	if err := copier.Copy(targetUser, &req); err != nil {

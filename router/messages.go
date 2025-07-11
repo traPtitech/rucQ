@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -22,10 +21,7 @@ func (s *Server) AdminPostMessage(
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Warnf("failed to bind request: %v", err)
 
-		return echo.NewHTTPError(
-			http.StatusBadRequest,
-			fmt.Sprintf("Failed to bind request: %v", err),
-		)
+		return err
 	}
 
 	// スタッフだけがbotを用いてdmを送信できるようにする

@@ -2,7 +2,6 @@ package router
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/jinzhu/copier"
@@ -32,10 +31,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Warnf("failed to bind request body: %v", err)
 
-		return echo.NewHTTPError(
-			http.StatusBadRequest,
-			fmt.Sprintf("Failed to bind request body: %v", err),
-		)
+		return err
 	}
 
 	var roomModel model.Room
@@ -109,10 +105,7 @@ func (s *Server) AdminPutRoom(
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Warnf("failed to bind request body: %v", err)
 
-		return echo.NewHTTPError(
-			http.StatusBadRequest,
-			fmt.Sprintf("Failed to bind request body: %v", err),
-		)
+		return err
 	}
 
 	roomModel, err := s.repo.GetRoomByID(uint(roomId))

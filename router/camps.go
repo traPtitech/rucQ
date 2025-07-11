@@ -2,7 +2,6 @@ package router
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/jinzhu/copier"
@@ -41,10 +40,7 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Warnf("failed to bind request body: %v", err)
 
-		return echo.NewHTTPError(
-			http.StatusBadRequest,
-			fmt.Sprintf("Failed to bind request body: %v", err),
-		)
+		return err
 	}
 
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
@@ -142,10 +138,7 @@ func (s *Server) AdminPutCamp(
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Warnf("failed to bind request body: %v", err)
 
-		return echo.NewHTTPError(
-			http.StatusBadRequest,
-			fmt.Sprintf("Failed to bind request body: %v", err),
-		)
+		return err
 	}
 
 	newCamp, err := converter.Convert[model.Camp](req)

@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -37,7 +36,7 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Warnf("failed to bind request body: %v", err)
 
-		return e.JSON(http.StatusBadRequest, fmt.Sprintf("Failed to bind request body: %v", err))
+		return err
 	}
 
 	eventModel, err := converter.Convert[model.Event](req)
@@ -149,10 +148,7 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Warnf("failed to bind request body: %v", err)
 
-		return echo.NewHTTPError(
-			http.StatusBadRequest,
-			fmt.Sprintf("Failed to bind request body: %v", err),
-		)
+		return err
 	}
 
 	newEvent, err := converter.Convert[model.Event](req)

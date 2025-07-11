@@ -2,7 +2,6 @@ package router
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -70,10 +69,7 @@ func (s *Server) AdminPostQuestion(
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Warnf("failed to bind request body: %v", err)
 
-		return echo.NewHTTPError(
-			http.StatusBadRequest,
-			fmt.Sprintf("Failed to bind request body: %v", err),
-		)
+		return err
 	}
 
 	question, err := converter.Convert[model.Question](req)
@@ -127,10 +123,7 @@ func (s *Server) AdminPutQuestion(
 	if err := e.Bind(&req); err != nil {
 		e.Logger().Warnf("failed to bind request body: %v", err)
 
-		return echo.NewHTTPError(
-			http.StatusBadRequest,
-			fmt.Sprintf("Failed to bind request body: %v", err),
-		)
+		return err
 	}
 
 	question, err := converter.Convert[model.Question](req)
