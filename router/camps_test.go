@@ -266,6 +266,42 @@ func TestAdminPutCamp(t *testing.T) {
 			Expect().
 			Status(http.StatusInternalServerError)
 	})
+
+	t.Run("Camp Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		dateStart := random.Time(t)
+		dateEnd := dateStart.Add(time.Duration(random.PositiveInt(t)))
+		req := api.AdminPutCampJSONRequestBody{
+			DisplayId:          random.AlphaNumericString(t, 10),
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          types.Date{Time: dateStart},
+			DateEnd:            types.Date{Time: dateEnd},
+		}
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil)
+		h.repo.MockCampRepository.EXPECT().
+			UpdateCamp(gomock.Any(), uint(campID), gomock.Any()).
+			Return(model.ErrNotFound)
+
+		h.expect.PUT("/api/admin/camps/{campId}", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNotFound).
+			JSON().
+			Object().
+			HasValue("message", "Camp not found")
+	})
 }
 
 func TestPostCampRegister(t *testing.T) {
