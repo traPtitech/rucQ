@@ -151,8 +151,13 @@ func (s *Server) AdminPutCamp(
 
 	newCamp.ID = uint(campID)
 
-	// TODO: Not foundエラーのハンドリングを追加
 	if err := s.repo.UpdateCamp(e.Request().Context(), uint(campID), &newCamp); err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("camp with ID %d not found", campID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
+
 		e.Logger().Errorf("failed to update camp: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
