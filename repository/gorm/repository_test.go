@@ -12,6 +12,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/model"
@@ -66,6 +67,7 @@ func setup(t *testing.T) *Repository {
 	config.Loc = loc
 
 	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
+		Logger:         logger.Default.LogMode(logger.Info),
 		TranslateError: true,
 	})
 	require.NoError(t, err)
@@ -192,6 +194,8 @@ func mustCreateQuestionGroup(t *testing.T, r *Repository, campID uint) model.Que
 	return *questionGroup
 }
 
+const maxOptions = 5
+
 func mustCreateQuestion(
 	t *testing.T,
 	r *Repository,
@@ -212,7 +216,7 @@ func mustCreateQuestion(
 	switch questionType {
 	case model.SingleChoiceQuestion, model.MultipleChoiceQuestion:
 		// 2つ以上の選択肢を作成する
-		question.Options = make([]model.Option, random.PositiveIntN(t, 10)+1)
+		question.Options = make([]model.Option, random.PositiveIntN(t, maxOptions)+1)
 
 		for i := range question.Options {
 			question.Options[i] = model.Option{
