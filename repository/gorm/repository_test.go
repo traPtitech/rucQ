@@ -212,7 +212,7 @@ func mustCreateQuestion(
 	switch questionType {
 	case model.SingleChoiceQuestion, model.MultipleChoiceQuestion:
 		// 2つ以上の選択肢を作成する
-		question.Options = make([]model.Option, random.PositiveIntN(t, 10)+1)
+		question.Options = make([]model.Option, random.PositiveIntN(t, 5)+1)
 
 		for i := range question.Options {
 			question.Options[i] = model.Option{
