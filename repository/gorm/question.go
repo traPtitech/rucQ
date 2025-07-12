@@ -51,7 +51,11 @@ func (r *Repository) UpdateQuestion(
 ) error {
 	question.ID = questionID
 
-	if err := r.db.WithContext(ctx).Session(&gorm.Session{FullSaveAssociations: true}).Select("*").Updates(question).Error; err != nil {
+	if err := r.db.WithContext(ctx).
+		Session(&gorm.Session{FullSaveAssociations: true}).
+		Select("*").
+		Omit("question_group_id").
+		Updates(question).Error; err != nil {
 		return err
 	}
 

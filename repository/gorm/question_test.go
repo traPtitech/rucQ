@@ -80,14 +80,14 @@ func TestUpdateQuestion(t *testing.T) {
 			}
 		}
 
+		// QuestionGroupIDはゼロ値のままでも正常に更新されることを確認
 		newQuestion := model.Question{
-			Type:            model.SingleChoiceQuestion,
-			QuestionGroupID: questionGroup.ID,
-			Title:           newTitle,
-			Description:     newDescription,
-			IsPublic:        newIsPublic,
-			IsOpen:          newIsOpen,
-			Options:         updatedOptions,
+			Type:        model.SingleChoiceQuestion,
+			Title:       newTitle,
+			Description: newDescription,
+			IsPublic:    newIsPublic,
+			IsOpen:      newIsOpen,
+			Options:     updatedOptions,
 		}
 
 		err := r.UpdateQuestion(t.Context(), question.ID, &newQuestion)
