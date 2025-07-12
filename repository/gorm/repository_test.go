@@ -12,6 +12,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/model"
@@ -66,6 +67,7 @@ func setup(t *testing.T) *Repository {
 	config.Loc = loc
 
 	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
+		Logger:         logger.Default.LogMode(logger.Info),
 		TranslateError: true,
 	})
 	require.NoError(t, err)
