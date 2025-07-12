@@ -288,7 +288,7 @@ func TestIsCampParticipant(t *testing.T) {
 		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
 		require.NoError(t, err)
 
-		// ユーザーをキャンプに参加させる
+		// ユーザーを合宿に参加させる
 		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
 		require.NoError(t, err)
 
