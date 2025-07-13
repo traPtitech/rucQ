@@ -39,21 +39,21 @@ func (s *Server) GetMyAnswers(
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) GetAnswers(e echo.Context, questionId api.QuestionId) error {
+func (s *Server) GetAnswers(e echo.Context, questionID api.QuestionId) error {
 	answers, err := s.repo.GetPublicAnswersByQuestionID(
 		e.Request().Context(),
-		uint(questionId),
+		uint(questionID),
 	)
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("question %d not found", questionId)
+			e.Logger().Warnf("question %d not found", questionID)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}
 
 		if errors.Is(err, model.ErrForbidden) {
-			e.Logger().Warnf("question %d is not public", questionId)
+			e.Logger().Warnf("question %d is not public", questionID)
 
 			return echo.NewHTTPError(http.StatusForbidden, "Question is not public")
 		}
