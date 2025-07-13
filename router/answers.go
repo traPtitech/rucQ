@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -45,11 +46,11 @@ func (s *Server) GetAnswers(e echo.Context, questionId api.QuestionId) error {
 	)
 
 	if err != nil {
-		if err == model.ErrNotFound {
+		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}
 
-		if err == model.ErrForbidden {
+		if errors.Is(err, model.ErrForbidden) {
 			return echo.NewHTTPError(http.StatusForbidden, "Question is not public")
 		}
 
