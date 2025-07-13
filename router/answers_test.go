@@ -1043,3 +1043,199 @@ func TestAdminPutAnswer(t *testing.T) {
 			Value("message").String().IsEqual("Internal server error")
 	})
 }
+
+func TestGetAnswers(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success - Public Question", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		questionID := random.PositiveInt(t)
+		userID := random.AlphaNumericString(t, 32)
+
+		freeTextContent := random.AlphaNumericString(t, 50)
+		freeNumberContent := random.Float64(t)
+		optionID1 := random.PositiveInt(t)
+		optionID2 := random.PositiveInt(t)
+
+		answers := []model.Answer{
+			{
+				Model: gorm.Model{
+					ID: uint(random.PositiveInt(t)),
+				},
+				QuestionID:      uint(questionID),
+				UserID:          userID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &freeTextContent,
+			},
+			{
+				Model: gorm.Model{
+					ID: uint(random.PositiveInt(t)),
+				},
+				QuestionID:        uint(questionID),
+				UserID:            userID,
+				Type:              model.FreeNumberQuestion,
+				FreeNumberContent: &freeNumberContent,
+			},
+			{
+				Model: gorm.Model{
+					ID: uint(random.PositiveInt(t)),
+				},
+				QuestionID: uint(questionID),
+				UserID:     userID,
+				Type:       model.SingleChoiceQuestion,
+				SelectedOptions: []model.Option{
+					{
+						Model: gorm.Model{
+							ID: uint(optionID1),
+						},
+						Content: random.AlphaNumericString(t, 20),
+					},
+				},
+			},
+			{
+				Model: gorm.Model{
+					ID: uint(random.PositiveInt(t)),
+				},
+				QuestionID: uint(questionID),
+				UserID:     userID,
+				Type:       model.MultipleChoiceQuestion,
+				SelectedOptions: []model.Option{
+					{
+						Model: gorm.Model{
+							ID: uint(optionID1),
+						},
+						Content: random.AlphaNumericString(t, 20),
+					},
+					{
+						Model: gorm.Model{
+							ID: uint(optionID2),
+						},
+						Content: random.AlphaNumericString(t, 20),
+					},
+				},
+			},
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			Return(answers, nil).
+			Times(1)
+
+		res := h.expect.GET("/api/questions/{questionId}/answers", questionID).
+			Expect().
+			Status(http.StatusOK).JSON().Array()
+
+		res.Length().IsEqual(len(answers))
+
+		for i, answer := range answers {
+			answerObj := res.Value(i).Object()
+			answerObj.Value("id").Number().IsEqual(answer.ID)
+			answerObj.Value("userId").String().IsEqual(answer.UserID)
+			answerObj.Value("questionId").Number().IsEqual(answer.QuestionID)
+
+			switch answer.Type {
+			case model.FreeTextQuestion:
+				answerObj.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
+				answerObj.Value("type").String().IsEqual("free_text")
+				answerObj.Value("content").String().IsEqual(*answer.FreeTextContent)
+			case model.FreeNumberQuestion:
+				answerObj.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
+				answerObj.Value("type").String().IsEqual("free_number")
+				// float64からfloat32への変換で精度が変わるため、InRangeを使用
+				expectedContent := float32(*answer.FreeNumberContent)
+				answerObj.Value("content").Number().
+					InRange(float64(expectedContent)-0.0001, float64(expectedContent)+0.0001)
+			case model.SingleChoiceQuestion:
+				answerObj.Keys().
+					ContainsOnly("id", "type", "userId", "questionId", "selectedOption")
+				answerObj.Value("type").String().IsEqual("single")
+				selectedOption := answerObj.Value("selectedOption").Object()
+				selectedOption.Value("id").Number().IsEqual(answer.SelectedOptions[0].ID)
+				selectedOption.Value("content").String().IsEqual(answer.SelectedOptions[0].Content)
+			case model.MultipleChoiceQuestion:
+				answerObj.Keys().
+					ContainsOnly("id", "type", "userId", "questionId", "selectedOptions")
+				answerObj.Value("type").String().IsEqual("multiple")
+				selectedOptions := answerObj.Value("selectedOptions").Array()
+				selectedOptions.Length().IsEqual(2)
+				selectedOptions.Value(0).
+					Object().
+					Value("id").
+					Number().
+					IsEqual(answer.SelectedOptions[0].ID)
+				selectedOptions.Value(0).
+					Object().
+					Value("content").
+					String().
+					IsEqual(answer.SelectedOptions[0].Content)
+				selectedOptions.Value(1).
+					Object().
+					Value("id").
+					Number().
+					IsEqual(answer.SelectedOptions[1].ID)
+				selectedOptions.Value(1).
+					Object().
+					Value("content").
+					String().
+					IsEqual(answer.SelectedOptions[1].Content)
+			}
+		}
+	})
+
+	t.Run("Success - Private Question (Empty Response)", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		questionID := random.PositiveInt(t)
+
+		// Private質問なので空のスライスが返される
+		h.repo.MockAnswerRepository.EXPECT().
+			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			Return([]model.Answer{}, nil).
+			Times(1)
+
+		res := h.expect.GET("/api/questions/{questionId}/answers", questionID).
+			Expect().
+			Status(http.StatusOK).JSON().Array()
+
+		res.Length().IsEqual(0)
+	})
+
+	t.Run("Success - No Answers", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		questionID := random.PositiveInt(t)
+
+		// 回答が存在しない場合
+		h.repo.MockAnswerRepository.EXPECT().
+			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			Return([]model.Answer{}, nil).
+			Times(1)
+
+		res := h.expect.GET("/api/questions/{questionId}/answers", questionID).
+			Expect().
+			Status(http.StatusOK).JSON().Array()
+
+		res.Length().IsEqual(0)
+	})
+
+	t.Run("Internal Server Error - Repository Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		questionID := random.PositiveInt(t)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			Return(nil, gorm.ErrRecordNotFound).
+			Times(1)
+
+		h.expect.GET("/api/questions/{questionId}/answers", questionID).
+			Expect().
+			Status(http.StatusInternalServerError).JSON().Object().
+			Value("message").String().IsEqual("Internal server error")
+	})
+}

@@ -38,6 +38,29 @@ func (s *Server) GetMyAnswers(
 	return e.JSON(http.StatusOK, res)
 }
 
+func (s *Server) GetAnswers(e echo.Context, questionId api.QuestionId) error {
+	answers, err := s.repo.GetPublicAnswersByQuestionID(
+		e.Request().Context(),
+		uint(questionId),
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get public answers: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[[]api.AnswerResponse](answers)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, res)
+}
+
 func (s *Server) PostAnswers(
 	e echo.Context,
 	_ api.QuestionGroupId,
