@@ -274,6 +274,7 @@ type FreeNumberQuestionRequest struct {
 	Description *string                       `json:"description,omitempty"`
 	IsOpen      bool                          `json:"isOpen"`
 	IsPublic    bool                          `json:"isPublic"`
+	IsRequired  *bool                         `json:"isRequired,omitempty"`
 	Title       string                        `json:"title"`
 	Type        FreeNumberQuestionRequestType `json:"type"`
 }
@@ -287,6 +288,7 @@ type FreeNumberQuestionResponse struct {
 	Id          int                            `json:"id"`
 	IsOpen      bool                           `json:"isOpen"`
 	IsPublic    bool                           `json:"isPublic"`
+	IsRequired  bool                           `json:"isRequired"`
 	Title       string                         `json:"title"`
 	Type        FreeNumberQuestionResponseType `json:"type"`
 }
@@ -321,6 +323,7 @@ type FreeTextQuestionRequest struct {
 	Description *string                     `json:"description,omitempty"`
 	IsOpen      bool                        `json:"isOpen"`
 	IsPublic    bool                        `json:"isPublic"`
+	IsRequired  *bool                       `json:"isRequired,omitempty"`
 	Title       string                      `json:"title"`
 	Type        FreeTextQuestionRequestType `json:"type"`
 }
@@ -334,6 +337,7 @@ type FreeTextQuestionResponse struct {
 	Id          int                          `json:"id"`
 	IsOpen      bool                         `json:"isOpen"`
 	IsPublic    bool                         `json:"isPublic"`
+	IsRequired  bool                         `json:"isRequired"`
 	Title       string                       `json:"title"`
 	Type        FreeTextQuestionResponseType `json:"type"`
 }
@@ -405,6 +409,7 @@ type MultipleChoiceQuestionResponse struct {
 	Id          int                                `json:"id"`
 	IsOpen      bool                               `json:"isOpen"`
 	IsPublic    bool                               `json:"isPublic"`
+	IsRequired  bool                               `json:"isRequired"`
 	Options     []OptionResponse                   `json:"options"`
 	Title       string                             `json:"title"`
 	Type        MultipleChoiceQuestionResponseType `json:"type"`
@@ -468,6 +473,7 @@ type PostMultipleChoiceQuestionRequest struct {
 	Description *string                               `json:"description,omitempty"`
 	IsOpen      bool                                  `json:"isOpen"`
 	IsPublic    bool                                  `json:"isPublic"`
+	IsRequired  *bool                                 `json:"isRequired,omitempty"`
 	Options     []PostOptionRequest                   `json:"options"`
 	Title       string                                `json:"title"`
 	Type        PostMultipleChoiceQuestionRequestType `json:"type"`
@@ -499,6 +505,7 @@ type PostSingleChoiceQuestionRequest struct {
 	Description *string                             `json:"description,omitempty"`
 	IsOpen      bool                                `json:"isOpen"`
 	IsPublic    bool                                `json:"isPublic"`
+	IsRequired  *bool                               `json:"isRequired,omitempty"`
 	Options     []PostOptionRequest                 `json:"options"`
 	Title       string                              `json:"title"`
 	Type        PostSingleChoiceQuestionRequestType `json:"type"`
@@ -512,6 +519,7 @@ type PutMultipleChoiceQuestionRequest struct {
 	Description *string                              `json:"description,omitempty"`
 	IsOpen      bool                                 `json:"isOpen"`
 	IsPublic    bool                                 `json:"isPublic"`
+	IsRequired  *bool                                `json:"isRequired,omitempty"`
 	Options     []PutOptionRequest                   `json:"options"`
 	Title       string                               `json:"title"`
 	Type        PutMultipleChoiceQuestionRequestType `json:"type"`
@@ -543,6 +551,7 @@ type PutSingleChoiceQuestionRequest struct {
 	Description *string                            `json:"description,omitempty"`
 	IsOpen      bool                               `json:"isOpen"`
 	IsPublic    bool                               `json:"isPublic"`
+	IsRequired  *bool                              `json:"isRequired,omitempty"`
 	Options     []PutOptionRequest                 `json:"options"`
 	Title       string                             `json:"title"`
 	Type        PutSingleChoiceQuestionRequestType `json:"type"`
@@ -565,12 +574,23 @@ type QuestionRequestBase struct {
 	Description *string `json:"description,omitempty"`
 	IsOpen      bool    `json:"isOpen"`
 	IsPublic    bool    `json:"isPublic"`
+	IsRequired  *bool   `json:"isRequired,omitempty"`
 	Title       string  `json:"title"`
 }
 
 // QuestionResponse defines model for QuestionResponse.
 type QuestionResponse struct {
 	union json.RawMessage
+}
+
+// QuestionResponseBase defines model for QuestionResponseBase.
+type QuestionResponseBase struct {
+	Description *string `json:"description,omitempty"`
+	Id          int     `json:"id"`
+	IsOpen      bool    `json:"isOpen"`
+	IsPublic    bool    `json:"isPublic"`
+	IsRequired  bool    `json:"isRequired"`
+	Title       string  `json:"title"`
 }
 
 // RollCallReactionRequest defines model for RollCallReactionRequest.
@@ -656,6 +676,7 @@ type SingleChoiceQuestionResponse struct {
 	Id          int                              `json:"id"`
 	IsOpen      bool                             `json:"isOpen"`
 	IsPublic    bool                             `json:"isPublic"`
+	IsRequired  bool                             `json:"isRequired"`
 	Options     []OptionResponse                 `json:"options"`
 	Title       string                           `json:"title"`
 	Type        SingleChoiceQuestionResponseType `json:"type"`

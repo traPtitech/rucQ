@@ -1790,6 +1790,8 @@ components:
           type: boolean
         isOpen:
           type: boolean
+        isRequired:
+          type: boolean
       required:
         - title
         - isPublic
@@ -1806,6 +1808,28 @@ components:
         - $ref: "#/components/schemas/FreeNumberQuestionRequest"
         - $ref: "#/components/schemas/PutSingleChoiceQuestionRequest"
         - $ref: "#/components/schemas/PutMultipleChoiceQuestionRequest"
+
+    QuestionResponseBase:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
+        isRequired:
+          type: boolean
+      required:
+        - id
+        - title
+        - isPublic
+        - isOpen
+        - isRequired
     QuestionResponse:
       oneOf:
         - $ref: "#/components/schemas/FreeTextQuestionResponse"
@@ -1827,27 +1851,16 @@ components:
             - type
     FreeTextQuestionResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum:
-            - free_text
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-      required:
-        - id
-        - title
-        - type
-        - isPublic
-        - isOpen
+      allOf:
+        - $ref: "#/components/schemas/QuestionResponseBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - free_text
+          required:
+            - type
 
     FreeNumberQuestionRequest:
       type: object
@@ -1863,27 +1876,16 @@ components:
             - type
     FreeNumberQuestionResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum:
-            - free_number
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-      required:
-        - id
-        - title
-        - type
-        - isPublic
-        - isOpen
+      allOf:
+        - $ref: "#/components/schemas/QuestionResponseBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - free_number
+          required:
+            - type
 
     PostSingleChoiceQuestionRequest:
       type: object
@@ -1921,32 +1923,21 @@ components:
             - options
     SingleChoiceQuestionResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum:
-            - single
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-        options:
-          type: array
-          items:
-            $ref: "#/components/schemas/OptionResponse"
-      required:
-        - id
-        - title
-        - type
-        - isPublic
-        - isOpen
-        - options
+      allOf:
+        - $ref: "#/components/schemas/QuestionResponseBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - single
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/OptionResponse"
+          required:
+            - type
+            - options
 
     PostMultipleChoiceQuestionRequest:
       type: object
@@ -1984,32 +1975,22 @@ components:
             - options
     MultipleChoiceQuestionResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum:
-            - multiple
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-        options:
-          type: array
-          items:
-            $ref: "#/components/schemas/OptionResponse"
-      required:
-        - id
-        - title
-        - type
-        - isPublic
-        - isOpen
-        - options
+      allOf:
+        - $ref: "#/components/schemas/QuestionResponseBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - multiple
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/OptionResponse"
+          required:
+            - type
+            - options
+
     PostOptionRequest:
       type: object
       properties:

@@ -73,6 +73,7 @@ func TestCreateQuestionGroup(t *testing.T) {
 				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 				IsPublic:    random.Bool(t),
 				IsOpen:      random.Bool(t),
+				IsRequired:  random.Bool(t),
 			},
 			{
 				Type:        model.FreeNumberQuestion,
@@ -80,6 +81,7 @@ func TestCreateQuestionGroup(t *testing.T) {
 				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 				IsPublic:    random.Bool(t),
 				IsOpen:      random.Bool(t),
+				IsRequired:  random.Bool(t),
 			},
 			{
 				Type:        model.SingleChoiceQuestion,
@@ -87,6 +89,7 @@ func TestCreateQuestionGroup(t *testing.T) {
 				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 				IsPublic:    random.Bool(t),
 				IsOpen:      random.Bool(t),
+				IsRequired:  random.Bool(t),
 				Options: []model.Option{
 					{
 						Content: random.AlphaNumericString(t, 20),
@@ -99,6 +102,7 @@ func TestCreateQuestionGroup(t *testing.T) {
 				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 				IsPublic:    random.Bool(t),
 				IsOpen:      random.Bool(t),
+				IsRequired:  random.Bool(t),
 				Options: []model.Option{
 					{
 						Content: random.AlphaNumericString(t, 20),
@@ -142,6 +146,7 @@ func TestCreateQuestionGroup(t *testing.T) {
 			assert.Equal(t, question.Description, createdQuestion.Description)
 			assert.Equal(t, question.IsPublic, createdQuestion.IsPublic)
 			assert.Equal(t, question.IsOpen, createdQuestion.IsOpen)
+			assert.Equal(t, question.IsRequired, createdQuestion.IsRequired)
 			assert.Equal(t, createdQuestionGroup.ID, createdQuestion.QuestionGroupID)
 
 			// Optionsの検証

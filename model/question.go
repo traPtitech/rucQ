@@ -19,6 +19,7 @@ type Question struct {
 	Description     *string
 	IsPublic        bool
 	IsOpen          bool
+	IsRequired      bool
 	Options         []Option
 
 	Answers []Answer
