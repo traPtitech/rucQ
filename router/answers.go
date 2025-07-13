@@ -47,10 +47,14 @@ func (s *Server) GetAnswers(e echo.Context, questionId api.QuestionId) error {
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question %d not found", questionId)
+
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}
 
 		if errors.Is(err, model.ErrForbidden) {
+			e.Logger().Warnf("question %d is not public", questionId)
+
 			return echo.NewHTTPError(http.StatusForbidden, "Question is not public")
 		}
 
