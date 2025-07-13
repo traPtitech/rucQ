@@ -19,7 +19,7 @@ func TestGetQuestionGroups(t *testing.T) {
 		r := setup(t)
 		camp := mustCreateCamp(t, r)
 		questionGroup1 := mustCreateQuestionGroup(t, r, camp.ID)
-		question := mustCreateQuestion(t, r, questionGroup1.ID, model.SingleChoiceQuestion)
+		question := mustCreateQuestion(t, r, questionGroup1.ID, model.SingleChoiceQuestion, nil)
 		questionGroup2 := mustCreateQuestionGroup(t, r, camp.ID)
 
 		questionGroups, err := r.GetQuestionGroups(t.Context(), camp.ID)

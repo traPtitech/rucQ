@@ -201,14 +201,21 @@ func mustCreateQuestion(
 	r *Repository,
 	questionGroupID uint,
 	questionType model.QuestionType,
+	isPublic *bool,
 ) model.Question {
 	t.Helper()
+
+	publicValue := random.Bool(t)
+
+	if isPublic != nil {
+		publicValue = *isPublic
+	}
 
 	question := &model.Question{
 		Type:            questionType,
 		Title:           random.AlphaNumericString(t, 20),
 		Description:     random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
-		IsPublic:        random.Bool(t),
+		IsPublic:        publicValue,
 		IsOpen:          random.Bool(t),
 		QuestionGroupID: questionGroupID,
 	}

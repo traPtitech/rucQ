@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -23,6 +24,41 @@ func (s *Server) GetMyAnswers(
 
 	if err != nil {
 		e.Logger().Errorf("failed to get answers: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[[]api.AnswerResponse](answers)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, res)
+}
+
+func (s *Server) GetAnswers(e echo.Context, questionID api.QuestionId) error {
+	answers, err := s.repo.GetPublicAnswersByQuestionID(
+		e.Request().Context(),
+		uint(questionID),
+	)
+
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question %d not found", questionID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+		}
+
+		if errors.Is(err, model.ErrForbidden) {
+			e.Logger().Warnf("question %d is not public", questionID)
+
+			return echo.NewHTTPError(http.StatusForbidden, "Question is not public")
+		}
+
+		e.Logger().Errorf("failed to get public answers: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}

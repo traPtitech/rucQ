@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
@@ -60,10 +61,37 @@ func (r *Repository) GetAnswersByQuestionID(
 		Find(ctx)
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, model.ErrNotFound
+		}
+
 		return nil, err
 	}
 
 	return answers, nil
+}
+
+func (r *Repository) GetPublicAnswersByQuestionID(
+	ctx context.Context,
+	questionID uint,
+) ([]model.Answer, error) {
+	question, err := gorm.G[model.Question](r.db).
+		Where("id = ?", questionID).
+		First(ctx)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, model.ErrNotFound
+		}
+
+		return nil, err
+	}
+
+	if !question.IsPublic {
+		return nil, model.ErrForbidden
+	}
+
+	return r.GetAnswersByQuestionID(ctx, questionID)
 }
 
 func (r *Repository) UpdateAnswer(ctx context.Context, answerID uint, answer *model.Answer) error {
