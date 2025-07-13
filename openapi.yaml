@@ -591,6 +591,31 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
+  /api/admin/question-groups/{questionGroupId}/answers:
+    get:
+      summary: 質問に対する特定のユーザーの回答一覧を取得（管理者用）
+      tags:
+        - Questions
+      operationId: adminGetAnswersForUser
+      parameters:
+        - $ref: "#/components/parameters/QuestionGroupId"
+        - $ref: "#/components/parameters/UserIdInQuery"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuestionResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/questions/{questionId}/answers:
     get:
       summary: 質問の回答一覧を取得

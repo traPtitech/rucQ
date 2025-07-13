@@ -206,6 +206,14 @@ func (s *Server) AdminGetAnswers(
 	return e.JSON(http.StatusOK, res)
 }
 
+func (s *Server) AdminGetAnswersForUser(
+	ctx echo.Context,
+	questionGroupId api.QuestionGroupId,
+	params api.AdminGetAnswersForUserParams,
+) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetAnswersForUser is not implemented")
+}
+
 func (s *Server) AdminPutAnswer(
 	e echo.Context,
 	answerID api.AnswerId,

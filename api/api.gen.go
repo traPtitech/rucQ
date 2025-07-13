@@ -863,6 +863,12 @@ type AdminPutQuestionGroupMetadataParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// AdminGetAnswersForUserParams defines parameters for AdminGetAnswersForUser.
+type AdminGetAnswersForUserParams struct {
+	// UserId User ID
+	UserId *UserIdInQuery `form:"userId,omitempty" json:"userId,omitempty"`
+}
+
 // AdminPostQuestionParams defines parameters for AdminPostQuestion.
 type AdminPostQuestionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -1884,6 +1890,9 @@ type ServerInterface interface {
 	// 質問グループを更新（管理者用）
 	// (PUT /api/admin/question-groups/{questionGroupId})
 	AdminPutQuestionGroupMetadata(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupMetadataParams) error
+	// 質問に対する特定のユーザーの回答一覧を取得（管理者用）
+	// (GET /api/admin/question-groups/{questionGroupId}/answers)
+	AdminGetAnswersForUser(ctx echo.Context, questionGroupId QuestionGroupId, params AdminGetAnswersForUserParams) error
 	// 質問を追加
 	// (POST /api/admin/question-groups/{questionGroupId}/questions)
 	AdminPostQuestion(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPostQuestionParams) error
@@ -2532,6 +2541,31 @@ func (w *ServerInterfaceWrapper) AdminPutQuestionGroupMetadata(ctx echo.Context)
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPutQuestionGroupMetadata(ctx, questionGroupId, params)
+	return err
+}
+
+// AdminGetAnswersForUser converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminGetAnswersForUser(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionGroupId" -------------
+	var questionGroupId QuestionGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminGetAnswersForUserParams
+	// ------------- Optional query parameter "userId" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "userId", ctx.QueryParams(), &params.UserId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminGetAnswersForUser(ctx, questionGroupId, params)
 	return err
 }
 
@@ -3648,6 +3682,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/api/admin/payments/:paymentId", wrapper.AdminPutPayment)
 	router.DELETE(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminDeleteQuestionGroup)
 	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroupMetadata)
+	router.GET(baseURL+"/api/admin/question-groups/:questionGroupId/answers", wrapper.AdminGetAnswersForUser)
 	router.POST(baseURL+"/api/admin/question-groups/:questionGroupId/questions", wrapper.AdminPostQuestion)
 	router.DELETE(baseURL+"/api/admin/questions/:questionId", wrapper.AdminDeleteQuestion)
 	router.PUT(baseURL+"/api/admin/questions/:questionId", wrapper.AdminPutQuestion)
