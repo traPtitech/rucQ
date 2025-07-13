@@ -238,6 +238,90 @@ func mustCreateQuestion(
 	return *question
 }
 
+func mustCreatePublicQuestion(
+	t *testing.T,
+	r *Repository,
+	questionGroupID uint,
+	questionType model.QuestionType,
+) model.Question {
+	t.Helper()
+
+	question := &model.Question{
+		Type:            questionType,
+		Title:           random.AlphaNumericString(t, 20),
+		Description:     random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
+		IsPublic:        true,
+		IsOpen:          random.Bool(t),
+		QuestionGroupID: questionGroupID,
+	}
+
+	switch questionType {
+	case model.SingleChoiceQuestion, model.MultipleChoiceQuestion:
+		// 2つ以上の選択肢を作成する
+		question.Options = make([]model.Option, random.PositiveIntN(t, maxOptions)+1)
+
+		for i := range question.Options {
+			question.Options[i] = model.Option{
+				Content: random.AlphaNumericString(t, 20),
+			}
+		}
+	}
+
+	err := r.CreateQuestion(question)
+
+	require.NoError(t, err)
+
+	// 時刻の精度などを揃えるため再取得する
+	question, err = r.GetQuestionByID(question.ID)
+
+	require.NoError(t, err)
+	require.NotNil(t, question)
+
+	return *question
+}
+
+func mustCreatePrivateQuestion(
+	t *testing.T,
+	r *Repository,
+	questionGroupID uint,
+	questionType model.QuestionType,
+) model.Question {
+	t.Helper()
+
+	question := &model.Question{
+		Type:            questionType,
+		Title:           random.AlphaNumericString(t, 20),
+		Description:     random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
+		IsPublic:        false,
+		IsOpen:          random.Bool(t),
+		QuestionGroupID: questionGroupID,
+	}
+
+	switch questionType {
+	case model.SingleChoiceQuestion, model.MultipleChoiceQuestion:
+		// 2つ以上の選択肢を作成する
+		question.Options = make([]model.Option, random.PositiveIntN(t, maxOptions)+1)
+
+		for i := range question.Options {
+			question.Options[i] = model.Option{
+				Content: random.AlphaNumericString(t, 20),
+			}
+		}
+	}
+
+	err := r.CreateQuestion(question)
+
+	require.NoError(t, err)
+
+	// 時刻の精度などを揃えるため再取得する
+	question, err = r.GetQuestionByID(question.ID)
+
+	require.NoError(t, err)
+	require.NotNil(t, question)
+
+	return *question
+}
+
 func mustCreateUser(t *testing.T, r *Repository) model.User {
 	t.Helper()
 
