@@ -94,7 +94,8 @@ func TestGetQuestionGroups(t *testing.T) {
 
 		question := questions.Value(0).Object()
 
-		question.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "isRequired", "options")
+		question.Keys().
+			ContainsAll("id", "type", "title", "isPublic", "isOpen", "isRequired", "options")
 		question.Value("id").Number().IsEqual(questionGroup1.Questions[0].ID)
 		question.Value("type").String().IsEqual(string(questionGroup1.Questions[0].Type))
 		question.Value("title").String().IsEqual(questionGroup1.Questions[0].Title)
@@ -264,7 +265,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		freeTextRes.Value("type").String().IsEqual(string(freeTextQuestion.Type))
 		freeTextRes.Value("isPublic").Boolean().IsEqual(freeTextQuestion.IsPublic)
 		freeTextRes.Value("isOpen").Boolean().IsEqual(freeTextQuestion.IsOpen)
-		
+
 		if freeTextQuestion.IsRequired != nil {
 			freeTextRes.Value("isRequired").Boolean().IsEqual(*freeTextQuestion.IsRequired)
 		} else {
@@ -282,7 +283,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		freeNumberRes.Value("type").String().IsEqual(string(freeNumberQuestion.Type))
 		freeNumberRes.Value("isPublic").Boolean().IsEqual(freeNumberQuestion.IsPublic)
 		freeNumberRes.Value("isOpen").Boolean().IsEqual(freeNumberQuestion.IsOpen)
-		
+
 		if freeNumberQuestion.IsRequired != nil {
 			freeNumberRes.Value("isRequired").Boolean().IsEqual(*freeNumberQuestion.IsRequired)
 		} else {
@@ -300,7 +301,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		singleChoiceRes.Value("type").String().IsEqual(string(singleChoiceQuestion.Type))
 		singleChoiceRes.Value("isPublic").Boolean().IsEqual(singleChoiceQuestion.IsPublic)
 		singleChoiceRes.Value("isOpen").Boolean().IsEqual(singleChoiceQuestion.IsOpen)
-		
+
 		if singleChoiceQuestion.IsRequired != nil {
 			singleChoiceRes.Value("isRequired").Boolean().IsEqual(*singleChoiceQuestion.IsRequired)
 		} else {
@@ -334,9 +335,11 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		multipleChoiceRes.Value("type").String().IsEqual(string(multipleChoiceQuestion.Type))
 		multipleChoiceRes.Value("isPublic").Boolean().IsEqual(multipleChoiceQuestion.IsPublic)
 		multipleChoiceRes.Value("isOpen").Boolean().IsEqual(multipleChoiceQuestion.IsOpen)
-		
+
 		if multipleChoiceQuestion.IsRequired != nil {
-			multipleChoiceRes.Value("isRequired").Boolean().IsEqual(*multipleChoiceQuestion.IsRequired)
+			multipleChoiceRes.Value("isRequired").
+				Boolean().
+				IsEqual(*multipleChoiceQuestion.IsRequired)
 		} else {
 			multipleChoiceRes.Value("isRequired").Boolean().IsEqual(false)
 		}

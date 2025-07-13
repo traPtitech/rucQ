@@ -70,7 +70,7 @@ func TestAdminPostQuestion(t *testing.T) {
 
 		res.Value("isPublic").IsEqual(singleChoiceQuestion.IsPublic)
 		res.Value("isOpen").IsEqual(singleChoiceQuestion.IsOpen)
-		
+
 		if singleChoiceQuestion.IsRequired != nil {
 			res.Value("isRequired").IsEqual(*singleChoiceQuestion.IsRequired)
 		} else {
@@ -148,7 +148,7 @@ func TestAdminPutQuestion(t *testing.T) {
 
 		res.Value("isPublic").IsEqual(isPublic)
 		res.Value("isOpen").IsEqual(isOpen)
-		
+
 		if isRequired != nil {
 			res.Value("isRequired").IsEqual(*isRequired)
 		} else {
