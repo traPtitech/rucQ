@@ -205,12 +205,10 @@ func mustCreateQuestion(
 ) model.Question {
 	t.Helper()
 
-	var publicValue bool
+	publicValue := random.Bool(t)
 
 	if isPublic != nil {
 		publicValue = *isPublic
-	} else {
-		publicValue = random.Bool(t)
 	}
 
 	question := &model.Question{
