@@ -94,7 +94,7 @@ func TestGetQuestionGroups(t *testing.T) {
 
 		question := questions.Value(0).Object()
 
-		question.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "options")
+		question.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "isRequired", "options")
 		question.Value("id").Number().IsEqual(questionGroup1.Questions[0].ID)
 		question.Value("type").String().IsEqual(string(questionGroup1.Questions[0].Type))
 		question.Value("title").String().IsEqual(questionGroup1.Questions[0].Title)
@@ -107,6 +107,7 @@ func TestGetQuestionGroups(t *testing.T) {
 
 		question.Value("isPublic").Boolean().IsEqual(questionGroup1.Questions[0].IsPublic)
 		question.Value("isOpen").Boolean().IsEqual(questionGroup1.Questions[0].IsOpen)
+		question.Value("isRequired").Boolean().IsEqual(questionGroup1.Questions[0].IsRequired)
 
 		options := question.Value("options").Array()
 
@@ -149,6 +150,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			Type:        api.FreeTextQuestionRequestTypeFreeText,
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
+			IsRequired:  random.PtrOrNil(t, random.Bool(t)),
 		}
 
 		freeNumberQuestion := api.FreeNumberQuestionRequest{
@@ -157,6 +159,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			Type:        api.FreeNumberQuestionRequestTypeFreeNumber,
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
+			IsRequired:  random.PtrOrNil(t, random.Bool(t)),
 		}
 
 		singleChoiceQuestion := api.PostSingleChoiceQuestionRequest{
@@ -165,6 +168,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			Type:        api.PostSingleChoiceQuestionRequestTypeSingle,
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
+			IsRequired:  random.PtrOrNil(t, random.Bool(t)),
 			Options: []api.PostOptionRequest{
 				{
 					Content: random.AlphaNumericString(t, 20),
@@ -181,6 +185,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			Type:        api.PostMultipleChoiceQuestionRequestTypeMultiple,
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
+			IsRequired:  random.PtrOrNil(t, random.Bool(t)),
 			Options: []api.PostOptionRequest{
 				{
 					Content: random.AlphaNumericString(t, 20),
@@ -259,6 +264,12 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		freeTextRes.Value("type").String().IsEqual(string(freeTextQuestion.Type))
 		freeTextRes.Value("isPublic").Boolean().IsEqual(freeTextQuestion.IsPublic)
 		freeTextRes.Value("isOpen").Boolean().IsEqual(freeTextQuestion.IsOpen)
+		
+		if freeTextQuestion.IsRequired != nil {
+			freeTextRes.Value("isRequired").Boolean().IsEqual(*freeTextQuestion.IsRequired)
+		} else {
+			freeTextRes.Value("isRequired").Boolean().IsEqual(false)
+		}
 
 		// Verify FreeNumberQuestion
 		freeNumberRes := questionsArray.Value(1).Object()
@@ -271,6 +282,12 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		freeNumberRes.Value("type").String().IsEqual(string(freeNumberQuestion.Type))
 		freeNumberRes.Value("isPublic").Boolean().IsEqual(freeNumberQuestion.IsPublic)
 		freeNumberRes.Value("isOpen").Boolean().IsEqual(freeNumberQuestion.IsOpen)
+		
+		if freeNumberQuestion.IsRequired != nil {
+			freeNumberRes.Value("isRequired").Boolean().IsEqual(*freeNumberQuestion.IsRequired)
+		} else {
+			freeNumberRes.Value("isRequired").Boolean().IsEqual(false)
+		}
 
 		// Verify SingleChoiceQuestion
 		singleChoiceRes := questionsArray.Value(2).Object()
@@ -283,6 +300,12 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		singleChoiceRes.Value("type").String().IsEqual(string(singleChoiceQuestion.Type))
 		singleChoiceRes.Value("isPublic").Boolean().IsEqual(singleChoiceQuestion.IsPublic)
 		singleChoiceRes.Value("isOpen").Boolean().IsEqual(singleChoiceQuestion.IsOpen)
+		
+		if singleChoiceQuestion.IsRequired != nil {
+			singleChoiceRes.Value("isRequired").Boolean().IsEqual(*singleChoiceQuestion.IsRequired)
+		} else {
+			singleChoiceRes.Value("isRequired").Boolean().IsEqual(false)
+		}
 
 		// Verify options for SingleChoiceQuestion
 		singleChoiceOptions := singleChoiceRes.Value("options").Array()
@@ -311,6 +334,12 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 		multipleChoiceRes.Value("type").String().IsEqual(string(multipleChoiceQuestion.Type))
 		multipleChoiceRes.Value("isPublic").Boolean().IsEqual(multipleChoiceQuestion.IsPublic)
 		multipleChoiceRes.Value("isOpen").Boolean().IsEqual(multipleChoiceQuestion.IsOpen)
+		
+		if multipleChoiceQuestion.IsRequired != nil {
+			multipleChoiceRes.Value("isRequired").Boolean().IsEqual(*multipleChoiceQuestion.IsRequired)
+		} else {
+			multipleChoiceRes.Value("isRequired").Boolean().IsEqual(false)
+		}
 
 		// Verify options for MultipleChoiceQuestion
 		multipleChoiceOptions := multipleChoiceRes.Value("options").Array()

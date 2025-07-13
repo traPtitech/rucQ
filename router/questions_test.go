@@ -25,6 +25,7 @@ func TestAdminPostQuestion(t *testing.T) {
 			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 20)),
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
+			IsRequired:  random.PtrOrNil(t, random.Bool(t)),
 			Options: []api.PostOptionRequest{
 				{
 					Content: random.AlphaNumericString(t, 10),
@@ -57,7 +58,7 @@ func TestAdminPostQuestion(t *testing.T) {
 			JSON().
 			Object()
 
-		res.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "options")
+		res.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "isRequired", "options")
 		res.Value("type").IsEqual(api.PostSingleChoiceQuestionRequestTypeSingle)
 		res.Value("title").IsEqual(singleChoiceQuestion.Title)
 
@@ -69,6 +70,13 @@ func TestAdminPostQuestion(t *testing.T) {
 
 		res.Value("isPublic").IsEqual(singleChoiceQuestion.IsPublic)
 		res.Value("isOpen").IsEqual(singleChoiceQuestion.IsOpen)
+		
+		if singleChoiceQuestion.IsRequired != nil {
+			res.Value("isRequired").IsEqual(*singleChoiceQuestion.IsRequired)
+		} else {
+			// デフォルト値はfalseになることを確認
+			res.Value("isRequired").IsEqual(false)
+		}
 
 		options := res.Value("options").Array()
 
@@ -93,6 +101,7 @@ func TestAdminPutQuestion(t *testing.T) {
 		description := random.PtrOrNil(t, random.AlphaNumericString(t, 25))
 		isPublic := random.Bool(t)
 		isOpen := random.Bool(t)
+		isRequired := random.PtrOrNil(t, random.Bool(t))
 		optionContent := random.AlphaNumericString(t, 10)
 
 		req := api.PutSingleChoiceQuestionRequest{
@@ -101,6 +110,7 @@ func TestAdminPutQuestion(t *testing.T) {
 			Description: description,
 			IsPublic:    isPublic,
 			IsOpen:      isOpen,
+			IsRequired:  isRequired,
 			Options: []api.PutOptionRequest{
 				{
 					Content: optionContent,
@@ -126,7 +136,7 @@ func TestAdminPutQuestion(t *testing.T) {
 			JSON().
 			Object()
 
-		res.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "options")
+		res.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "isRequired", "options")
 		res.Value("type").IsEqual(api.PutSingleChoiceQuestionRequestTypeSingle)
 		res.Value("title").IsEqual(title)
 
@@ -138,6 +148,12 @@ func TestAdminPutQuestion(t *testing.T) {
 
 		res.Value("isPublic").IsEqual(isPublic)
 		res.Value("isOpen").IsEqual(isOpen)
+		
+		if isRequired != nil {
+			res.Value("isRequired").IsEqual(*isRequired)
+		} else {
+			res.Value("isRequired").IsEqual(false)
+		}
 
 		options := res.Value("options").Array()
 
