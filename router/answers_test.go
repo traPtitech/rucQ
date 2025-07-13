@@ -1184,13 +1184,31 @@ func TestGetAnswers(t *testing.T) {
 		}
 	})
 
-	t.Run("Success - Private Question (Empty Response)", func(t *testing.T) {
+	t.Run("Forbidden - Private Question", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
 		questionID := random.PositiveInt(t)
 
-		// Private質問なので空のスライスが返される
+		// Private質問の場合はErrForbiddenが返される
+		h.repo.MockAnswerRepository.EXPECT().
+			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			Return(nil, model.ErrForbidden).
+			Times(1)
+
+		h.expect.GET("/api/questions/{questionId}/answers", questionID).
+			Expect().
+			Status(http.StatusForbidden).JSON().Object().
+			Value("message").String().IsEqual("Question is not public")
+	})
+
+	t.Run("Success - Public Question with No Answers", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		questionID := random.PositiveInt(t)
+
+		// 回答が存在しない場合（Public質問だが回答がない）
 		h.repo.MockAnswerRepository.EXPECT().
 			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
 			Return([]model.Answer{}, nil).
@@ -1203,23 +1221,22 @@ func TestGetAnswers(t *testing.T) {
 		res.Length().IsEqual(0)
 	})
 
-	t.Run("Success - No Answers", func(t *testing.T) {
+	t.Run("Not Found - Question Does Not Exist", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
 		questionID := random.PositiveInt(t)
 
-		// 回答が存在しない場合
+		// 質問が存在しない場合はErrNotFoundが返される
 		h.repo.MockAnswerRepository.EXPECT().
 			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
-			Return([]model.Answer{}, nil).
+			Return(nil, model.ErrNotFound).
 			Times(1)
 
-		res := h.expect.GET("/api/questions/{questionId}/answers", questionID).
+		h.expect.GET("/api/questions/{questionId}/answers", questionID).
 			Expect().
-			Status(http.StatusOK).JSON().Array()
-
-		res.Length().IsEqual(0)
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Question not found")
 	})
 
 	t.Run("Internal Server Error - Repository Error", func(t *testing.T) {

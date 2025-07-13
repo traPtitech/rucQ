@@ -45,6 +45,14 @@ func (s *Server) GetAnswers(e echo.Context, questionId api.QuestionId) error {
 	)
 
 	if err != nil {
+		if err == model.ErrNotFound {
+			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+		}
+
+		if err == model.ErrForbidden {
+			return echo.NewHTTPError(http.StatusForbidden, "Question is not public")
+		}
+
 		e.Logger().Errorf("failed to get public answers: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
