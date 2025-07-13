@@ -21,21 +21,29 @@ func TestCreateAnswers(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		user := mustCreateUser(t, r)
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
-		freeTextQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion)
+		freeTextQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
 		freeTextContent := random.AlphaNumericString(t, 20)
-		freeNumberQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.FreeNumberQuestion)
+		freeNumberQuestion := mustCreateQuestion(
+			t,
+			r,
+			questionGroup.ID,
+			model.FreeNumberQuestion,
+			nil,
+		)
 		freeNumberContent := random.Float64(t)
 		singleChoiceQuestion := mustCreateQuestion(
 			t,
 			r,
 			questionGroup.ID,
 			model.SingleChoiceQuestion,
+			nil,
 		)
 		multipleChoiceQuestion := mustCreateQuestion(
 			t,
 			r,
 			questionGroup.ID,
 			model.MultipleChoiceQuestion,
+			nil,
 		)
 		answers := []model.Answer{
 			{
@@ -86,11 +94,23 @@ func TestGetAnswersByUserAndQuestionGroup(t *testing.T) {
 		// 別のquestion groupも作成して、確実にフィルタリングされるかテスト
 		anotherQuestionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
-		freeTextQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion)
-		freeNumberQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.FreeNumberQuestion)
+		freeTextQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
+		freeNumberQuestion := mustCreateQuestion(
+			t,
+			r,
+			questionGroup.ID,
+			model.FreeNumberQuestion,
+			nil,
+		)
 
 		// 別のquestion groupの質問も作成
-		anotherQuestion := mustCreateQuestion(t, r, anotherQuestionGroup.ID, model.FreeTextQuestion)
+		anotherQuestion := mustCreateQuestion(
+			t,
+			r,
+			anotherQuestionGroup.ID,
+			model.FreeTextQuestion,
+			nil,
+		)
 
 		freeTextContent := random.AlphaNumericString(t, 20)
 		freeNumberContent := random.Float64(t)
@@ -160,7 +180,7 @@ func TestGetAnswersByUserAndQuestionGroup(t *testing.T) {
 		user2 := mustCreateUser(t, r)
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
-		freeTextQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion)
+		freeTextQuestion := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
 		freeTextContent := random.AlphaNumericString(t, 20)
 
 		answers := []model.Answer{
@@ -198,6 +218,7 @@ func TestUpdateAnswer(t *testing.T) {
 			r,
 			questionGroup.ID,
 			model.SingleChoiceQuestion,
+			nil,
 		)
 
 		answers := []model.Answer{
@@ -252,7 +273,7 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 		user1 := mustCreateUser(t, r)
 		user2 := mustCreateUser(t, r)
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
-		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
 		freeTextContent1 := random.AlphaNumericString(t, 20)
 		freeTextContent2 := random.AlphaNumericString(t, 20)
 
@@ -300,7 +321,7 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 		r := setup(t)
 		camp := mustCreateCamp(t, r)
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
-		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
 
 		// Answerが存在しない質問に対するクエリ
 		answers, err := r.GetAnswersByQuestionID(t.Context(), question.ID)
@@ -320,6 +341,7 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 			r,
 			questionGroup.ID,
 			model.SingleChoiceQuestion,
+			nil,
 		)
 
 		answers := []model.Answer{
@@ -367,7 +389,14 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
 		// Public質問を作成
-		publicQuestion := mustCreatePublicQuestion(t, r, questionGroup.ID, model.FreeTextQuestion)
+		isPublic := true
+		publicQuestion := mustCreateQuestion(
+			t,
+			r,
+			questionGroup.ID,
+			model.FreeTextQuestion,
+			&isPublic,
+		)
 		freeTextContent1 := random.AlphaNumericString(t, 20)
 		freeTextContent2 := random.AlphaNumericString(t, 20)
 
@@ -418,7 +447,14 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
 		// Private質問を作成
-		privateQuestion := mustCreatePrivateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion)
+		isPublic := false
+		privateQuestion := mustCreateQuestion(
+			t,
+			r,
+			questionGroup.ID,
+			model.FreeTextQuestion,
+			&isPublic,
+		)
 		freeTextContent := random.AlphaNumericString(t, 20)
 
 		// Private質問に回答を作成
@@ -466,11 +502,13 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
 		// Public選択肢質問を作成
-		publicSingleChoiceQuestion := mustCreatePublicQuestion(
+		isPublic := true
+		publicSingleChoiceQuestion := mustCreateQuestion(
 			t,
 			r,
 			questionGroup.ID,
 			model.SingleChoiceQuestion,
+			&isPublic,
 		)
 
 		answers := []model.Answer{

@@ -63,7 +63,7 @@ func TestUpdateQuestion(t *testing.T) {
 		r := setup(t)
 		camp := mustCreateCamp(t, r)
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
-		question := mustCreateQuestion(t, r, questionGroup.ID, model.SingleChoiceQuestion)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.SingleChoiceQuestion, nil)
 
 		newTitle := random.AlphaNumericString(t, 15)
 		newDescription := random.PtrOrNil(t, random.AlphaNumericString(t, 25))
