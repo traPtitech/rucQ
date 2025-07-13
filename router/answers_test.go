@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -1247,7 +1248,7 @@ func TestGetAnswers(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
-			Return(nil, gorm.ErrRecordNotFound).
+			Return(nil, errors.New("repository error")).
 			Times(1)
 
 		h.expect.GET("/api/questions/{questionId}/answers", questionID).
