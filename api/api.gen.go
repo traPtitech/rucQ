@@ -865,7 +865,7 @@ type AdminPutQuestionGroupMetadataParams struct {
 
 // AdminGetAnswersForQuestionGroupParams defines parameters for AdminGetAnswersForQuestionGroup.
 type AdminGetAnswersForQuestionGroupParams struct {
-	// UserId User ID
+	// UserId User ID（省略時は全ユーザーの回答を取得）
 	UserId *UserIdInQuery `form:"userId,omitempty" json:"userId,omitempty"`
 
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -892,7 +892,7 @@ type AdminPutQuestionParams struct {
 
 // AdminGetAnswersParams defines parameters for AdminGetAnswers.
 type AdminGetAnswersParams struct {
-	// UserId User ID
+	// UserId User ID（省略時は全ユーザーの回答を取得）
 	UserId *UserIdInQuery `form:"userId,omitempty" json:"userId,omitempty"`
 
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
