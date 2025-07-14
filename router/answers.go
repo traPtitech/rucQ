@@ -232,20 +232,31 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	// userIdパラメータが必須
-	if params.UserId == nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "userId query parameter is required")
+	// userIdパラメータが指定されている場合は特定ユーザーの回答を取得
+	// 指定されていない場合は全ユーザーの回答を取得
+	var answers []model.Answer
+
+	if params.UserId != nil {
+		// 指定されたユーザーの回答を取得
+		answers, err = s.repo.GetAnswersByUserAndQuestionGroup(
+			e.Request().Context(),
+			*params.UserId,
+			uint(questionGroupID),
+		)
+	} else {
+		// 全ユーザーの回答を取得
+		answers, err = s.repo.GetAnswersByQuestionGroup(
+			e.Request().Context(),
+			uint(questionGroupID),
+		)
 	}
 
-	// 指定されたユーザーの回答を取得
-	answers, err := s.repo.GetAnswersByUserAndQuestionGroup(
-		e.Request().Context(),
-		*params.UserId,
-		uint(questionGroupID),
-	)
-
 	if err != nil {
-		e.Logger().Errorf("failed to get answers for user %s: %v", *params.UserId, err)
+		if params.UserId != nil {
+			e.Logger().Errorf("failed to get answers for user %s: %v", *params.UserId, err)
+		} else {
+			e.Logger().Errorf("failed to get answers for question group %d: %v", questionGroupID, err)
+		}
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}

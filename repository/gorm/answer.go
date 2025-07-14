@@ -51,6 +51,26 @@ func (r *Repository) GetAnswersByUserAndQuestionGroup(
 	return answers, nil
 }
 
+func (r *Repository) GetAnswersByQuestionGroup(
+	ctx context.Context,
+	questionGroupID uint,
+) ([]model.Answer, error) {
+	answers, err := gorm.G[model.Answer](r.db).
+		Where("question_id IN (?)",
+			r.db.Model(&model.Question{}).
+				Select("id").
+				Where("question_group_id = ?", questionGroupID),
+		).
+		Preload("SelectedOptions", nil).
+		Find(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return answers, nil
+}
+
 func (r *Repository) GetAnswersByQuestionID(
 	ctx context.Context,
 	questionID uint,

@@ -545,3 +545,116 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		)
 	})
 }
+
+func TestGetAnswersByQuestionGroup(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user1 := mustCreateUser(t, r)
+		user2 := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question1 := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
+		question2 := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
+
+		// Create answers from different users for the same question group
+		content1 := random.AlphaNumericString(t, 20)
+		content2 := random.AlphaNumericString(t, 20)
+		content3 := random.AlphaNumericString(t, 20)
+
+		answers := []model.Answer{
+			{
+				QuestionID:      question1.ID,
+				UserID:          user1.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &content1,
+			},
+			{
+				QuestionID:      question2.ID,
+				UserID:          user1.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &content2,
+			},
+			{
+				QuestionID:      question1.ID,
+				UserID:          user2.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &content3,
+			},
+		}
+
+		require.NoError(t, r.CreateAnswers(t.Context(), &answers))
+
+		// Get all answers for the question group
+		retrievedAnswers, err := r.GetAnswersByQuestionGroup(t.Context(), questionGroup.ID)
+		require.NoError(t, err)
+		require.Len(t, retrievedAnswers, 3)
+
+		// Verify that answers from both users are returned
+		userIDs := make(map[string]bool)
+		questionIDs := make(map[uint]bool)
+		for _, answer := range retrievedAnswers {
+			userIDs[answer.UserID] = true
+			questionIDs[answer.QuestionID] = true
+		}
+
+		assert.True(t, userIDs[user1.ID])
+		assert.True(t, userIDs[user2.ID])
+		assert.True(t, questionIDs[question1.ID])
+		assert.True(t, questionIDs[question2.ID])
+	})
+
+	t.Run("Empty result when no answers exist", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+
+		retrievedAnswers, err := r.GetAnswersByQuestionGroup(t.Context(), questionGroup.ID)
+		require.NoError(t, err)
+		assert.Empty(t, retrievedAnswers)
+	})
+
+	t.Run("Only returns answers for specified question group", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		questionGroup1 := mustCreateQuestionGroup(t, r, camp.ID)
+		questionGroup2 := mustCreateQuestionGroup(t, r, camp.ID)
+		question1 := mustCreateQuestion(t, r, questionGroup1.ID, model.FreeTextQuestion, nil)
+		question2 := mustCreateQuestion(t, r, questionGroup2.ID, model.FreeTextQuestion, nil)
+
+		content1 := random.AlphaNumericString(t, 20)
+		content2 := random.AlphaNumericString(t, 20)
+
+		answers := []model.Answer{
+			{
+				QuestionID:      question1.ID,
+				UserID:          user.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &content1,
+			},
+			{
+				QuestionID:      question2.ID,
+				UserID:          user.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &content2,
+			},
+		}
+
+		require.NoError(t, r.CreateAnswers(t.Context(), &answers))
+
+		// Get answers for only question group 1
+		retrievedAnswers, err := r.GetAnswersByQuestionGroup(t.Context(), questionGroup1.ID)
+		require.NoError(t, err)
+		require.Len(t, retrievedAnswers, 1)
+		assert.Equal(t, question1.ID, retrievedAnswers[0].QuestionID)
+		assert.Equal(t, content1, *retrievedAnswers[0].FreeTextContent)
+	})
+}

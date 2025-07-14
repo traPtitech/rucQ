@@ -15,6 +15,7 @@ type AnswerRepository interface {
 		userID string,
 		questionGroupID uint,
 	) ([]model.Answer, error)
+	GetAnswersByQuestionGroup(ctx context.Context, questionGroupID uint) ([]model.Answer, error)
 	GetAnswersByQuestionID(ctx context.Context, questionID uint) ([]model.Answer, error)
 	GetPublicAnswersByQuestionID(ctx context.Context, questionID uint) ([]model.Answer, error)
 	UpdateAnswer(ctx context.Context, answerID uint, answer *model.Answer) error

@@ -1254,10 +1254,10 @@ func TestGetAnswers(t *testing.T) {
 	})
 }
 
-func TestAdminGetAnswersForUser(t *testing.T) {
+func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Success with specific user", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
@@ -1308,6 +1308,64 @@ func TestAdminGetAnswersForUser(t *testing.T) {
 			Status(http.StatusOK).JSON().Array().Length().IsEqual(2)
 	})
 
+	t.Run("Success with all users", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		questionGroupID := random.PositiveInt(t)
+
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		answers := []model.Answer{
+			{
+				Model: gorm.Model{
+					ID: uint(random.PositiveInt(t)),
+				},
+				UserID:           random.AlphaNumericString(t, 32),
+				QuestionID:       uint(random.PositiveInt(t)),
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &[]string{random.AlphaNumericString(t, 100)}[0],
+			},
+			{
+				Model: gorm.Model{
+					ID: uint(random.PositiveInt(t)),
+				},
+				UserID:           random.AlphaNumericString(t, 32),
+				QuestionID:       uint(random.PositiveInt(t)),
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &[]string{random.AlphaNumericString(t, 100)}[0],
+			},
+			{
+				Model: gorm.Model{
+					ID: uint(random.PositiveInt(t)),
+				},
+				UserID:           random.AlphaNumericString(t, 32),
+				QuestionID:       uint(random.PositiveInt(t)),
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &[]string{random.AlphaNumericString(t, 100)}[0],
+			},
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswersByQuestionGroup(gomock.Any(), uint(questionGroupID)).
+			Return(answers, nil).
+			Times(1)
+
+		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().
+			Status(http.StatusOK).JSON().Array().Length().IsEqual(3)
+	})
+
 	t.Run("Forbidden - User is not staff", func(t *testing.T) {
 		t.Parallel()
 
@@ -1346,30 +1404,6 @@ func TestAdminGetAnswersForUser(t *testing.T) {
 			Expect().
 			Status(http.StatusBadRequest).JSON().Object().
 			Value("message").String().IsEqual("X-Forwarded-User header is required")
-	})
-
-	t.Run("Bad Request - Missing userId query parameter", func(t *testing.T) {
-		t.Parallel()
-
-		h := setup(t)
-		adminUserID := random.AlphaNumericString(t, 32)
-		questionGroupID := random.PositiveInt(t)
-
-		adminUser := &model.User{
-			ID:      adminUserID,
-			IsStaff: true,
-		}
-
-		h.repo.MockUserRepository.EXPECT().
-			GetOrCreateUser(gomock.Any(), adminUserID).
-			Return(adminUser, nil).
-			Times(1)
-
-		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
-			WithHeader("X-Forwarded-User", adminUserID).
-			Expect().
-			Status(http.StatusBadRequest).JSON().Object().
-			Value("message").String().IsEqual("userId query parameter is required")
 	})
 
 	t.Run("Internal Server Error - GetOrCreateUser Error", func(t *testing.T) {
@@ -1418,6 +1452,35 @@ func TestAdminGetAnswersForUser(t *testing.T) {
 
 		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
 			WithQuery("userId", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().
+			Status(http.StatusInternalServerError).JSON().Object().
+			Value("message").String().IsEqual("Internal server error")
+	})
+
+	t.Run("Internal Server Error - GetAnswersByQuestionGroup Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		questionGroupID := random.PositiveInt(t)
+
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswersByQuestionGroup(gomock.Any(), uint(questionGroupID)).
+			Return(nil, errors.New("repository error")).
+			Times(1)
+
+		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
 			WithHeader("X-Forwarded-User", adminUserID).
 			Expect().
 			Status(http.StatusInternalServerError).JSON().Object().
