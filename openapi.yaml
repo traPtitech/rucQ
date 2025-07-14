@@ -593,10 +593,10 @@ paths:
 
   /api/admin/question-groups/{questionGroupId}/answers:
     get:
-      summary: 質問に対する特定のユーザーの回答一覧を取得（管理者用）
+      summary: 質問グループに対する回答一覧を取得（管理者用）
       tags:
         - Questions
-      operationId: adminGetAnswersForUser
+      operationId: adminGetAnswersForQuestionGroup
       parameters:
         - $ref: "#/components/parameters/QuestionGroupId"
         - $ref: "#/components/parameters/UserIdInQuery"

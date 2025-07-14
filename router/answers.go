@@ -206,10 +206,10 @@ func (s *Server) AdminGetAnswers(
 	return e.JSON(http.StatusOK, res)
 }
 
-func (s *Server) AdminGetAnswersForUser(
+func (s *Server) AdminGetAnswersForQuestionGroup(
 	e echo.Context,
 	questionGroupID api.QuestionGroupId,
-	params api.AdminGetAnswersForUserParams,
+	params api.AdminGetAnswersForQuestionGroupParams,
 ) error {
 	if params.XForwardedUser == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
