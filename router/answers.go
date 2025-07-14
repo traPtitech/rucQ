@@ -207,11 +207,58 @@ func (s *Server) AdminGetAnswers(
 }
 
 func (s *Server) AdminGetAnswersForUser(
-	ctx echo.Context,
-	questionGroupId api.QuestionGroupId,
+	e echo.Context,
+	questionGroupID api.QuestionGroupId,
 	params api.AdminGetAnswersForUserParams,
 ) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetAnswersForUser is not implemented")
+	if params.XForwardedUser == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
+	}
+
+	user, err := s.repo.GetOrCreateUser(
+		e.Request().Context(),
+		*params.XForwardedUser,
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	// userIdパラメータが必須
+	if params.UserId == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "userId query parameter is required")
+	}
+
+	// 指定されたユーザーの回答を取得
+	answers, err := s.repo.GetAnswersByUserAndQuestionGroup(
+		e.Request().Context(),
+		*params.UserId,
+		uint(questionGroupID),
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get answers for user %s: %v", *params.UserId, err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[[]api.AnswerResponse](answers)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, res)
 }
 
 func (s *Server) AdminPutAnswer(

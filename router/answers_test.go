@@ -342,21 +342,17 @@ func TestPutAnswer(t *testing.T) {
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
 				answer.ID = id
+				// Set up mock options
 				answer.SelectedOptions = []model.Option{
 					{
-						Model: gorm.Model{
-							ID: uint(optionID1),
-						},
+						Model:   gorm.Model{ID: uint(optionID1)},
 						Content: random.AlphaNumericString(t, 20),
 					},
 					{
-						Model: gorm.Model{
-							ID: uint(optionID2),
-						},
+						Model:   gorm.Model{ID: uint(optionID2)},
 						Content: random.AlphaNumericString(t, 20),
 					},
 				}
-
 				return nil
 			}).
 			Times(1)
@@ -1252,6 +1248,177 @@ func TestGetAnswers(t *testing.T) {
 			Times(1)
 
 		h.expect.GET("/api/questions/{questionId}/answers", questionID).
+			Expect().
+			Status(http.StatusInternalServerError).JSON().Object().
+			Value("message").String().IsEqual("Internal server error")
+	})
+}
+
+func TestAdminGetAnswersForUser(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionGroupID := random.PositiveInt(t)
+
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		answers := []model.Answer{
+			{
+				Model: gorm.Model{
+					ID: uint(random.PositiveInt(t)),
+				},
+				UserID:          targetUserID,
+				QuestionID:      uint(random.PositiveInt(t)),
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &[]string{random.AlphaNumericString(t, 100)}[0],
+			},
+			{
+				Model: gorm.Model{
+					ID: uint(random.PositiveInt(t)),
+				},
+				UserID:          targetUserID,
+				QuestionID:      uint(random.PositiveInt(t)),
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &[]string{random.AlphaNumericString(t, 100)}[0],
+			},
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswersByUserAndQuestionGroup(gomock.Any(), targetUserID, uint(questionGroupID)).
+			Return(answers, nil).
+			Times(1)
+
+		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithQuery("userId", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().
+			Status(http.StatusOK).JSON().Array().Length().IsEqual(2)
+	})
+
+	t.Run("Forbidden - User is not staff", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionGroupID := random.PositiveInt(t)
+
+		user := &model.User{
+			ID:      userID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(user, nil).
+			Times(1)
+
+		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithQuery("userId", targetUserID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusForbidden).JSON().Object().
+			Value("message").String().IsEqual("Forbidden")
+	})
+
+	t.Run("Bad Request - Missing X-Forwarded-User header", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionGroupID := random.PositiveInt(t)
+
+		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithQuery("userId", targetUserID).
+			Expect().
+			Status(http.StatusBadRequest).JSON().Object().
+			Value("message").String().IsEqual("X-Forwarded-User header is required")
+	})
+
+	t.Run("Bad Request - Missing userId query parameter", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		questionGroupID := random.PositiveInt(t)
+
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().
+			Status(http.StatusBadRequest).JSON().Object().
+			Value("message").String().IsEqual("userId query parameter is required")
+	})
+
+	t.Run("Internal Server Error - GetOrCreateUser Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionGroupID := random.PositiveInt(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(nil, errors.New("repository error")).
+			Times(1)
+
+		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithQuery("userId", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().
+			Status(http.StatusInternalServerError).JSON().Object().
+			Value("message").String().IsEqual("Internal server error")
+	})
+
+	t.Run("Internal Server Error - GetAnswersByUserAndQuestionGroup Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionGroupID := random.PositiveInt(t)
+
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswersByUserAndQuestionGroup(gomock.Any(), targetUserID, uint(questionGroupID)).
+			Return(nil, errors.New("repository error")).
+			Times(1)
+
+		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithQuery("userId", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
 			Expect().
 			Status(http.StatusInternalServerError).JSON().Object().
 			Value("message").String().IsEqual("Internal server error")
