@@ -199,6 +199,12 @@ func (s *Server) AdminGetAnswers(
 	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
 
 	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question %d not found", questionID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+		}
+
 		e.Logger().Errorf("failed to get answers: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")

@@ -137,7 +137,7 @@ func TestGetMyAnswers(t *testing.T) {
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
-		questionGroupID := random.PositiveInt(t)
+		questionGroupID := uint(random.PositiveInt(t))
 
 		freeTextContent := random.AlphaNumericString(t, 50)
 		freeNumberContent := random.Float64(t)
@@ -159,7 +159,7 @@ func TestGetMyAnswers(t *testing.T) {
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
 				UserID:                &userID,
-				QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+				QuestionGroupID:       &questionGroupID,
 				IncludePrivateAnswers: true,
 			}).
 			Return(answers, nil).
@@ -394,7 +394,7 @@ func TestAdminGetAnswers(t *testing.T) {
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
-		questionID := random.PositiveInt(t)
+		questionID := uint(random.PositiveInt(t))
 
 		freeTextContent := random.AlphaNumericString(t, 50)
 		freeNumberContent := random.Float64(t)
@@ -406,7 +406,7 @@ func TestAdminGetAnswers(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				QuestionID:      uint(questionID),
+				QuestionID:      questionID,
 				UserID:          userID,
 				Type:            model.FreeTextQuestion,
 				FreeTextContent: &freeTextContent,
@@ -415,7 +415,7 @@ func TestAdminGetAnswers(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				QuestionID:        uint(questionID),
+				QuestionID:        questionID,
 				UserID:            userID,
 				Type:              model.FreeNumberQuestion,
 				FreeNumberContent: &freeNumberContent,
@@ -424,7 +424,7 @@ func TestAdminGetAnswers(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				QuestionID: uint(questionID),
+				QuestionID: questionID,
 				UserID:     userID,
 				Type:       model.SingleChoiceQuestion,
 				SelectedOptions: []model.Option{
@@ -440,7 +440,7 @@ func TestAdminGetAnswers(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				QuestionID: uint(questionID),
+				QuestionID: questionID,
 				UserID:     userID,
 				Type:       model.MultipleChoiceQuestion,
 				SelectedOptions: []model.Option{
@@ -473,7 +473,7 @@ func TestAdminGetAnswers(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				QuestionID:            &[]uint{uint(questionID)}[0],
+				QuestionID:            &questionID,
 				IncludePrivateAnswers: true,
 			}).
 			Return(answers, nil).
@@ -590,7 +590,7 @@ func TestAdminGetAnswers(t *testing.T) {
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
-		questionID := random.PositiveInt(t)
+		questionID := uint(random.PositiveInt(t))
 
 		// スタッフユーザーを設定
 		staffUser := &model.User{
@@ -605,7 +605,7 @@ func TestAdminGetAnswers(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				QuestionID:            &[]uint{uint(questionID)}[0],
+				QuestionID:            &questionID,
 				IncludePrivateAnswers: true,
 			}).
 			Return([]model.Answer{}, nil).
@@ -624,7 +624,7 @@ func TestAdminGetAnswers(t *testing.T) {
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
-		questionID := random.PositiveInt(t)
+		questionID := uint(random.PositiveInt(t))
 
 		// スタッフユーザーを設定
 		staffUser := &model.User{
@@ -639,7 +639,7 @@ func TestAdminGetAnswers(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				QuestionID:            &[]uint{uint(questionID)}[0],
+				QuestionID:            &questionID,
 				IncludePrivateAnswers: true,
 			}).
 			Return(nil, gorm.ErrRecordNotFound).
@@ -650,6 +650,38 @@ func TestAdminGetAnswers(t *testing.T) {
 			Expect().
 			Status(http.StatusInternalServerError).JSON().Object().
 			Value("message").String().IsEqual("Internal server error")
+	})
+
+	t.Run("NotFound - Question Does Not Exist", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		questionID := uint(random.PositiveInt(t))
+		// スタッフユーザーを設定
+		staffUser := &model.User{
+			ID:      userID,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(staffUser, nil).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionID:            &questionID,
+				IncludePrivateAnswers: true,
+			}).
+			Return(nil, model.ErrNotFound).
+			Times(1)
+
+		h.expect.GET("/api/admin/questions/{questionId}/answers", questionID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Question not found")
 	})
 }
 
@@ -1062,7 +1094,7 @@ func TestGetAnswers(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		questionID := random.PositiveInt(t)
+		questionID := uint(random.PositiveInt(t))
 		userID := random.AlphaNumericString(t, 32)
 
 		freeTextContent := random.AlphaNumericString(t, 50)
@@ -1075,7 +1107,7 @@ func TestGetAnswers(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				QuestionID:      uint(questionID),
+				QuestionID:      questionID,
 				UserID:          userID,
 				Type:            model.FreeTextQuestion,
 				FreeTextContent: &freeTextContent,
@@ -1084,7 +1116,7 @@ func TestGetAnswers(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				QuestionID:        uint(questionID),
+				QuestionID:        questionID,
 				UserID:            userID,
 				Type:              model.FreeNumberQuestion,
 				FreeNumberContent: &freeNumberContent,
@@ -1093,7 +1125,7 @@ func TestGetAnswers(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				QuestionID: uint(questionID),
+				QuestionID: questionID,
 				UserID:     userID,
 				Type:       model.SingleChoiceQuestion,
 				SelectedOptions: []model.Option{
@@ -1109,7 +1141,7 @@ func TestGetAnswers(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				QuestionID: uint(questionID),
+				QuestionID: questionID,
 				UserID:     userID,
 				Type:       model.MultipleChoiceQuestion,
 				SelectedOptions: []model.Option{
@@ -1131,7 +1163,7 @@ func TestGetAnswers(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				QuestionID:            &[]uint{uint(questionID)}[0],
+				QuestionID:            &questionID,
 				IncludePrivateAnswers: false,
 			}).
 			Return(answers, nil).
@@ -1202,12 +1234,12 @@ func TestGetAnswers(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		questionID := random.PositiveInt(t)
+		questionID := uint(random.PositiveInt(t))
 
 		// Private質問の場合はErrForbiddenが返される
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				QuestionID:            &[]uint{uint(questionID)}[0],
+				QuestionID:            &questionID,
 				IncludePrivateAnswers: false,
 			}).
 			Return(nil, model.ErrForbidden).
@@ -1223,12 +1255,12 @@ func TestGetAnswers(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		questionID := random.PositiveInt(t)
+		questionID := uint(random.PositiveInt(t))
 
 		// 回答が存在しない場合（Public質問だが回答がない）
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				QuestionID:            &[]uint{uint(questionID)}[0],
+				QuestionID:            &questionID,
 				IncludePrivateAnswers: false,
 			}).
 			Return([]model.Answer{}, nil).
@@ -1245,12 +1277,12 @@ func TestGetAnswers(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		questionID := random.PositiveInt(t)
+		questionID := uint(random.PositiveInt(t))
 
 		// 質問が存在しない場合はErrNotFoundが返される
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				QuestionID:            &[]uint{uint(questionID)}[0],
+				QuestionID:            &questionID,
 				IncludePrivateAnswers: false,
 			}).
 			Return(nil, model.ErrNotFound).
@@ -1266,11 +1298,11 @@ func TestGetAnswers(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		questionID := random.PositiveInt(t)
+		questionID := uint(random.PositiveInt(t))
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				QuestionID:            &[]uint{uint(questionID)}[0],
+				QuestionID:            &questionID,
 				IncludePrivateAnswers: false,
 			}).
 			Return(nil, errors.New("repository error")).
@@ -1292,7 +1324,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 		h := setup(t)
 		adminUserID := random.AlphaNumericString(t, 32)
 		targetUserID := random.AlphaNumericString(t, 32)
-		questionGroupID := random.PositiveInt(t)
+		questionGroupID := uint(random.PositiveInt(t))
 
 		adminUser := &model.User{
 			ID:      adminUserID,
@@ -1328,7 +1360,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
 				UserID:                &targetUserID,
-				QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+				QuestionGroupID:       &questionGroupID,
 				IncludePrivateAnswers: true,
 			}).
 			Return(answers, nil).
@@ -1346,7 +1378,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 
 		h := setup(t)
 		adminUserID := random.AlphaNumericString(t, 32)
-		questionGroupID := random.PositiveInt(t)
+		questionGroupID := uint(random.PositiveInt(t))
 
 		adminUser := &model.User{
 			ID:      adminUserID,
@@ -1390,7 +1422,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+				QuestionGroupID:       &questionGroupID,
 				IncludePrivateAnswers: true,
 			}).
 			Return(answers, nil).
@@ -1469,7 +1501,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 		h := setup(t)
 		adminUserID := random.AlphaNumericString(t, 32)
 		targetUserID := random.AlphaNumericString(t, 32)
-		questionGroupID := random.PositiveInt(t)
+		questionGroupID := uint(random.PositiveInt(t))
 
 		adminUser := &model.User{
 			ID:      adminUserID,
@@ -1484,7 +1516,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
 				UserID:                &targetUserID,
-				QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+				QuestionGroupID:       &questionGroupID,
 				IncludePrivateAnswers: true,
 			}).
 			Return(nil, errors.New("repository error")).
@@ -1503,7 +1535,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 
 		h := setup(t)
 		adminUserID := random.AlphaNumericString(t, 32)
-		questionGroupID := random.PositiveInt(t)
+		questionGroupID := uint(random.PositiveInt(t))
 
 		adminUser := &model.User{
 			ID:      adminUserID,
@@ -1517,7 +1549,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+				QuestionGroupID:       &questionGroupID,
 				IncludePrivateAnswers: true,
 			}).
 			Return(nil, errors.New("repository error")).
