@@ -214,65 +214,6 @@ func TestGetAnswers(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Empty(t, result) // 別のユーザーの回答は取得されない
 	})
-}
-
-func TestUpdateAnswer(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Success with SingleChoiceQuestion", func(t *testing.T) {
-		t.Parallel()
-
-		r := setup(t)
-		camp := mustCreateCamp(t, r)
-		user := mustCreateUser(t, r)
-		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
-		singleChoiceQuestion := mustCreateQuestion(
-			t,
-			r,
-			questionGroup.ID,
-			model.SingleChoiceQuestion,
-			nil,
-		)
-
-		answers := []model.Answer{
-			{
-				QuestionID: singleChoiceQuestion.ID,
-				UserID:     user.ID,
-				Type:       model.SingleChoiceQuestion,
-				SelectedOptions: []model.Option{
-					singleChoiceQuestion.Options[0],
-				},
-			},
-		}
-
-		err := r.CreateAnswers(t.Context(), &answers)
-		require.NoError(t, err)
-
-		// CreateAnswers後に作成されたanswerのIDを取得
-		createdAnswer := answers[0]
-		require.NotZero(t, createdAnswer.ID)
-
-		// 選択肢を変更してアップデート
-		createdAnswer.SelectedOptions = []model.Option{
-			{
-				Model: gorm.Model{
-					ID: singleChoiceQuestion.Options[1].ID,
-				},
-				Content: "", // IDのみを指定して更新
-			},
-		}
-
-		err = r.UpdateAnswer(t.Context(), createdAnswer.ID, &createdAnswer)
-		assert.NoError(t, err)
-
-		assert.Equal(t, 1, len(createdAnswer.SelectedOptions))
-		assert.Equal(t, singleChoiceQuestion.Options[1].ID, createdAnswer.SelectedOptions[0].ID)
-		assert.Equal(
-			t,
-			singleChoiceQuestion.Options[1].Content,
-			createdAnswer.SelectedOptions[0].Content,
-		)
-	})
 
 	t.Run("ByQuestionID - Success", func(t *testing.T) {
 		t.Parallel()
@@ -621,7 +562,8 @@ func TestUpdateAnswer(t *testing.T) {
 
 		// Get all answers for the question group
 		query := repository.GetAnswersQuery{
-			QuestionGroupID: &questionGroup.ID,
+			QuestionGroupID:       &questionGroup.ID,
+			IncludePrivateAnswers: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		require.NoError(t, err)
@@ -700,4 +642,63 @@ func TestUpdateAnswer(t *testing.T) {
 			assert.Equal(t, content1, *retrievedAnswers[0].FreeTextContent)
 		},
 	)
+}
+
+func TestUpdateAnswer(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success with SingleChoiceQuestion", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		singleChoiceQuestion := mustCreateQuestion(
+			t,
+			r,
+			questionGroup.ID,
+			model.SingleChoiceQuestion,
+			nil,
+		)
+
+		answers := []model.Answer{
+			{
+				QuestionID: singleChoiceQuestion.ID,
+				UserID:     user.ID,
+				Type:       model.SingleChoiceQuestion,
+				SelectedOptions: []model.Option{
+					singleChoiceQuestion.Options[0],
+				},
+			},
+		}
+
+		err := r.CreateAnswers(t.Context(), &answers)
+		require.NoError(t, err)
+
+		// CreateAnswers後に作成されたanswerのIDを取得
+		createdAnswer := answers[0]
+		require.NotZero(t, createdAnswer.ID)
+
+		// 選択肢を変更してアップデート
+		createdAnswer.SelectedOptions = []model.Option{
+			{
+				Model: gorm.Model{
+					ID: singleChoiceQuestion.Options[1].ID,
+				},
+				Content: "", // IDのみを指定して更新
+			},
+		}
+
+		err = r.UpdateAnswer(t.Context(), createdAnswer.ID, &createdAnswer)
+		assert.NoError(t, err)
+
+		assert.Equal(t, 1, len(createdAnswer.SelectedOptions))
+		assert.Equal(t, singleChoiceQuestion.Options[1].ID, createdAnswer.SelectedOptions[0].ID)
+		assert.Equal(
+			t,
+			singleChoiceQuestion.Options[1].Content,
+			createdAnswer.SelectedOptions[0].Content,
+		)
+	})
 }
