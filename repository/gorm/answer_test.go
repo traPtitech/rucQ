@@ -311,7 +311,8 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 
 		// QuestionIDでAnswerを取得
 		query := repository.GetAnswersQuery{
-			QuestionID: &question.ID,
+			QuestionID:            &question.ID,
+			IncludePrivateAnswers: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
@@ -323,12 +324,15 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 			answerMap[answer.UserID] = answer
 		}
 
-		assert.Contains(t, answerMap, user1.ID)
-		assert.Contains(t, answerMap, user2.ID)
-		assert.Equal(t, question.ID, answerMap[user1.ID].QuestionID)
-		assert.Equal(t, question.ID, answerMap[user2.ID].QuestionID)
-		assert.Equal(t, freeTextContent1, *answerMap[user1.ID].FreeTextContent)
-		assert.Equal(t, freeTextContent2, *answerMap[user2.ID].FreeTextContent)
+		if assert.Contains(t, answerMap, user1.ID) {
+			assert.Equal(t, question.ID, answerMap[user1.ID].QuestionID)
+			assert.Equal(t, freeTextContent1, *answerMap[user1.ID].FreeTextContent)
+		}
+
+		if assert.Contains(t, answerMap, user2.ID) {
+			assert.Equal(t, question.ID, answerMap[user2.ID].QuestionID)
+			assert.Equal(t, freeTextContent2, *answerMap[user2.ID].FreeTextContent)
+		}
 	})
 
 	t.Run("No Answers", func(t *testing.T) {
@@ -341,7 +345,8 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 
 		// Answerが存在しない質問に対するクエリ
 		query := repository.GetAnswersQuery{
-			QuestionID: &question.ID,
+			QuestionID:            &question.ID,
+			IncludePrivateAnswers: true,
 		}
 		answers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
@@ -443,8 +448,8 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 
 		// Public質問の回答を取得
 		query := repository.GetAnswersQuery{
-			QuestionID:             &publicQuestion.ID,
-			IncludePrivateAnswers:  false,
+			QuestionID:            &publicQuestion.ID,
+			IncludePrivateAnswers: false,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
@@ -498,8 +503,8 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 
 		// Private質問の回答を取得
 		query := repository.GetAnswersQuery{
-			QuestionID:             &privateQuestion.ID,
-			IncludePrivateAnswers:  false,
+			QuestionID:            &privateQuestion.ID,
+			IncludePrivateAnswers: false,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 
@@ -517,8 +522,8 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		// 存在しない質問IDで回答を取得
 		nonExistentQuestionID := uint(99999)
 		query := repository.GetAnswersQuery{
-			QuestionID:             &nonExistentQuestionID,
-			IncludePrivateAnswers:  false,
+			QuestionID:            &nonExistentQuestionID,
+			IncludePrivateAnswers: false,
 		}
 		answers, err := r.GetAnswers(t.Context(), query)
 
@@ -562,8 +567,8 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 
 		// Public質問の回答を取得（SelectedOptionsも含む）
 		query := repository.GetAnswersQuery{
-			QuestionID:             &publicSingleChoiceQuestion.ID,
-			IncludePrivateAnswers:  false,
+			QuestionID:            &publicSingleChoiceQuestion.ID,
+			IncludePrivateAnswers: false,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)

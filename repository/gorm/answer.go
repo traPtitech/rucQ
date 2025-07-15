@@ -35,12 +35,13 @@ func (r *Repository) GetAnswers(
 	ctx context.Context,
 	query repository.GetAnswersQuery,
 ) ([]model.Answer, error) {
-	db := r.db.WithContext(ctx)
-
 	// QuestionIDが指定されている場合、質問の存在確認を行う
 	if query.QuestionID != nil {
-		var question model.Question
-		if err := r.db.WithContext(ctx).First(&question, *query.QuestionID).Error; err != nil {
+		question, err := gorm.G[model.Question](r.db).
+			Where("id = ?", query.QuestionID).
+			First(ctx)
+
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil, model.ErrNotFound
 			}
@@ -53,33 +54,74 @@ func (r *Repository) GetAnswers(
 		}
 	}
 
+	scopes := make([]func(*gorm.Statement), 0, 3)
+
 	if query.UserID != nil {
-		db = db.Where("user_id = ?", *query.UserID)
+		scopes = append(scopes, func(s *gorm.Statement) {
+			s.Where("user_id = ?", query.UserID)
+		})
+
 	}
 
 	if query.QuestionGroupID != nil {
-		db = db.Where("question_id IN (?)",
-			r.db.Model(&model.Question{}).
-				Select("id").
-				Where("question_group_id = ?", *query.QuestionGroupID),
-		)
+		questions, err := gorm.G[model.Question](r.db).
+			Select("id").
+			Where("question_group_id = ?", query.QuestionGroupID).
+			Find(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		questionIDs := make([]uint, len(questions))
+
+		for i, question := range questions {
+			questionIDs[i] = question.ID
+		}
+
+		scopes = append(scopes, func(s *gorm.Statement) {
+			s.Where("question_id IN (?)",
+				questionIDs,
+			)
+		})
+
 	}
 
 	if query.QuestionID != nil {
-		db = db.Where("question_id = ?", *query.QuestionID)
+		scopes = append(scopes, func(s *gorm.Statement) {
+			s.Where("question_id = ?", query.QuestionID)
+		})
+
 	}
 
 	// 非公開回答を含めない場合は、公開質問のみにフィルタ
 	if !query.IncludePrivateAnswers && query.QuestionID == nil {
-		db = db.Where("question_id IN (?)",
-			r.db.Model(&model.Question{}).
-				Select("id").
-				Where("is_public = ?", true),
-		)
+		publicQuestions, err := gorm.G[model.Question](r.db).
+			Select("id").
+			Where("is_public = ?", true).
+			Find(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		publicQuestionIDs := make([]uint, len(publicQuestions))
+
+		for i, question := range publicQuestions {
+			publicQuestionIDs[i] = question.ID
+		}
+
+		scopes = append(scopes, func(s *gorm.Statement) {
+			s.Where("question_id IN (?)",
+				publicQuestionIDs,
+			)
+		})
 	}
 
-	var answers []model.Answer
-	err := db.Preload("SelectedOptions").Find(&answers).Error
+	answers, err := gorm.G[model.Answer](r.db).
+		Scopes(scopes...).
+		Preload("SelectedOptions", nil).
+		Find(ctx)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
