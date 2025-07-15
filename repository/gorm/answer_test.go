@@ -171,8 +171,9 @@ func TestGetAnswers(t *testing.T) {
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
 		query := repository.GetAnswersQuery{
-			UserID:          &user.ID,
-			QuestionGroupID: &questionGroup.ID,
+			UserID:                &user.ID,
+			QuestionGroupID:       &questionGroup.ID,
+			IncludePrivateAnswers: true,
 		}
 		result, err := r.GetAnswers(t.Context(), query)
 
@@ -206,8 +207,9 @@ func TestGetAnswers(t *testing.T) {
 
 		// 別のユーザーで検索
 		query := repository.GetAnswersQuery{
-			UserID:          &user2.ID,
-			QuestionGroupID: &questionGroup.ID,
+			UserID:                &user2.ID,
+			QuestionGroupID:       &questionGroup.ID,
+			IncludePrivateAnswers: true,
 		}
 		result, err := r.GetAnswers(t.Context(), query)
 
@@ -591,7 +593,8 @@ func TestGetAnswers(t *testing.T) {
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
 		query := repository.GetAnswersQuery{
-			QuestionGroupID: &questionGroup.ID,
+			QuestionGroupID:       &questionGroup.ID,
+			IncludePrivateAnswers: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		require.NoError(t, err)
@@ -633,7 +636,8 @@ func TestGetAnswers(t *testing.T) {
 
 			// Get answers for only question group 1
 			query := repository.GetAnswersQuery{
-				QuestionGroupID: &questionGroup1.ID,
+				QuestionGroupID:       &questionGroup1.ID,
+				IncludePrivateAnswers: true,
 			}
 			retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 			require.NoError(t, err)
