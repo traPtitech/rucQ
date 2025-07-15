@@ -126,7 +126,7 @@ func TestCreateQuestionGroup(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		createdQuestionGroup, err := r.GetQuestionGroup(questionGroup.ID)
+		createdQuestionGroup, err := r.GetQuestionGroup(t.Context(), questionGroup.ID)
 
 		assert.NoError(t, err)
 		assert.NotZero(t, createdQuestionGroup.ID)
@@ -182,7 +182,7 @@ func TestUpdateQuestionGroup(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		updatedQuestionGroup, err := r.GetQuestionGroup(questionGroup.ID)
+		updatedQuestionGroup, err := r.GetQuestionGroup(t.Context(), questionGroup.ID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, newQuestionGroup.Name, updatedQuestionGroup.Name)

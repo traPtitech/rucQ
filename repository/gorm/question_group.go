@@ -32,7 +32,7 @@ func (r *Repository) GetQuestionGroups(
 	return questionGroups, nil
 }
 
-func (r *Repository) GetQuestionGroup(ID uint) (*model.QuestionGroup, error) {
+func (r *Repository) GetQuestionGroup(ctx context.Context, ID uint) (*model.QuestionGroup, error) {
 	var questionGroup model.QuestionGroup
 
 	if err := r.db.
