@@ -81,10 +81,10 @@ func TestCreateAnswers(t *testing.T) {
 	})
 }
 
-func TestGetAnswersByUserAndQuestionGroup(t *testing.T) {
+func TestGetAnswers(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("ByUserAndQuestionGroup - Success", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -143,26 +143,26 @@ func TestGetAnswersByUserAndQuestionGroup(t *testing.T) {
 
 		// 特定のquestion groupの回答のみ取得
 		query := repository.GetAnswersQuery{
-			UserID:          &user.ID,
-			QuestionGroupID: &questionGroup.ID,
+			UserID:                &user.ID,
+			QuestionGroupID:       &questionGroup.ID,
+			IncludePrivateAnswers: true,
 		}
 		result, err := r.GetAnswers(t.Context(), query)
 
-		assert.NoError(t, err)
-		assert.Len(t, result, 2) // 2つの回答のみ取得されるはず
-
-		// 取得した回答が正しいquestion groupのものか確認
-		for _, answer := range result {
-			assert.Equal(t, user.ID, answer.UserID)
-			assert.True(
-				t,
-				answer.QuestionID == freeTextQuestion.ID ||
-					answer.QuestionID == freeNumberQuestion.ID,
-			)
+		if assert.NoError(t, err) && assert.Len(t, result, 2) {
+			// 取得した回答が正しいquestion groupのものか確認
+			for _, answer := range result {
+				assert.Equal(t, user.ID, answer.UserID)
+				assert.True(
+					t,
+					answer.QuestionID == freeTextQuestion.ID ||
+						answer.QuestionID == freeNumberQuestion.ID,
+				)
+			}
 		}
 	})
 
-	t.Run("No Answers", func(t *testing.T) {
+	t.Run("ByUserAndQuestionGroup - No Answers", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -180,7 +180,7 @@ func TestGetAnswersByUserAndQuestionGroup(t *testing.T) {
 		assert.Empty(t, result)
 	})
 
-	t.Run("Different User", func(t *testing.T) {
+	t.Run("ByUserAndQuestionGroup - Different User", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -273,12 +273,8 @@ func TestUpdateAnswer(t *testing.T) {
 			createdAnswer.SelectedOptions[0].Content,
 		)
 	})
-}
 
-func TestGetAnswersByQuestionID(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Success", func(t *testing.T) {
+	t.Run("ByQuestionID - Success", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -335,7 +331,7 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 		}
 	})
 
-	t.Run("No Answers", func(t *testing.T) {
+	t.Run("ByQuestionID - No Answers", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -353,7 +349,7 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 		assert.Empty(t, answers)
 	})
 
-	t.Run("With SelectedOptions", func(t *testing.T) {
+	t.Run("ByQuestionID - With SelectedOptions", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -384,29 +380,27 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 
 		// QuestionIDでAnswerを取得（SelectedOptionsも含む）
 		query := repository.GetAnswersQuery{
-			QuestionID: &singleChoiceQuestion.ID,
+			QuestionID:            &singleChoiceQuestion.ID,
+			IncludePrivateAnswers: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
-		assert.NoError(t, err)
-		assert.Len(t, retrievedAnswers, 1)
-		assert.Len(t, retrievedAnswers[0].SelectedOptions, 1)
-		assert.Equal(
-			t,
-			singleChoiceQuestion.Options[0].ID,
-			retrievedAnswers[0].SelectedOptions[0].ID,
-		)
-		assert.Equal(
-			t,
-			singleChoiceQuestion.Options[0].Content,
-			retrievedAnswers[0].SelectedOptions[0].Content,
-		)
+
+		if assert.NoError(t, err) && assert.Len(t, retrievedAnswers, 1) {
+			assert.Len(t, retrievedAnswers[0].SelectedOptions, 1)
+			assert.Equal(
+				t,
+				singleChoiceQuestion.Options[0].ID,
+				retrievedAnswers[0].SelectedOptions[0].ID,
+			)
+			assert.Equal(
+				t,
+				singleChoiceQuestion.Options[0].Content,
+				retrievedAnswers[0].SelectedOptions[0].Content,
+			)
+		}
 	})
-}
 
-func TestGetPublicAnswersByQuestionID(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Success - Public Question", func(t *testing.T) {
+	t.Run("PublicAnswersByQuestionID - Success with Public Question", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -469,7 +463,7 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		assert.Equal(t, freeTextContent2, *answerMap[user2.ID].FreeTextContent)
 	})
 
-	t.Run("Private Question - Returns Empty", func(t *testing.T) {
+	t.Run("PublicAnswersByQuestionID - Private Question Returns Forbidden", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -514,7 +508,7 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		}
 	})
 
-	t.Run("Non-existent Question", func(t *testing.T) {
+	t.Run("PublicAnswersByQuestionID - Non-existent Question", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -533,7 +527,7 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		}
 	})
 
-	t.Run("Public Question with SelectedOptions", func(t *testing.T) {
+	t.Run("PublicAnswersByQuestionID - Public Question with SelectedOptions", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -585,12 +579,8 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 			retrievedAnswers[0].SelectedOptions[0].Content,
 		)
 	})
-}
 
-func TestGetAnswersByQuestionGroup(t *testing.T) {
-	t.Parallel()
-
-	t.Run("Success", func(t *testing.T) {
+	t.Run("ByQuestionGroup - Success", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -651,7 +641,7 @@ func TestGetAnswersByQuestionGroup(t *testing.T) {
 		assert.True(t, questionIDs[question2.ID])
 	})
 
-	t.Run("Empty result when no answers exist", func(t *testing.T) {
+	t.Run("ByQuestionGroup - Empty result when no answers exist", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -666,45 +656,48 @@ func TestGetAnswersByQuestionGroup(t *testing.T) {
 		assert.Empty(t, retrievedAnswers)
 	})
 
-	t.Run("Only returns answers for specified question group", func(t *testing.T) {
-		t.Parallel()
+	t.Run(
+		"ByQuestionGroup - Only returns answers for specified question group",
+		func(t *testing.T) {
+			t.Parallel()
 
-		r := setup(t)
-		camp := mustCreateCamp(t, r)
-		user := mustCreateUser(t, r)
-		questionGroup1 := mustCreateQuestionGroup(t, r, camp.ID)
-		questionGroup2 := mustCreateQuestionGroup(t, r, camp.ID)
-		question1 := mustCreateQuestion(t, r, questionGroup1.ID, model.FreeTextQuestion, nil)
-		question2 := mustCreateQuestion(t, r, questionGroup2.ID, model.FreeTextQuestion, nil)
+			r := setup(t)
+			camp := mustCreateCamp(t, r)
+			user := mustCreateUser(t, r)
+			questionGroup1 := mustCreateQuestionGroup(t, r, camp.ID)
+			questionGroup2 := mustCreateQuestionGroup(t, r, camp.ID)
+			question1 := mustCreateQuestion(t, r, questionGroup1.ID, model.FreeTextQuestion, nil)
+			question2 := mustCreateQuestion(t, r, questionGroup2.ID, model.FreeTextQuestion, nil)
 
-		content1 := random.AlphaNumericString(t, 20)
-		content2 := random.AlphaNumericString(t, 20)
+			content1 := random.AlphaNumericString(t, 20)
+			content2 := random.AlphaNumericString(t, 20)
 
-		answers := []model.Answer{
-			{
-				QuestionID:      question1.ID,
-				UserID:          user.ID,
-				Type:            model.FreeTextQuestion,
-				FreeTextContent: &content1,
-			},
-			{
-				QuestionID:      question2.ID,
-				UserID:          user.ID,
-				Type:            model.FreeTextQuestion,
-				FreeTextContent: &content2,
-			},
-		}
+			answers := []model.Answer{
+				{
+					QuestionID:      question1.ID,
+					UserID:          user.ID,
+					Type:            model.FreeTextQuestion,
+					FreeTextContent: &content1,
+				},
+				{
+					QuestionID:      question2.ID,
+					UserID:          user.ID,
+					Type:            model.FreeTextQuestion,
+					FreeTextContent: &content2,
+				},
+			}
 
-		require.NoError(t, r.CreateAnswers(t.Context(), &answers))
+			require.NoError(t, r.CreateAnswers(t.Context(), &answers))
 
-		// Get answers for only question group 1
-		query := repository.GetAnswersQuery{
-			QuestionGroupID: &questionGroup1.ID,
-		}
-		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
-		require.NoError(t, err)
-		require.Len(t, retrievedAnswers, 1)
-		assert.Equal(t, question1.ID, retrievedAnswers[0].QuestionID)
-		assert.Equal(t, content1, *retrievedAnswers[0].FreeTextContent)
-	})
+			// Get answers for only question group 1
+			query := repository.GetAnswersQuery{
+				QuestionGroupID: &questionGroup1.ID,
+			}
+			retrievedAnswers, err := r.GetAnswers(t.Context(), query)
+			require.NoError(t, err)
+			require.Len(t, retrievedAnswers, 1)
+			assert.Equal(t, question1.ID, retrievedAnswers[0].QuestionID)
+			assert.Equal(t, content1, *retrievedAnswers[0].FreeTextContent)
+		},
+	)
 }
