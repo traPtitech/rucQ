@@ -455,7 +455,7 @@ func TestGetAnswers(t *testing.T) {
 		r := setup(t)
 
 		// 存在しない質問IDで回答を取得
-		nonExistentQuestionID := uint(99999)
+		nonExistentQuestionID := uint(random.PositiveInt(t))
 		query := repository.GetAnswersQuery{
 			QuestionID:            &nonExistentQuestionID,
 			IncludePrivateAnswers: false,
