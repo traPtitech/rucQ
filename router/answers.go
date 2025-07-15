@@ -9,6 +9,7 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (s *Server) GetMyAnswers(
@@ -16,11 +17,13 @@ func (s *Server) GetMyAnswers(
 	questionGroupId api.QuestionGroupId,
 	params api.GetMyAnswersParams,
 ) error {
-	answers, err := s.repo.GetAnswersByUserAndQuestionGroup(
-		e.Request().Context(),
-		*params.XForwardedUser,
-		uint(questionGroupId),
-	)
+	query := repository.GetAnswersQuery{
+		UserID:                params.XForwardedUser,
+		QuestionGroupID:       &[]uint{uint(questionGroupId)}[0],
+		IncludePrivateAnswers: true, // 自分の回答は非公開でも取得
+	}
+
+	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get answers: %v", err)
@@ -40,10 +43,12 @@ func (s *Server) GetMyAnswers(
 }
 
 func (s *Server) GetAnswers(e echo.Context, questionID api.QuestionId) error {
-	answers, err := s.repo.GetPublicAnswersByQuestionID(
-		e.Request().Context(),
-		uint(questionID),
-	)
+	query := repository.GetAnswersQuery{
+		QuestionID:            &[]uint{uint(questionID)}[0],
+		IncludePrivateAnswers: false, // 公開回答のみ
+	}
+
+	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
@@ -184,10 +189,12 @@ func (s *Server) AdminGetAnswers(
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	answers, err := s.repo.GetAnswersByQuestionID(
-		e.Request().Context(),
-		uint(questionID),
-	)
+	query := repository.GetAnswersQuery{
+		QuestionID:            &[]uint{uint(questionID)}[0],
+		IncludePrivateAnswers: true, // 管理者は非公開回答も取得可能
+	}
+
+	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get answers: %v", err)
@@ -234,22 +241,16 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 
 	// userIdパラメータが指定されている場合は特定ユーザーの回答を取得
 	// 指定されていない場合は全ユーザーの回答を取得
-	var answers []model.Answer
+	query := repository.GetAnswersQuery{
+		QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+		IncludePrivateAnswers: true, // 管理者は非公開回答も取得可能
+	}
 
 	if params.UserId != nil {
-		// 指定されたユーザーの回答を取得
-		answers, err = s.repo.GetAnswersByUserAndQuestionGroup(
-			e.Request().Context(),
-			*params.UserId,
-			uint(questionGroupID),
-		)
-	} else {
-		// 全ユーザーの回答を取得
-		answers, err = s.repo.GetAnswersByQuestionGroup(
-			e.Request().Context(),
-			uint(questionGroupID),
-		)
+		query.UserID = params.UserId
 	}
+
+	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
 
 	if err != nil {
 		if params.UserId != nil {

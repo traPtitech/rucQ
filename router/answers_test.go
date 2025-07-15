@@ -11,6 +11,7 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -156,7 +157,11 @@ func TestGetMyAnswers(t *testing.T) {
 		}
 
 		h.repo.MockAnswerRepository.EXPECT().
-			GetAnswersByUserAndQuestionGroup(gomock.Any(), userID, uint(questionGroupID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				UserID:                &userID,
+				QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+				IncludePrivateAnswers: true,
+			}).
 			Return(answers, nil).
 			Times(1)
 
@@ -467,7 +472,10 @@ func TestAdminGetAnswers(t *testing.T) {
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			GetAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionID:            &[]uint{uint(questionID)}[0],
+				IncludePrivateAnswers: true,
+			}).
 			Return(answers, nil).
 			Times(1)
 
@@ -596,7 +604,10 @@ func TestAdminGetAnswers(t *testing.T) {
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			GetAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionID:            &[]uint{uint(questionID)}[0],
+				IncludePrivateAnswers: true,
+			}).
 			Return([]model.Answer{}, nil).
 			Times(1)
 
@@ -627,7 +638,10 @@ func TestAdminGetAnswers(t *testing.T) {
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			GetAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionID:            &[]uint{uint(questionID)}[0],
+				IncludePrivateAnswers: true,
+			}).
 			Return(nil, gorm.ErrRecordNotFound).
 			Times(1)
 
@@ -1116,7 +1130,10 @@ func TestGetAnswers(t *testing.T) {
 		}
 
 		h.repo.MockAnswerRepository.EXPECT().
-			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionID:            &[]uint{uint(questionID)}[0],
+				IncludePrivateAnswers: false,
+			}).
 			Return(answers, nil).
 			Times(1)
 
@@ -1189,7 +1206,10 @@ func TestGetAnswers(t *testing.T) {
 
 		// Private質問の場合はErrForbiddenが返される
 		h.repo.MockAnswerRepository.EXPECT().
-			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionID:            &[]uint{uint(questionID)}[0],
+				IncludePrivateAnswers: false,
+			}).
 			Return(nil, model.ErrForbidden).
 			Times(1)
 
@@ -1207,7 +1227,10 @@ func TestGetAnswers(t *testing.T) {
 
 		// 回答が存在しない場合（Public質問だが回答がない）
 		h.repo.MockAnswerRepository.EXPECT().
-			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionID:            &[]uint{uint(questionID)}[0],
+				IncludePrivateAnswers: false,
+			}).
 			Return([]model.Answer{}, nil).
 			Times(1)
 
@@ -1226,7 +1249,10 @@ func TestGetAnswers(t *testing.T) {
 
 		// 質問が存在しない場合はErrNotFoundが返される
 		h.repo.MockAnswerRepository.EXPECT().
-			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionID:            &[]uint{uint(questionID)}[0],
+				IncludePrivateAnswers: false,
+			}).
 			Return(nil, model.ErrNotFound).
 			Times(1)
 
@@ -1243,7 +1269,10 @@ func TestGetAnswers(t *testing.T) {
 		questionID := random.PositiveInt(t)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			GetPublicAnswersByQuestionID(gomock.Any(), uint(questionID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionID:            &[]uint{uint(questionID)}[0],
+				IncludePrivateAnswers: false,
+			}).
 			Return(nil, errors.New("repository error")).
 			Times(1)
 
@@ -1297,7 +1326,11 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			GetAnswersByUserAndQuestionGroup(gomock.Any(), targetUserID, uint(questionGroupID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				UserID:                &targetUserID,
+				QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+				IncludePrivateAnswers: true,
+			}).
 			Return(answers, nil).
 			Times(1)
 
@@ -1356,7 +1389,10 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			GetAnswersByQuestionGroup(gomock.Any(), uint(questionGroupID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+				IncludePrivateAnswers: true,
+			}).
 			Return(answers, nil).
 			Times(1)
 
@@ -1446,7 +1482,11 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			GetAnswersByUserAndQuestionGroup(gomock.Any(), targetUserID, uint(questionGroupID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				UserID:                &targetUserID,
+				QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+				IncludePrivateAnswers: true,
+			}).
 			Return(nil, errors.New("repository error")).
 			Times(1)
 
@@ -1476,7 +1516,10 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			GetAnswersByQuestionGroup(gomock.Any(), uint(questionGroupID)).
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+				IncludePrivateAnswers: true,
+			}).
 			Return(nil, errors.New("repository error")).
 			Times(1)
 

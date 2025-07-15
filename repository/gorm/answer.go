@@ -35,56 +35,51 @@ func (r *Repository) GetAnswers(
 	ctx context.Context,
 	query repository.GetAnswersQuery,
 ) ([]model.Answer, error) {
-	if !query.IncludePrivateAnswers {
-		if query.QuestionID == nil {
-			return nil, errors.New("QuestionID is required")
-		}
+	db := r.db.WithContext(ctx)
 
-		question, err := gorm.G[model.Question](r.db).
-			Where("id = ?", query.QuestionID).
-			First(ctx)
-
-		if err != nil {
+	// QuestionIDが指定されている場合、質問の存在確認を行う
+	if query.QuestionID != nil {
+		var question model.Question
+		if err := r.db.WithContext(ctx).First(&question, *query.QuestionID).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil, model.ErrNotFound
 			}
-
 			return nil, err
 		}
 
-		if !question.IsPublic {
+		// 非公開回答を含めない場合は、公開質問かチェック
+		if !query.IncludePrivateAnswers && !question.IsPublic {
 			return nil, model.ErrForbidden
 		}
 	}
 
-	scopes := make([]func(*gorm.Statement), 0, 3)
-
 	if query.UserID != nil {
-		scopes = append(scopes, func(s *gorm.Statement) {
-			s.Where("user_id = ?", query.UserID)
-		})
+		db = db.Where("user_id = ?", *query.UserID)
 	}
 
 	if query.QuestionGroupID != nil {
-		scopes = append(scopes, func(s *gorm.Statement) {
-			s.Where("question_id IN (?)",
-				s.DB.Model(&model.Question{}).
-					Select("id").
-					Where("question_group_id = ?", query.QuestionGroupID),
-			)
-		})
+		db = db.Where("question_id IN (?)",
+			r.db.Model(&model.Question{}).
+				Select("id").
+				Where("question_group_id = ?", *query.QuestionGroupID),
+		)
 	}
 
 	if query.QuestionID != nil {
-		scopes = append(scopes, func(s *gorm.Statement) {
-			s.Where("question_id = ?", query.QuestionID)
-		})
+		db = db.Where("question_id = ?", *query.QuestionID)
 	}
 
-	answers, err := gorm.G[model.Answer](r.db).
-		Scopes(scopes...).
-		Preload("SelectedOptions", nil).
-		Find(ctx)
+	// 非公開回答を含めない場合は、公開質問のみにフィルタ
+	if !query.IncludePrivateAnswers && query.QuestionID == nil {
+		db = db.Where("question_id IN (?)",
+			r.db.Model(&model.Question{}).
+				Select("id").
+				Where("is_public = ?", true),
+		)
+	}
+
+	var answers []model.Answer
+	err := db.Preload("SelectedOptions").Find(&answers).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

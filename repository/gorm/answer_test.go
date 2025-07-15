@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -141,7 +142,11 @@ func TestGetAnswersByUserAndQuestionGroup(t *testing.T) {
 		assert.NoError(t, err)
 
 		// 特定のquestion groupの回答のみ取得
-		result, err := r.GetAnswersByUserAndQuestionGroup(t.Context(), user.ID, questionGroup.ID)
+		query := repository.GetAnswersQuery{
+			UserID:          &user.ID,
+			QuestionGroupID: &questionGroup.ID,
+		}
+		result, err := r.GetAnswers(t.Context(), query)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 2) // 2つの回答のみ取得されるはず
@@ -165,7 +170,11 @@ func TestGetAnswersByUserAndQuestionGroup(t *testing.T) {
 		user := mustCreateUser(t, r)
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
-		result, err := r.GetAnswersByUserAndQuestionGroup(t.Context(), user.ID, questionGroup.ID)
+		query := repository.GetAnswersQuery{
+			UserID:          &user.ID,
+			QuestionGroupID: &questionGroup.ID,
+		}
+		result, err := r.GetAnswers(t.Context(), query)
 
 		assert.NoError(t, err)
 		assert.Empty(t, result)
@@ -196,7 +205,11 @@ func TestGetAnswersByUserAndQuestionGroup(t *testing.T) {
 		assert.NoError(t, err)
 
 		// 別のユーザーで検索
-		result, err := r.GetAnswersByUserAndQuestionGroup(t.Context(), user2.ID, questionGroup.ID)
+		query := repository.GetAnswersQuery{
+			UserID:          &user2.ID,
+			QuestionGroupID: &questionGroup.ID,
+		}
+		result, err := r.GetAnswers(t.Context(), query)
 
 		assert.NoError(t, err)
 		assert.Empty(t, result) // 別のユーザーの回答は取得されない
@@ -297,7 +310,10 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 		require.NoError(t, err)
 
 		// QuestionIDでAnswerを取得
-		retrievedAnswers, err := r.GetAnswersByQuestionID(t.Context(), question.ID)
+		query := repository.GetAnswersQuery{
+			QuestionID: &question.ID,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
 		assert.Len(t, retrievedAnswers, 2)
 
@@ -324,7 +340,10 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
 
 		// Answerが存在しない質問に対するクエリ
-		answers, err := r.GetAnswersByQuestionID(t.Context(), question.ID)
+		query := repository.GetAnswersQuery{
+			QuestionID: &question.ID,
+		}
+		answers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
 		assert.Empty(t, answers)
 	})
@@ -359,7 +378,10 @@ func TestGetAnswersByQuestionID(t *testing.T) {
 		require.NoError(t, err)
 
 		// QuestionIDでAnswerを取得（SelectedOptionsも含む）
-		retrievedAnswers, err := r.GetAnswersByQuestionID(t.Context(), singleChoiceQuestion.ID)
+		query := repository.GetAnswersQuery{
+			QuestionID: &singleChoiceQuestion.ID,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
 		assert.Len(t, retrievedAnswers, 1)
 		assert.Len(t, retrievedAnswers[0].SelectedOptions, 1)
@@ -420,7 +442,11 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		require.NoError(t, err)
 
 		// Public質問の回答を取得
-		retrievedAnswers, err := r.GetPublicAnswersByQuestionID(t.Context(), publicQuestion.ID)
+		query := repository.GetAnswersQuery{
+			QuestionID:             &publicQuestion.ID,
+			IncludePrivateAnswers:  false,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
 		assert.Len(t, retrievedAnswers, 2)
 
@@ -471,7 +497,11 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		require.NoError(t, err)
 
 		// Private質問の回答を取得
-		retrievedAnswers, err := r.GetPublicAnswersByQuestionID(t.Context(), privateQuestion.ID)
+		query := repository.GetAnswersQuery{
+			QuestionID:             &privateQuestion.ID,
+			IncludePrivateAnswers:  false,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 
 		if assert.Error(t, err) {
 			assert.Equal(t, model.ErrForbidden, err)
@@ -485,7 +515,12 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		r := setup(t)
 
 		// 存在しない質問IDで回答を取得
-		answers, err := r.GetPublicAnswersByQuestionID(t.Context(), 99999)
+		nonExistentQuestionID := uint(99999)
+		query := repository.GetAnswersQuery{
+			QuestionID:             &nonExistentQuestionID,
+			IncludePrivateAnswers:  false,
+		}
+		answers, err := r.GetAnswers(t.Context(), query)
 
 		if assert.Error(t, err) {
 			assert.Equal(t, model.ErrNotFound, err)
@@ -526,10 +561,11 @@ func TestGetPublicAnswersByQuestionID(t *testing.T) {
 		require.NoError(t, err)
 
 		// Public質問の回答を取得（SelectedOptionsも含む）
-		retrievedAnswers, err := r.GetPublicAnswersByQuestionID(
-			t.Context(),
-			publicSingleChoiceQuestion.ID,
-		)
+		query := repository.GetAnswersQuery{
+			QuestionID:             &publicSingleChoiceQuestion.ID,
+			IncludePrivateAnswers:  false,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
 		assert.Len(t, retrievedAnswers, 1)
 		assert.Len(t, retrievedAnswers[0].SelectedOptions, 1)
@@ -589,7 +625,10 @@ func TestGetAnswersByQuestionGroup(t *testing.T) {
 		require.NoError(t, r.CreateAnswers(t.Context(), &answers))
 
 		// Get all answers for the question group
-		retrievedAnswers, err := r.GetAnswersByQuestionGroup(t.Context(), questionGroup.ID)
+		query := repository.GetAnswersQuery{
+			QuestionGroupID: &questionGroup.ID,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		require.NoError(t, err)
 		require.Len(t, retrievedAnswers, 3)
 
@@ -614,7 +653,10 @@ func TestGetAnswersByQuestionGroup(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
-		retrievedAnswers, err := r.GetAnswersByQuestionGroup(t.Context(), questionGroup.ID)
+		query := repository.GetAnswersQuery{
+			QuestionGroupID: &questionGroup.ID,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		require.NoError(t, err)
 		assert.Empty(t, retrievedAnswers)
 	})
@@ -651,7 +693,10 @@ func TestGetAnswersByQuestionGroup(t *testing.T) {
 		require.NoError(t, r.CreateAnswers(t.Context(), &answers))
 
 		// Get answers for only question group 1
-		retrievedAnswers, err := r.GetAnswersByQuestionGroup(t.Context(), questionGroup1.ID)
+		query := repository.GetAnswersQuery{
+			QuestionGroupID: &questionGroup1.ID,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		require.NoError(t, err)
 		require.Len(t, retrievedAnswers, 1)
 		assert.Equal(t, question1.ID, retrievedAnswers[0].QuestionID)
