@@ -17,9 +17,10 @@ func (s *Server) GetMyAnswers(
 	questionGroupId api.QuestionGroupId,
 	params api.GetMyAnswersParams,
 ) error {
+	uintQuestionGroupID := uint(questionGroupId)
 	query := repository.GetAnswersQuery{
 		UserID:                params.XForwardedUser,
-		QuestionGroupID:       &[]uint{uint(questionGroupId)}[0],
+		QuestionGroupID:       &uintQuestionGroupID,
 		IncludePrivateAnswers: true, // 自分の回答は非公開でも取得
 	}
 
