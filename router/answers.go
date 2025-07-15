@@ -43,8 +43,9 @@ func (s *Server) GetMyAnswers(
 }
 
 func (s *Server) GetAnswers(e echo.Context, questionID api.QuestionId) error {
+	uintQuestionID := uint(questionID)
 	query := repository.GetAnswersQuery{
-		QuestionID:            &[]uint{uint(questionID)}[0],
+		QuestionID:            &uintQuestionID,
 		IncludePrivateAnswers: false, // 公開回答のみ
 	}
 
@@ -189,8 +190,9 @@ func (s *Server) AdminGetAnswers(
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
+	uintQuestionID := uint(questionID)
 	query := repository.GetAnswersQuery{
-		QuestionID:            &[]uint{uint(questionID)}[0],
+		QuestionID:            &uintQuestionID,
 		IncludePrivateAnswers: true, // 管理者は非公開回答も取得可能
 	}
 
@@ -241,13 +243,11 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 
 	// userIdパラメータが指定されている場合は特定ユーザーの回答を取得
 	// 指定されていない場合は全ユーザーの回答を取得
+	uintQuestionGroupID := uint(questionGroupID)
 	query := repository.GetAnswersQuery{
-		QuestionGroupID:       &[]uint{uint(questionGroupID)}[0],
+		QuestionGroupID:       &uintQuestionGroupID,
 		IncludePrivateAnswers: true, // 管理者は非公開回答も取得可能
-	}
-
-	if params.UserId != nil {
-		query.UserID = params.UserId
+		UserID:                params.UserId,
 	}
 
 	answers, err := s.repo.GetAnswers(e.Request().Context(), query)

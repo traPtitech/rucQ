@@ -1358,8 +1358,8 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				UserID:           random.AlphaNumericString(t, 32),
-				QuestionID:       uint(random.PositiveInt(t)),
+				UserID:          random.AlphaNumericString(t, 32),
+				QuestionID:      uint(random.PositiveInt(t)),
 				Type:            model.FreeTextQuestion,
 				FreeTextContent: &[]string{random.AlphaNumericString(t, 100)}[0],
 			},
@@ -1367,8 +1367,8 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				UserID:           random.AlphaNumericString(t, 32),
-				QuestionID:       uint(random.PositiveInt(t)),
+				UserID:          random.AlphaNumericString(t, 32),
+				QuestionID:      uint(random.PositiveInt(t)),
 				Type:            model.FreeTextQuestion,
 				FreeTextContent: &[]string{random.AlphaNumericString(t, 100)}[0],
 			},
@@ -1376,8 +1376,8 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 				Model: gorm.Model{
 					ID: uint(random.PositiveInt(t)),
 				},
-				UserID:           random.AlphaNumericString(t, 32),
-				QuestionID:       uint(random.PositiveInt(t)),
+				UserID:          random.AlphaNumericString(t, 32),
+				QuestionID:      uint(random.PositiveInt(t)),
 				Type:            model.FreeTextQuestion,
 				FreeTextContent: &[]string{random.AlphaNumericString(t, 100)}[0],
 			},
