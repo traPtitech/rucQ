@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
@@ -33,14 +34,16 @@ func (r *Repository) GetQuestionGroups(
 }
 
 func (r *Repository) GetQuestionGroup(ctx context.Context, ID uint) (*model.QuestionGroup, error) {
-	var questionGroup model.QuestionGroup
-
-	if err := r.db.
-		Preload("Questions").
-		Preload("Questions.Options").
+	questionGroup, err := gorm.G[model.QuestionGroup](r.db).
+		Preload("Questions.Options", nil).
 		Where("id = ?", ID).
-		First(&questionGroup).
-		Error; err != nil {
+		First(ctx)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, model.ErrNotFound
+		}
+
 		return nil, err
 	}
 
