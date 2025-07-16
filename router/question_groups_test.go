@@ -390,7 +390,7 @@ func TestAdminPutQuestionGroupMetadata(t *testing.T) {
 			Return(nil).
 			Times(1)
 		h.repo.MockQuestionGroupRepository.EXPECT().
-			GetQuestionGroup(uint(questionGroupID)).
+			GetQuestionGroup(gomock.Any(), uint(questionGroupID)).
 			Return(&model.QuestionGroup{
 				Model: gorm.Model{
 					ID: uint(questionGroupID),

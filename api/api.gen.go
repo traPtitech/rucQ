@@ -863,6 +863,15 @@ type AdminPutQuestionGroupMetadataParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// AdminGetAnswersForQuestionGroupParams defines parameters for AdminGetAnswersForQuestionGroup.
+type AdminGetAnswersForQuestionGroupParams struct {
+	// UserId User ID（省略時は全ユーザーの回答を取得）
+	UserId *UserIdInQuery `form:"userId,omitempty" json:"userId,omitempty"`
+
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // AdminPostQuestionParams defines parameters for AdminPostQuestion.
 type AdminPostQuestionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -883,7 +892,7 @@ type AdminPutQuestionParams struct {
 
 // AdminGetAnswersParams defines parameters for AdminGetAnswers.
 type AdminGetAnswersParams struct {
-	// UserId User ID
+	// UserId User ID（省略時は全ユーザーの回答を取得）
 	UserId *UserIdInQuery `form:"userId,omitempty" json:"userId,omitempty"`
 
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -1884,6 +1893,9 @@ type ServerInterface interface {
 	// 質問グループを更新（管理者用）
 	// (PUT /api/admin/question-groups/{questionGroupId})
 	AdminPutQuestionGroupMetadata(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupMetadataParams) error
+	// 質問グループに対する回答一覧を取得（管理者用）
+	// (GET /api/admin/question-groups/{questionGroupId}/answers)
+	AdminGetAnswersForQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params AdminGetAnswersForQuestionGroupParams) error
 	// 質問を追加
 	// (POST /api/admin/question-groups/{questionGroupId}/questions)
 	AdminPostQuestion(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPostQuestionParams) error
@@ -2532,6 +2544,48 @@ func (w *ServerInterfaceWrapper) AdminPutQuestionGroupMetadata(ctx echo.Context)
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPutQuestionGroupMetadata(ctx, questionGroupId, params)
+	return err
+}
+
+// AdminGetAnswersForQuestionGroup converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminGetAnswersForQuestionGroup(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionGroupId" -------------
+	var questionGroupId QuestionGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminGetAnswersForQuestionGroupParams
+	// ------------- Optional query parameter "userId" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "userId", ctx.QueryParams(), &params.UserId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
+	}
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminGetAnswersForQuestionGroup(ctx, questionGroupId, params)
 	return err
 }
 
@@ -3648,6 +3702,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/api/admin/payments/:paymentId", wrapper.AdminPutPayment)
 	router.DELETE(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminDeleteQuestionGroup)
 	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroupMetadata)
+	router.GET(baseURL+"/api/admin/question-groups/:questionGroupId/answers", wrapper.AdminGetAnswersForQuestionGroup)
 	router.POST(baseURL+"/api/admin/question-groups/:questionGroupId/questions", wrapper.AdminPostQuestion)
 	router.DELETE(baseURL+"/api/admin/questions/:questionId", wrapper.AdminDeleteQuestion)
 	router.PUT(baseURL+"/api/admin/questions/:questionId", wrapper.AdminPutQuestion)

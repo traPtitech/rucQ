@@ -9,6 +9,7 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (s *Server) GetMyAnswers(
@@ -16,11 +17,14 @@ func (s *Server) GetMyAnswers(
 	questionGroupId api.QuestionGroupId,
 	params api.GetMyAnswersParams,
 ) error {
-	answers, err := s.repo.GetAnswersByUserAndQuestionGroup(
-		e.Request().Context(),
-		*params.XForwardedUser,
-		uint(questionGroupId),
-	)
+	uintQuestionGroupID := uint(questionGroupId)
+	query := repository.GetAnswersQuery{
+		UserID:                params.XForwardedUser,
+		QuestionGroupID:       &uintQuestionGroupID,
+		IncludePrivateAnswers: true, // 自分の回答は非公開でも取得
+	}
+
+	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
 
 	if err != nil {
 		e.Logger().Errorf("failed to get answers: %v", err)
@@ -40,10 +44,13 @@ func (s *Server) GetMyAnswers(
 }
 
 func (s *Server) GetAnswers(e echo.Context, questionID api.QuestionId) error {
-	answers, err := s.repo.GetPublicAnswersByQuestionID(
-		e.Request().Context(),
-		uint(questionID),
-	)
+	uintQuestionID := uint(questionID)
+	query := repository.GetAnswersQuery{
+		QuestionID:            &uintQuestionID,
+		IncludePrivateAnswers: false, // 公開回答のみ
+	}
+
+	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
@@ -184,12 +191,81 @@ func (s *Server) AdminGetAnswers(
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	answers, err := s.repo.GetAnswersByQuestionID(
+	uintQuestionID := uint(questionID)
+	query := repository.GetAnswersQuery{
+		QuestionID:            &uintQuestionID,
+		IncludePrivateAnswers: true, // 管理者は非公開回答も取得可能
+	}
+
+	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
+
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question %d not found", questionID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+		}
+
+		e.Logger().Errorf("failed to get answers: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[[]api.AnswerResponse](answers)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, res)
+}
+
+func (s *Server) AdminGetAnswersForQuestionGroup(
+	e echo.Context,
+	questionGroupID api.QuestionGroupId,
+	params api.AdminGetAnswersForQuestionGroupParams,
+) error {
+	if params.XForwardedUser == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
+	}
+
+	user, err := s.repo.GetOrCreateUser(
 		e.Request().Context(),
-		uint(questionID),
+		*params.XForwardedUser,
 	)
 
 	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	// userIdパラメータが指定されている場合は特定ユーザーの回答を取得
+	// 指定されていない場合は全ユーザーの回答を取得
+	uintQuestionGroupID := uint(questionGroupID)
+	query := repository.GetAnswersQuery{
+		QuestionGroupID:       &uintQuestionGroupID,
+		IncludePrivateAnswers: true, // 管理者は非公開回答も取得可能
+		UserID:                params.UserId,
+	}
+
+	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
+
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question group %d not found", questionGroupID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Question group not found")
+		}
+
 		e.Logger().Errorf("failed to get answers: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")

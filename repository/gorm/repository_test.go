@@ -186,7 +186,7 @@ func mustCreateQuestionGroup(t *testing.T, r *Repository, campID uint) model.Que
 	require.NoError(t, err)
 
 	// 時刻の精度などを揃えるため再取得する
-	questionGroup, err = r.GetQuestionGroup(questionGroup.ID)
+	questionGroup, err = r.GetQuestionGroup(t.Context(), questionGroup.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, questionGroup)
