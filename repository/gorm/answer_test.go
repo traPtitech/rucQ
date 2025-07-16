@@ -646,6 +646,24 @@ func TestGetAnswers(t *testing.T) {
 			assert.Equal(t, content1, *retrievedAnswers[0].FreeTextContent)
 		},
 	)
+
+	t.Run("ByQuestionGroup - Non-existent question group returns not found", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentQuestionGroupID := uint(random.PositiveInt(t))
+
+		query := repository.GetAnswersQuery{
+			QuestionGroupID:       &nonExistentQuestionGroupID,
+			IncludePrivateAnswers: true,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
+
+		if assert.Error(t, err) {
+			assert.ErrorIs(t, err, model.ErrNotFound)
+			assert.Empty(t, retrievedAnswers)
+		}
+	})
 }
 
 func TestUpdateAnswer(t *testing.T) {

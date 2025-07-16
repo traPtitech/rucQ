@@ -64,18 +64,15 @@ func (r *Repository) GetAnswers(
 	}
 
 	if query.QuestionGroupID != nil {
-		questions, err := gorm.G[model.Question](r.db).
-			Select("id").
-			Where("question_group_id = ?", query.QuestionGroupID).
-			Find(ctx)
+		questionGroup, err := r.GetQuestionGroup(ctx, *query.QuestionGroupID)
 
 		if err != nil {
 			return nil, err
 		}
 
-		questionIDs := make([]uint, len(questions))
+		questionIDs := make([]uint, len(questionGroup.Questions))
 
-		for i, question := range questions {
+		for i, question := range questionGroup.Questions {
 			questionIDs[i] = question.ID
 		}
 
