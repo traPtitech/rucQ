@@ -260,11 +260,13 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
 
 	if err != nil {
-		if params.UserId != nil {
-			e.Logger().Errorf("failed to get answers for user %s: %v", *params.UserId, err)
-		} else {
-			e.Logger().Errorf("failed to get answers for question group %d: %v", questionGroupID, err)
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question group %d not found", questionGroupID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Question group not found")
 		}
+
+		e.Logger().Errorf("failed to get answers: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}

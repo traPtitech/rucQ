@@ -1561,4 +1561,71 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 			Status(http.StatusInternalServerError).JSON().Object().
 			Value("message").String().IsEqual("Internal server error")
 	})
+
+	t.Run("Not Found - Question group does not exist", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		questionGroupID := uint(random.PositiveInt(t))
+
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				QuestionGroupID:       &questionGroupID,
+				IncludePrivateAnswers: true,
+			}).
+			Return(nil, model.ErrNotFound).
+			Times(1)
+
+		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Question group not found")
+	})
+
+	t.Run("Not Found - Question group does not exist with specific user", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionGroupID := uint(random.PositiveInt(t))
+
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				UserID:                &targetUserID,
+				QuestionGroupID:       &questionGroupID,
+				IncludePrivateAnswers: true,
+			}).
+			Return(nil, model.ErrNotFound).
+			Times(1)
+
+		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithQuery("userId", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Question group not found")
+	})
 }
