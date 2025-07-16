@@ -163,6 +163,59 @@ func TestCreateQuestionGroup(t *testing.T) {
 	})
 }
 
+func TestGetQuestionGroup(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.SingleChoiceQuestion, nil)
+		result, err := r.GetQuestionGroup(t.Context(), questionGroup.ID)
+
+		if assert.NoError(t, err) && assert.NotNil(t, result) {
+			assert.Equal(t, questionGroup.ID, result.ID)
+			assert.Equal(t, questionGroup.Name, result.Name)
+			assert.Equal(t, questionGroup.Description, result.Description)
+			assert.Equal(t, questionGroup.Due, result.Due)
+			assert.Equal(t, camp.ID, result.CampID)
+		}
+
+		if assert.Len(t, result.Questions, 1) {
+			assert.Equal(t, question.ID, result.Questions[0].ID)
+			assert.Equal(t, question.Type, result.Questions[0].Type)
+			assert.Equal(t, question.Title, result.Questions[0].Title)
+			assert.Equal(t, question.Description, result.Questions[0].Description)
+			assert.Equal(t, question.IsPublic, result.Questions[0].IsPublic)
+			assert.Equal(t, question.IsOpen, result.Questions[0].IsOpen)
+			assert.Equal(t, questionGroup.ID, result.Questions[0].QuestionGroupID)
+			assert.NotZero(t, len(result.Questions[0].Options))
+
+			for _, option := range result.Questions[0].Options {
+				assert.NotZero(t, option.ID)
+				assert.NotEmpty(t, option.Content)
+				assert.Equal(t, result.Questions[0].ID, option.QuestionID)
+			}
+		}
+	})
+
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentID := uint(random.PositiveInt(t))
+
+		result, err := r.GetQuestionGroup(t.Context(), nonExistentID)
+
+		if assert.Error(t, err) {
+			assert.ErrorIs(t, err, model.ErrNotFound)
+			assert.Nil(t, result)
+		}
+	})
+}
+
 func TestUpdateQuestionGroup(t *testing.T) {
 	t.Parallel()
 
