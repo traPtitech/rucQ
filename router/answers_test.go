@@ -347,7 +347,6 @@ func TestPutAnswer(t *testing.T) {
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
 				answer.ID = id
-				// Set up mock options
 				answer.SelectedOptions = []model.Option{
 					{
 						Model:   gorm.Model{ID: uint(optionID1)},
