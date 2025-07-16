@@ -88,7 +88,6 @@ func (r *Repository) GetAnswers(
 		scopes = append(scopes, func(s *gorm.Statement) {
 			s.Where("question_id = ?", query.QuestionID)
 		})
-
 	}
 
 	// 非公開回答を含めない場合は、公開質問のみにフィルタ
