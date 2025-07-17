@@ -941,6 +941,12 @@ type AdminPutUserParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// AdminPostAnswerParams defines parameters for AdminPostAnswer.
+type AdminPostAnswerParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // AdminPostMessageParams defines parameters for AdminPostMessage.
 type AdminPostMessageParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -1078,6 +1084,9 @@ type AdminPutRoomJSONRequestBody = RoomRequest
 
 // AdminPutUserJSONRequestBody defines body for AdminPutUser for application/json ContentType.
 type AdminPutUserJSONRequestBody = UserRequest
+
+// AdminPostAnswerJSONRequestBody defines body for AdminPostAnswer for application/json ContentType.
+type AdminPostAnswerJSONRequestBody = AnswerRequest
 
 // AdminPostMessageJSONRequestBody defines body for AdminPostMessage for application/json ContentType.
 type AdminPostMessageJSONRequestBody = MessageRequest
@@ -1929,6 +1938,9 @@ type ServerInterface interface {
 	// ユーザーの情報を更新（主に合宿係の権限管理用）
 	// (PUT /api/admin/users/{userId})
 	AdminPutUser(ctx echo.Context, userId UserId, params AdminPutUserParams) error
+	// ユーザーの回答を作成（管理者用）
+	// (POST /api/admin/users/{userId}/answers)
+	AdminPostAnswer(ctx echo.Context, userId UserId, params AdminPostAnswerParams) error
 	// ユーザーにDMを送信（管理者用）
 	// (POST /api/admin/users/{userId}/messages)
 	AdminPostMessage(ctx echo.Context, userId UserId, params AdminPostMessageParams) error
@@ -2984,6 +2996,42 @@ func (w *ServerInterfaceWrapper) AdminPutUser(ctx echo.Context) error {
 	return err
 }
 
+// AdminPostAnswer converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostAnswer(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "userId" -------------
+	var userId UserId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "userId", ctx.Param("userId"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostAnswerParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostAnswer(ctx, userId, params)
+	return err
+}
+
 // AdminPostMessage converts echo context to params.
 func (w *ServerInterfaceWrapper) AdminPostMessage(ctx echo.Context) error {
 	var err error
@@ -3714,6 +3762,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/api/admin/rooms/:roomId", wrapper.AdminPutRoom)
 	router.GET(baseURL+"/api/admin/users/:userId", wrapper.AdminGetUser)
 	router.PUT(baseURL+"/api/admin/users/:userId", wrapper.AdminPutUser)
+	router.POST(baseURL+"/api/admin/users/:userId/answers", wrapper.AdminPostAnswer)
 	router.POST(baseURL+"/api/admin/users/:userId/messages", wrapper.AdminPostMessage)
 	router.PUT(baseURL+"/api/answers/:answerId", wrapper.PutAnswer)
 	router.GET(baseURL+"/api/camps", wrapper.GetCamps)

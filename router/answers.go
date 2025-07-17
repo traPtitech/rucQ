@@ -282,6 +282,85 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 	return e.JSON(http.StatusOK, res)
 }
 
+func (s *Server) AdminPostAnswer(
+	e echo.Context,
+	userID api.UserId,
+	params api.AdminPostAnswerParams,
+) error {
+	if params.XForwardedUser == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
+	}
+
+	// 管理者権限の確認
+	user, err := s.repo.GetOrCreateUser(
+		e.Request().Context(),
+		*params.XForwardedUser,
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	targetUser, err := s.repo.GetOrCreateUser(
+		e.Request().Context(),
+		string(userID),
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create target user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	var req api.AdminPostAnswerJSONRequestBody
+
+	if err := e.Bind(&req); err != nil {
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return err
+	}
+
+	answer, err := converter.Convert[model.Answer](req)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert request body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// 対象ユーザーのIDを設定
+	answer.UserID = targetUser.ID
+
+	// 回答を作成
+	answers := []model.Answer{answer}
+	if err := s.repo.CreateAnswers(e.Request().Context(), &answers); err != nil {
+		e.Logger().Errorf("failed to create answer: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// 作成された回答を取得（IDが設定されるため）
+	createdAnswer := answers[0]
+
+	res, err := converter.Convert[api.AnswerResponse](createdAnswer)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusCreated, res)
+}
+
 func (s *Server) AdminPutAnswer(
 	e echo.Context,
 	answerID api.AnswerId,
