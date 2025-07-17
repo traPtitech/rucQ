@@ -10,6 +10,14 @@ import (
 	"github.com/traPtitech/rucQ/repository"
 )
 
+func (r *Repository) CreateAnswer(ctx context.Context, answer *model.Answer) error {
+	if err := gorm.G[model.Answer](r.db).Create(ctx, answer); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *Repository) CreateAnswers(ctx context.Context, answers *[]model.Answer) error {
 	if err := gorm.G[[]model.Answer](r.db).Create(ctx, answers); err != nil {
 		return err

@@ -340,17 +340,13 @@ func (s *Server) AdminPostAnswer(
 	answer.UserID = targetUser.ID
 
 	// 回答を作成
-	answers := []model.Answer{answer}
-	if err := s.repo.CreateAnswers(e.Request().Context(), &answers); err != nil {
+	if err := s.repo.CreateAnswer(e.Request().Context(), &answer); err != nil {
 		e.Logger().Errorf("failed to create answer: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	// 作成された回答を取得（IDが設定されるため）
-	createdAnswer := answers[0]
-
-	res, err := converter.Convert[api.AnswerResponse](createdAnswer)
+	res, err := converter.Convert[api.AnswerResponse](answer)
 
 	if err != nil {
 		e.Logger().Errorf("failed to convert response body: %v", err)

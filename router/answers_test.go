@@ -967,9 +967,10 @@ func TestAdminPostAnswer(t *testing.T) {
 			Return(targetUser, nil).
 			Times(1)
 		h.repo.MockAnswerRepository.EXPECT().
-			CreateAnswers(gomock.Any(), gomock.Any()).
-			DoAndReturn(func(_ any, answers *[]model.Answer) error {
-				(*answers)[0].ID = uint(random.PositiveInt(t))
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ any, answer *model.Answer) error {
+				answer.ID = uint(random.PositiveInt(t))
+
 				return nil
 			}).
 			Times(1)
@@ -1028,9 +1029,10 @@ func TestAdminPostAnswer(t *testing.T) {
 			Return(targetUser, nil).
 			Times(1)
 		h.repo.MockAnswerRepository.EXPECT().
-			CreateAnswers(gomock.Any(), gomock.Any()).
-			DoAndReturn(func(_ any, answers *[]model.Answer) error {
-				(*answers)[0].ID = uint(random.PositiveInt(t))
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ any, answer *model.Answer) error {
+				answer.ID = uint(random.PositiveInt(t))
+
 				return nil
 			}).
 			Times(1)
@@ -1090,9 +1092,10 @@ func TestAdminPostAnswer(t *testing.T) {
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			CreateAnswers(gomock.Any(), gomock.Any()).
-			DoAndReturn(func(_ any, answers *[]model.Answer) error {
-				(*answers)[0].ID = uint(random.PositiveInt(t))
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ any, answer *model.Answer) error {
+				answer.ID = uint(random.PositiveInt(t))
+
 				return nil
 			}).
 			Times(1)
@@ -1150,9 +1153,10 @@ func TestAdminPostAnswer(t *testing.T) {
 			Return(targetUser, nil).
 			Times(1)
 		h.repo.MockAnswerRepository.EXPECT().
-			CreateAnswers(gomock.Any(), gomock.Any()).
-			DoAndReturn(func(_ any, answers *[]model.Answer) error {
-				(*answers)[0].ID = uint(random.PositiveInt(t))
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ any, answer *model.Answer) error {
+				answer.ID = uint(random.PositiveInt(t))
+
 				return nil
 			}).
 			Times(1)
@@ -1314,7 +1318,7 @@ func TestAdminPostAnswer(t *testing.T) {
 			Value("message").String().IsEqual("Internal server error")
 	})
 
-	t.Run("InternalServerError - CreateAnswers repository error", func(t *testing.T) {
+	t.Run("InternalServerError - CreateAnswer repository error", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
@@ -1345,7 +1349,7 @@ func TestAdminPostAnswer(t *testing.T) {
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			CreateAnswers(gomock.Any(), gomock.Any()).
+			CreateAnswer(gomock.Any(), gomock.Any()).
 			Return(errors.New("database error")).
 			Times(1)
 
