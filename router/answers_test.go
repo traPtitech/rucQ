@@ -188,6 +188,29 @@ func TestGetMyAnswers(t *testing.T) {
 			Number().
 			InRange(freeNumberContent-0.0001, freeNumberContent+0.0001)
 	})
+
+	t.Run("NotFound - Question group not found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		questionGroupID := uint(random.PositiveInt(t))
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				UserID:                &userID,
+				QuestionGroupID:       &questionGroupID,
+				IncludePrivateAnswers: true,
+			}).
+			Return(nil, model.ErrNotFound).
+			Times(1)
+
+		h.expect.GET("/api/me/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Question group not found")
+	})
 }
 
 func TestPutAnswer(t *testing.T) {
@@ -1369,6 +1392,59 @@ func TestAdminPostAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusInternalServerError).JSON().Object().
 			Value("message").String().IsEqual("Internal server error")
+	})
+
+	t.Run("NotFound - Question not found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
+
+		// 管理者ユーザーを設定
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		// 対象ユーザーを設定
+		targetUser := &model.User{
+			ID:      targetUserID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), targetUserID).
+			Return(targetUser, nil).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			Return(model.ErrNotFound).
+			Times(1)
+
+		reqBody := api.FreeTextAnswerRequest{
+			Type:       api.FreeTextAnswerRequestTypeFreeText,
+			QuestionId: questionID,
+			Content:    random.AlphaNumericString(t, 50),
+		}
+
+		var req api.AnswerRequest
+		err := req.FromFreeTextAnswerRequest(reqBody)
+		require.NoError(t, err)
+
+		h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			WithJSON(req).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Question not found")
 	})
 }
 

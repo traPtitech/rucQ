@@ -219,6 +219,26 @@ func TestCreateAnswer(t *testing.T) {
 			assert.Empty(t, answer.SelectedOptions)
 		}
 	})
+
+	t.Run("Failure_NonExistentQuestion", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		user := mustCreateUser(t, r)
+		freeTextContent := random.AlphaNumericString(t, 20)
+		nonExistentQuestionID := uint(random.PositiveInt(t))
+		answer := &model.Answer{
+			QuestionID:      nonExistentQuestionID,
+			UserID:          user.ID,
+			Type:            model.FreeTextQuestion,
+			FreeTextContent: &freeTextContent,
+		}
+		err := r.CreateAnswer(t.Context(), answer)
+
+		if assert.Error(t, err) {
+			assert.Equal(t, model.ErrNotFound, err)
+		}
+	})
 }
 
 func TestGetAnswers(t *testing.T) {

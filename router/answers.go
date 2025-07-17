@@ -27,6 +27,12 @@ func (s *Server) GetMyAnswers(
 	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
 
 	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question group %d not found", questionGroupId)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Question group not found")
+		}
+
 		e.Logger().Errorf("failed to get answers: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -341,6 +347,12 @@ func (s *Server) AdminPostAnswer(
 
 	// 回答を作成
 	if err := s.repo.CreateAnswer(e.Request().Context(), &answer); err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question %d not found", answer.QuestionID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+		}
+
 		e.Logger().Errorf("failed to create answer: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
