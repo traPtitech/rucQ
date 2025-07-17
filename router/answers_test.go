@@ -1394,7 +1394,7 @@ func TestAdminPostAnswer(t *testing.T) {
 			Value("message").String().IsEqual("Internal server error")
 	})
 
-	t.Run("NotFound - Question not found", func(t *testing.T) {
+	t.Run("NotFound - Question or option not found", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
@@ -1444,7 +1444,7 @@ func TestAdminPostAnswer(t *testing.T) {
 			WithJSON(req).
 			Expect().
 			Status(http.StatusNotFound).JSON().Object().
-			Value("message").String().IsEqual("Question not found")
+			Value("message").String().IsEqual("Question or option not found")
 	})
 }
 

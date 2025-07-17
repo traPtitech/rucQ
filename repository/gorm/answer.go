@@ -11,20 +11,11 @@ import (
 )
 
 func (r *Repository) CreateAnswer(ctx context.Context, answer *model.Answer) error {
-	// 質問の存在確認
-	_, err := gorm.G[model.Question](r.db).
-		Where("id = ?", answer.QuestionID).
-		First(ctx)
-
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	if err := gorm.G[model.Answer](r.db).Create(ctx, answer); err != nil {
+		if errors.Is(err, gorm.ErrForeignKeyViolated) {
 			return model.ErrNotFound
 		}
 
-		return err
-	}
-
-	if err := gorm.G[model.Answer](r.db).Create(ctx, answer); err != nil {
 		return err
 	}
 

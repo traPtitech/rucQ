@@ -348,9 +348,9 @@ func (s *Server) AdminPostAnswer(
 	// 回答を作成
 	if err := s.repo.CreateAnswer(e.Request().Context(), &answer); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("question %d not found", answer.QuestionID)
+			e.Logger().Warnf("question or option not found: %v", err)
 
-			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+			return echo.NewHTTPError(http.StatusNotFound, "Question or option not found")
 		}
 
 		e.Logger().Errorf("failed to create answer: %v", err)

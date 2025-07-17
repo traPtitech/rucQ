@@ -239,6 +239,30 @@ func TestCreateAnswer(t *testing.T) {
 			assert.Equal(t, model.ErrNotFound, err)
 		}
 	})
+
+	t.Run("Failure_NonExistentOption", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.SingleChoiceQuestion, nil)
+		nonExistentOptionID := uint(random.PositiveInt(t))
+		answer := &model.Answer{
+			QuestionID: question.ID,
+			UserID:     user.ID,
+			Type:       model.SingleChoiceQuestion,
+			SelectedOptions: []model.Option{{
+				Model: gorm.Model{ID: nonExistentOptionID},
+			}},
+		}
+		err := r.CreateAnswer(t.Context(), answer)
+
+		if assert.Error(t, err) {
+			assert.Equal(t, model.ErrNotFound, err)
+		}
+	})
 }
 
 func TestGetAnswers(t *testing.T) {
