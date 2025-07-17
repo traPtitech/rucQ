@@ -27,6 +27,12 @@ func (s *Server) GetMyAnswers(
 	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
 
 	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question group %d not found", questionGroupId)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Question group not found")
+		}
+
 		e.Logger().Errorf("failed to get answers: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -280,6 +286,87 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 	}
 
 	return e.JSON(http.StatusOK, res)
+}
+
+func (s *Server) AdminPostAnswer(
+	e echo.Context,
+	userID api.UserId,
+	params api.AdminPostAnswerParams,
+) error {
+	if params.XForwardedUser == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
+	}
+
+	// 管理者権限の確認
+	user, err := s.repo.GetOrCreateUser(
+		e.Request().Context(),
+		*params.XForwardedUser,
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	targetUser, err := s.repo.GetOrCreateUser(
+		e.Request().Context(),
+		string(userID),
+	)
+
+	if err != nil {
+		e.Logger().Errorf("failed to get or create target user: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	var req api.AdminPostAnswerJSONRequestBody
+
+	if err := e.Bind(&req); err != nil {
+		e.Logger().Warnf("failed to bind request body: %v", err)
+
+		return err
+	}
+
+	answer, err := converter.Convert[model.Answer](req)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert request body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// 対象ユーザーのIDを設定
+	answer.UserID = targetUser.ID
+
+	// 回答を作成
+	if err := s.repo.CreateAnswer(e.Request().Context(), &answer); err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question or option not found: %v", err)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Question or option not found")
+		}
+
+		e.Logger().Errorf("failed to create answer: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[api.AnswerResponse](answer)
+
+	if err != nil {
+		e.Logger().Errorf("failed to convert response body: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusCreated, res)
 }
 
 func (s *Server) AdminPutAnswer(

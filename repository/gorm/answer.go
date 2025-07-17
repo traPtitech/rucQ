@@ -10,6 +10,27 @@ import (
 	"github.com/traPtitech/rucQ/repository"
 )
 
+func (r *Repository) CreateAnswer(ctx context.Context, answer *model.Answer) error {
+	if err := gorm.G[model.Answer](r.db).Create(ctx, answer); err != nil {
+		if errors.Is(err, gorm.ErrForeignKeyViolated) {
+			return model.ErrNotFound
+		}
+
+		return err
+	}
+
+	// 選択肢を反映するため再取得する
+	newAnswer, err := r.GetAnswerByID(ctx, answer.ID)
+
+	if err != nil {
+		return err
+	}
+
+	*answer = *newAnswer
+
+	return nil
+}
+
 func (r *Repository) CreateAnswers(ctx context.Context, answers *[]model.Answer) error {
 	if err := gorm.G[[]model.Answer](r.db).Create(ctx, answers); err != nil {
 		return err

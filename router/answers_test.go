@@ -188,6 +188,29 @@ func TestGetMyAnswers(t *testing.T) {
 			Number().
 			InRange(freeNumberContent-0.0001, freeNumberContent+0.0001)
 	})
+
+	t.Run("NotFound - Question group not found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		questionGroupID := uint(random.PositiveInt(t))
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
+				UserID:                &userID,
+				QuestionGroupID:       &questionGroupID,
+				IncludePrivateAnswers: true,
+			}).
+			Return(nil, model.ErrNotFound).
+			Times(1)
+
+		h.expect.GET("/api/me/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Question group not found")
+	})
 }
 
 func TestPutAnswer(t *testing.T) {
@@ -917,62 +940,295 @@ func TestAdminPutAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
+		res.Keys().ContainsOnly("id", "type", "questionId", "selectedOptions", "userId")
 		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual("multiple")
 		res.Value("questionId").Number().IsEqual(questionID)
 		selectedOptions := res.Value("selectedOptions").Array()
 		selectedOptions.Length().IsEqual(2)
-		selectedOptions.Value(0).Object().Value("id").Number().IsEqual(optionID1)
-		selectedOptions.Value(0).Object().Value("content").String().IsEqual(options[0].Content)
-		selectedOptions.Value(1).Object().Value("id").Number().IsEqual(optionID2)
-		selectedOptions.Value(1).Object().Value("content").String().IsEqual(options[1].Content)
-		res.Keys().ContainsOnly("id", "type", "questionId", "selectedOptions", "userId")
-	})
 
-	t.Run("BadRequest - Missing X-Forwarded-User", func(t *testing.T) {
+		for i, optionID := range []int{optionID1, optionID2} {
+			option := selectedOptions.Value(i).Object()
+			option.Keys().ContainsOnly("id", "content")
+			option.Value("id").Number().IsEqual(optionID)
+			option.Value("content").String().NotEmpty()
+		}
+	})
+}
+
+func TestAdminPostAnswer(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success - Create FreeText Answer", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		answerID := random.PositiveInt(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
+
+		// 管理者ユーザーを設定
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		// 対象ユーザーを設定
+		targetUser := &model.User{
+			ID:      targetUserID,
+			IsStaff: false,
+		}
+
+		content := random.AlphaNumericString(t, 50)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), targetUserID).
+			Return(targetUser, nil).
+			Times(1)
+		h.repo.MockAnswerRepository.EXPECT().
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ any, answer *model.Answer) error {
+				answer.ID = uint(random.PositiveInt(t))
+
+				return nil
+			}).
+			Times(1)
 
 		reqBody := api.FreeTextAnswerRequest{
 			Type:       api.FreeTextAnswerRequestTypeFreeText,
-			QuestionId: random.PositiveInt(t),
-			Content:    random.AlphaNumericString(t, 50),
+			QuestionId: questionID,
+			Content:    content,
 		}
 
 		var req api.AnswerRequest
 		err := req.FromFreeTextAnswerRequest(reqBody)
 		require.NoError(t, err)
 
-		h.expect.PUT("/api/admin/answers/{answerId}", answerID).
+		res := h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
 			WithJSON(req).
 			Expect().
-			Status(http.StatusBadRequest).JSON().Object().
-			Value("message").String().IsEqual("X-Forwarded-User header is required")
+			Status(http.StatusCreated).JSON().Object()
+
+		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
+		res.Value("type").String().IsEqual(string(api.FreeTextAnswerRequestTypeFreeText))
+		res.Value("userId").String().IsEqual(targetUserID)
+		res.Value("questionId").Number().IsEqual(questionID)
+		res.Value("content").String().IsEqual(content)
 	})
 
-	t.Run("Forbidden - Non-Staff User", func(t *testing.T) {
+	t.Run("Success - Create FreeNumber Answer", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		userID := random.AlphaNumericString(t, 32)
-		answerID := random.PositiveInt(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
 
-		// 非スタッフユーザーを設定
-		nonStaffUser := &model.User{
-			ID:      userID,
+		// 管理者ユーザーを設定
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		// 対象ユーザーを設定
+		targetUser := &model.User{
+			ID:      targetUserID,
+			IsStaff: false,
+		}
+
+		content := random.Float32(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), targetUserID).
+			Return(targetUser, nil).
+			Times(1)
+		h.repo.MockAnswerRepository.EXPECT().
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ any, answer *model.Answer) error {
+				answer.ID = uint(random.PositiveInt(t))
+
+				return nil
+			}).
+			Times(1)
+
+		reqBody := api.FreeNumberAnswerRequest{
+			Type:       api.FreeNumberAnswerRequestTypeFreeNumber,
+			QuestionId: questionID,
+			Content:    content,
+		}
+
+		var req api.AnswerRequest
+		err := req.FromFreeNumberAnswerRequest(reqBody)
+		require.NoError(t, err)
+
+		res := h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			WithJSON(req).
+			Expect().
+			Status(http.StatusCreated).JSON().Object()
+
+		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
+		res.Value("type").String().IsEqual(string(api.FreeNumberAnswerRequestTypeFreeNumber))
+		res.Value("userId").String().IsEqual(targetUserID)
+		res.Value("questionId").Number().IsEqual(questionID)
+		res.Value("content").Number().InRange(float64(content)-0.0001, float64(content)+0.0001)
+	})
+
+	t.Run("Success - Create SingleChoice Answer", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
+		optionID := random.PositiveInt(t)
+
+		// 管理者ユーザーを設定
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		// 対象ユーザーを設定
+		targetUser := &model.User{
+			ID:      targetUserID,
 			IsStaff: false,
 		}
 
 		h.repo.MockUserRepository.EXPECT().
-			GetOrCreateUser(gomock.Any(), userID).
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), targetUserID).
+			Return(targetUser, nil).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ any, answer *model.Answer) error {
+				answer.ID = uint(random.PositiveInt(t))
+
+				return nil
+			}).
+			Times(1)
+
+		reqBody := api.SingleChoiceAnswerRequest{
+			Type:       api.SingleChoiceAnswerRequestTypeSingle,
+			QuestionId: questionID,
+			OptionId:   optionID,
+		}
+
+		var req api.AnswerRequest
+		err := req.FromSingleChoiceAnswerRequest(reqBody)
+		require.NoError(t, err)
+
+		res := h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			WithJSON(req).
+			Expect().
+			Status(http.StatusCreated).JSON().Object()
+
+		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOption")
+		res.Value("type").String().IsEqual(string(api.SingleChoiceAnswerRequestTypeSingle))
+		res.Value("userId").String().IsEqual(targetUserID)
+		res.Value("questionId").Number().IsEqual(questionID)
+		res.Value("selectedOption").Object().Value("id").Number().IsEqual(optionID)
+	})
+
+	t.Run("Success - Create MultipleChoice Answer", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
+		optionIDs := []int{random.PositiveInt(t), random.PositiveInt(t)}
+
+		// 管理者ユーザーを設定
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		// 対象ユーザーを設定
+		targetUser := &model.User{
+			ID:      targetUserID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), targetUserID).
+			Return(targetUser, nil).
+			Times(1)
+		h.repo.MockAnswerRepository.EXPECT().
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ any, answer *model.Answer) error {
+				answer.ID = uint(random.PositiveInt(t))
+
+				return nil
+			}).
+			Times(1)
+
+		reqBody := api.MultipleChoiceAnswerRequest{
+			Type:       api.MultipleChoiceAnswerRequestTypeMultiple,
+			QuestionId: questionID,
+			OptionIds:  optionIDs,
+		}
+
+		var req api.AnswerRequest
+		err := req.FromMultipleChoiceAnswerRequest(reqBody)
+		require.NoError(t, err)
+
+		res := h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			WithJSON(req).
+			Expect().
+			Status(http.StatusCreated).JSON().Object()
+
+		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOptions")
+		res.Value("type").String().IsEqual(string(api.MultipleChoiceAnswerRequestTypeMultiple))
+		res.Value("userId").String().IsEqual(targetUserID)
+		res.Value("questionId").Number().IsEqual(questionID)
+		res.Value("selectedOptions").Array().Length().IsEqual(len(optionIDs))
+	})
+
+	t.Run("Forbidden - Non-staff user", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		nonStaffUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
+
+		// 非スタッフユーザーを設定
+		nonStaffUser := &model.User{
+			ID:      nonStaffUserID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), nonStaffUserID).
 			Return(nonStaffUser, nil).
 			Times(1)
 
 		reqBody := api.FreeTextAnswerRequest{
 			Type:       api.FreeTextAnswerRequestTypeFreeText,
-			QuestionId: random.PositiveInt(t),
+			QuestionId: questionID,
 			Content:    random.AlphaNumericString(t, 50),
 		}
 
@@ -980,55 +1236,24 @@ func TestAdminPutAnswer(t *testing.T) {
 		err := req.FromFreeTextAnswerRequest(reqBody)
 		require.NoError(t, err)
 
-		h.expect.PUT("/api/admin/answers/{answerId}", answerID).
-			WithHeader("X-Forwarded-User", userID).
+		h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithHeader("X-Forwarded-User", nonStaffUserID).
 			WithJSON(req).
 			Expect().
 			Status(http.StatusForbidden).JSON().Object().
 			Value("message").String().IsEqual("Forbidden")
 	})
 
-	t.Run("BadRequest - Invalid Request Body", func(t *testing.T) {
+	t.Run("BadRequest - Missing X-Forwarded-User header", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		userID := random.AlphaNumericString(t, 32)
-		answerID := random.PositiveInt(t)
-
-		// スタッフユーザーを設定
-		staffUser := &model.User{
-			ID:      userID,
-			IsStaff: true,
-		}
-
-		h.repo.MockUserRepository.EXPECT().
-			GetOrCreateUser(gomock.Any(), userID).
-			Return(staffUser, nil).
-			Times(1)
-
-		h.expect.PUT("/api/admin/answers/{answerId}", answerID).
-			WithHeader("X-Forwarded-User", userID).
-			WithHeader("Content-Type", "application/json").
-			WithText("invalid json").
-			Expect().
-			Status(http.StatusBadRequest)
-	})
-
-	t.Run("InternalServerError - User Repository Error", func(t *testing.T) {
-		t.Parallel()
-
-		h := setup(t)
-		userID := random.AlphaNumericString(t, 32)
-		answerID := random.PositiveInt(t)
-
-		h.repo.MockUserRepository.EXPECT().
-			GetOrCreateUser(gomock.Any(), userID).
-			Return(nil, gorm.ErrRecordNotFound).
-			Times(1)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
 
 		reqBody := api.FreeTextAnswerRequest{
 			Type:       api.FreeTextAnswerRequestTypeFreeText,
-			QuestionId: random.PositiveInt(t),
+			QuestionId: questionID,
 			Content:    random.AlphaNumericString(t, 50),
 		}
 
@@ -1036,40 +1261,124 @@ func TestAdminPutAnswer(t *testing.T) {
 		err := req.FromFreeTextAnswerRequest(reqBody)
 		require.NoError(t, err)
 
-		h.expect.PUT("/api/admin/answers/{answerId}", answerID).
-			WithHeader("X-Forwarded-User", userID).
+		h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithJSON(req).
+			Expect().
+			Status(http.StatusBadRequest).JSON().Object().
+			Value("message").String().IsEqual("X-Forwarded-User header is required")
+	})
+
+	t.Run("InternalServerError - Admin user repository error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(nil, errors.New("database error")).
+			Times(1)
+
+		reqBody := api.FreeTextAnswerRequest{
+			Type:       api.FreeTextAnswerRequestTypeFreeText,
+			QuestionId: questionID,
+			Content:    random.AlphaNumericString(t, 50),
+		}
+
+		var req api.AnswerRequest
+		err := req.FromFreeTextAnswerRequest(reqBody)
+		require.NoError(t, err)
+
+		h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
 			WithJSON(req).
 			Expect().
 			Status(http.StatusInternalServerError).JSON().Object().
 			Value("message").String().IsEqual("Internal server error")
 	})
 
-	t.Run("Internal Server Error - Answer Repository Error", func(t *testing.T) {
+	t.Run("InternalServerError - Target user repository error", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		userID := random.AlphaNumericString(t, 32)
-		answerID := random.PositiveInt(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
 
-		// スタッフユーザーを設定
-		staffUser := &model.User{
-			ID:      userID,
+		// 管理者ユーザーを設定
+		adminUser := &model.User{
+			ID:      adminUserID,
 			IsStaff: true,
 		}
 
 		h.repo.MockUserRepository.EXPECT().
-			GetOrCreateUser(gomock.Any(), userID).
-			Return(staffUser, nil).
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), targetUserID).
+			Return(nil, errors.New("database error")).
+			Times(1)
+
+		reqBody := api.FreeTextAnswerRequest{
+			Type:       api.FreeTextAnswerRequestTypeFreeText,
+			QuestionId: questionID,
+			Content:    random.AlphaNumericString(t, 50),
+		}
+
+		var req api.AnswerRequest
+		err := req.FromFreeTextAnswerRequest(reqBody)
+		require.NoError(t, err)
+
+		h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			WithJSON(req).
+			Expect().
+			Status(http.StatusInternalServerError).JSON().Object().
+			Value("message").String().IsEqual("Internal server error")
+	})
+
+	t.Run("InternalServerError - CreateAnswer repository error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
+
+		// 管理者ユーザーを設定
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		// 対象ユーザーを設定
+		targetUser := &model.User{
+			ID:      targetUserID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), targetUserID).
+			Return(targetUser, nil).
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
-			UpdateAnswer(gomock.Any(), uint(answerID), gomock.Any()).
-			Return(gorm.ErrRecordNotFound).
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			Return(errors.New("database error")).
 			Times(1)
 
 		reqBody := api.FreeTextAnswerRequest{
 			Type:       api.FreeTextAnswerRequestTypeFreeText,
-			QuestionId: random.PositiveInt(t),
+			QuestionId: questionID,
 			Content:    random.AlphaNumericString(t, 50),
 		}
 
@@ -1077,12 +1386,65 @@ func TestAdminPutAnswer(t *testing.T) {
 		err := req.FromFreeTextAnswerRequest(reqBody)
 		require.NoError(t, err)
 
-		h.expect.PUT("/api/admin/answers/{answerId}", answerID).
-			WithHeader("X-Forwarded-User", userID).
+		h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
 			WithJSON(req).
 			Expect().
 			Status(http.StatusInternalServerError).JSON().Object().
 			Value("message").String().IsEqual("Internal server error")
+	})
+
+	t.Run("NotFound - Question or option not found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		adminUserID := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		questionID := random.PositiveInt(t)
+
+		// 管理者ユーザーを設定
+		adminUser := &model.User{
+			ID:      adminUserID,
+			IsStaff: true,
+		}
+
+		// 対象ユーザーを設定
+		targetUser := &model.User{
+			ID:      targetUserID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(adminUser, nil).
+			Times(1)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), targetUserID).
+			Return(targetUser, nil).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
+			CreateAnswer(gomock.Any(), gomock.Any()).
+			Return(model.ErrNotFound).
+			Times(1)
+
+		reqBody := api.FreeTextAnswerRequest{
+			Type:       api.FreeTextAnswerRequestTypeFreeText,
+			QuestionId: questionID,
+			Content:    random.AlphaNumericString(t, 50),
+		}
+
+		var req api.AnswerRequest
+		err := req.FromFreeTextAnswerRequest(reqBody)
+		require.NoError(t, err)
+
+		h.expect.POST("/api/admin/users/{userId}/answers", targetUserID).
+			WithHeader("X-Forwarded-User", adminUserID).
+			WithJSON(req).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Question or option not found")
 	})
 }
 

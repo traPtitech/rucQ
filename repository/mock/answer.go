@@ -42,6 +42,20 @@ func (m *MockAnswerRepository) EXPECT() *MockAnswerRepositoryMockRecorder {
 	return m.recorder
 }
 
+// CreateAnswer mocks base method.
+func (m *MockAnswerRepository) CreateAnswer(ctx context.Context, answer *model.Answer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateAnswer", ctx, answer)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateAnswer indicates an expected call of CreateAnswer.
+func (mr *MockAnswerRepositoryMockRecorder) CreateAnswer(ctx, answer any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAnswer", reflect.TypeOf((*MockAnswerRepository)(nil).CreateAnswer), ctx, answer)
+}
+
 // CreateAnswers mocks base method.
 func (m *MockAnswerRepository) CreateAnswers(ctx context.Context, answers *[]model.Answer) error {
 	m.ctrl.T.Helper()

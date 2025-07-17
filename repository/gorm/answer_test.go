@@ -81,6 +81,190 @@ func TestCreateAnswers(t *testing.T) {
 	})
 }
 
+func TestCreateAnswer(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success_FreeTextQuestion", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
+		freeTextContent := random.AlphaNumericString(t, 20)
+		answer := &model.Answer{
+			QuestionID:      question.ID,
+			UserID:          user.ID,
+			Type:            model.FreeTextQuestion,
+			FreeTextContent: &freeTextContent,
+		}
+		err := r.CreateAnswer(t.Context(), answer)
+
+		if assert.NoError(t, err) {
+			assert.NotZero(t, answer.ID)
+			assert.Equal(t, question.ID, answer.QuestionID)
+			assert.Equal(t, user.ID, answer.UserID)
+			assert.Equal(t, model.FreeTextQuestion, answer.Type)
+
+			if assert.NotNil(t, answer.FreeTextContent) {
+				assert.Equal(t, freeTextContent, *answer.FreeTextContent)
+			}
+
+			assert.Nil(t, answer.FreeNumberContent)
+			assert.Empty(t, answer.SelectedOptions)
+		}
+	})
+
+	t.Run("Success_SingleChoiceQuestion", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.SingleChoiceQuestion, nil)
+		answer := &model.Answer{
+			QuestionID: question.ID,
+			UserID:     user.ID,
+			Type:       model.SingleChoiceQuestion,
+			SelectedOptions: []model.Option{{
+				Model: gorm.Model{ID: question.Options[0].ID}, // 最初のオプションを選択（IDのみで指定）
+			}},
+		}
+		err := r.CreateAnswer(t.Context(), answer)
+
+		if assert.NoError(t, err) {
+			assert.NotZero(t, answer.ID)
+			assert.Equal(t, question.ID, answer.QuestionID)
+			assert.Equal(t, user.ID, answer.UserID)
+			assert.Equal(t, model.SingleChoiceQuestion, answer.Type)
+
+			if assert.Len(t, answer.SelectedOptions, 1) {
+				assert.Equal(t, question.Options[0].ID, answer.SelectedOptions[0].ID)
+				assert.Equal(t, question.Options[0].Content, answer.SelectedOptions[0].Content)
+			}
+
+			assert.Nil(t, answer.FreeTextContent)
+			assert.Nil(t, answer.FreeNumberContent)
+		}
+	})
+
+	t.Run("Success_MultipleChoiceQuestion", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.MultipleChoiceQuestion, nil)
+		selectedOptions := make([]model.Option, len(question.Options))
+
+		for i := range question.Options {
+			selectedOptions[i] = model.Option{
+				Model: gorm.Model{ID: question.Options[i].ID},
+			}
+		}
+
+		answer := &model.Answer{
+			QuestionID:      question.ID,
+			UserID:          user.ID,
+			Type:            model.MultipleChoiceQuestion,
+			SelectedOptions: selectedOptions,
+		}
+		err := r.CreateAnswer(t.Context(), answer)
+
+		if assert.NoError(t, err) {
+			assert.NotZero(t, answer.ID)
+			assert.Equal(t, question.ID, answer.QuestionID)
+			assert.Equal(t, user.ID, answer.UserID)
+			assert.Equal(t, model.MultipleChoiceQuestion, answer.Type)
+
+			if assert.Len(t, answer.SelectedOptions, len(question.Options)) {
+				for i := range question.Options {
+					assert.Equal(t, question.Options[i].ID, answer.SelectedOptions[i].ID)
+					assert.Equal(t, question.Options[i].Content, answer.SelectedOptions[i].Content)
+				}
+			}
+
+			assert.Nil(t, answer.FreeTextContent)
+			assert.Nil(t, answer.FreeNumberContent)
+		}
+	})
+
+	t.Run("Success_FreeNumberQuestion", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeNumberQuestion, nil)
+		freeNumberContent := random.Float64(t)
+		answer := &model.Answer{
+			QuestionID:        question.ID,
+			UserID:            user.ID,
+			Type:              model.FreeNumberQuestion,
+			FreeNumberContent: &freeNumberContent,
+		}
+		err := r.CreateAnswer(t.Context(), answer)
+
+		if assert.NoError(t, err) {
+			assert.NotZero(t, answer.ID)
+			assert.Equal(t, question.ID, answer.QuestionID)
+			assert.Equal(t, user.ID, answer.UserID)
+			assert.Equal(t, model.FreeNumberQuestion, answer.Type)
+			assert.Equal(t, freeNumberContent, *answer.FreeNumberContent)
+			assert.Nil(t, answer.FreeTextContent)
+			assert.Empty(t, answer.SelectedOptions)
+		}
+	})
+
+	t.Run("Failure_NonExistentQuestion", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		user := mustCreateUser(t, r)
+		freeTextContent := random.AlphaNumericString(t, 20)
+		nonExistentQuestionID := uint(random.PositiveInt(t))
+		answer := &model.Answer{
+			QuestionID:      nonExistentQuestionID,
+			UserID:          user.ID,
+			Type:            model.FreeTextQuestion,
+			FreeTextContent: &freeTextContent,
+		}
+		err := r.CreateAnswer(t.Context(), answer)
+
+		if assert.Error(t, err) {
+			assert.Equal(t, model.ErrNotFound, err)
+		}
+	})
+
+	t.Run("Failure_NonExistentOption", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.SingleChoiceQuestion, nil)
+		nonExistentOptionID := uint(random.PositiveInt(t))
+		answer := &model.Answer{
+			QuestionID: question.ID,
+			UserID:     user.ID,
+			Type:       model.SingleChoiceQuestion,
+			SelectedOptions: []model.Option{{
+				Model: gorm.Model{ID: nonExistentOptionID},
+			}},
+		}
+		err := r.CreateAnswer(t.Context(), answer)
+
+		if assert.Error(t, err) {
+			assert.Equal(t, model.ErrNotFound, err)
+		}
+	})
+}
+
 func TestGetAnswers(t *testing.T) {
 	t.Parallel()
 

@@ -15,6 +15,7 @@ type GetAnswersQuery struct {
 }
 
 type AnswerRepository interface {
+	CreateAnswer(ctx context.Context, answer *model.Answer) error
 	CreateAnswers(ctx context.Context, answers *[]model.Answer) error
 	GetAnswerByID(ctx context.Context, id uint) (*model.Answer, error)
 	GetAnswers(ctx context.Context, query GetAnswersQuery) ([]model.Answer, error)
