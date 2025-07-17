@@ -10,7 +10,7 @@ services:
       DB_PASSWORD: password
       DB_HOST: mariadb
       DB_PORT: 3306
-      DB_NAME: database
+      DB_NAME: rucq
       RUCQ_ENV: "development"
       RUCQ_CORS_ALLOW_ORIGINS: "*"
     depends_on:
@@ -27,11 +27,13 @@ services:
       - "3306:3306"
     environment:
       MARIADB_ROOT_PASSWORD: password
-      MARIADB_DATABASE: database
     volumes:
       - type: volume
         source: mariadb_data
         target: /var/lib/mysql
+      - type: bind
+        source: ./dev/db/
+        target: /docker-entrypoint-initdb.d/
     healthcheck:
       test: mariadb-admin ping -h 127.0.0.1 -u root -p$$MARIADB_ROOT_PASSWORD
       interval: 1s
@@ -59,5 +61,43 @@ services:
       mariadb:
         condition: service_healthy
 
+  traq_caddy:
+    image: caddy:2.10.0-alpine
+    ports:
+      - 3000:80
+    volumes:
+      - type: bind
+        source: ./dev/caddy/
+        target: /etc/caddy/
+    depends_on:
+      - traq_server
+      - traq_ui
+
+  traq_server:
+    image: ghcr.io/traptitech/traq:3.24.13
+    environment:
+      TRAQ_MARIADB_HOST: mariadb
+      TRAQ_STORAGE_LOCAL_DIR: /app/storage
+    volumes:
+      - type: volume
+        source: traq_storage
+        target: /app/storage
+    expose:
+      - 3000
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  traq_ui:
+    image: ghcr.io/traptitech/traq-ui:3.26.1
+    volumes:
+      - type: volume
+        source: traq_override
+        target: /app/override
+    expose:
+      - 80
+
 volumes:
   mariadb_data:
+  traq_storage:
+  traq_override:
