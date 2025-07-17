@@ -15,6 +15,15 @@ func (r *Repository) CreateAnswer(ctx context.Context, answer *model.Answer) err
 		return err
 	}
 
+	// 選択肢を反映するため再取得する
+	newAnswer, err := r.GetAnswerByID(ctx, answer.ID)
+
+	if err != nil {
+		return err
+	}
+
+	*answer = *newAnswer
+
 	return nil
 }
 
