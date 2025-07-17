@@ -9,7 +9,7 @@ type V1Questions struct {
 	IsRequired bool `gorm:"not null;default:false"`
 }
 
-func (_ V1Questions) TableName() string {
+func (V1Questions) TableName() string {
 	return "questions"
 }
 
