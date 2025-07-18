@@ -10,6 +10,7 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/repository/mock"
+	serviceMock "github.com/traPtitech/rucQ/service/mock"
 )
 
 type mockRepository struct {
@@ -49,7 +50,8 @@ func setup(t *testing.T) *testHandler {
 
 	ctrl := gomock.NewController(t)
 	repo := newMockRepository(ctrl)
-	server := NewServer(repo, false)
+	traqService := serviceMock.NewMockTraqService(ctrl)
+	server := NewServer(repo, traqService, false)
 	e := echo.New()
 
 	api.RegisterHandlers(e, server)
