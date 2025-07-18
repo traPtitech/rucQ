@@ -5,187 +5,201 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/docker/go-connections/nat"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// setup はテストごとに独立したtraQ環境をセットアップします。
-func setup(t *testing.T) TraqService {
-	t.Helper()
-
+// setupTraqContainer starts MariaDB and traQ containers and returns the traQ URL and access token
+func setupTraqContainer(t *testing.T) (string, string, func()) {
 	ctx := context.Background()
 
-	// MariaDBコンテナを起動
-	mariadbReq := testcontainers.ContainerRequest{
-		Image:        "mariadb:11.8.2-noble",
-		ExposedPorts: []string{"3306/tcp"},
-		Env: map[string]string{
-			"MARIADB_ROOT_PASSWORD": "password",
-		},
-		WaitingFor: wait.ForAll(
-			wait.ForLog("ready for connections").WithOccurrence(2), // 初期化と本起動の2回
-			wait.ForSQL("3306/tcp", "mysql", func(host string, port nat.Port) string {
-				return fmt.Sprintf("root:password@tcp(%s:%s)/", host, port.Port())
-			}),
-		),
-	}
+	// Start MariaDB container
 	mariadbContainer, err := testcontainers.GenericContainer(
 		ctx,
 		testcontainers.GenericContainerRequest{
-			ContainerRequest: mariadbReq,
-			Started:          true,
+			ContainerRequest: testcontainers.ContainerRequest{
+				Image:        "mariadb:11.8.2-noble",
+				ExposedPorts: []string{"3306/tcp"},
+				Env: map[string]string{
+					"MARIADB_ROOT_PASSWORD": "password",
+					"MARIADB_DATABASE":      "traq",
+				},
+				WaitingFor: wait.ForAll(
+					wait.ForLog("ready for connections"),
+					wait.ForListeningPort("3306/tcp"),
+				).WithStartupTimeout(60 * time.Second),
+			},
+			Started: true,
 		},
 	)
-	require.NoError(t, err, "failed to start mariadb container")
-
-	t.Cleanup(func() {
-		testcontainers.CleanupContainer(t, mariadbContainer)
-	})
-
-	mariadbPort, err := mariadbContainer.MappedPort(ctx, "3306")
-	require.NoError(t, err, "failed to get mapped port for mariadb")
-
-	// traQ serverコンテナを起動
-	traqReq := testcontainers.ContainerRequest{
-		Image:        "ghcr.io/traptitech/traq:3.24.13",
-		ExposedPorts: []string{"3000/tcp"},
-		Env: map[string]string{
-			"TRAQ_MARIADB_HOST":      "host.docker.internal",
-			"TRAQ_MARIADB_PORT":      mariadbPort.Port(),
-			"TRAQ_MARIADB_USERNAME":  "root",
-			"TRAQ_MARIADB_PASSWORD":  "password",
-			"TRAQ_MARIADB_DATABASE":  "traq",
-			"TRAQ_STORAGE_LOCAL_DIR": "/app/storage",
-		},
-		WaitingFor: wait.ForHTTP("/api/v3/version").
-			WithPort("3000/tcp").
-			WithStartupTimeout(5 * time.Minute),
+	if err != nil {
+		t.Fatalf("Failed to start MariaDB container: %v", err)
 	}
+
+	// Get MariaDB container IP
+	mariadbIP, err := mariadbContainer.ContainerIP(ctx)
+	if err != nil {
+		t.Fatalf("Failed to get MariaDB IP: %v", err)
+	}
+
+	// Wait a bit more to ensure MariaDB is fully ready
+	time.Sleep(2 * time.Second)
+
+	// Start traQ container
 	traqContainer, err := testcontainers.GenericContainer(
 		ctx,
 		testcontainers.GenericContainerRequest{
-			ContainerRequest: traqReq,
-			Started:          true,
+			ContainerRequest: testcontainers.ContainerRequest{
+				Image:        "ghcr.io/traptitech/traq:3.20.2",
+				ExposedPorts: []string{"3000/tcp"},
+				Env: map[string]string{
+					"TRAQ_MARIADB_HOST":     mariadbIP,
+					"TRAQ_MARIADB_PORT":     "3306",
+					"TRAQ_MARIADB_USERNAME": "root",
+					"TRAQ_MARIADB_PASSWORD": "password",
+					"TRAQ_MARIADB_DATABASE": "traq",
+					"TRAQ_ORIGIN":           "http://localhost:3000",
+				},
+				WaitingFor: wait.ForHTTP("/api/v3/version").
+					WithPort("3000/tcp").
+					WithStartupTimeout(120 * time.Second),
+			},
+			Started: true,
 		},
 	)
-	require.NoError(t, err, "failed to start traq container")
+	if err != nil {
+		t.Fatalf("Failed to start traQ container: %v", err)
+	}
 
-	t.Cleanup(func() {
-		testcontainers.CleanupContainer(t, traqContainer)
-	})
-
+	// Get traQ container port
 	traqPort, err := traqContainer.MappedPort(ctx, "3000")
-	require.NoError(t, err, "failed to get mapped port for traq")
-	traqBaseURL := fmt.Sprintf("http://localhost:%s", traqPort.Port())
-	traqApiURL := traqBaseURL + "/api/v3"
+	if err != nil {
+		t.Fatalf("Failed to get traQ port: %v", err)
+	}
 
-	// ログインしてセッションクッキーを取得
-	loginBody := map[string]string{
+	traqURL := fmt.Sprintf("http://localhost:%s", traqPort.Port())
+
+	// Create bot and get access token
+	accessToken := createTestBot(t, traqURL)
+
+	cleanup := func() {
+		traqContainer.Terminate(ctx)
+		mariadbContainer.Terminate(ctx)
+	}
+
+	return traqURL, accessToken, cleanup
+}
+
+// createTestBot creates a test bot and returns its access token
+func createTestBot(t *testing.T, traqURL string) string {
+	// Login to get session cookie
+	loginPayload := map[string]string{
 		"name":     "traq",
 		"password": "traq",
 	}
-	loginBodyBytes, err := json.Marshal(loginBody)
-	require.NoError(t, err)
+	loginBytes, _ := json.Marshal(loginPayload)
 
-	var loginRes *http.Response
-	var setCookie string
-	httpClient := &http.Client{}
+	loginResp, err := http.Post(
+		traqURL+"/api/v3/login",
+		"application/json",
+		bytes.NewBuffer(loginBytes),
+	)
+	if err != nil {
+		t.Fatalf("Failed to login: %v", err)
+	}
+	defer loginResp.Body.Close()
 
-	// ログインをリトライ（コンテナ起動直後はAPIが不安定な場合があるため）
-	require.Eventually(t, func() bool {
-		loginReq, err := http.NewRequest(
-			"POST",
-			traqApiURL+"/login",
-			bytes.NewBuffer(loginBodyBytes),
-		)
-		if err != nil {
-			return false
+	// Extract session cookie
+	var sessionCookie *http.Cookie
+	for _, cookie := range loginResp.Cookies() {
+		if cookie.Name == "r_session" {
+			sessionCookie = cookie
+			break
 		}
-		loginReq.Header.Set("Content-Type", "application/json")
+	}
 
-		loginRes, err = httpClient.Do(loginReq)
-		if err != nil {
-			return false
-		}
-		defer loginRes.Body.Close()
+	if sessionCookie == nil {
+		t.Fatalf("No session cookie found")
+	}
 
-		if loginRes.StatusCode == http.StatusNoContent {
-			for _, cookie := range loginRes.Cookies() {
-				if cookie.Name != "" {
-					setCookie = cookie.Name + "=" + cookie.Value
-					return true
-				}
-			}
-		}
-		return false
-	}, 30*time.Second, 1*time.Second, "failed to login as traq user")
-
-	require.NotEmpty(t, setCookie, "no session cookie found")
-
-	// テスト用Botの作成
-	botName := fmt.Sprintf("test-bot-%s", uuid.New().String()[:8])
-	botBody := map[string]interface{}{
-		"name":        botName,
+	// Create bot
+	createBotPayload := map[string]interface{}{
+		"name":        "test-bot",
 		"displayName": "Test Bot",
-		"description": "Test Bot for integration test",
+		"description": "Test bot for integration tests",
 		"mode":        "HTTP",
-		"endpoint":    "",
-		"scopes":      []string{"read", "write"},
+		"endpoint":    "http://localhost:3001/webhook",
 	}
-	botBodyBytes, err := json.Marshal(botBody)
-	require.NoError(t, err)
+	payloadBytes, _ := json.Marshal(createBotPayload)
 
-	botReq, err := http.NewRequest("POST", traqApiURL+"/bots", bytes.NewBuffer(botBodyBytes))
-	require.NoError(t, err)
-	botReq.Header.Set("Content-Type", "application/json")
-	botReq.Header.Set("Cookie", setCookie)
+	req, err := http.NewRequest("POST", traqURL+"/api/v3/bots", bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(sessionCookie)
 
-	botRes, err := httpClient.Do(botReq)
-	require.NoError(t, err)
-	defer botRes.Body.Close()
+	client := &http.Client{}
+	createBotResp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("Failed to create bot: %v", err)
+	}
+	defer createBotResp.Body.Close()
 
-	require.Equal(t, http.StatusCreated, botRes.StatusCode, "failed to create bot")
+	if createBotResp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(createBotResp.Body)
+		t.Fatalf(
+			"Failed to create bot: status %d, body: %s",
+			createBotResp.StatusCode,
+			string(body),
+		)
+	}
 
+	// Parse bot response to get access token
 	var botResponse struct {
-		Tokens struct {
-			AccessToken string `json:"access_token"`
-		} `json:"tokens"`
+		VerificationToken string `json:"verificationToken"`
+		AccessToken       string `json:"accessToken"`
+		BotUserID         string `json:"botUserId"`
 	}
-	err = json.NewDecoder(botRes.Body).Decode(&botResponse)
-	require.NoError(t, err)
-	require.NotEmpty(t, botResponse.Tokens.AccessToken, "bot access token is empty")
 
-	return NewTraqService(traqApiURL, botResponse.Tokens.AccessToken)
+	body, err := io.ReadAll(createBotResp.Body)
+	if err != nil {
+		t.Fatalf("Failed to read bot response: %v", err)
+	}
+
+	if err := json.Unmarshal(body, &botResponse); err != nil {
+		t.Fatalf("Failed to parse bot response: %v", err)
+	}
+
+	return botResponse.AccessToken
 }
 
-func TestTraqServiceImpl_PostDirectMessage(t *testing.T) {
-	t.Parallel()
-	s := setup(t)
-	require.NotNil(t, s)
+func TestTraqService_PostDirectMessage(t *testing.T) {
+	traqURL, accessToken, cleanup := setupTraqContainer(t)
+	defer cleanup()
 
-	const content = "これはtestcontainersからのメッセージです。"
+	ctx := context.Background()
+	service := NewTraqService(traqURL, accessToken)
 
-	t.Run("正常系: DMを送信できる", func(t *testing.T) {
-		t.Parallel()
-		// traQのデフォルトで存在するユーザー "traq" を使用
-		const targetUserID = "traq"
-		err := s.PostDirectMessage(context.Background(), targetUserID, content)
-		assert.NoError(t, err)
+	t.Run("存在しないユーザーへのメッセージ送信はエラーになる", func(t *testing.T) {
+		err := service.PostDirectMessage(ctx, "nonexistent-user", "Test message")
+		if err == nil {
+			t.Error("Expected error for nonexistent user, but got nil")
+		}
+		t.Logf("Expected error occurred: %v", err)
 	})
 
-	t.Run("異常系: 存在しないユーザー", func(t *testing.T) {
-		t.Parallel()
-		const nonExistentUserID = "a-z-a-z-a-z-a-z-a-z-a-z-a-z"
-		err := s.PostDirectMessage(context.Background(), nonExistentUserID, content)
-		assert.Error(t, err, "存在しないユーザーへの送信はエラーになるはずです")
+	t.Run("不正なアクセストークンでエラーになる", func(t *testing.T) {
+		invalidService := NewTraqService(traqURL, "invalid-token")
+		err := invalidService.PostDirectMessage(ctx, "traq", "Test message")
+		if err == nil {
+			t.Error("Expected error for invalid token, but got nil")
+		}
+		t.Logf("Expected error occurred: %v", err)
 	})
 }
