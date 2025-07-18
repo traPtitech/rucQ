@@ -55,7 +55,14 @@ func setup(t *testing.T) *Repository {
 	ctx := context.Background()
 
 	// Generate random ports to avoid conflicts between parallel tests
-	portNames := []string{"MARIADB_PORT", "RUCQ_PORT", "SWAGGER_PORT", "ADMINER_PORT", "TRAQ_CADDY_PORT", "TRAQ_SERVER_PORT"}
+	portNames := []string{
+		"MARIADB_PORT",
+		"RUCQ_PORT",
+		"SWAGGER_PORT",
+		"ADMINER_PORT",
+		"TRAQ_CADDY_PORT",
+		"TRAQ_SERVER_PORT",
+	}
 	randomPorts := port.MustGetFreePorts(len(portNames))
 	portEnvMap := port.PortsToStringMap(portNames, randomPorts)
 
@@ -74,7 +81,12 @@ func setup(t *testing.T) *Repository {
 	t.Cleanup(func() {
 		require.NoError(
 			t,
-			composeStack.Down(ctx, compose.RemoveOrphans(true), compose.RemoveImagesLocal),
+			composeStack.Down(
+				ctx,
+				compose.RemoveOrphans(true),
+				compose.RemoveImagesLocal,
+				compose.RemoveVolumes(true),
+			),
 		)
 	})
 

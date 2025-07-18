@@ -52,7 +52,14 @@ func setupTraqContainer(t *testing.T) (string, string, func()) {
 	ctx := context.Background()
 
 	// Generate random ports to avoid conflicts between parallel tests
-	portNames := []string{"MARIADB_PORT", "RUCQ_PORT", "SWAGGER_PORT", "ADMINER_PORT", "TRAQ_CADDY_PORT", "TRAQ_SERVER_PORT"}
+	portNames := []string{
+		"MARIADB_PORT",
+		"RUCQ_PORT",
+		"SWAGGER_PORT",
+		"ADMINER_PORT",
+		"TRAQ_CADDY_PORT",
+		"TRAQ_SERVER_PORT",
+	}
 	randomPorts := port.MustGetFreePorts(len(portNames))
 	portEnvMap := port.PortsToStringMap(portNames, randomPorts)
 
@@ -71,7 +78,12 @@ func setupTraqContainer(t *testing.T) (string, string, func()) {
 	cleanup := func() {
 		require.NoError(
 			t,
-			composeStack.Down(ctx, compose.RemoveOrphans(true), compose.RemoveImagesLocal),
+			composeStack.Down(
+				ctx,
+				compose.RemoveOrphans(true),
+				compose.RemoveImagesLocal,
+				compose.RemoveVolumes(true),
+			),
 		)
 	}
 
@@ -79,7 +91,7 @@ func setupTraqContainer(t *testing.T) (string, string, func()) {
 	composeWithWait := composeWithEnv.
 		WaitForService("mariadb", wait.ForHealthCheck().WithStartupTimeout(60*time.Second)).
 		WaitForService("traq_server", wait.ForHTTP("/api/v3/version").WithPort("3000/tcp").WithStartupTimeout(120*time.Second))
-	
+
 	err = composeWithWait.Up(ctx, compose.Wait(true))
 	require.NoError(t, err, "Failed to start compose stack")
 
