@@ -16,6 +16,7 @@ import (
 	"github.com/traPtitech/rucQ/migration"
 	gormRepository "github.com/traPtitech/rucQ/repository/gorm"
 	"github.com/traPtitech/rucQ/router"
+	"github.com/traPtitech/rucQ/service"
 )
 
 func main() {
@@ -73,7 +74,11 @@ func main() {
 
 	repo := gormRepository.NewGormRepository(db)
 
-	api.RegisterHandlers(e, router.NewServer(repo, isDev))
+	traqBaseURL := os.Getenv("TRAQ_API_BASE_URL")
+	botAccessToken := os.Getenv("BOT_ACCESS_TOKEN")
+	traqService := service.NewTraqService(traqBaseURL, botAccessToken)
+
+	api.RegisterHandlers(e, router.NewServer(repo, traqService, isDev))
 	e.Logger.Fatal(e.Start("0.0.0.0:8080"))
 
 }

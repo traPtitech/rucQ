@@ -13,6 +13,7 @@ services:
       DB_NAME: rucq
       RUCQ_ENV: "development"
       RUCQ_CORS_ALLOW_ORIGINS: "*"
+      TRAQ_API_BASE_URL: "http://traq_server:3000/api/v3"
     env_file:
       - .env
     depends_on:
