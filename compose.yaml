@@ -13,6 +13,8 @@ services:
       DB_NAME: rucq
       RUCQ_ENV: "development"
       RUCQ_CORS_ALLOW_ORIGINS: "*"
+    env_file:
+      - .env
     depends_on:
       mariadb:
         condition: service_healthy
