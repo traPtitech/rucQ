@@ -3,9 +3,6 @@ package gorm
 import (
 	"context"
 	"fmt"
-	"math/rand"
-	"regexp"
-	"strings"
 	"testing"
 	"time"
 
@@ -23,33 +20,6 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
-// sanitizeStackIdentifier removes special characters from test names to create valid Docker Compose stack identifiers
-func sanitizeStackIdentifier(testName string) string {
-	// Replace all non-alphanumeric characters with hyphens (including underscores for Docker compatibility)
-	re := regexp.MustCompile(`[^a-zA-Z0-9]`)
-	sanitized := re.ReplaceAllString(testName, "-")
-
-	// Remove consecutive hyphens
-	re = regexp.MustCompile(`-+`)
-	sanitized = re.ReplaceAllString(sanitized, "-")
-
-	// Trim leading/trailing hyphens and convert to lowercase
-	sanitized = strings.Trim(sanitized, "-")
-	sanitized = strings.ToLower(sanitized)
-
-	// Ensure it starts with a letter, if not, prefix with "test"
-	if len(sanitized) == 0 || !(sanitized[0] >= 'a' && sanitized[0] <= 'z') {
-		sanitized = "test-" + sanitized
-	}
-
-	// Limit length to avoid overly long names
-	if len(sanitized) > 50 {
-		sanitized = sanitized[:50]
-	}
-
-	return sanitized
-}
-
 func setup(t *testing.T) *Repository {
 	t.Helper()
 	ctx := context.Background()
@@ -66,12 +36,8 @@ func setup(t *testing.T) *Repository {
 	randomPorts := port.MustGetFreePorts(len(portNames))
 	portEnvMap := port.PortsToStringMap(portNames, randomPorts)
 
-	// Create a compose stack using the root compose.yaml file with a unique stack identifier
-	// This ensures each test gets its own set of containers with unique names/networks
-	stackIdentifier := sanitizeStackIdentifier(fmt.Sprintf("test-%s-%d", t.Name(), rand.Int()))
 	composeStack, err := compose.NewDockerComposeWith(
 		compose.WithStackFiles("../../compose.yaml"),
-		compose.StackIdentifier(stackIdentifier),
 	)
 	require.NoError(t, err, "Failed to create compose stack")
 
