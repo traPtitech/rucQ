@@ -6,91 +6,105 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
+	"regexp"
+	"strings"
 	"testing"
 	"time"
 
-	"github.com/testcontainers/testcontainers-go"
+	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
+
+	"github.com/traPtitech/rucQ/testutil/port"
 )
 
-// setupTraqContainer starts MariaDB and traQ containers and returns the traQ URL and access token
+// sanitizeStackIdentifier removes special characters from test names to create valid Docker Compose stack identifiers
+func sanitizeStackIdentifier(testName string) string {
+	// Replace all non-alphanumeric characters with hyphens (including underscores for Docker compatibility)
+	re := regexp.MustCompile(`[^a-zA-Z0-9]`)
+	sanitized := re.ReplaceAllString(testName, "-")
+
+	// Remove consecutive hyphens
+	re = regexp.MustCompile(`-+`)
+	sanitized = re.ReplaceAllString(sanitized, "-")
+
+	// Trim leading/trailing hyphens and convert to lowercase
+	sanitized = strings.Trim(sanitized, "-")
+	sanitized = strings.ToLower(sanitized)
+
+	// Ensure it starts with a letter, if not, prefix with "test"
+	if len(sanitized) == 0 || !(sanitized[0] >= 'a' && sanitized[0] <= 'z') {
+		sanitized = "test-" + sanitized
+	}
+
+	// Limit length to avoid overly long names
+	if len(sanitized) > 50 {
+		sanitized = sanitized[:50]
+	}
+
+	return sanitized
+}
+
+// setupTraqContainer starts MariaDB and traQ containers using compose and returns the traQ URL and access token
 func setupTraqContainer(t *testing.T) (string, string, func()) {
 	ctx := context.Background()
 
-	// Start MariaDB container
-	mariadbContainer, err := testcontainers.GenericContainer(
-		ctx,
-		testcontainers.GenericContainerRequest{
-			ContainerRequest: testcontainers.ContainerRequest{
-				Image:        "mariadb:11.8.2-noble",
-				ExposedPorts: []string{"3306/tcp"},
-				Env: map[string]string{
-					"MARIADB_ROOT_PASSWORD": "password",
-					"MARIADB_DATABASE":      "traq",
-				},
-				WaitingFor: wait.ForAll(
-					wait.ForLog("ready for connections"),
-					wait.ForListeningPort("3306/tcp"),
-				).WithStartupTimeout(60 * time.Second),
-			},
-			Started: true,
-		},
+	// Generate random ports to avoid conflicts between parallel tests
+	portNames := []string{"MARIADB_PORT", "RUCQ_PORT", "SWAGGER_PORT", "ADMINER_PORT", "TRAQ_CADDY_PORT", "TRAQ_SERVER_PORT"}
+	randomPorts := port.MustGetFreePorts(len(portNames))
+	portEnvMap := port.PortsToStringMap(portNames, randomPorts)
+
+	// Create a compose stack using the root compose.yaml file with a unique stack identifier
+	// This ensures each test gets its own set of containers with unique names/networks
+	stackIdentifier := sanitizeStackIdentifier(fmt.Sprintf("test-%s-%d", t.Name(), rand.Int()))
+	composeStack, err := compose.NewDockerComposeWith(
+		compose.WithStackFiles("../compose.yaml"),
+		compose.StackIdentifier(stackIdentifier),
 	)
-	if err != nil {
-		t.Fatalf("Failed to start MariaDB container: %v", err)
-	}
+	require.NoError(t, err, "Failed to create compose stack")
 
-	// Get MariaDB container IP
-	mariadbIP, err := mariadbContainer.ContainerIP(ctx)
-	if err != nil {
-		t.Fatalf("Failed to get MariaDB IP: %v", err)
-	}
-
-	// Wait a bit more to ensure MariaDB is fully ready
-	time.Sleep(2 * time.Second)
-
-	// Start traQ container
-	traqContainer, err := testcontainers.GenericContainer(
-		ctx,
-		testcontainers.GenericContainerRequest{
-			ContainerRequest: testcontainers.ContainerRequest{
-				Image:        "ghcr.io/traptitech/traq:3.20.2",
-				ExposedPorts: []string{"3000/tcp"},
-				Env: map[string]string{
-					"TRAQ_MARIADB_HOST":     mariadbIP,
-					"TRAQ_MARIADB_PORT":     "3306",
-					"TRAQ_MARIADB_USERNAME": "root",
-					"TRAQ_MARIADB_PASSWORD": "password",
-					"TRAQ_MARIADB_DATABASE": "traq",
-					"TRAQ_ORIGIN":           "http://localhost:3000",
-				},
-				WaitingFor: wait.ForHTTP("/api/v3/version").
-					WithPort("3000/tcp").
-					WithStartupTimeout(120 * time.Second),
-			},
-			Started: true,
-		},
-	)
-	if err != nil {
-		t.Fatalf("Failed to start traQ container: %v", err)
-	}
-
-	// Get traQ container port
-	traqPort, err := traqContainer.MappedPort(ctx, "3000")
-	if err != nil {
-		t.Fatalf("Failed to get traQ port: %v", err)
-	}
-
-	traqURL := fmt.Sprintf("http://localhost:%s", traqPort.Port())
-
-	// Create bot and get access token
-	accessToken := createTestBot(t, traqURL)
+	// Set random ports via environment variables
+	composeWithEnv := composeStack.WithEnv(portEnvMap)
 
 	cleanup := func() {
-		traqContainer.Terminate(ctx)
-		mariadbContainer.Terminate(ctx)
+		require.NoError(
+			t,
+			composeStack.Down(ctx, compose.RemoveOrphans(true), compose.RemoveImagesLocal),
+		)
 	}
+
+	// Configure wait strategies for required services and start all services
+	composeWithWait := composeWithEnv.
+		WaitForService("mariadb", wait.ForHealthCheck().WithStartupTimeout(60*time.Second)).
+		WaitForService("traq_server", wait.ForHTTP("/api/v3/version").WithPort("3000/tcp").WithStartupTimeout(120*time.Second))
+	
+	err = composeWithWait.Up(ctx, compose.Wait(true))
+	require.NoError(t, err, "Failed to start compose stack")
+
+	// Stop unnecessary services to avoid port conflicts with other tests
+	stopServices := []string{"rucq", "swagger", "adminer", "traq_caddy", "traq_ui"}
+	for _, service := range stopServices {
+		// Get service container and stop it (ignore errors if service doesn't exist or isn't running)
+		if container, err := composeStack.ServiceContainer(ctx, service); err == nil {
+			_ = container.Stop(ctx, nil)
+		}
+	}
+
+	// Get traQ server container
+	traqContainer, err := composeStack.ServiceContainer(ctx, "traq_server")
+	require.NoError(t, err, "Failed to get traQ server container")
+
+	traqHost, err := traqContainer.Host(ctx)
+	require.NoError(t, err)
+	traqPort, err := traqContainer.MappedPort(ctx, "3000")
+	require.NoError(t, err)
+
+	traqURL := fmt.Sprintf("http://%s:%s", traqHost, traqPort.Port())
+
+	// Create test bot and get access token
+	accessToken := createTestBot(t, traqURL)
 
 	return traqURL, accessToken, cleanup
 }

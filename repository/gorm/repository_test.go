@@ -1,14 +1,17 @@
 package gorm
 
 import (
+	"context"
 	"fmt"
+	"math/rand"
+	"regexp"
+	"strings"
 	"testing"
 	"time"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -16,41 +19,89 @@ import (
 
 	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/testutil/port"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
-const initAndStartLogCount = 2
+// sanitizeStackIdentifier removes special characters from test names to create valid Docker Compose stack identifiers
+func sanitizeStackIdentifier(testName string) string {
+	// Replace all non-alphanumeric characters with hyphens (including underscores for Docker compatibility)
+	re := regexp.MustCompile(`[^a-zA-Z0-9]`)
+	sanitized := re.ReplaceAllString(testName, "-")
+
+	// Remove consecutive hyphens
+	re = regexp.MustCompile(`-+`)
+	sanitized = re.ReplaceAllString(sanitized, "-")
+
+	// Trim leading/trailing hyphens and convert to lowercase
+	sanitized = strings.Trim(sanitized, "-")
+	sanitized = strings.ToLower(sanitized)
+
+	// Ensure it starts with a letter, if not, prefix with "test"
+	if len(sanitized) == 0 || !(sanitized[0] >= 'a' && sanitized[0] <= 'z') {
+		sanitized = "test-" + sanitized
+	}
+
+	// Limit length to avoid overly long names
+	if len(sanitized) > 50 {
+		sanitized = sanitized[:50]
+	}
+
+	return sanitized
+}
 
 func setup(t *testing.T) *Repository {
 	t.Helper()
+	ctx := context.Background()
 
-	req := testcontainers.ContainerRequest{
-		Image:        "mariadb:latest",
-		ExposedPorts: []string{"3306/tcp"},
-		Env: map[string]string{
-			"MYSQL_ROOT_PASSWORD": "password",
-			"MYSQL_DATABASE":      "database",
-		},
-		WaitingFor: wait.ForAll(
-			wait.ForLog("ready for connections").WithOccurrence(initAndStartLogCount), // 初期化と本起動の2回
-			wait.ForSQL("3306/tcp", "mysql", func(host string, port nat.Port) string {
-				return fmt.Sprintf("root:password@tcp(%s:%s)/database", host, port.Port())
-			}),
-		),
-	}
-	container, err := testcontainers.GenericContainer(
-		t.Context(),
-		testcontainers.GenericContainerRequest{
-			ContainerRequest: req,
-			Started:          true,
-		},
+	// Generate random ports to avoid conflicts between parallel tests
+	portNames := []string{"MARIADB_PORT", "RUCQ_PORT", "SWAGGER_PORT", "ADMINER_PORT", "TRAQ_CADDY_PORT", "TRAQ_SERVER_PORT"}
+	randomPorts := port.MustGetFreePorts(len(portNames))
+	portEnvMap := port.PortsToStringMap(portNames, randomPorts)
+
+	// Create a compose stack using the root compose.yaml file with a unique stack identifier
+	// This ensures each test gets its own set of containers with unique names/networks
+	stackIdentifier := sanitizeStackIdentifier(fmt.Sprintf("test-%s-%d", t.Name(), rand.Int()))
+	composeStack, err := compose.NewDockerComposeWith(
+		compose.WithStackFiles("../../compose.yaml"),
+		compose.StackIdentifier(stackIdentifier),
 	)
-	require.NoError(t, err)
+	require.NoError(t, err, "Failed to create compose stack")
+
+	// Set random ports via environment variables
+	composeWithEnv := composeStack.WithEnv(portEnvMap)
+
 	t.Cleanup(func() {
-		testcontainers.CleanupContainer(t, container)
+		require.NoError(
+			t,
+			composeStack.Down(ctx, compose.RemoveOrphans(true), compose.RemoveImagesLocal),
+		)
 	})
 
-	port, err := container.MappedPort(t.Context(), "3306")
+	// Configure wait strategy for mariadb service and start all services
+	composeWithWait := composeWithEnv.WaitForService(
+		"mariadb",
+		wait.ForHealthCheck().WithStartupTimeout(60*time.Second),
+	)
+	err = composeWithWait.Up(ctx, compose.Wait(true))
+	require.NoError(t, err, "Failed to start compose stack")
+
+	// Stop unnecessary services to avoid port conflicts with other tests
+	stopServices := []string{"rucq", "swagger", "adminer", "traq_caddy", "traq_server", "traq_ui"}
+	for _, service := range stopServices {
+		// Get service container and stop it (ignore errors if service doesn't exist or isn't running)
+		if container, err := composeStack.ServiceContainer(ctx, service); err == nil {
+			_ = container.Stop(ctx, nil)
+		}
+	}
+
+	// Get MariaDB service container
+	mariadbContainer, err := composeStack.ServiceContainer(ctx, "mariadb")
+	require.NoError(t, err, "Failed to get MariaDB container")
+
+	host, err := mariadbContainer.Host(ctx)
+	require.NoError(t, err)
+	port, err := mariadbContainer.MappedPort(ctx, "3306")
 	require.NoError(t, err)
 
 	loc, err := time.LoadLocation("Asia/Tokyo")
@@ -60,8 +111,8 @@ func setup(t *testing.T) *Repository {
 	config.User = "root"
 	config.Passwd = "password"
 	config.Net = "tcp"
-	config.Addr = "localhost:" + port.Port()
-	config.DBName = "database"
+	config.Addr = fmt.Sprintf("%s:%s", host, port.Port())
+	config.DBName = "rucq" // compose.yamlで定義したDB名'rucq'に合わせる
 	config.Collation = "utf8mb4_general_ci"
 	config.ParseTime = true
 	config.Loc = loc
