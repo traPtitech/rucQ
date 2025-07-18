@@ -48,7 +48,7 @@ func sanitizeStackIdentifier(testName string) string {
 }
 
 // setupTraqContainer starts MariaDB and traQ containers using compose and returns the traQ URL and access token
-func setupTraqContainer(t *testing.T) (string, string, func()) {
+func setupTraqContainer(t *testing.T) (string, string) {
 	ctx := context.Background()
 
 	// Generate random ports to avoid conflicts between parallel tests
@@ -75,7 +75,7 @@ func setupTraqContainer(t *testing.T) (string, string, func()) {
 	// Set random ports via environment variables
 	composeWithEnv := composeStack.WithEnv(portEnvMap)
 
-	cleanup := func() {
+	t.Cleanup(func() {
 		require.NoError(
 			t,
 			composeStack.Down(
@@ -85,7 +85,7 @@ func setupTraqContainer(t *testing.T) (string, string, func()) {
 				compose.RemoveVolumes(true),
 			),
 		)
-	}
+	})
 
 	// Configure wait strategies for required services and start all services
 	composeWithWait := composeWithEnv.
@@ -118,7 +118,7 @@ func setupTraqContainer(t *testing.T) (string, string, func()) {
 	// Create test bot and get access token
 	accessToken := createTestBot(t, traqURL)
 
-	return traqURL, accessToken, cleanup
+	return traqURL, accessToken
 }
 
 // createTestBot creates a test bot and returns its access token
@@ -206,8 +206,7 @@ func createTestBot(t *testing.T, traqURL string) string {
 }
 
 func TestTraqService_PostDirectMessage(t *testing.T) {
-	traqURL, accessToken, cleanup := setupTraqContainer(t)
-	defer cleanup()
+	traqURL, accessToken := setupTraqContainer(t)
 
 	ctx := context.Background()
 	service := NewTraqService(traqURL, accessToken)
