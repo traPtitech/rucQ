@@ -49,6 +49,7 @@ func sanitizeStackIdentifier(testName string) string {
 
 // setupTraqContainer starts MariaDB and traQ containers using compose and returns the traQ URL and access token
 func setupTraqContainer(t *testing.T) (string, string) {
+	t.Helper()
 	ctx := context.Background()
 
 	// Generate random ports to avoid conflicts between parallel tests
