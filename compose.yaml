@@ -38,8 +38,9 @@ services:
         source: ./dev/db/
         target: /docker-entrypoint-initdb.d/
     healthcheck:
-      test: mariadb-admin ping -h 127.0.0.1 -u root -p$$MARIADB_ROOT_PASSWORD
-      interval: 1s
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      start_period: 10s
+      interval: 5s
       timeout: 10s
       retries: 10
 
