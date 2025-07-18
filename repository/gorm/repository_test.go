@@ -95,17 +95,9 @@ func setup(t *testing.T) *Repository {
 		"mariadb",
 		wait.ForHealthCheck().WithStartupTimeout(60*time.Second),
 	)
-	err = composeWithWait.Up(ctx, compose.Wait(true))
-	require.NoError(t, err, "Failed to start compose stack")
+	err = composeWithWait.Up(ctx, compose.Wait(true), compose.RunServices("mariadb"))
 
-	// Stop unnecessary services to avoid port conflicts with other tests
-	stopServices := []string{"rucq", "swagger", "adminer", "traq_caddy", "traq_server", "traq_ui"}
-	for _, service := range stopServices {
-		// Get service container and stop it (ignore errors if service doesn't exist or isn't running)
-		if container, err := composeStack.ServiceContainer(ctx, service); err == nil {
-			_ = container.Stop(ctx, nil)
-		}
-	}
+	require.NoError(t, err, "Failed to start compose stack")
 
 	// Get MariaDB service container
 	mariadbContainer, err := composeStack.ServiceContainer(ctx, "mariadb")

@@ -88,22 +88,13 @@ func setupTraqContainer(t *testing.T) (string, string) {
 		)
 	})
 
-	// Configure wait strategies for required services and start all services
+	// Configure wait strategies for required services and start only those services
 	composeWithWait := composeWithEnv.
 		WaitForService("mariadb", wait.ForHealthCheck().WithStartupTimeout(60*time.Second)).
 		WaitForService("traq_server", wait.ForHTTP("/api/v3/version").WithPort("3000/tcp").WithStartupTimeout(120*time.Second))
 
-	err = composeWithWait.Up(ctx, compose.Wait(true))
+	err = composeWithWait.Up(ctx, compose.Wait(true), compose.RunServices("mariadb", "traq_server"))
 	require.NoError(t, err, "Failed to start compose stack")
-
-	// Stop unnecessary services to avoid port conflicts with other tests
-	stopServices := []string{"rucq", "swagger", "adminer", "traq_caddy", "traq_ui"}
-	for _, service := range stopServices {
-		// Get service container and stop it (ignore errors if service doesn't exist or isn't running)
-		if container, err := composeStack.ServiceContainer(ctx, service); err == nil {
-			_ = container.Stop(ctx, nil)
-		}
-	}
 
 	// Get traQ server container
 	traqContainer, err := composeStack.ServiceContainer(ctx, "traq_server")
