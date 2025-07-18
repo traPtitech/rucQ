@@ -16,7 +16,6 @@ import (
 
 	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/model"
-	"github.com/traPtitech/rucQ/testutil/port"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -24,25 +23,15 @@ func setup(t *testing.T) *Repository {
 	t.Helper()
 	ctx := context.Background()
 
-	// Generate random ports to avoid conflicts between parallel tests
-	portNames := []string{
-		"MARIADB_PORT",
-		"RUCQ_PORT",
-		"SWAGGER_PORT",
-		"ADMINER_PORT",
-		"TRAQ_CADDY_PORT",
-		"TRAQ_SERVER_PORT",
-	}
-	randomPorts := port.MustGetFreePorts(len(portNames))
-	portEnvMap := port.PortsToStringMap(portNames, randomPorts)
-
 	composeStack, err := compose.NewDockerComposeWith(
 		compose.WithStackFiles("../../compose.yaml"),
 	)
 	require.NoError(t, err, "Failed to create compose stack")
 
 	// Set random ports via environment variables
-	composeWithEnv := composeStack.WithEnv(portEnvMap)
+	composeWithEnv := composeStack.WithEnv(map[string]string{
+		"MARIADB_PORT": "0",
+	})
 
 	t.Cleanup(func() {
 		require.NoError(

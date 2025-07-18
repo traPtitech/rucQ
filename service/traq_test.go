@@ -13,8 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
-
-	"github.com/traPtitech/rucQ/testutil/port"
 )
 
 // setupTraqContainer starts MariaDB and traQ containers using compose and returns the traQ URL and access token
@@ -22,25 +20,16 @@ func setupTraqContainer(t *testing.T) (string, string) {
 	t.Helper()
 	ctx := context.Background()
 
-	// Generate random ports to avoid conflicts between parallel tests
-	portNames := []string{
-		"MARIADB_PORT",
-		"RUCQ_PORT",
-		"SWAGGER_PORT",
-		"ADMINER_PORT",
-		"TRAQ_CADDY_PORT",
-		"TRAQ_SERVER_PORT",
-	}
-	randomPorts := port.MustGetFreePorts(len(portNames))
-	portEnvMap := port.PortsToStringMap(portNames, randomPorts)
-
 	composeStack, err := compose.NewDockerComposeWith(
 		compose.WithStackFiles("../compose.yaml"),
 	)
 	require.NoError(t, err, "Failed to create compose stack")
 
 	// Set random ports via environment variables
-	composeWithEnv := composeStack.WithEnv(portEnvMap)
+	composeWithEnv := composeStack.WithEnv(map[string]string{
+		"MARIADB_PORT":     "0",
+		"TRAQ_SERVER_PORT": "0",
+	})
 
 	t.Cleanup(func() {
 		require.NoError(
