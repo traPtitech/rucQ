@@ -13,7 +13,7 @@ import (
 	"github.com/traPtitech/rucQ/testutil/bot"
 )
 
-func setup(t *testing.T) TraqService {
+func setup(t *testing.T) *traqServiceImpl {
 	t.Helper()
 	ctx := context.Background()
 
@@ -67,7 +67,7 @@ func setup(t *testing.T) TraqService {
 	return NewTraqService(traqURL, accessToken)
 }
 
-func TestTraqService_PostDirectMessage(t *testing.T) {
+func TestTraqServiceImpl_PostDirectMessage(t *testing.T) {
 	t.Parallel()
 
 	t.Run("存在しないユーザーへのメッセージ送信はエラーになる", func(t *testing.T) {

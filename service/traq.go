@@ -19,8 +19,7 @@ type traqServiceImpl struct {
 	accessToken string
 }
 
-// NewTraqService はTraqServiceを生成します。
-func NewTraqService(baseURL, accessToken string) TraqService {
+func NewTraqService(baseURL, accessToken string) *traqServiceImpl {
 	config := traq.NewConfiguration()
 	config.Servers = traq.ServerConfigurations{
 		{
