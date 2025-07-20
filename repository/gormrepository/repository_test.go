@@ -1,6 +1,7 @@
 package gormrepository
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -35,7 +36,7 @@ func setup(t *testing.T) *Repository {
 		require.NoError(
 			t,
 			composeStack.Down(
-				t.Context(),
+				context.Background(),
 				compose.RemoveOrphans(true),
 				compose.RemoveImagesLocal,
 				compose.RemoveVolumes(true),
