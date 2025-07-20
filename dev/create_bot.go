@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	const traqURL = "http://localhost:3000"
+	const traqURL = "http://localhost:3000/api/v3"
 
 	accessToken, err := bot.CreateBot(traqURL)
 

@@ -11,7 +11,9 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
 
+	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/bot"
+	"github.com/traPtitech/rucQ/testutil/random"
 )
 
 func setup(t *testing.T) *traqServiceImpl {
@@ -58,23 +60,39 @@ func setup(t *testing.T) *traqServiceImpl {
 	traqPort, err := traqContainer.MappedPort(ctx, "3000")
 	require.NoError(t, err)
 
-	traqURL := fmt.Sprintf("http://%s:%s", traqHost, traqPort.Port())
-	accessToken, err := bot.CreateBot(traqURL)
+	traqAPIBaseURL := fmt.Sprintf("http://%s:%s/api/v3", traqHost, traqPort.Port())
+	accessToken, err := bot.CreateBot(traqAPIBaseURL)
 
 	require.NoError(t, err, "Failed to create bot")
 
-	return NewTraqService(traqURL, accessToken)
+	return NewTraqService(traqAPIBaseURL, accessToken)
 }
+
+const existingUserID = "traq" // 既存のユーザーID
 
 func TestTraqServiceImpl_PostDirectMessage(t *testing.T) {
 	t.Parallel()
+
+	t.Run("存在するユーザーへのメッセージ送信は成功する", func(t *testing.T) {
+		t.Parallel()
+
+		s := setup(t)
+		message := random.AlphaNumericString(t, 100)
+		err := s.PostDirectMessage(t.Context(), existingUserID, message)
+
+		assert.NoError(t, err)
+	})
 
 	t.Run("存在しないユーザーへのメッセージ送信はエラーになる", func(t *testing.T) {
 		t.Parallel()
 
 		s := setup(t)
-		err := s.PostDirectMessage(t.Context(), "nonexistent-user", "Test message")
+		userID := random.AlphaNumericString(t, 32) // 非存在ユーザーID
+		message := random.AlphaNumericString(t, 100)
+		err := s.PostDirectMessage(t.Context(), userID, message)
 
-		assert.Error(t, err, "Expected error for nonexistent user, but got nil")
+		if assert.Error(t, err, "Expected error for nonexistent user, but got nil") {
+			assert.Equal(t, model.ErrNotFound, err)
+		}
 	})
 }

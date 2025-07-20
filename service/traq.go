@@ -6,6 +6,8 @@ import (
 	"context"
 
 	traq "github.com/traPtitech/go-traq"
+
+	"github.com/traPtitech/rucQ/model"
 )
 
 // TraqService はtraQ APIとの連携を担当するサービスです。
@@ -41,15 +43,21 @@ func (s *traqServiceImpl) PostDirectMessage(
 ) error {
 	authCtx := context.WithValue(ctx, traq.ContextAccessToken, s.accessToken)
 
-	user, _, err := s.client.UserApi.GetUser(authCtx, userID).Execute()
+	users, _, err := s.client.UserApi.GetUsers(authCtx).Name(userID).Execute()
+
 	if err != nil {
 		return err
 	}
 
+	if len(users) == 0 {
+		return model.ErrNotFound
+	}
+
+	userUUID := users[0].Id
 	postMessageRequest := *traq.NewPostMessageRequest(content)
 	postMessageRequest.SetEmbed(true)
 
-	req := s.client.MessageApi.PostDirectMessage(authCtx, user.Id).
+	req := s.client.MessageApi.PostDirectMessage(authCtx, userUUID).
 		PostMessageRequest(postMessageRequest)
 
 	_, _, err = req.Execute()

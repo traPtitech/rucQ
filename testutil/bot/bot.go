@@ -7,15 +7,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 // CreateBot はtraQにログインし、"rucq"という名前のBotを作成してアクセストークンを返します。
 // ログイン情報は "traq"/"traq" に、Bot設定は "rucq" のものに固定されています。
-func CreateBot(traqURL string) (string, error) {
+func CreateBot(traqAPIBaseURL string) (string, error) {
 	client := &http.Client{}
 
 	// 1. ログインしてセッションクッキーを取得
-	sessionCookie, err := login(client, traqURL, "traq", "traq")
+	sessionCookie, err := login(client, traqAPIBaseURL, "traq", "traq")
 	if err != nil {
 		return "", fmt.Errorf("login failed: %w", err)
 	}
@@ -33,7 +34,17 @@ func CreateBot(traqURL string) (string, error) {
 		return "", fmt.Errorf("failed to marshal create bot payload: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", traqURL+"/api/v3/bots", bytes.NewBuffer(payloadBytes))
+	botEndpoint, err := url.JoinPath(traqAPIBaseURL, "bots")
+
+	if err != nil {
+		return "", fmt.Errorf("failed to construct bot creation endpoint URL: %w", err)
+	}
+
+	req, err := http.NewRequest(
+		"POST",
+		botEndpoint,
+		bytes.NewBuffer(payloadBytes),
+	)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request for bot creation: %w", err)
 	}
@@ -76,7 +87,7 @@ func CreateBot(traqURL string) (string, error) {
 	return botResponse.Tokens.AccessToken, nil
 }
 
-func login(client *http.Client, traqURL, username, password string) (*http.Cookie, error) {
+func login(client *http.Client, traqAPIBaseURL, username, password string) (*http.Cookie, error) {
 	loginPayload := map[string]string{
 		"name":     username,
 		"password": password,
@@ -86,8 +97,14 @@ func login(client *http.Client, traqURL, username, password string) (*http.Cooki
 		return nil, fmt.Errorf("failed to marshal login payload: %w", err)
 	}
 
+	loginEndpoint, err := url.JoinPath(traqAPIBaseURL, "login")
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct login endpoint URL: %w", err)
+	}
+
 	loginResp, err := client.Post(
-		traqURL+"/api/v3/login",
+		loginEndpoint,
 		"application/json",
 		bytes.NewBuffer(loginBytes),
 	)
@@ -96,7 +113,7 @@ func login(client *http.Client, traqURL, username, password string) (*http.Cooki
 	}
 	defer loginResp.Body.Close()
 
-	if loginResp.StatusCode != http.StatusOK {
+	if loginResp.StatusCode != http.StatusNoContent {
 		body, _ := io.ReadAll(loginResp.Body)
 		return nil, fmt.Errorf(
 			"login request failed: status %d, body: %s",
