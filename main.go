@@ -14,7 +14,7 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/migration"
-	gormRepository "github.com/traPtitech/rucQ/repository/gorm"
+	"github.com/traPtitech/rucQ/repository/gormrepository"
 	"github.com/traPtitech/rucQ/router"
 	"github.com/traPtitech/rucQ/service"
 )
@@ -72,7 +72,7 @@ func main() {
 	// botがtraQからのイベントを受け取るエンドポイントを設定
 	e.POST("/api/traq-events", router.TraqEventHandler)
 
-	repo := gormRepository.NewGormRepository(db)
+	repo := gormrepository.NewGormRepository(db)
 
 	traqBaseURL := os.Getenv("TRAQ_API_BASE_URL")
 	botAccessToken := os.Getenv("TRAQ_BOT_TOKEN")

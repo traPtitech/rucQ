@@ -1,4 +1,4 @@
-package gorm
+package gormrepository
 
 import (
 	"github.com/traPtitech/rucQ/model"
