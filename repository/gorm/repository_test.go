@@ -1,7 +1,6 @@
 package gorm
 
 import (
-	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -21,7 +20,6 @@ import (
 
 func setup(t *testing.T) *Repository {
 	t.Helper()
-	ctx := context.Background()
 
 	composeStack, err := compose.NewDockerComposeWith(
 		compose.WithStackFiles("../../compose.yaml"),
@@ -37,7 +35,7 @@ func setup(t *testing.T) *Repository {
 		require.NoError(
 			t,
 			composeStack.Down(
-				ctx,
+				t.Context(),
 				compose.RemoveOrphans(true),
 				compose.RemoveImagesLocal,
 				compose.RemoveVolumes(true),
@@ -50,17 +48,17 @@ func setup(t *testing.T) *Repository {
 		"mariadb",
 		wait.ForHealthCheck().WithStartupTimeout(60*time.Second),
 	)
-	err = composeWithWait.Up(ctx, compose.Wait(true), compose.RunServices("mariadb"))
+	err = composeWithWait.Up(t.Context(), compose.Wait(true), compose.RunServices("mariadb"))
 
 	require.NoError(t, err, "Failed to start compose stack")
 
 	// Get MariaDB service container
-	mariadbContainer, err := composeStack.ServiceContainer(ctx, "mariadb")
+	mariadbContainer, err := composeStack.ServiceContainer(t.Context(), "mariadb")
 	require.NoError(t, err, "Failed to get MariaDB container")
 
-	host, err := mariadbContainer.Host(ctx)
+	host, err := mariadbContainer.Host(t.Context())
 	require.NoError(t, err)
-	port, err := mariadbContainer.MappedPort(ctx, "3306")
+	port, err := mariadbContainer.MappedPort(t.Context(), "3306")
 	require.NoError(t, err)
 
 	loc, err := time.LoadLocation("Asia/Tokyo")

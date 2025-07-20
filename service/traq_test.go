@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -18,7 +17,6 @@ import (
 
 func setup(t *testing.T) *traqServiceImpl {
 	t.Helper()
-	ctx := context.Background()
 
 	composeStack, err := compose.NewDockerComposeWith(
 		compose.WithStackFiles("../compose.yaml"),
@@ -35,7 +33,7 @@ func setup(t *testing.T) *traqServiceImpl {
 		require.NoError(
 			t,
 			composeStack.Down(
-				ctx,
+				t.Context(),
 				compose.RemoveOrphans(true),
 				compose.RemoveImagesLocal,
 				compose.RemoveVolumes(true),
@@ -48,16 +46,20 @@ func setup(t *testing.T) *traqServiceImpl {
 		WaitForService("mariadb", wait.ForHealthCheck().WithStartupTimeout(60*time.Second)).
 		WaitForService("traq_server", wait.ForHTTP("/api/v3/version").WithPort("3000/tcp").WithStartupTimeout(120*time.Second))
 
-	err = composeWithWait.Up(ctx, compose.Wait(true), compose.RunServices("mariadb", "traq_server"))
+	err = composeWithWait.Up(
+		t.Context(),
+		compose.Wait(true),
+		compose.RunServices("mariadb", "traq_server"),
+	)
 	require.NoError(t, err, "Failed to start compose stack")
 
 	// Get traQ server container
-	traqContainer, err := composeStack.ServiceContainer(ctx, "traq_server")
+	traqContainer, err := composeStack.ServiceContainer(t.Context(), "traq_server")
 	require.NoError(t, err, "Failed to get traQ server container")
 
-	traqHost, err := traqContainer.Host(ctx)
+	traqHost, err := traqContainer.Host(t.Context())
 	require.NoError(t, err)
-	traqPort, err := traqContainer.MappedPort(ctx, "3000")
+	traqPort, err := traqContainer.MappedPort(t.Context(), "3000")
 	require.NoError(t, err)
 
 	traqAPIBaseURL := fmt.Sprintf("http://%s:%s/api/v3", traqHost, traqPort.Port())
