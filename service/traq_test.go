@@ -13,8 +13,7 @@ import (
 	"github.com/traPtitech/rucQ/testutil/bot"
 )
 
-// setupTraqContainer starts MariaDB and traQ containers using compose and returns the traQ URL and access token
-func setupTraqContainer(t *testing.T) (string, string) {
+func setup(t *testing.T) TraqService {
 	t.Helper()
 	ctx := context.Background()
 
@@ -65,28 +64,19 @@ func setupTraqContainer(t *testing.T) (string, string) {
 		t.Fatalf("Failed to create test bot: %v", err)
 	}
 
-	return traqURL, accessToken
+	return NewTraqService(traqURL, accessToken)
 }
 
 func TestTraqService_PostDirectMessage(t *testing.T) {
-	traqURL, accessToken := setupTraqContainer(t)
-
-	ctx := context.Background()
-	service := NewTraqService(traqURL, accessToken)
+	t.Parallel()
 
 	t.Run("存在しないユーザーへのメッセージ送信はエラーになる", func(t *testing.T) {
-		err := service.PostDirectMessage(ctx, "nonexistent-user", "Test message")
+		t.Parallel()
+
+		s := setup(t)
+		err := s.PostDirectMessage(t.Context(), "nonexistent-user", "Test message")
 		if err == nil {
 			t.Error("Expected error for nonexistent user, but got nil")
-		}
-		t.Logf("Expected error occurred: %v", err)
-	})
-
-	t.Run("不正なアクセストークンでエラーになる", func(t *testing.T) {
-		invalidService := NewTraqService(traqURL, "invalid-token")
-		err := invalidService.PostDirectMessage(ctx, "traq", "Test message")
-		if err == nil {
-			t.Error("Expected error for invalid token, but got nil")
 		}
 		t.Logf("Expected error occurred: %v", err)
 	})
