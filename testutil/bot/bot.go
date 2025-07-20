@@ -114,7 +114,14 @@ func login(client *http.Client, traqAPIBaseURL, username, password string) (*htt
 	defer loginResp.Body.Close()
 
 	if loginResp.StatusCode != http.StatusNoContent {
-		body, _ := io.ReadAll(loginResp.Body)
+		body, err := io.ReadAll(loginResp.Body)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"login request failed: status %d, failed to read response body: %w",
+				loginResp.StatusCode,
+				err,
+			)
+		}
 		return nil, fmt.Errorf(
 			"login request failed: status %d, body: %s",
 			loginResp.StatusCode,
