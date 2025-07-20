@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -60,9 +61,7 @@ func setup(t *testing.T) *traqServiceImpl {
 	traqURL := fmt.Sprintf("http://%s:%s", traqHost, traqPort.Port())
 	accessToken, err := bot.CreateBot(traqURL)
 
-	if err != nil {
-		t.Fatalf("Failed to create test bot: %v", err)
-	}
+	require.NoError(t, err, "Failed to create bot")
 
 	return NewTraqService(traqURL, accessToken)
 }
@@ -75,9 +74,7 @@ func TestTraqServiceImpl_PostDirectMessage(t *testing.T) {
 
 		s := setup(t)
 		err := s.PostDirectMessage(t.Context(), "nonexistent-user", "Test message")
-		if err == nil {
-			t.Error("Expected error for nonexistent user, but got nil")
-		}
-		t.Logf("Expected error occurred: %v", err)
+
+		assert.Error(t, err, "Expected error for nonexistent user, but got nil")
 	})
 }
