@@ -1,18 +1,16 @@
 package service
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
+
+	"github.com/traPtitech/rucQ/testutil/bot"
 )
 
 // setupTraqContainer starts MariaDB and traQ containers using compose and returns the traQ URL and access token
@@ -61,95 +59,13 @@ func setupTraqContainer(t *testing.T) (string, string) {
 	require.NoError(t, err)
 
 	traqURL := fmt.Sprintf("http://%s:%s", traqHost, traqPort.Port())
+	accessToken, err := bot.CreateBot(traqURL)
 
-	// Create test bot and get access token
-	accessToken := createTestBot(t, traqURL)
+	if err != nil {
+		t.Fatalf("Failed to create test bot: %v", err)
+	}
 
 	return traqURL, accessToken
-}
-
-// createTestBot creates a test bot and returns its access token
-func createTestBot(t *testing.T, traqURL string) string {
-	// Login to get session cookie
-	loginPayload := map[string]string{
-		"name":     "traq",
-		"password": "traq",
-	}
-	loginBytes, _ := json.Marshal(loginPayload)
-
-	loginResp, err := http.Post(
-		traqURL+"/api/v3/login",
-		"application/json",
-		bytes.NewBuffer(loginBytes),
-	)
-	if err != nil {
-		t.Fatalf("Failed to login: %v", err)
-	}
-	defer loginResp.Body.Close()
-
-	// Extract session cookie
-	var sessionCookie *http.Cookie
-	for _, cookie := range loginResp.Cookies() {
-		if cookie.Name == "r_session" {
-			sessionCookie = cookie
-			break
-		}
-	}
-
-	if sessionCookie == nil {
-		t.Fatalf("No session cookie found")
-	}
-
-	// Create bot
-	createBotPayload := map[string]interface{}{
-		"name":        "test-bot",
-		"displayName": "Test Bot",
-		"description": "Test bot for integration tests",
-		"mode":        "HTTP",
-		"endpoint":    "http://localhost:3001/webhook",
-	}
-	payloadBytes, _ := json.Marshal(createBotPayload)
-
-	req, err := http.NewRequest("POST", traqURL+"/api/v3/bots", bytes.NewBuffer(payloadBytes))
-	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(sessionCookie)
-
-	client := &http.Client{}
-	createBotResp, err := client.Do(req)
-	if err != nil {
-		t.Fatalf("Failed to create bot: %v", err)
-	}
-	defer createBotResp.Body.Close()
-
-	if createBotResp.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(createBotResp.Body)
-		t.Fatalf(
-			"Failed to create bot: status %d, body: %s",
-			createBotResp.StatusCode,
-			string(body),
-		)
-	}
-
-	// Parse bot response to get access token
-	var botResponse struct {
-		VerificationToken string `json:"verificationToken"`
-		AccessToken       string `json:"accessToken"`
-		BotUserID         string `json:"botUserId"`
-	}
-
-	body, err := io.ReadAll(createBotResp.Body)
-	if err != nil {
-		t.Fatalf("Failed to read bot response: %v", err)
-	}
-
-	if err := json.Unmarshal(body, &botResponse); err != nil {
-		t.Fatalf("Failed to parse bot response: %v", err)
-	}
-
-	return botResponse.AccessToken
 }
 
 func TestTraqService_PostDirectMessage(t *testing.T) {
