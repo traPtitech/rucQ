@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -55,7 +56,13 @@ func CreateBot(traqAPIBaseURL string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to execute request to create bot: %w", err)
 	}
-	defer createBotResp.Body.Close()
+	defer func() {
+		err := createBotResp.Body.Close()
+
+		if err != nil {
+			log.Fatal("failed to close response body:", err)
+		}
+	}()
 
 	body, err := io.ReadAll(createBotResp.Body)
 	if err != nil {
@@ -111,7 +118,13 @@ func login(client *http.Client, traqAPIBaseURL, username, password string) (*htt
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute login request: %w", err)
 	}
-	defer loginResp.Body.Close()
+	defer func() {
+		err := loginResp.Body.Close()
+
+		if err != nil {
+			log.Fatal("failed to close response body:", err)
+		}
+	}()
 
 	if loginResp.StatusCode != http.StatusNoContent {
 		body, err := io.ReadAll(loginResp.Body)
