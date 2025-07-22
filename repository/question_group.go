@@ -1,4 +1,4 @@
-//go:generate go tool mockgen -source=$GOFILE -destination=mock/$GOFILE -package=mock
+//go:generate go tool mockgen -source=$GOFILE -destination=mockrepository/$GOFILE -package=mockrepository
 package repository
 
 import (
