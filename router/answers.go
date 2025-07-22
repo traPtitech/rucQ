@@ -1,8 +1,11 @@
 package router
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 
@@ -411,11 +414,117 @@ func (s *Server) AdminPutAnswer(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
+	// 変更前の回答を取得
+	oldAnswer, err := s.repo.GetAnswerByID(e.Request().Context(), uint(answerID))
+
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("answer %d not found", answerID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Answer not found")
+		}
+
+		e.Logger().Errorf("failed to get answer: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
 	if err := s.repo.UpdateAnswer(e.Request().Context(), uint(answerID), &answer); err != nil {
 		e.Logger().Errorf("failed to update answer: %v", err)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
+
+	// 回答者にDMを送信（非同期）
+	go func(oldAnswer, newAnswer model.Answer) {
+		ctx := context.Background()
+		question, err := s.repo.GetQuestionByID(newAnswer.QuestionID)
+
+		if err != nil {
+			e.Logger().Errorf(
+				"failed to get question %d for DM notification: %v",
+				newAnswer.QuestionID,
+				err,
+			)
+
+			return
+		}
+
+		var messageBuilder strings.Builder
+		messageBuilder.WriteString(
+			fmt.Sprintf("@%sがアンケート「%s」のあなたの回答を変更しました。\n", *params.XForwardedUser, question.Title),
+		)
+
+		switch newAnswer.Type {
+		case model.FreeTextQuestion:
+			if oldAnswer.FreeTextContent != nil && newAnswer.FreeTextContent != nil {
+				messageBuilder.WriteString("### 変更前\n```\n")
+				messageBuilder.WriteString(*oldAnswer.FreeTextContent)
+				messageBuilder.WriteString("\n```")
+				messageBuilder.WriteString("\n### 変更後\n```\n")
+				messageBuilder.WriteString(*newAnswer.FreeTextContent)
+				messageBuilder.WriteString("\n```")
+			} else {
+				e.Logger().Errorf("FreeTextContent of answer %d is nil", answerID)
+
+				return
+			}
+
+		case model.FreeNumberQuestion:
+			if oldAnswer.FreeNumberContent != nil && newAnswer.FreeNumberContent != nil {
+				messageBuilder.WriteString("### 変更前\n```\n")
+				messageBuilder.WriteString(fmt.Sprintf("%g", *oldAnswer.FreeNumberContent))
+				messageBuilder.WriteString("\n```")
+				messageBuilder.WriteString("\n### 変更後\n```\n")
+				messageBuilder.WriteString(fmt.Sprintf("%g", *newAnswer.FreeNumberContent))
+				messageBuilder.WriteString("\n```")
+			} else {
+				e.Logger().Errorf("FreeNumberContent of answer %d is nil", answerID)
+
+				return
+			}
+
+		case model.SingleChoiceQuestion:
+			var oldOptionContent, newOptionContent string
+
+			if len(oldAnswer.SelectedOptions) == 1 {
+				oldOptionContent = oldAnswer.SelectedOptions[0].Content
+			} else {
+				e.Logger().Errorf("The number of selected options for old answer %d is not 1", answerID)
+
+				return
+			}
+
+			if len(newAnswer.SelectedOptions) == 1 {
+				newOptionContent = newAnswer.SelectedOptions[0].Content
+			} else {
+				e.Logger().Errorf("The number of selected options for new answer %d is not 1", answerID)
+
+				return
+			}
+
+			messageBuilder.WriteString(fmt.Sprintf("### 変更前\n- %s\n", oldOptionContent))
+			messageBuilder.WriteString(fmt.Sprintf("### 変更後\n- %s\n", newOptionContent))
+
+		case model.MultipleChoiceQuestion:
+			var oldOptions, newOptions []string
+
+			for _, opt := range oldAnswer.SelectedOptions {
+				oldOptions = append(oldOptions, fmt.Sprintf("- %s", opt.Content))
+			}
+
+			for _, opt := range newAnswer.SelectedOptions {
+				newOptions = append(newOptions, fmt.Sprintf("- %s", opt.Content))
+			}
+
+			messageBuilder.WriteString(fmt.Sprintf("### 変更前\n%s\n", strings.Join(oldOptions, "\n")))
+			messageBuilder.WriteString(fmt.Sprintf("### 変更後\n%s\n", strings.Join(newOptions, "\n")))
+		}
+
+		if err := s.traqService.PostDirectMessage(ctx, newAnswer.UserID, messageBuilder.String()); err != nil {
+			e.Logger().Errorf("failed to send direct message to %s: %v", newAnswer.UserID, err)
+		}
+	}(*oldAnswer, answer)
 
 	res, err := converter.Convert[api.AnswerResponse](answer)
 
