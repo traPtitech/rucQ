@@ -124,6 +124,12 @@ func TestAdminPutQuestion(t *testing.T) {
 			IsStaff: true,
 		}, nil).Times(1)
 		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(questionID).
+			Return(&model.Question{
+				Type: model.SingleChoiceQuestion,
+			}, nil).
+			Times(1)
+		h.repo.MockQuestionRepository.EXPECT().
 			UpdateQuestion(gomock.Any(), questionID, gomock.Any()).
 			Return(nil).
 			Times(1)
@@ -163,5 +169,44 @@ func TestAdminPutQuestion(t *testing.T) {
 
 		option.Keys().ContainsOnly("id", "content")
 		option.Value("content").IsEqual(optionContent)
+	})
+
+	t.Run("Failure - Cannot change question type", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		questionID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		existingQuestion := &model.Question{
+			Type: model.SingleChoiceQuestion,
+		}
+
+		var req api.PutQuestionRequest
+		err := req.FromFreeTextQuestionRequest(api.FreeTextQuestionRequest{
+			Type:  api.FreeTextQuestionRequestTypeFreeText,
+			Title: random.AlphaNumericString(t, 15),
+		})
+		require.NoError(t, err)
+
+		h.repo.MockUserRepository.EXPECT().GetOrCreateUser(gomock.Any(), userID).Return(&model.User{
+			IsStaff: true,
+		}, nil).Times(1)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(questionID).
+			Return(existingQuestion, nil).
+			Times(1)
+
+		h.expect.PUT("/api/admin/questions/{questionID}", questionID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusBadRequest).
+			JSON().
+			Object().
+			Value("message").
+			String().
+			IsEqual("question type cannot be changed")
 	})
 }
