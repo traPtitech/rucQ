@@ -126,7 +126,7 @@ func (s *Server) AdminPutQuestion(
 		return err
 	}
 
-	question, err := converter.Convert[model.Question](req)
+	requestQuestion, err := converter.Convert[model.Question](req)
 
 	if err != nil {
 		e.Logger().Errorf("failed to convert request to model: %v", err)
@@ -134,9 +134,36 @@ func (s *Server) AdminPutQuestion(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	question.ID = uint(questionID)
+	// 既存の質問を取得
+	existingQuestion, err := s.repo.GetQuestionByID(uint(questionID))
 
-	if err := s.repo.UpdateQuestion(e.Request().Context(), uint(questionID), &question); err != nil {
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			e.Logger().Warnf("question with ID %d not found", questionID)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+		}
+
+		e.Logger().Errorf("failed to get question: %v", err)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	// typeは変更できない
+	if existingQuestion.Type != requestQuestion.Type {
+		e.Logger().Warnf(
+			"attempt to change question type of %d from %s to %s",
+			existingQuestion.ID,
+			existingQuestion.Type,
+			requestQuestion.Type,
+		)
+
+		return echo.NewHTTPError(http.StatusBadRequest, "question type cannot be changed")
+	}
+
+	requestQuestion.ID = uint(questionID)
+
+	if err := s.repo.UpdateQuestion(e.Request().Context(), uint(questionID), &requestQuestion); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			e.Logger().Warnf("question with ID %d not found", questionID)
 
@@ -148,7 +175,7 @@ func (s *Server) AdminPutQuestion(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	res, err := converter.Convert[api.QuestionResponse](question)
+	res, err := converter.Convert[api.QuestionResponse](requestQuestion)
 
 	if err != nil {
 		e.Logger().Errorf("failed to convert model to response: %v", err)
