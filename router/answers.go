@@ -3,8 +3,8 @@ package router
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -451,9 +451,13 @@ func (s *Server) AdminPutAnswer(
 		}
 
 		var messageBuilder strings.Builder
-		messageBuilder.WriteString(
-			fmt.Sprintf("@%sがアンケート「%s」のあなたの回答を変更しました。\n", *params.XForwardedUser, question.Title),
-		)
+
+		messageBuilder.Grow(256)
+		messageBuilder.WriteString("@")
+		messageBuilder.WriteString(*params.XForwardedUser)
+		messageBuilder.WriteString("がアンケート「")
+		messageBuilder.WriteString(question.Title)
+		messageBuilder.WriteString("」のあなたの回答を変更しました。\n")
 
 		switch newAnswer.Type {
 		case model.FreeTextQuestion:
@@ -473,10 +477,14 @@ func (s *Server) AdminPutAnswer(
 		case model.FreeNumberQuestion:
 			if oldAnswer.FreeNumberContent != nil && newAnswer.FreeNumberContent != nil {
 				messageBuilder.WriteString("### 変更前\n```\n")
-				messageBuilder.WriteString(fmt.Sprintf("%g", *oldAnswer.FreeNumberContent))
+				messageBuilder.WriteString(
+					strconv.FormatFloat(*oldAnswer.FreeNumberContent, 'g', -1, 64),
+				)
 				messageBuilder.WriteString("\n```")
 				messageBuilder.WriteString("\n### 変更後\n```\n")
-				messageBuilder.WriteString(fmt.Sprintf("%g", *newAnswer.FreeNumberContent))
+				messageBuilder.WriteString(
+					strconv.FormatFloat(*newAnswer.FreeNumberContent, 'g', -1, 64),
+				)
 				messageBuilder.WriteString("\n```")
 			} else {
 				e.Logger().Errorf("FreeNumberContent of answer %d is nil", answerID)
@@ -503,22 +511,28 @@ func (s *Server) AdminPutAnswer(
 				return
 			}
 
-			messageBuilder.WriteString(fmt.Sprintf("### 変更前\n- %s\n", oldOptionContent))
-			messageBuilder.WriteString(fmt.Sprintf("### 変更後\n- %s\n", newOptionContent))
+			messageBuilder.WriteString("### 変更前\n- ")
+			messageBuilder.WriteString(oldOptionContent)
+			messageBuilder.WriteString("\n")
+			messageBuilder.WriteString("### 変更後\n- ")
+			messageBuilder.WriteString(newOptionContent)
+			messageBuilder.WriteString("\n")
 
 		case model.MultipleChoiceQuestion:
-			var oldOptions, newOptions []string
+			messageBuilder.WriteString("### 変更前\n")
 
 			for _, opt := range oldAnswer.SelectedOptions {
-				oldOptions = append(oldOptions, fmt.Sprintf("- %s", opt.Content))
+				messageBuilder.WriteString("- ")
+				messageBuilder.WriteString(opt.Content)
+				messageBuilder.WriteString("\n")
 			}
+			messageBuilder.WriteString("### 変更後\n")
 
 			for _, opt := range newAnswer.SelectedOptions {
-				newOptions = append(newOptions, fmt.Sprintf("- %s", opt.Content))
+				messageBuilder.WriteString("- ")
+				messageBuilder.WriteString(opt.Content)
+				messageBuilder.WriteString("\n")
 			}
-
-			messageBuilder.WriteString(fmt.Sprintf("### 変更前\n%s\n", strings.Join(oldOptions, "\n")))
-			messageBuilder.WriteString(fmt.Sprintf("### 変更後\n%s\n", strings.Join(newOptions, "\n")))
 		}
 
 		if err := s.traqService.PostDirectMessage(ctx, newAnswer.UserID, messageBuilder.String()); err != nil {
