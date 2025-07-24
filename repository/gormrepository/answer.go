@@ -75,7 +75,9 @@ func (r *Repository) GetAnswers(
 		}
 	}
 
-	scopes := make([]func(*gorm.Statement), 0, 3)
+	const maxScopes = 3
+
+	scopes := make([]func(*gorm.Statement), 0, maxScopes)
 
 	if query.UserID != nil {
 		scopes = append(scopes, func(s *gorm.Statement) {

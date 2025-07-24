@@ -451,8 +451,10 @@ func (s *Server) AdminPutAnswer(
 		}
 
 		var messageBuilder strings.Builder
+		// テンプレート部分が大体120バイトぐらいなので256バイト確保しておく
+		const defaultBuilderSize = 256
 
-		messageBuilder.Grow(256)
+		messageBuilder.Grow(defaultBuilderSize)
 		messageBuilder.WriteString("@")
 		messageBuilder.WriteString(*params.XForwardedUser)
 		messageBuilder.WriteString("がアンケート「")
