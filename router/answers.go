@@ -442,8 +442,9 @@ func (s *Server) AdminPutAnswer(
 
 		if err != nil {
 			e.Logger().Errorf(
-				"failed to get question %d for DM notification: %v",
+				"failed to get question %d for answer %d DM notification: %v",
 				newAnswer.QuestionID,
+				answerID,
 				err,
 			)
 
