@@ -40,9 +40,10 @@ func newMockRepository(ctrl *gomock.Controller) *mockRepository {
 }
 
 type testHandler struct {
-	expect *httpexpect.Expect
-	repo   *mockRepository
-	server *httptest.Server
+	expect      *httpexpect.Expect
+	repo        *mockRepository
+	traqService *mockservice.MockTraqService
+	server      *httptest.Server
 }
 
 func setup(t *testing.T) *testHandler {
@@ -68,8 +69,9 @@ func setup(t *testing.T) *testHandler {
 	})
 
 	return &testHandler{
-		expect: expect,
-		repo:   repo,
-		server: httptestServer,
+		expect:      expect,
+		repo:        repo,
+		traqService: traqService,
+		server:      httptestServer,
 	}
 }
