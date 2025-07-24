@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"sync"
 	"testing"
@@ -763,8 +764,16 @@ func TestAdminPutAnswer(t *testing.T) {
 			Return(question, nil).
 			Times(1)
 
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n```\n%s\n```\n### 変更後\n```\n%s\n```",
+			userID,
+			question.Title,
+			*oldAnswer.FreeTextContent,
+			updatedContent,
+		)
+
 		h.traqService.EXPECT().
-			PostDirectMessage(gomock.Any(), oldAnswer.UserID, gomock.Any()).
+			PostDirectMessage(gomock.Any(), oldAnswer.UserID, expectedMessage).
 			DoAndReturn(func(_, _, _ any) error {
 				defer wg.Done()
 
@@ -871,8 +880,16 @@ func TestAdminPutAnswer(t *testing.T) {
 			Return(question, nil).
 			Times(1)
 
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n```\n%g\n```\n### 変更後\n```\n%g\n```",
+			userID,
+			question.Title,
+			*oldAnswer.FreeNumberContent,
+			updatedContent,
+		)
+
 		h.traqService.EXPECT().
-			PostDirectMessage(gomock.Any(), oldAnswer.UserID, gomock.Any()).
+			PostDirectMessage(gomock.Any(), oldAnswer.UserID, expectedMessage).
 			DoAndReturn(func(_, _, _ any) error {
 				defer wg.Done()
 
@@ -992,8 +1009,18 @@ func TestAdminPutAnswer(t *testing.T) {
 			Return(question, nil).
 			Times(1)
 
+		oldOptionContent := oldAnswer.SelectedOptions[0].Content
+		newOptionContent := option.Content
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n- %s\n### 変更後\n- %s",
+			userID,
+			question.Title,
+			oldOptionContent,
+			newOptionContent,
+		)
+
 		h.traqService.EXPECT().
-			PostDirectMessage(gomock.Any(), oldAnswer.UserID, gomock.Any()).
+			PostDirectMessage(gomock.Any(), oldAnswer.UserID, expectedMessage).
 			DoAndReturn(func(_, _, _ any) error {
 				defer wg.Done()
 
@@ -1124,9 +1151,29 @@ func TestAdminPutAnswer(t *testing.T) {
 			Return(question, nil).
 			Times(1)
 
+		var oldOptionsString string
+
+		for _, opt := range oldAnswer.SelectedOptions {
+			oldOptionsString = fmt.Sprintf("%s- %s\n", oldOptionsString, opt.Content)
+		}
+
+		var newOptionsString string
+
+		for _, opt := range options {
+			newOptionsString = fmt.Sprintf("%s- %s\n", newOptionsString, opt.Content)
+		}
+
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n%s### 変更後\n%s",
+			userID,
+			question.Title,
+			oldOptionsString,
+			newOptionsString,
+		)
+
 		h.traqService.EXPECT().
-			PostDirectMessage(gomock.Any(), oldAnswer.UserID, gomock.Any()).
-			DoAndReturn(func(_ any, userID string, _ any) error {
+			PostDirectMessage(gomock.Any(), oldAnswer.UserID, expectedMessage).
+			DoAndReturn(func(_, _, _ any) error {
 				defer wg.Done()
 
 				return nil

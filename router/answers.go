@@ -516,7 +516,6 @@ func (s *Server) AdminPutAnswer(
 			messageBuilder.WriteString("\n")
 			messageBuilder.WriteString("### 変更後\n- ")
 			messageBuilder.WriteString(newOptionContent)
-			messageBuilder.WriteString("\n")
 
 		case model.MultipleChoiceQuestion:
 			messageBuilder.WriteString("### 変更前\n")
