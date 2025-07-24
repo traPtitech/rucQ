@@ -807,21 +807,7 @@ func TestAdminPutAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
-		messageSent := make(chan struct{})
-
-		go func() {
-			defer close(messageSent)
-
-			wg.Wait()
-		}()
-
-		select {
-		case <-messageSent:
-			// 正常にメッセージが送信された
-		case <-time.After(2 * time.Second):
-			t.Error("Timeout waiting for message to be sent")
-		}
-
+		waitWithTimeout(t, &wg, 2*time.Second)
 		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual("free_text")
 		res.Value("questionId").Number().IsEqual(questionID)
@@ -923,21 +909,7 @@ func TestAdminPutAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
-		messageSent := make(chan struct{})
-
-		go func() {
-			defer close(messageSent)
-
-			wg.Wait()
-		}()
-
-		select {
-		case <-messageSent:
-			// 正常にメッセージが送信された
-		case <-time.After(2 * time.Second):
-			t.Error("Timeout waiting for message to be sent")
-		}
-
+		waitWithTimeout(t, &wg, 2*time.Second)
 		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual("free_number")
 		res.Value("questionId").Number().IsEqual(questionID)
@@ -1054,21 +1026,7 @@ func TestAdminPutAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
-		messageSent := make(chan struct{})
-
-		go func() {
-			defer close(messageSent)
-
-			wg.Wait()
-		}()
-
-		select {
-		case <-messageSent:
-			// 正常にメッセージが送信された
-		case <-time.After(2 * time.Second):
-			t.Error("Timeout waiting for message to be sent")
-		}
-
+		waitWithTimeout(t, &wg, 2*time.Second)
 		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual("single")
 		res.Value("questionId").Number().IsEqual(questionID)
@@ -1206,21 +1164,7 @@ func TestAdminPutAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
-		messageSent := make(chan struct{})
-
-		go func() {
-			defer close(messageSent)
-
-			wg.Wait()
-		}()
-
-		select {
-		case <-messageSent:
-			// 正常にメッセージが送信された
-		case <-time.After(2 * time.Second):
-			t.Error("Timeout waiting for message to be sent")
-		}
-
+		waitWithTimeout(t, &wg, 2*time.Second)
 		res.Keys().ContainsOnly("id", "type", "questionId", "selectedOptions", "userId")
 		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual("multiple")

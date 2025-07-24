@@ -2,7 +2,9 @@ package router
 
 import (
 	"net/http/httptest"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/gavv/httpexpect/v2"
 	"github.com/labstack/echo/v4"
@@ -73,5 +75,23 @@ func setup(t *testing.T) *testHandler {
 		repo:        repo,
 		traqService: traqService,
 		server:      httptestServer,
+	}
+}
+
+func waitWithTimeout(t *testing.T, wg *sync.WaitGroup, timeout time.Duration) {
+	t.Helper()
+
+	done := make(chan struct{})
+
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		return
+	case <-time.After(timeout):
+		t.Error("timeout waiting for goroutine to finish")
 	}
 }
