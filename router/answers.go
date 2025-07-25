@@ -612,7 +612,7 @@ func (s *Server) AdminPutAnswer(
 
 	// 回答者にDMを送信（非同期）
 	go func(oldAnswer, newAnswer model.Answer) {
-		ctx := context.Background()
+		ctx := context.WithoutCancel(e.Request().Context())
 		question, err := s.repo.GetQuestionByID(newAnswer.QuestionID)
 
 		if err != nil {
