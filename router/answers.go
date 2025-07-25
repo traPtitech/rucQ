@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -31,12 +32,21 @@ func (s *Server) GetMyAnswers(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("question group %d not found", questionGroupId)
+			slog.WarnContext(
+				e.Request().Context(),
+				"question group not found",
+				slog.Int("questionGroupId", questionGroupId),
+			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Question group not found")
 		}
 
-		e.Logger().Errorf("failed to get answers: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get answers",
+			slog.String("error", err.Error()),
+			slog.Int("questionGroupId", questionGroupId),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -44,7 +54,11 @@ func (s *Server) GetMyAnswers(
 	res, err := converter.Convert[[]api.AnswerResponse](answers)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -63,18 +77,31 @@ func (s *Server) GetAnswers(e echo.Context, questionID api.QuestionId) error {
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("question %d not found", questionID)
+			slog.WarnContext(
+				e.Request().Context(),
+				"question not found",
+				slog.Int("questionId", questionID),
+			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}
 
 		if errors.Is(err, model.ErrForbidden) {
-			e.Logger().Warnf("question %d is not public", questionID)
+			slog.WarnContext(
+				e.Request().Context(),
+				"question is not public",
+				slog.Int("questionId", questionID),
+			)
 
 			return echo.NewHTTPError(http.StatusForbidden, "Question is not public")
 		}
 
-		e.Logger().Errorf("failed to get public answers: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get public answers",
+			slog.String("error", err.Error()),
+			slog.Int("questionId", questionID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -82,7 +109,11 @@ func (s *Server) GetAnswers(e echo.Context, questionID api.QuestionId) error {
 	res, err := converter.Convert[[]api.AnswerResponse](answers)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -98,7 +129,11 @@ func (s *Server) PostAnswers(
 	var req api.PostAnswersJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Warnf("failed to bind request body: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request body",
+			slog.String("error", err.Error()),
+		)
 
 		return err
 	}
@@ -106,7 +141,11 @@ func (s *Server) PostAnswers(
 	answers, err := converter.Convert[[]model.Answer](req)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert request body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -116,7 +155,11 @@ func (s *Server) PostAnswers(
 	}
 
 	if err := s.repo.CreateAnswers(e.Request().Context(), &answers); err != nil {
-		e.Logger().Errorf("failed to create answers: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to create answers",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -124,7 +167,11 @@ func (s *Server) PostAnswers(
 	res, err := converter.Convert[[]api.AnswerResponse](answers)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -145,7 +192,11 @@ func (s *Server) PutAnswer(
 	var req api.PutAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Warnf("failed to bind request body: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request body",
+			slog.String("error", err.Error()),
+		)
 
 		return err
 	}
@@ -153,7 +204,11 @@ func (s *Server) PutAnswer(
 	answer, err := converter.Convert[model.Answer](req)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert request body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -161,7 +216,12 @@ func (s *Server) PutAnswer(
 	answer.UserID = *params.XForwardedUser
 
 	if err := s.repo.UpdateAnswer(e.Request().Context(), uint(answerID), &answer); err != nil {
-		e.Logger().Errorf("failed to update answer: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to update answer",
+			slog.String("error", err.Error()),
+			slog.Int("answerId", answerID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -169,7 +229,11 @@ func (s *Server) PutAnswer(
 	res, err := converter.Convert[api.AnswerResponse](answer)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -189,13 +253,22 @@ func (s *Server) AdminGetAnswers(
 	)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !user.IsStaff {
-		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
@@ -210,12 +283,21 @@ func (s *Server) AdminGetAnswers(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("question %d not found", questionID)
+			slog.WarnContext(
+				e.Request().Context(),
+				"question not found",
+				slog.Int("questionId", questionID),
+			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}
 
-		e.Logger().Errorf("failed to get answers: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get answers",
+			slog.String("error", err.Error()),
+			slog.Int("questionId", questionID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -223,7 +305,11 @@ func (s *Server) AdminGetAnswers(
 	res, err := converter.Convert[[]api.AnswerResponse](answers)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -246,13 +332,22 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 	)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !user.IsStaff {
-		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
@@ -270,12 +365,21 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("question group %d not found", questionGroupID)
+			slog.WarnContext(
+				e.Request().Context(),
+				"question group not found",
+				slog.Int("questionGroupId", questionGroupID),
+			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Question group not found")
 		}
 
-		e.Logger().Errorf("failed to get answers: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get answers",
+			slog.String("error", err.Error()),
+			slog.Int("questionGroupId", questionGroupID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -283,7 +387,11 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 	res, err := converter.Convert[[]api.AnswerResponse](answers)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -307,24 +415,38 @@ func (s *Server) AdminPostAnswer(
 	)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !user.IsStaff {
-		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	targetUser, err := s.repo.GetOrCreateUser(
 		e.Request().Context(),
-		string(userID),
+		userID,
 	)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create target user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create target user",
+			slog.String("error", err.Error()),
+			slog.String("userId", userID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -332,7 +454,11 @@ func (s *Server) AdminPostAnswer(
 	var req api.AdminPostAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Warnf("failed to bind request body: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request body",
+			slog.String("error", err.Error()),
+		)
 
 		return err
 	}
@@ -340,7 +466,11 @@ func (s *Server) AdminPostAnswer(
 	answer, err := converter.Convert[model.Answer](req)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert request body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -351,12 +481,22 @@ func (s *Server) AdminPostAnswer(
 	// 回答を作成
 	if err := s.repo.CreateAnswer(e.Request().Context(), &answer); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("question or option not found: %v", err)
+			slog.WarnContext(
+				e.Request().Context(),
+				"question or option not found",
+				slog.String("error", err.Error()),
+				slog.Int("questionId", int(answer.QuestionID)),
+			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Question or option not found")
 		}
 
-		e.Logger().Errorf("failed to create answer: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to create answer",
+			slog.String("error", err.Error()),
+			slog.Int("questionId", int(answer.QuestionID)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -364,7 +504,11 @@ func (s *Server) AdminPostAnswer(
 	res, err := converter.Convert[api.AnswerResponse](answer)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -387,13 +531,22 @@ func (s *Server) AdminPutAnswer(
 	)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !user.IsStaff {
-		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
@@ -401,7 +554,11 @@ func (s *Server) AdminPutAnswer(
 	var req api.AdminPutAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Warnf("failed to bind request body: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request body",
+			slog.String("error", err.Error()),
+		)
 
 		return err
 	}
@@ -409,7 +566,11 @@ func (s *Server) AdminPutAnswer(
 	answer, err := converter.Convert[model.Answer](req)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert request body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -419,18 +580,32 @@ func (s *Server) AdminPutAnswer(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("answer %d not found", answerID)
+			slog.WarnContext(
+				e.Request().Context(),
+				"answer not found",
+				slog.Int("answerId", answerID),
+			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Answer not found")
 		}
 
-		e.Logger().Errorf("failed to get answer: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get answer",
+			slog.String("error", err.Error()),
+			slog.Int("answerId", answerID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if err := s.repo.UpdateAnswer(e.Request().Context(), uint(answerID), &answer); err != nil {
-		e.Logger().Errorf("failed to update answer: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to update answer",
+			slog.String("error", err.Error()),
+			slog.Int("answerId", answerID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -441,11 +616,12 @@ func (s *Server) AdminPutAnswer(
 		question, err := s.repo.GetQuestionByID(newAnswer.QuestionID)
 
 		if err != nil {
-			e.Logger().Errorf(
-				"failed to get question %d for answer %d DM notification: %v",
-				newAnswer.QuestionID,
-				answerID,
-				err,
+			slog.ErrorContext(
+				ctx,
+				"failed to get question by ID",
+				slog.String("error", err.Error()),
+				slog.Int("questionId", int(newAnswer.QuestionID)),
+				slog.Int("answerId", answerID),
 			)
 
 			return
@@ -472,7 +648,11 @@ func (s *Server) AdminPutAnswer(
 				messageBuilder.WriteString(*newAnswer.FreeTextContent)
 				messageBuilder.WriteString("\n```")
 			} else {
-				e.Logger().Errorf("FreeTextContent of answer %d is nil", answerID)
+				slog.ErrorContext(
+					ctx,
+					"FreeTextContent of answer is nil",
+					slog.Int("answerId", answerID),
+				)
 
 				return
 			}
@@ -490,7 +670,11 @@ func (s *Server) AdminPutAnswer(
 				)
 				messageBuilder.WriteString("\n```")
 			} else {
-				e.Logger().Errorf("FreeNumberContent of answer %d is nil", answerID)
+				slog.ErrorContext(
+					ctx,
+					"FreeNumberContent of answer is nil",
+					slog.Int("answerId", answerID),
+				)
 
 				return
 			}
@@ -501,7 +685,11 @@ func (s *Server) AdminPutAnswer(
 			if len(oldAnswer.SelectedOptions) == 1 {
 				oldOptionContent = oldAnswer.SelectedOptions[0].Content
 			} else {
-				e.Logger().Errorf("The number of selected options for old answer %d is not 1", answerID)
+				slog.ErrorContext(
+					ctx,
+					"The number of selected options for old answer is not 1",
+					slog.Int("answerId", answerID),
+				)
 
 				return
 			}
@@ -509,7 +697,11 @@ func (s *Server) AdminPutAnswer(
 			if len(newAnswer.SelectedOptions) == 1 {
 				newOptionContent = newAnswer.SelectedOptions[0].Content
 			} else {
-				e.Logger().Errorf("The number of selected options for new answer %d is not 1", answerID)
+				slog.ErrorContext(
+					ctx,
+					"The number of selected options for new answer is not 1",
+					slog.Int("answerId", answerID),
+				)
 
 				return
 			}
@@ -538,14 +730,24 @@ func (s *Server) AdminPutAnswer(
 		}
 
 		if err := s.traqService.PostDirectMessage(ctx, newAnswer.UserID, messageBuilder.String()); err != nil {
-			e.Logger().Errorf("failed to send direct message to %s: %v", newAnswer.UserID, err)
+			slog.ErrorContext(
+				ctx,
+				"failed to send direct message",
+				slog.String("error", err.Error()),
+				slog.String("userId", newAnswer.UserID),
+				slog.Int("answerId", answerID),
+			)
 		}
 	}(*oldAnswer, answer)
 
 	res, err := converter.Convert[api.AnswerResponse](answer)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}

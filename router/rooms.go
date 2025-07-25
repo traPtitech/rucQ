@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/jinzhu/copier"
@@ -15,13 +16,22 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !operator.IsStaff {
-		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
@@ -29,7 +39,11 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	var req api.AdminPostRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Warnf("failed to bind request body: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request body",
+			slog.String("error", err.Error()),
+		)
 
 		return err
 	}
@@ -37,7 +51,11 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	var roomModel model.Room
 
 	if err := copier.Copy(&roomModel, &req); err != nil {
-		e.Logger().Errorf("failed to copy request to model: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to copy request to model",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -52,7 +70,12 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 				return echo.NewHTTPError(http.StatusNotFound, "User not found")
 			}
 
-			e.Logger().Errorf("failed to get user: %v", err)
+			slog.ErrorContext(
+				e.Request().Context(),
+				"failed to get user",
+				slog.String("error", err.Error()),
+				slog.String("userId", req.MemberIds[i]),
+			)
 
 			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 		}
@@ -65,7 +88,11 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 			return echo.NewHTTPError(http.StatusConflict, "Room already exists")
 		}
 
-		e.Logger().Errorf("failed to create room: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to create room",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -73,7 +100,11 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	var res api.RoomResponse
 
 	if err := copier.Copy(&res, &roomModel); err != nil {
-		e.Logger().Errorf("failed to copy model to response: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to copy model to response",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -89,13 +120,22 @@ func (s *Server) AdminPutRoom(
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !operator.IsStaff {
-		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
@@ -103,7 +143,11 @@ func (s *Server) AdminPutRoom(
 	var req api.AdminPutRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Warnf("failed to bind request body: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request body",
+			slog.String("error", err.Error()),
+		)
 
 		return err
 	}
@@ -112,18 +156,31 @@ func (s *Server) AdminPutRoom(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("room with ID %d not found", roomId)
+			slog.WarnContext(
+				e.Request().Context(),
+				"room not found",
+				slog.Int("roomId", int(roomId)),
+			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Room not found")
 		}
 
-		e.Logger().Errorf("failed to get room: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get room",
+			slog.String("error", err.Error()),
+			slog.Int("roomId", int(roomId)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if err := copier.Copy(roomModel, &req); err != nil {
-		e.Logger().Errorf("failed to copy request to model: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to copy request to model",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -138,7 +195,12 @@ func (s *Server) AdminPutRoom(
 				return echo.NewHTTPError(http.StatusNotFound, "User not found")
 			}
 
-			e.Logger().Errorf("failed to get user: %v", err)
+			slog.ErrorContext(
+				e.Request().Context(),
+				"failed to get user",
+				slog.String("error", err.Error()),
+				slog.String("userId", req.MemberIds[i]),
+			)
 
 			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 		}
@@ -147,7 +209,12 @@ func (s *Server) AdminPutRoom(
 	}
 
 	if err := s.repo.UpdateRoom(roomModel); err != nil {
-		e.Logger().Errorf("failed to update room: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to update room",
+			slog.String("error", err.Error()),
+			slog.Int("roomId", int(roomId)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -155,7 +222,11 @@ func (s *Server) AdminPutRoom(
 	var res api.RoomResponse
 
 	if err := copier.Copy(&res, roomModel); err != nil {
-		e.Logger().Errorf("failed to copy model to response: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to copy model to response",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
