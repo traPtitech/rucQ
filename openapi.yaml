@@ -762,6 +762,7 @@ paths:
   /api/admin/answers/{answerId}:
     put:
       summary: 管理者が回答を更新
+      description: QuestionのisOpenがfalseの場合でも回答を更新できます。更新するとユーザーにtraQでDMが送信されます。
       tags:
         - Questions
       operationId: adminPutAnswer
