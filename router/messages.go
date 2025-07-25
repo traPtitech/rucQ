@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -18,20 +19,36 @@ func (s *Server) AdminPostMessage(
 ) error {
 	var req api.AdminPostMessageJSONRequestBody
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Warnf("failed to bind request: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request",
+			slog.String("error", err.Error()),
+		)
+
 		return err
 	}
 
 	// スタッフだけがbotを用いてdmを送信できるようにする
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
+
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	// スタッフじゃなければはじく
 	if !user.IsStaff {
-		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -43,7 +60,12 @@ func (s *Server) AdminPostMessage(
 
 		err := s.traqService.PostDirectMessage(context.Background(), string(userID), req.Content)
 		if err != nil {
-			e.Logger().Errorf("failed to send direct message to %s: %v", userID, err)
+			slog.ErrorContext(
+				context.Background(),
+				"failed to send direct message",
+				slog.String("error", err.Error()),
+				slog.String("userId", string(userID)),
+			)
 		}
 	}()
 

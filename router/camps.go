@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/jinzhu/copier"
@@ -16,7 +17,11 @@ func (s *Server) GetCamps(e echo.Context) error {
 	camps, err := s.repo.GetCamps()
 
 	if err != nil {
-		e.Logger().Errorf("failed to get camps: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get camps",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -24,7 +29,11 @@ func (s *Server) GetCamps(e echo.Context) error {
 	response, err := converter.Convert[[]api.CampResponse](camps)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert camps: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert camps",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -38,7 +47,11 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	var req api.AdminPostCampJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Warnf("failed to bind request body: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request body",
+			slog.String("error", err.Error()),
+		)
 
 		return err
 	}
@@ -46,13 +59,22 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !user.IsStaff {
-		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
@@ -60,7 +82,11 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	campModel, err := converter.Convert[model.Camp](req)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert request to model: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request to model",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -70,7 +96,11 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 			return echo.NewHTTPError(http.StatusConflict, "Camp already exists")
 		}
 
-		e.Logger().Errorf("failed to create camp: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to create camp",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -78,7 +108,11 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	response, err := converter.Convert[api.CampResponse](campModel)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert camp to response: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert camp to response",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -91,12 +125,21 @@ func (s *Server) GetCamp(e echo.Context, campID api.CampId) error {
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("camp with ID %d not found", campID)
+			slog.WarnContext(
+				e.Request().Context(),
+				"camp not found",
+				slog.Int("campId", int(campID)),
+			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
-		e.Logger().Errorf("failed to get camp: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get camp",
+			slog.String("error", err.Error()),
+			slog.Int("campId", int(campID)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -104,7 +147,11 @@ func (s *Server) GetCamp(e echo.Context, campID api.CampId) error {
 	response, err := converter.Convert[api.CampResponse](camp)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert camp to response: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert camp to response",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -122,13 +169,22 @@ func (s *Server) AdminPutCamp(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !user.IsStaff {
-		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
@@ -136,7 +192,11 @@ func (s *Server) AdminPutCamp(
 	var req api.AdminPutCampJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Warnf("failed to bind request body: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request body",
+			slog.String("error", err.Error()),
+		)
 
 		return err
 	}
@@ -144,7 +204,11 @@ func (s *Server) AdminPutCamp(
 	newCamp, err := converter.Convert[model.Camp](req)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert request to model: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request to model",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -153,12 +217,21 @@ func (s *Server) AdminPutCamp(
 
 	if err := s.repo.UpdateCamp(e.Request().Context(), uint(campID), &newCamp); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("camp with ID %d not found", campID)
+			slog.WarnContext(
+				e.Request().Context(),
+				"camp not found",
+				slog.Int("campId", int(campID)),
+			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
-		e.Logger().Errorf("failed to update camp: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to update camp",
+			slog.String("error", err.Error()),
+			slog.Int("campId", int(campID)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -166,7 +239,11 @@ func (s *Server) AdminPutCamp(
 	response, err := converter.Convert[api.CampResponse](newCamp)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert camp to response: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert camp to response",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -184,20 +261,34 @@ func (s *Server) AdminDeleteCamp(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !user.IsStaff {
-		e.Logger().Warnf("user %s is not a staff member", *params.XForwardedUser)
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	// TODO: Not found エラーのハンドリングを追加
 	if err := s.repo.DeleteCamp(e.Request().Context(), uint(campID)); err != nil {
-		e.Logger().Errorf("failed to delete camp: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to delete camp",
+			slog.String("error", err.Error()),
+			slog.Int("campId", int(campID)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -214,25 +305,43 @@ func (s *Server) PostCampRegister(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if err := s.repo.AddCampParticipant(e.Request().Context(), uint(campID), user); err != nil {
 		if errors.Is(err, model.ErrForbidden) {
-			e.Logger().Warnf("registration for camp %d is closed", campID)
+			slog.WarnContext(
+				e.Request().Context(),
+				"registration for camp is closed",
+				slog.Int("campId", int(campID)),
+			)
 
 			return echo.NewHTTPError(http.StatusForbidden, "Registration for this camp is closed")
 		}
 
 		if errors.Is(err, model.ErrNotFound) {
-			e.Logger().Warnf("camp with ID %d not found", campID)
+			slog.WarnContext(
+				e.Request().Context(),
+				"camp not found",
+				slog.Int("campId", int(campID)),
+			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
-		e.Logger().Errorf("failed to add camp participant: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to add camp participant",
+			slog.String("error", err.Error()),
+			slog.Int("campId", int(campID)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -249,14 +358,24 @@ func (s *Server) DeleteCampRegister(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	// TODO: Forbidden、 Not found エラーのハンドリングを追加
 	if err := s.repo.RemoveCampParticipant(e.Request().Context(), uint(campID), user); err != nil {
-		e.Logger().Errorf("failed to remove camp participant: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to remove camp participant",
+			slog.String("error", err.Error()),
+			slog.Int("campId", int(campID)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -270,7 +389,12 @@ func (s *Server) GetCampParticipants(e echo.Context, campID api.CampId) error {
 
 	// TODO: Not found エラーのハンドリングを追加（APIスキーマにも追加する）
 	if err != nil {
-		e.Logger().Errorf("failed to get camp participants: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get camp participants",
+			slog.String("error", err.Error()),
+			slog.Int("campId", int(campID)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -278,7 +402,12 @@ func (s *Server) GetCampParticipants(e echo.Context, campID api.CampId) error {
 	var response []api.UserResponse
 
 	if err := copier.Copy(&response, &participants); err != nil {
-		e.Logger().Errorf("failed to copy participants: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to copy participants",
+			slog.String("error", err.Error()),
+			slog.Int("campId", int(campID)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}

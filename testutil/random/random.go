@@ -29,7 +29,9 @@ func AlphaNumericString(t *testing.T, maxLength uint) string {
 func Bool(t *testing.T) bool {
 	t.Helper()
 
-	return rand.UintN(2) == 0
+	const max = 2 // 0または1のいずれかが返るようにする
+
+	return rand.UintN(max) == 0
 }
 
 func Float32(t *testing.T) float32 {

@@ -81,6 +81,7 @@ services:
   traq_server:
     image: ghcr.io/traptitech/traq:3.24.13
     environment:
+      TRAQ_ALLOWSIGNUP: true
       TRAQ_MARIADB_HOST: mariadb
       TRAQ_STORAGE_LOCAL_DIR: /app/storage
     volumes:

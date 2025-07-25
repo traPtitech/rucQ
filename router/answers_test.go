@@ -2,8 +2,11 @@ package router
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -713,6 +716,10 @@ func TestAdminPutAnswer(t *testing.T) {
 	t.Run("Success - Update FreeText Answer", func(t *testing.T) {
 		t.Parallel()
 
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
 		answerID := random.PositiveInt(t)
@@ -726,15 +733,59 @@ func TestAdminPutAnswer(t *testing.T) {
 
 		updatedContent := random.AlphaNumericString(t, 50)
 
+		// 変更前の回答 (GetAnswerByIDで返される)
+		oldContent := random.AlphaNumericString(t, 50)
+		oldAnswer := &model.Answer{
+			Model:           gorm.Model{ID: uint(answerID)},
+			UserID:          random.AlphaNumericString(t, 32), // 回答者のID
+			QuestionID:      uint(questionID),
+			Type:            model.FreeTextQuestion,
+			FreeTextContent: &oldContent,
+		}
+
+		// 質問 (GetQuestionByIDで返される)
+		question := &model.Question{
+			Model: gorm.Model{ID: uint(questionID)},
+			Title: random.AlphaNumericString(t, 20),
+		}
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(staffUser, nil).
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), uint(answerID)).
+			Return(oldAnswer, nil).
+			Times(1)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(uint(questionID)).
+			Return(question, nil).
+			Times(1)
+
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n```\n%s\n```\n### 変更後\n```\n%s\n```",
+			userID,
+			question.Title,
+			*oldAnswer.FreeTextContent,
+			updatedContent,
+		)
+
+		h.traqService.EXPECT().
+			PostDirectMessage(gomock.Any(), oldAnswer.UserID, expectedMessage).
+			DoAndReturn(func(_, _, _ any) error {
+				defer wg.Done()
+
+				return nil
+			}).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), uint(answerID), gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
 				answer.ID = id
+				answer.UserID = oldAnswer.UserID
 				answer.FreeTextContent = &updatedContent
 				return nil
 			}).
@@ -756,6 +807,7 @@ func TestAdminPutAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
+		waitWithTimeout(t, &wg, 2*time.Second)
 		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual("free_text")
 		res.Value("questionId").Number().IsEqual(questionID)
@@ -765,6 +817,10 @@ func TestAdminPutAnswer(t *testing.T) {
 
 	t.Run("Success - Update FreeNumber Answer", func(t *testing.T) {
 		t.Parallel()
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
@@ -779,15 +835,59 @@ func TestAdminPutAnswer(t *testing.T) {
 
 		updatedContent := random.Float64(t)
 
+		// 変更前の回答 (GetAnswerByIDで返される)
+		oldContent := random.Float64(t)
+		oldAnswer := &model.Answer{
+			Model:             gorm.Model{ID: uint(answerID)},
+			UserID:            random.AlphaNumericString(t, 32), // 回答者のID
+			QuestionID:        uint(questionID),
+			Type:              model.FreeNumberQuestion,
+			FreeNumberContent: &oldContent,
+		}
+
+		// 質問 (GetQuestionByIDで返される)
+		question := &model.Question{
+			Model: gorm.Model{ID: uint(questionID)},
+			Title: random.AlphaNumericString(t, 20),
+		}
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(staffUser, nil).
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), uint(answerID)).
+			Return(oldAnswer, nil).
+			Times(1)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(uint(questionID)).
+			Return(question, nil).
+			Times(1)
+
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n```\n%g\n```\n### 変更後\n```\n%g\n```",
+			userID,
+			question.Title,
+			*oldAnswer.FreeNumberContent,
+			updatedContent,
+		)
+
+		h.traqService.EXPECT().
+			PostDirectMessage(gomock.Any(), oldAnswer.UserID, expectedMessage).
+			DoAndReturn(func(_, _, _ any) error {
+				defer wg.Done()
+
+				return nil
+			}).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), uint(answerID), gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
 				answer.ID = id
+				answer.UserID = oldAnswer.UserID
 				answer.FreeNumberContent = &updatedContent
 				return nil
 			}).
@@ -809,6 +909,7 @@ func TestAdminPutAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
+		waitWithTimeout(t, &wg, 2*time.Second)
 		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual("free_number")
 		res.Value("questionId").Number().IsEqual(questionID)
@@ -820,6 +921,10 @@ func TestAdminPutAnswer(t *testing.T) {
 
 	t.Run("Success - Update SingleChoice Answer", func(t *testing.T) {
 		t.Parallel()
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
@@ -840,15 +945,66 @@ func TestAdminPutAnswer(t *testing.T) {
 			Content: random.AlphaNumericString(t, 20),
 		}
 
+		// 変更前の回答 (GetAnswerByIDで返される)
+		oldOption := model.Option{
+			Model: gorm.Model{
+				ID: uint(random.PositiveInt(t)),
+			},
+			Content: random.AlphaNumericString(t, 20),
+		}
+		oldAnswer := &model.Answer{
+			Model:           gorm.Model{ID: uint(answerID)},
+			UserID:          random.AlphaNumericString(t, 32), // 回答者のID
+			QuestionID:      uint(questionID),
+			Type:            model.SingleChoiceQuestion,
+			SelectedOptions: []model.Option{oldOption},
+		}
+
+		// 質問 (GetQuestionByIDで返される)
+		question := &model.Question{
+			Model: gorm.Model{ID: uint(questionID)},
+			Title: random.AlphaNumericString(t, 20),
+		}
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(staffUser, nil).
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), uint(answerID)).
+			Return(oldAnswer, nil).
+			Times(1)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(uint(questionID)).
+			Return(question, nil).
+			Times(1)
+
+		oldOptionContent := oldAnswer.SelectedOptions[0].Content
+		newOptionContent := option.Content
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n- %s\n### 変更後\n- %s",
+			userID,
+			question.Title,
+			oldOptionContent,
+			newOptionContent,
+		)
+
+		h.traqService.EXPECT().
+			PostDirectMessage(gomock.Any(), oldAnswer.UserID, expectedMessage).
+			DoAndReturn(func(_, _, _ any) error {
+				defer wg.Done()
+
+				return nil
+			}).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), uint(answerID), gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
 				answer.ID = id
+				answer.UserID = oldAnswer.UserID
 				answer.SelectedOptions = []model.Option{option}
 				return nil
 			}).
@@ -870,6 +1026,7 @@ func TestAdminPutAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
+		waitWithTimeout(t, &wg, 2*time.Second)
 		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual("single")
 		res.Value("questionId").Number().IsEqual(questionID)
@@ -881,6 +1038,10 @@ func TestAdminPutAnswer(t *testing.T) {
 
 	t.Run("Success - Update MultipleChoice Answer", func(t *testing.T) {
 		t.Parallel()
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
 
 		h := setup(t)
 		userID := random.AlphaNumericString(t, 32)
@@ -910,15 +1071,78 @@ func TestAdminPutAnswer(t *testing.T) {
 			},
 		}
 
+		// 変更前の回答 (GetAnswerByIDで返される)
+		oldOptions := []model.Option{
+			{
+				Model: gorm.Model{
+					ID: uint(random.PositiveInt(t)),
+				},
+				Content: random.AlphaNumericString(t, 20),
+			},
+		}
+		oldAnswer := &model.Answer{
+			Model:           gorm.Model{ID: uint(answerID)},
+			UserID:          random.AlphaNumericString(t, 32), // 回答者のID
+			QuestionID:      uint(questionID),
+			Type:            model.MultipleChoiceQuestion,
+			SelectedOptions: oldOptions,
+		}
+
+		// 質問 (GetQuestionByIDで返される)
+		question := &model.Question{
+			Model: gorm.Model{ID: uint(questionID)},
+			Title: random.AlphaNumericString(t, 20),
+		}
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(staffUser, nil).
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), uint(answerID)).
+			Return(oldAnswer, nil).
+			Times(1)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(uint(questionID)).
+			Return(question, nil).
+			Times(1)
+
+		var oldOptionsString string
+
+		for _, opt := range oldAnswer.SelectedOptions {
+			oldOptionsString = fmt.Sprintf("%s- %s\n", oldOptionsString, opt.Content)
+		}
+
+		var newOptionsString string
+
+		for _, opt := range options {
+			newOptionsString = fmt.Sprintf("%s- %s\n", newOptionsString, opt.Content)
+		}
+
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n%s### 変更後\n%s",
+			userID,
+			question.Title,
+			oldOptionsString,
+			newOptionsString,
+		)
+
+		h.traqService.EXPECT().
+			PostDirectMessage(gomock.Any(), oldAnswer.UserID, expectedMessage).
+			DoAndReturn(func(_, _, _ any) error {
+				defer wg.Done()
+
+				return nil
+			}).
+			Times(1)
+
+		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), uint(answerID), gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
 				answer.ID = id
+				answer.UserID = oldAnswer.UserID
 				answer.SelectedOptions = options
 				return nil
 			}).
@@ -940,6 +1164,7 @@ func TestAdminPutAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
+		waitWithTimeout(t, &wg, 2*time.Second)
 		res.Keys().ContainsOnly("id", "type", "questionId", "selectedOptions", "userId")
 		res.Value("id").Number().IsEqual(answerID)
 		res.Value("type").String().IsEqual("multiple")

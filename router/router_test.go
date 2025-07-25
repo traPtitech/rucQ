@@ -2,7 +2,9 @@ package router
 
 import (
 	"net/http/httptest"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/gavv/httpexpect/v2"
 	"github.com/labstack/echo/v4"
@@ -40,9 +42,10 @@ func newMockRepository(ctrl *gomock.Controller) *mockRepository {
 }
 
 type testHandler struct {
-	expect *httpexpect.Expect
-	repo   *mockRepository
-	server *httptest.Server
+	expect      *httpexpect.Expect
+	repo        *mockRepository
+	traqService *mockservice.MockTraqService
+	server      *httptest.Server
 }
 
 func setup(t *testing.T) *testHandler {
@@ -68,8 +71,27 @@ func setup(t *testing.T) *testHandler {
 	})
 
 	return &testHandler{
-		expect: expect,
-		repo:   repo,
-		server: httptestServer,
+		expect:      expect,
+		repo:        repo,
+		traqService: traqService,
+		server:      httptestServer,
+	}
+}
+
+func waitWithTimeout(t *testing.T, wg *sync.WaitGroup, timeout time.Duration) {
+	t.Helper()
+
+	done := make(chan struct{})
+
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		return
+	case <-time.After(timeout):
+		t.Error("timeout waiting for goroutine to finish")
 	}
 }
