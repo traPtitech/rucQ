@@ -81,6 +81,7 @@ services:
         target: /etc/caddy/
     depends_on:
       - rucq_ui
+      - rucq_admin
       - traq_server
       - traq_ui
 
