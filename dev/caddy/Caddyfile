@@ -1,9 +1,33 @@
-:80
+:3000 {
+	handle /api/* {
+		reverse_proxy traq_server:3000
+	}
 
-handle /api/* {
-	reverse_proxy traq_server:3000
+	handle {
+		reverse_proxy traq_ui:80
+	}
 }
 
-handle {
-	reverse_proxy traq_ui:80
+:3002 {
+	handle /api/* {
+		reverse_proxy rucq:8080 {
+			header_up X-Forwarded-User {$RUCQ_USER:traq}
+		}
+	}
+
+	handle {
+		reverse_proxy rucq_ui:80
+	}
+}
+
+:3003 {
+	handle /api/* {
+		reverse_proxy rucq:8080 {
+			header_up X-Forwarded-User {$RUCQ_USER:traq}
+		}
+	}
+
+	handle {
+		reverse_proxy rucq_admin:80
+	}
 }

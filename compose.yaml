@@ -66,17 +66,33 @@ services:
       mariadb:
         condition: service_healthy
 
-  traq_caddy:
+  caddy:
     image: caddy:2.10.0-alpine
+    env_file:
+      - path: .env
+        required: false
     ports:
-      - "${TRAQ_CADDY_PORT:-3000}:80"
+      - ${CADDY_RUCQ_PORT:-3002}:3002
+      - ${CADDY_RUCQ_ADMIN_PORT:-3003}:3003
+      - ${CADDY_TRAQ_PORT:-3000}:3000
     volumes:
       - type: bind
         source: ./dev/caddy/
         target: /etc/caddy/
     depends_on:
+      - rucq_ui
       - traq_server
       - traq_ui
+
+  rucq_ui:
+    image: ghcr.io/traptitech/rucq-ui:1.0.3
+    expose:
+      - 80
+
+  rucq_admin:
+    image: ghcr.io/traptitech/rucq-admin:0.3.0
+    expose:
+      - 80
 
   traq_server:
     image: ghcr.io/traptitech/traq:3.24.13
