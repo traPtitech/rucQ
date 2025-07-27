@@ -15,13 +15,17 @@ go run dev/create_bot.go >> .env # 初回のみ
 docker compose down
 ```
 
-rucQ（localhost:8080）の他に
+rucQ Server（localhost:8080）の他に
 
+- [rucQ UI](http://localhost:3002)
+- [rucQ Admin](http://localhost:3003)
 - [Adminer](http://localhost:8082/?server=mariadb&username=root&db=rucq)（パスワード：`password`）
 - [Swagger UI](http://localhost:8081)
 - [traQ](http://localhost:3000)
 
-などが立ち上がります。詳しくは[compose.yaml](./compose.yaml)を参照してください。
+などが立ち上がります。
+rucQのユーザーはデフォルトでは`traq`ですが、traQでユーザーを作成して.envに`RUCQ_USER`を設定すると切り替えることができます。
+詳しくは[compose.yaml](./compose.yaml)を参照してください。
 
 ## コード生成
 
