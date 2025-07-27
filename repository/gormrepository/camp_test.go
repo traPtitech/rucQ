@@ -382,7 +382,7 @@ func TestAddCampParticipant(t *testing.T) {
 		assert.Equal(t, user.ID, participants[0].ID)
 	})
 
-	t.Run("エラー: 参加受付が閉じている場合", func(t *testing.T) {
+	t.Run("成功: 参加受付が閉じている場合でも追加できる", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -394,15 +394,14 @@ func TestAddCampParticipant(t *testing.T) {
 		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
 		require.NoError(t, err)
 
-		// ユーザーを参加者に追加しようとする
+		// ユーザーを参加者に追加する
 		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
-		assert.Error(t, err)
-		assert.Equal(t, model.ErrForbidden, err)
+		assert.NoError(t, err)
 
-		// 参加者が追加されていないことを確認
+		// 参加者が追加されていることを確認
 		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
 		assert.NoError(t, err)
-		assert.False(t, isParticipant)
+		assert.True(t, isParticipant)
 	})
 
 	t.Run("エラー: 存在しない合宿ID", func(t *testing.T) {
@@ -484,7 +483,7 @@ func TestAddCampParticipant(t *testing.T) {
 		assert.Contains(t, participantIDs, user3.ID)
 	})
 
-	t.Run("成功: 参加受付を後から開いた場合", func(t *testing.T) {
+	t.Run("成功: 参加受付が閉じていても追加できる（リポジトリ層ではチェックしない）", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -496,17 +495,7 @@ func TestAddCampParticipant(t *testing.T) {
 		err := r.UpdateCamp(t.Context(), camp.ID, &camp)
 		require.NoError(t, err)
 
-		// 参加受付が閉じている状態では追加できない
-		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
-		assert.Error(t, err)
-		assert.Equal(t, model.ErrForbidden, err)
-
-		// 参加受付を開く
-		camp.IsRegistrationOpen = true
-		err = r.UpdateCamp(t.Context(), camp.ID, &camp)
-		require.NoError(t, err)
-
-		// 今度は追加できるはず
+		// 参加受付が閉じている状態でも追加できる（リポジトリ層ではチェックしない）
 		err = r.AddCampParticipant(t.Context(), camp.ID, &user)
 		assert.NoError(t, err)
 
