@@ -12,6 +12,7 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -632,5 +633,75 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			JSON().
 			Object().
 			HasValue("message", "Forbidden")
+	})
+
+	t.Run("Camp Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := random.PositiveInt(t)
+		adminUsername := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		admin := &model.User{
+			ID:      adminUsername,
+			IsStaff: true,
+		}
+		targetUser := &model.User{
+			ID:      targetUserID,
+			IsStaff: random.Bool(t),
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUsername).
+			Return(admin, nil)
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), targetUserID).
+			Return(targetUser, nil)
+		h.repo.MockCampRepository.EXPECT().
+			RemoveCampParticipant(gomock.Any(), uint(campID), targetUser).
+			Return(repository.ErrCampNotFound)
+
+		h.expect.DELETE("/api/admin/camps/{campId}/participants/{userId}", campID, targetUserID).
+			WithHeader("X-Forwarded-User", adminUsername).
+			Expect().
+			Status(http.StatusNotFound).
+			JSON().
+			Object().
+			HasValue("message", "Camp not found")
+	})
+
+	t.Run("Participant Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := random.PositiveInt(t)
+		adminUsername := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		admin := &model.User{
+			ID:      adminUsername,
+			IsStaff: true,
+		}
+		targetUser := &model.User{
+			ID:      targetUserID,
+			IsStaff: random.Bool(t),
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUsername).
+			Return(admin, nil)
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), targetUserID).
+			Return(targetUser, nil)
+		h.repo.MockCampRepository.EXPECT().
+			RemoveCampParticipant(gomock.Any(), uint(campID), targetUser).
+			Return(repository.ErrParticipantNotFound)
+
+		h.expect.DELETE("/api/admin/camps/{campId}/participants/{userId}", campID, targetUserID).
+			WithHeader("X-Forwarded-User", adminUsername).
+			Expect().
+			Status(http.StatusNotFound).
+			JSON().
+			Object().
+			HasValue("message", "Participant not found")
 	})
 }
