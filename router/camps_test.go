@@ -505,9 +505,13 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			AddCampParticipant(gomock.Any(), uint(campID), targetUser).
 			Return(nil)
 
+		req := api.AdminAddCampParticipantJSONRequestBody{
+			UserId: targetUserID,
+		}
+
 		h.expect.POST("/api/admin/camps/{campId}/participants", campID).
 			WithHeader("X-Forwarded-User", adminUsername).
-			WithJSON(map[string]string{"userId": targetUserID}).
+			WithJSON(req).
 			Expect().
 			Status(http.StatusNoContent)
 	})
@@ -528,9 +532,13 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 
+		req := api.AdminAddCampParticipantJSONRequestBody{
+			UserId: targetUserID,
+		}
+
 		h.expect.POST("/api/admin/camps/{campId}/participants", campID).
 			WithHeader("X-Forwarded-User", username).
-			WithJSON(map[string]string{"userId": targetUserID}).
+			WithJSON(req).
 			Expect().
 			Status(http.StatusForbidden).
 			JSON().
@@ -564,9 +572,13 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			AddCampParticipant(gomock.Any(), uint(campID), targetUser).
 			Return(model.ErrNotFound)
 
+		req := api.AdminAddCampParticipantJSONRequestBody{
+			UserId: targetUserID,
+		}
+
 		h.expect.POST("/api/admin/camps/{campId}/participants", campID).
 			WithHeader("X-Forwarded-User", adminUsername).
-			WithJSON(map[string]string{"userId": targetUserID}).
+			WithJSON(req).
 			Expect().
 			Status(http.StatusNotFound).
 			JSON().
