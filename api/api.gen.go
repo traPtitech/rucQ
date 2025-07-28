@@ -1892,10 +1892,10 @@ type ServerInterface interface {
 	// 画像をアップロード（管理者用）
 	// (POST /api/admin/camps/{campId}/images)
 	AdminPostImage(ctx echo.Context, campId CampId, params AdminPostImageParams) error
-	// ユーザーをキャンプに参加させる（管理者用）
+	// ユーザーを合宿に参加させる（管理者用）
 	// (POST /api/admin/camps/{campId}/participants)
 	AdminAddCampParticipant(ctx echo.Context, campId CampId, params AdminAddCampParticipantParams) error
-	// ユーザーをキャンプから削除する（管理者用）
+	// ユーザーの参加を取り消す（管理者用）
 	// (DELETE /api/admin/camps/{campId}/participants/{userId})
 	AdminRemoveCampParticipant(ctx echo.Context, campId CampId, userId UserId, params AdminRemoveCampParticipantParams) error
 	// 支払い情報の一覧を取得（管理者用）
