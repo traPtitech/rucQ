@@ -360,6 +360,7 @@ func (s *Server) PostCampRegister(
 			"failed to add camp participant",
 			slog.String("error", err.Error()),
 			slog.Int("campId", int(campID)),
+			slog.String("userId", *params.XForwardedUser),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -394,6 +395,7 @@ func (s *Server) DeleteCampRegister(
 			"failed to remove camp participant",
 			slog.String("error", err.Error()),
 			slog.Int("campId", int(campID)),
+			slog.String("userId", *params.XForwardedUser),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -504,6 +506,7 @@ func (s *Server) AdminAddCampParticipant(
 			"failed to add camp participant",
 			slog.String("error", err.Error()),
 			slog.Int("campId", int(campID)),
+			slog.String("userId", req.UserId),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -571,6 +574,7 @@ func (s *Server) AdminRemoveCampParticipant(
 			"failed to remove camp participant",
 			slog.String("error", err.Error()),
 			slog.Int("campId", int(campID)),
+			slog.String("userId", userID),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
