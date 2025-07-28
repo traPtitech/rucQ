@@ -104,17 +104,22 @@ func (r *Repository) RemoveCampParticipant(
 	campID uint,
 	user *model.User,
 ) error {
-	camp, err := gorm.G[*model.Camp](r.db).Where(&model.Camp{
-		Model: gorm.Model{
-			ID: campID,
-		},
-	}).First(ctx)
+	// 参加者として登録されているかを確認 (この中でCampの存在も確認される)
+	isParticipant, err := r.IsCampParticipant(ctx, campID, user.ID)
 
 	if err != nil {
 		return err
 	}
 
-	if err := r.db.Model(camp).Association("Participants").Delete(user); err != nil {
+	if !isParticipant {
+		// 参加者が見つからない場合
+		return model.ErrNotFound
+	}
+
+	if err := r.db.
+		Model(&model.Camp{Model: gorm.Model{ID: campID}}).
+		Association("Participants").
+		Delete(user); err != nil {
 		return err
 	}
 

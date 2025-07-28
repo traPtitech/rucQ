@@ -465,3 +465,103 @@ func TestAddCampParticipant(t *testing.T) {
 		assert.Contains(t, participantIDs, user3.ID)
 	})
 }
+
+func TestRepository_RemoveCampParticipant(t *testing.T) {
+	t.Parallel()
+
+	t.Run("参加者を正常に削除できる", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 参加者を追加
+		err := r.AddCampParticipant(t.Context(), camp.ID, &user)
+
+		require.NoError(t, err)
+
+		// 参加者が追加されていることを確認
+		isParticipant, err := r.IsCampParticipant(t.Context(), camp.ID, user.ID)
+
+		require.NoError(t, err)
+		require.True(t, isParticipant)
+
+		// 参加者を削除
+		err = r.RemoveCampParticipant(t.Context(), camp.ID, &user)
+
+		assert.NoError(t, err)
+
+		// 参加者が削除されていることを確認
+		isParticipant, err = r.IsCampParticipant(t.Context(), camp.ID, user.ID)
+		require.NoError(t, err)
+		assert.False(t, isParticipant)
+	})
+
+	t.Run("存在しない合宿の場合はErrNotFoundを返す", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		user := mustCreateUser(t, r)
+
+		// 存在しない合宿のIDを指定
+		err := r.RemoveCampParticipant(t.Context(), uint(random.PositiveInt(t)), &user)
+
+		if assert.Error(t, err) {
+			assert.Equal(t, model.ErrNotFound, err)
+		}
+	})
+
+	t.Run("参加していないユーザーの場合はErrNotFoundを返す", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 参加していないユーザーを削除しようとする
+		err := r.RemoveCampParticipant(t.Context(), camp.ID, &user)
+
+		if assert.Error(t, err) {
+			assert.Equal(t, model.ErrNotFound, err)
+		}
+	})
+
+	t.Run("複数の参加者がいる場合に特定のユーザーだけを削除できる", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user1 := mustCreateUser(t, r)
+		user2 := mustCreateUser(t, r)
+		user3 := mustCreateUser(t, r)
+
+		// 複数のユーザーを追加
+		err := r.AddCampParticipant(t.Context(), camp.ID, &user1)
+		require.NoError(t, err)
+
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user2)
+		require.NoError(t, err)
+
+		err = r.AddCampParticipant(t.Context(), camp.ID, &user3)
+		require.NoError(t, err)
+
+		// user2だけを削除
+		err = r.RemoveCampParticipant(t.Context(), camp.ID, &user2)
+		assert.NoError(t, err)
+
+		// user1とuser3は残っていることを確認
+		isParticipant1, err := r.IsCampParticipant(t.Context(), camp.ID, user1.ID)
+		require.NoError(t, err)
+		assert.True(t, isParticipant1)
+
+		isParticipant3, err := r.IsCampParticipant(t.Context(), camp.ID, user3.ID)
+		require.NoError(t, err)
+		assert.True(t, isParticipant3)
+
+		// user2は削除されていることを確認
+		isParticipant2, err := r.IsCampParticipant(t.Context(), camp.ID, user2.ID)
+		require.NoError(t, err)
+		assert.False(t, isParticipant2)
+	})
+}

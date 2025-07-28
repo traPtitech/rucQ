@@ -7,7 +7,6 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/converter"
@@ -558,7 +557,7 @@ func (s *Server) AdminRemoveCampParticipant(
 	}
 
 	if err := s.repo.RemoveCampParticipant(e.Request().Context(), uint(campID), targetUser); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, model.ErrNotFound) {
 			slog.WarnContext(
 				e.Request().Context(),
 				"camp or participant not found",
