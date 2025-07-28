@@ -3,8 +3,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/traPtitech/rucQ/model"
+)
+
+var (
+	ErrCampNotFound        = errors.New("camp not found")
+	ErrParticipantNotFound = errors.New("participant not found")
 )
 
 type CampRepository interface {

@@ -11,6 +11,7 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (s *Server) GetCamps(e echo.Context) error {
@@ -557,26 +558,37 @@ func (s *Server) AdminRemoveCampParticipant(
 	}
 
 	if err := s.repo.RemoveCampParticipant(e.Request().Context(), uint(campID), targetUser); err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		switch {
+		case errors.Is(err, repository.ErrCampNotFound):
 			slog.WarnContext(
 				e.Request().Context(),
-				"camp or participant not found",
+				"camp not found",
+				slog.Int("campId", campID),
+			)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+
+		case errors.Is(err, repository.ErrParticipantNotFound):
+			slog.WarnContext(
+				e.Request().Context(),
+				"participant not found",
 				slog.Int("campId", int(campID)),
 				slog.String("userId", string(userID)),
 			)
 
-			return echo.NewHTTPError(http.StatusNotFound, "Camp or participant not found")
+			return echo.NewHTTPError(http.StatusNotFound, "Participant not found")
+
+		default:
+			slog.ErrorContext(
+				e.Request().Context(),
+				"failed to remove camp participant",
+				slog.String("error", err.Error()),
+				slog.Int("campId", campID),
+				slog.String("userId", userID),
+			)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 		}
-
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to remove camp participant",
-			slog.String("error", err.Error()),
-			slog.Int("campId", int(campID)),
-			slog.String("userId", userID),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	return e.NoContent(http.StatusNoContent)

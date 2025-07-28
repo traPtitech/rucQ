@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -226,7 +227,7 @@ func TestIsCampParticipant(t *testing.T) {
 		// 存在しない合宿のIDを指定
 		isParticipant, err := r.IsCampParticipant(t.Context(), uint(random.PositiveInt(t)), user.ID)
 		assert.Error(t, err)
-		assert.Equal(t, model.ErrNotFound, err)
+		assert.Equal(t, repository.ErrCampNotFound, err)
 		assert.False(t, isParticipant)
 	})
 
@@ -498,7 +499,7 @@ func TestRepository_RemoveCampParticipant(t *testing.T) {
 		assert.False(t, isParticipant)
 	})
 
-	t.Run("存在しない合宿の場合はErrNotFoundを返す", func(t *testing.T) {
+	t.Run("存在しない合宿の場合はErrCampNotFoundを返す", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -508,11 +509,11 @@ func TestRepository_RemoveCampParticipant(t *testing.T) {
 		err := r.RemoveCampParticipant(t.Context(), uint(random.PositiveInt(t)), &user)
 
 		if assert.Error(t, err) {
-			assert.Equal(t, model.ErrNotFound, err)
+			assert.Equal(t, repository.ErrCampNotFound, err)
 		}
 	})
 
-	t.Run("参加していないユーザーの場合はErrNotFoundを返す", func(t *testing.T) {
+	t.Run("参加していないユーザーの場合はErrParticipantNotFoundを返す", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -523,7 +524,7 @@ func TestRepository_RemoveCampParticipant(t *testing.T) {
 		err := r.RemoveCampParticipant(t.Context(), camp.ID, &user)
 
 		if assert.Error(t, err) {
-			assert.Equal(t, model.ErrNotFound, err)
+			assert.Equal(t, repository.ErrParticipantNotFound, err)
 		}
 	})
 

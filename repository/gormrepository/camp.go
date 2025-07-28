@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (r *Repository) CreateCamp(camp *model.Camp) error {
@@ -112,8 +113,7 @@ func (r *Repository) RemoveCampParticipant(
 	}
 
 	if !isParticipant {
-		// 参加者が見つからない場合
-		return model.ErrNotFound
+		return repository.ErrParticipantNotFound
 	}
 
 	if err := r.db.
@@ -154,7 +154,7 @@ func (r *Repository) IsCampParticipant(
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, model.ErrNotFound
+			return false, repository.ErrCampNotFound
 		}
 		return false, err
 	}
