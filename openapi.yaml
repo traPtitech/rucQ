@@ -168,8 +168,8 @@ paths:
 
   /api/admin/camps/{campId}/participants:
     post:
-      summary: ユーザーをキャンプに参加させる（管理者用）
-      description: isRegistrationOpenの状態に関わらず、ユーザーをキャンプに参加させます。
+      summary: ユーザーを合宿に参加させる（管理者用）
+      description: 参加登録受付中かどうかに関わらず、ユーザーを合宿に参加させます。
       tags:
         - Camps
       operationId: adminAddCampParticipant
@@ -201,8 +201,7 @@ paths:
 
   /api/admin/camps/{campId}/participants/{userId}:
     delete:
-      summary: ユーザーをキャンプから削除する（管理者用）
-      description: ユーザーをキャンプから削除します。
+      summary: ユーザーの参加を取り消す（管理者用）
       tags:
         - Camps
       operationId: adminRemoveCampParticipant
