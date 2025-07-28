@@ -492,7 +492,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 		}
 		targetUser := &model.User{
 			ID:      targetUserID,
-			IsStaff: false,
+			IsStaff: random.Bool(t),
 		}
 
 		h.repo.MockUserRepository.EXPECT().
@@ -551,7 +551,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 		}
 		targetUser := &model.User{
 			ID:      targetUserID,
-			IsStaff: false,
+			IsStaff: random.Bool(t),
 		}
 
 		h.repo.MockUserRepository.EXPECT().
@@ -591,7 +591,7 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 		}
 		targetUser := &model.User{
 			ID:      targetUserID,
-			IsStaff: false,
+			IsStaff: random.Bool(t),
 		}
 
 		h.repo.MockUserRepository.EXPECT().
