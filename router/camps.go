@@ -495,7 +495,7 @@ func (s *Server) AdminAddCampParticipant(
 			slog.WarnContext(
 				e.Request().Context(),
 				"camp not found",
-				slog.Int("campId", int(campID)),
+				slog.Int("campId", campID),
 			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
@@ -505,7 +505,7 @@ func (s *Server) AdminAddCampParticipant(
 			e.Request().Context(),
 			"failed to add camp participant",
 			slog.String("error", err.Error()),
-			slog.Int("campId", int(campID)),
+			slog.Int("campId", campID),
 			slog.String("userId", req.UserId),
 		)
 
@@ -551,7 +551,7 @@ func (s *Server) AdminRemoveCampParticipant(
 			e.Request().Context(),
 			"failed to get or create target user",
 			slog.String("error", err.Error()),
-			slog.String("userId", string(userID)),
+			slog.String("userId", userID),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -572,8 +572,8 @@ func (s *Server) AdminRemoveCampParticipant(
 			slog.WarnContext(
 				e.Request().Context(),
 				"participant not found",
-				slog.Int("campId", int(campID)),
-				slog.String("userId", string(userID)),
+				slog.Int("campId", campID),
+				slog.String("userId", userID),
 			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Participant not found")

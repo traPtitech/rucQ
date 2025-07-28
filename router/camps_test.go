@@ -413,7 +413,7 @@ func TestPostCampRegister(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		campID := api.CampId(random.PositiveInt(t))
+		campID := random.PositiveInt(t)
 		username := random.AlphaNumericString(t, 32)
 		user := &model.User{
 			ID:      username,
@@ -483,7 +483,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		campID := api.CampId(random.PositiveInt(t))
+		campID := random.PositiveInt(t)
 		adminUsername := random.AlphaNumericString(t, 32)
 		targetUserID := random.AlphaNumericString(t, 32)
 		admin := &model.User{
@@ -516,7 +516,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		campID := api.CampId(random.PositiveInt(t))
+		campID := random.PositiveInt(t)
 		username := random.AlphaNumericString(t, 32)
 		targetUserID := random.AlphaNumericString(t, 32)
 		user := &model.User{
@@ -542,7 +542,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		campID := api.CampId(random.PositiveInt(t))
+		campID := random.PositiveInt(t)
 		adminUsername := random.AlphaNumericString(t, 32)
 		targetUserID := random.AlphaNumericString(t, 32)
 		admin := &model.User{
@@ -582,15 +582,15 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		campID := api.CampId(random.PositiveInt(t))
+		campID := random.PositiveInt(t)
 		adminUsername := random.AlphaNumericString(t, 32)
-		targetUserID := api.UserId(random.AlphaNumericString(t, 32))
+		targetUserID := random.AlphaNumericString(t, 32)
 		admin := &model.User{
 			ID:      adminUsername,
 			IsStaff: true,
 		}
 		targetUser := &model.User{
-			ID:      string(targetUserID),
+			ID:      targetUserID,
 			IsStaff: false,
 		}
 
@@ -598,7 +598,7 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), adminUsername).
 			Return(admin, nil)
 		h.repo.MockUserRepository.EXPECT().
-			GetOrCreateUser(gomock.Any(), string(targetUserID)).
+			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
 			RemoveCampParticipant(gomock.Any(), uint(campID), targetUser).
@@ -614,9 +614,9 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
-		campID := api.CampId(random.PositiveInt(t))
+		campID := random.PositiveInt(t)
 		username := random.AlphaNumericString(t, 32)
-		targetUserID := api.UserId(random.AlphaNumericString(t, 32))
+		targetUserID := random.AlphaNumericString(t, 32)
 		user := &model.User{
 			ID:      username,
 			IsStaff: false,
