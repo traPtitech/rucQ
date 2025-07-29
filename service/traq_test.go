@@ -73,7 +73,7 @@ func setup(t *testing.T) *traqServiceImpl {
 
 const existingUserID = "traq" // 既存のユーザーID
 
-func TestTraqServiceImpl_GetCannonicalUserName(t *testing.T) {
+func TestTraqServiceImpl_GetCanonicalUserName(t *testing.T) {
 	t.Parallel()
 
 	t.Run("存在するユーザーの正規化された名前を取得できる", func(t *testing.T) {
