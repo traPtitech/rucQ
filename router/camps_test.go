@@ -2,7 +2,9 @@ package router
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"sync"
 	"testing"
 	"time"
 
@@ -482,10 +484,17 @@ func TestAdminAddCampParticipant(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
+		var wg sync.WaitGroup
+		wg.Add(1)
+
 		h := setup(t)
 		campID := random.PositiveInt(t)
 		adminUsername := random.AlphaNumericString(t, 32)
 		targetUserID := random.AlphaNumericString(t, 32)
+		camp := &model.Camp{
+			Model: gorm.Model{ID: uint(campID)},
+			Name:  random.AlphaNumericString(t, 20),
+		}
 		admin := &model.User{
 			ID:      adminUsername,
 			IsStaff: true,
@@ -494,6 +503,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			ID:      targetUserID,
 			IsStaff: random.Bool(t),
 		}
+		message := fmt.Sprintf("@%sがあなたを%sに追加しました", admin.ID, camp.Name)
 
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), adminUsername).
@@ -502,8 +512,20 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(uint(campID)).
+			Return(camp, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
 			AddCampParticipant(gomock.Any(), uint(campID), targetUser).
 			Return(nil)
+		h.traqService.EXPECT().
+			PostDirectMessage(gomock.Any(), targetUserID, message).
+			DoAndReturn(func(_, _, _ any) error {
+				defer wg.Done()
+
+				return nil
+			}).
+			Times(1)
 
 		req := api.AdminAddCampParticipantJSONRequestBody{
 			UserId: targetUserID,
@@ -514,6 +536,8 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			WithJSON(req).
 			Expect().
 			Status(http.StatusNoContent)
+
+		waitWithTimeout(t, &wg, 2*time.Second)
 	})
 
 	t.Run("Non-Staff User", func(t *testing.T) {
@@ -569,8 +593,9 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			AddCampParticipant(gomock.Any(), uint(campID), targetUser).
-			Return(model.ErrNotFound)
+			GetCampByID(uint(campID)).
+			Return(nil, model.ErrNotFound).
+			Times(1)
 
 		req := api.AdminAddCampParticipantJSONRequestBody{
 			UserId: targetUserID,
@@ -593,10 +618,17 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
+		var wg sync.WaitGroup
+		wg.Add(1)
+
 		h := setup(t)
 		campID := random.PositiveInt(t)
 		adminUsername := random.AlphaNumericString(t, 32)
 		targetUserID := random.AlphaNumericString(t, 32)
+		camp := &model.Camp{
+			Model: gorm.Model{ID: uint(campID)},
+			Name:  random.AlphaNumericString(t, 20),
+		}
 		admin := &model.User{
 			ID:      adminUsername,
 			IsStaff: true,
@@ -605,6 +637,7 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			ID:      targetUserID,
 			IsStaff: random.Bool(t),
 		}
+		message := fmt.Sprintf("@%sがあなたを%sから削除しました", admin.ID, camp.Name)
 
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), adminUsername).
@@ -613,13 +646,27 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(uint(campID)).
+			Return(camp, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
 			RemoveCampParticipant(gomock.Any(), uint(campID), targetUser).
 			Return(nil)
+		h.traqService.EXPECT().
+			PostDirectMessage(gomock.Any(), targetUserID, message).
+			DoAndReturn(func(_, _, _ any) error {
+				defer wg.Done()
+
+				return nil
+			}).
+			Times(1)
 
 		h.expect.DELETE("/api/admin/camps/{campId}/participants/{userId}", campID, targetUserID).
 			WithHeader("X-Forwarded-User", adminUsername).
 			Expect().
 			Status(http.StatusNoContent)
+
+		waitWithTimeout(t, &wg, 2*time.Second)
 	})
 
 	t.Run("Non-Staff User", func(t *testing.T) {
@@ -670,8 +717,9 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			RemoveCampParticipant(gomock.Any(), uint(campID), targetUser).
-			Return(repository.ErrCampNotFound)
+			GetCampByID(uint(campID)).
+			Return(nil, model.ErrNotFound).
+			Times(1)
 
 		h.expect.DELETE("/api/admin/camps/{campId}/participants/{userId}", campID, targetUserID).
 			WithHeader("X-Forwarded-User", adminUsername).
@@ -689,6 +737,10 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 		campID := random.PositiveInt(t)
 		adminUsername := random.AlphaNumericString(t, 32)
 		targetUserID := random.AlphaNumericString(t, 32)
+		camp := &model.Camp{
+			Model: gorm.Model{ID: uint(campID)},
+			Name:  random.AlphaNumericString(t, 20),
+		}
 		admin := &model.User{
 			ID:      adminUsername,
 			IsStaff: true,
@@ -704,6 +756,10 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(uint(campID)).
+			Return(camp, nil).
+			Times(1)
 		h.repo.MockCampRepository.EXPECT().
 			RemoveCampParticipant(gomock.Any(), uint(campID), targetUser).
 			Return(repository.ErrParticipantNotFound)
