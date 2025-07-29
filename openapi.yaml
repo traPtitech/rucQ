@@ -169,7 +169,7 @@ paths:
   /api/admin/camps/{campId}/participants:
     post:
       summary: ユーザーを合宿に参加させる（管理者用）
-      description: 参加登録受付中かどうかに関わらず、ユーザーを合宿に参加させます。
+      description: 参加登録受付中かどうかに関わらず、ユーザーを合宿に参加させます。対象のユーザーにtraQのDMで通知します。
       tags:
         - Camps
       operationId: adminAddCampParticipant
@@ -202,6 +202,7 @@ paths:
   /api/admin/camps/{campId}/participants/{userId}:
     delete:
       summary: ユーザーの参加を取り消す（管理者用）
+      description: ユーザーの合宿参加を取り消します。対象のユーザーにtraQのDMで通知します。
       tags:
         - Camps
       operationId: adminRemoveCampParticipant
