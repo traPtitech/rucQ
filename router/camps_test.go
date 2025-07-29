@@ -15,6 +15,7 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
+	"github.com/traPtitech/rucQ/service"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -508,6 +509,10 @@ func TestAdminAddCampParticipant(t *testing.T) {
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), adminUsername).
 			Return(admin, nil)
+		h.traqService.EXPECT().
+			GetCannonicalUserName(gomock.Any(), targetUserID).
+			Return(targetUserID, nil).
+			Times(1)
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
@@ -570,6 +575,41 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			HasValue("message", "Forbidden")
 	})
 
+	t.Run("User Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := random.PositiveInt(t)
+		adminUsername := random.AlphaNumericString(t, 32)
+		targetUserID := random.AlphaNumericString(t, 32)
+		admin := &model.User{
+			ID:      adminUsername,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUsername).
+			Return(admin, nil).
+			Times(1)
+		h.traqService.EXPECT().
+			GetCannonicalUserName(gomock.Any(), targetUserID).
+			Return("", service.ErrUserNotFound).
+			Times(1)
+
+		req := api.AdminAddCampParticipantJSONRequestBody{
+			UserId: targetUserID,
+		}
+
+		h.expect.POST("/api/admin/camps/{campId}/participants", campID).
+			WithHeader("X-Forwarded-User", adminUsername).
+			WithJSON(req).
+			Expect().
+			Status(http.StatusNotFound).
+			JSON().
+			Object().
+			HasValue("message", "User not found")
+	})
+
 	t.Run("Camp Not Found", func(t *testing.T) {
 		t.Parallel()
 
@@ -589,6 +629,10 @@ func TestAdminAddCampParticipant(t *testing.T) {
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), adminUsername).
 			Return(admin, nil)
+		h.traqService.EXPECT().
+			GetCannonicalUserName(gomock.Any(), targetUserID).
+			Return(targetUserID, nil).
+			Times(1)
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)

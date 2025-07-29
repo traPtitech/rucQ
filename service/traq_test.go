@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/bot"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
@@ -73,6 +73,32 @@ func setup(t *testing.T) *traqServiceImpl {
 
 const existingUserID = "traq" // 既存のユーザーID
 
+func TestTraqServiceImpl_GetCannonicalUserName(t *testing.T) {
+	t.Parallel()
+
+	t.Run("存在するユーザーの正規化された名前を取得できる", func(t *testing.T) {
+		t.Parallel()
+
+		s := setup(t)
+		userName, err := s.GetCannonicalUserName(t.Context(), strings.ToUpper(existingUserID))
+
+		assert.NoError(t, err)
+		assert.Equal(t, existingUserID, userName)
+	})
+
+	t.Run("存在しないユーザーの場合はErrUserNotFoundを返す", func(t *testing.T) {
+		t.Parallel()
+
+		s := setup(t)
+		userID := random.AlphaNumericString(t, 32) // 非存在ユーザーID
+		_, err := s.GetCannonicalUserName(t.Context(), userID)
+
+		if assert.Error(t, err, "Expected error for nonexistent user, but got nil") {
+			assert.Equal(t, ErrUserNotFound, err)
+		}
+	})
+}
+
 func TestTraqServiceImpl_PostDirectMessage(t *testing.T) {
 	t.Parallel()
 
@@ -95,7 +121,7 @@ func TestTraqServiceImpl_PostDirectMessage(t *testing.T) {
 		err := s.PostDirectMessage(t.Context(), userID, message)
 
 		if assert.Error(t, err, "Expected error for nonexistent user, but got nil") {
-			assert.Equal(t, model.ErrNotFound, err)
+			assert.Equal(t, ErrUserNotFound, err)
 		}
 	})
 }

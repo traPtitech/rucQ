@@ -14,6 +14,7 @@ import (
 	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
+	"github.com/traPtitech/rucQ/service"
 )
 
 func (s *Server) GetCamps(e echo.Context) error {
@@ -479,7 +480,30 @@ func (s *Server) AdminAddCampParticipant(
 		return err
 	}
 
-	targetUser, err := s.repo.GetOrCreateUser(e.Request().Context(), req.UserId)
+	targetUserName, err := s.traqService.GetCannonicalUserName(e.Request().Context(), req.UserId)
+
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"user not found",
+				slog.String("userId", req.UserId),
+			)
+
+			return echo.NewHTTPError(http.StatusNotFound, "User not found")
+		}
+
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get canonical user name",
+			slog.String("error", err.Error()),
+			slog.String("userId", req.UserId),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	targetUser, err := s.repo.GetOrCreateUser(e.Request().Context(), targetUserName)
 
 	if err != nil {
 		slog.ErrorContext(
