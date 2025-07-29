@@ -26,7 +26,7 @@ func NewTraqService(baseURL, accessToken string) *traqServiceImpl {
 	}
 }
 
-func (s *traqServiceImpl) GetCannonicalUserName(
+func (s *traqServiceImpl) GetCanonicalUserName(
 	ctx context.Context,
 	userID string,
 ) (string, error) {

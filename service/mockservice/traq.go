@@ -40,19 +40,19 @@ func (m *MockTraqService) EXPECT() *MockTraqServiceMockRecorder {
 	return m.recorder
 }
 
-// GetCannonicalUserName mocks base method.
-func (m *MockTraqService) GetCannonicalUserName(ctx context.Context, userID string) (string, error) {
+// GetCanonicalUserName mocks base method.
+func (m *MockTraqService) GetCanonicalUserName(ctx context.Context, userID string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCannonicalUserName", ctx, userID)
+	ret := m.ctrl.Call(m, "GetCanonicalUserName", ctx, userID)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetCannonicalUserName indicates an expected call of GetCannonicalUserName.
-func (mr *MockTraqServiceMockRecorder) GetCannonicalUserName(ctx, userID any) *gomock.Call {
+// GetCanonicalUserName indicates an expected call of GetCanonicalUserName.
+func (mr *MockTraqServiceMockRecorder) GetCanonicalUserName(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCannonicalUserName", reflect.TypeOf((*MockTraqService)(nil).GetCannonicalUserName), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCanonicalUserName", reflect.TypeOf((*MockTraqService)(nil).GetCanonicalUserName), ctx, userID)
 }
 
 // PostDirectMessage mocks base method.

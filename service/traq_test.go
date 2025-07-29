@@ -80,7 +80,7 @@ func TestTraqServiceImpl_GetCannonicalUserName(t *testing.T) {
 		t.Parallel()
 
 		s := setup(t)
-		userName, err := s.GetCannonicalUserName(t.Context(), strings.ToUpper(existingUserID))
+		userName, err := s.GetCanonicalUserName(t.Context(), strings.ToUpper(existingUserID))
 
 		assert.NoError(t, err)
 		assert.Equal(t, existingUserID, userName)
@@ -91,7 +91,7 @@ func TestTraqServiceImpl_GetCannonicalUserName(t *testing.T) {
 
 		s := setup(t)
 		userID := random.AlphaNumericString(t, 32) // 非存在ユーザーID
-		_, err := s.GetCannonicalUserName(t.Context(), userID)
+		_, err := s.GetCanonicalUserName(t.Context(), userID)
 
 		if assert.Error(t, err, "Expected error for nonexistent user, but got nil") {
 			assert.Equal(t, ErrUserNotFound, err)

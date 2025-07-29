@@ -510,7 +510,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), adminUsername).
 			Return(admin, nil)
 		h.traqService.EXPECT().
-			GetCannonicalUserName(gomock.Any(), targetUserID).
+			GetCanonicalUserName(gomock.Any(), targetUserID).
 			Return(targetUserID, nil).
 			Times(1)
 		h.repo.MockUserRepository.EXPECT().
@@ -592,7 +592,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			Return(admin, nil).
 			Times(1)
 		h.traqService.EXPECT().
-			GetCannonicalUserName(gomock.Any(), targetUserID).
+			GetCanonicalUserName(gomock.Any(), targetUserID).
 			Return("", service.ErrUserNotFound).
 			Times(1)
 
@@ -630,7 +630,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), adminUsername).
 			Return(admin, nil)
 		h.traqService.EXPECT().
-			GetCannonicalUserName(gomock.Any(), targetUserID).
+			GetCanonicalUserName(gomock.Any(), targetUserID).
 			Return(targetUserID, nil).
 			Times(1)
 		h.repo.MockUserRepository.EXPECT().

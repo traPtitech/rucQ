@@ -480,7 +480,7 @@ func (s *Server) AdminAddCampParticipant(
 		return err
 	}
 
-	targetUserName, err := s.traqService.GetCannonicalUserName(e.Request().Context(), req.UserId)
+	targetUserName, err := s.traqService.GetCanonicalUserName(e.Request().Context(), req.UserId)
 
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
