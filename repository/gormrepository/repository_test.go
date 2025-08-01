@@ -70,7 +70,7 @@ func setup(t *testing.T) *Repository {
 	config.Passwd = "password"
 	config.Net = "tcp"
 	config.Addr = fmt.Sprintf("%s:%s", host, port.Port())
-	config.DBName = "rucq" // compose.yamlで定義したDB名'rucq'に合わせる
+	config.DBName = "rucq" // /dev/db/init.sqlで作成されるデータベース名
 	config.Collation = "utf8mb4_general_ci"
 	config.ParseTime = true
 	config.Loc = loc
