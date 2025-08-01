@@ -4,8 +4,6 @@ import (
 	"context"
 
 	traq "github.com/traPtitech/go-traq"
-
-	"github.com/traPtitech/rucQ/model"
 )
 
 type traqServiceImpl struct {
@@ -28,6 +26,24 @@ func NewTraqService(baseURL, accessToken string) *traqServiceImpl {
 	}
 }
 
+func (s *traqServiceImpl) GetCanonicalUserName(
+	ctx context.Context,
+	userID string,
+) (string, error) {
+	authCtx := context.WithValue(ctx, traq.ContextAccessToken, s.accessToken)
+	users, _, err := s.client.UserApi.GetUsers(authCtx).Name(userID).Execute()
+
+	if err != nil {
+		return "", err
+	}
+
+	if len(users) == 0 {
+		return "", ErrUserNotFound
+	}
+
+	return users[0].Name, nil
+}
+
 func (s *traqServiceImpl) PostDirectMessage(
 	ctx context.Context,
 	userID string,
@@ -42,7 +58,7 @@ func (s *traqServiceImpl) PostDirectMessage(
 	}
 
 	if len(users) == 0 {
-		return model.ErrNotFound
+		return ErrUserNotFound
 	}
 
 	userUUID := users[0].Id

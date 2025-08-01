@@ -798,6 +798,23 @@ type AdminPostImageParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// AdminAddCampParticipantJSONBody defines parameters for AdminAddCampParticipant.
+type AdminAddCampParticipantJSONBody struct {
+	UserId string `json:"userId"`
+}
+
+// AdminAddCampParticipantParams defines parameters for AdminAddCampParticipant.
+type AdminAddCampParticipantParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminRemoveCampParticipantParams defines parameters for AdminRemoveCampParticipant.
+type AdminRemoveCampParticipantParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // AdminGetPaymentsParams defines parameters for AdminGetPayments.
 type AdminGetPaymentsParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -1045,6 +1062,9 @@ type AdminPutCampJSONRequestBody = CampRequest
 
 // AdminPostImageMultipartRequestBody defines body for AdminPostImage for multipart/form-data ContentType.
 type AdminPostImageMultipartRequestBody AdminPostImageMultipartBody
+
+// AdminAddCampParticipantJSONRequestBody defines body for AdminAddCampParticipant for application/json ContentType.
+type AdminAddCampParticipantJSONRequestBody AdminAddCampParticipantJSONBody
 
 // AdminPostPaymentJSONRequestBody defines body for AdminPostPayment for application/json ContentType.
 type AdminPostPaymentJSONRequestBody = PaymentRequest
@@ -1872,6 +1892,12 @@ type ServerInterface interface {
 	// 画像をアップロード（管理者用）
 	// (POST /api/admin/camps/{campId}/images)
 	AdminPostImage(ctx echo.Context, campId CampId, params AdminPostImageParams) error
+	// ユーザーを合宿に参加させる（管理者用）
+	// (POST /api/admin/camps/{campId}/participants)
+	AdminAddCampParticipant(ctx echo.Context, campId CampId, params AdminAddCampParticipantParams) error
+	// ユーザーの参加を取り消す（管理者用）
+	// (DELETE /api/admin/camps/{campId}/participants/{userId})
+	AdminRemoveCampParticipant(ctx echo.Context, campId CampId, userId UserId, params AdminRemoveCampParticipantParams) error
 	// 支払い情報の一覧を取得（管理者用）
 	// (GET /api/admin/camps/{campId}/payments)
 	AdminGetPayments(ctx echo.Context, campId CampId, params AdminGetPaymentsParams) error
@@ -2196,6 +2222,86 @@ func (w *ServerInterfaceWrapper) AdminPostImage(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPostImage(ctx, campId, params)
+	return err
+}
+
+// AdminAddCampParticipant converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminAddCampParticipant(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminAddCampParticipantParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminAddCampParticipant(ctx, campId, params)
+	return err
+}
+
+// AdminRemoveCampParticipant converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminRemoveCampParticipant(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// ------------- Path parameter "userId" -------------
+	var userId UserId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "userId", ctx.Param("userId"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminRemoveCampParticipantParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminRemoveCampParticipant(ctx, campId, userId, params)
 	return err
 }
 
@@ -3740,6 +3846,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/api/admin/camps/:campId", wrapper.AdminDeleteCamp)
 	router.PUT(baseURL+"/api/admin/camps/:campId", wrapper.AdminPutCamp)
 	router.POST(baseURL+"/api/admin/camps/:campId/images", wrapper.AdminPostImage)
+	router.POST(baseURL+"/api/admin/camps/:campId/participants", wrapper.AdminAddCampParticipant)
+	router.DELETE(baseURL+"/api/admin/camps/:campId/participants/:userId", wrapper.AdminRemoveCampParticipant)
 	router.GET(baseURL+"/api/admin/camps/:campId/payments", wrapper.AdminGetPayments)
 	router.POST(baseURL+"/api/admin/camps/:campId/payments", wrapper.AdminPostPayment)
 	router.POST(baseURL+"/api/admin/camps/:campId/question-groups", wrapper.AdminPostQuestionGroup)

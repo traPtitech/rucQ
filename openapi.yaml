@@ -165,6 +165,61 @@ paths:
                   $ref: "#/components/schemas/UserResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/camps/{campId}/participants:
+    post:
+      summary: ユーザーを合宿に参加させる（管理者用）
+      description: 参加登録受付中かどうかに関わらず、ユーザーを合宿に参加させます。対象のユーザーにtraQのDMで通知します。
+      tags:
+        - Camps
+      operationId: adminAddCampParticipant
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+              required:
+                - userId
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/camps/{campId}/participants/{userId}:
+    delete:
+      summary: ユーザーの参加を取り消す（管理者用）
+      description: ユーザーの合宿参加を取り消します。対象のユーザーにtraQのDMで通知します。
+      tags:
+        - Camps
+      operationId: adminRemoveCampParticipant
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/camps/{campId}/events:
     get:
       summary: イベントの一覧を取得

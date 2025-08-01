@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (r *Repository) CreateCamp(camp *model.Camp) error {
@@ -90,10 +91,6 @@ func (r *Repository) AddCampParticipant(ctx context.Context, campID uint, user *
 		return err
 	}
 
-	if !camp.IsRegistrationOpen {
-		return model.ErrForbidden
-	}
-
 	// Generics APIではまだAssociationが使えないため従来の書き方を使用
 	// https://github.com/go-gorm/gorm/pull/7424#issuecomment-2918449411
 	if err := r.db.Model(camp).Association("Participants").Append(user); err != nil {
@@ -108,17 +105,21 @@ func (r *Repository) RemoveCampParticipant(
 	campID uint,
 	user *model.User,
 ) error {
-	camp, err := gorm.G[*model.Camp](r.db).Where(&model.Camp{
-		Model: gorm.Model{
-			ID: campID,
-		},
-	}).First(ctx)
+	// 参加者として登録されているかを確認 (この中でCampの存在も確認される)
+	isParticipant, err := r.IsCampParticipant(ctx, campID, user.ID)
 
 	if err != nil {
 		return err
 	}
 
-	if err := r.db.Model(camp).Association("Participants").Delete(user); err != nil {
+	if !isParticipant {
+		return repository.ErrParticipantNotFound
+	}
+
+	if err := r.db.
+		Model(&model.Camp{Model: gorm.Model{ID: campID}}).
+		Association("Participants").
+		Delete(user); err != nil {
 		return err
 	}
 
@@ -153,7 +154,7 @@ func (r *Repository) IsCampParticipant(
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, model.ErrNotFound
+			return false, repository.ErrCampNotFound
 		}
 		return false, err
 	}
