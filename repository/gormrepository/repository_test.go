@@ -103,11 +103,11 @@ func setup(t *testing.T) *Repository {
 	config.ParseTime = true
 	config.Loc = loc
 	// テストごとに異なるデータベース名を使用するため、1回接続してデータベースを作成する
-	tmpDB, err := sql.Open("mysql", config.FormatDSN())
+	setupDB, err := sql.Open("mysql", config.FormatDSN())
 
 	require.NoError(t, err)
 	defer func() {
-		err := tmpDB.Close()
+		err := setupDB.Close()
 
 		require.NoError(t, err)
 	}()
@@ -119,7 +119,7 @@ func setup(t *testing.T) *Repository {
 	h.Write([]byte(t.Name()))
 
 	dbName := hex.EncodeToString(h.Sum(nil))
-	_, err = tmpDB.ExecContext(
+	_, err = setupDB.ExecContext(
 		t.Context(),
 		fmt.Sprintf("CREATE DATABASE `%s`", dbName),
 	)
