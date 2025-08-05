@@ -34,12 +34,16 @@ func TestMain(m *testing.M) {
 	}
 
 	defer func() {
-		composeStack.Down(
+		err := composeStack.Down(
 			context.Background(),
 			compose.RemoveOrphans(true),
 			compose.RemoveImagesLocal,
 			compose.RemoveVolumes(true),
 		)
+
+		if err != nil {
+			panic(fmt.Sprintf("failed to stop compose stack: %v", err))
+		}
 	}()
 
 	ctx := context.Background()
@@ -102,7 +106,11 @@ func setup(t *testing.T) *Repository {
 	tmpDB, err := sql.Open("mysql", config.FormatDSN())
 
 	require.NoError(t, err)
-	defer tmpDB.Close()
+	defer func() {
+		err := tmpDB.Close()
+
+		require.NoError(t, err)
+	}()
 
 	// 一意な名前としてt.Name()を用いるが、長すぎる可能性があるため
 	// ハッシュ化して適切な長さにする (SHA-256は16進数で64文字)

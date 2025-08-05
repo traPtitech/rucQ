@@ -27,12 +27,16 @@ func TestMain(m *testing.M) {
 	}
 
 	defer func() {
-		composeStack.Down(
+		err := composeStack.Down(
 			context.Background(),
 			compose.RemoveOrphans(true),
 			compose.RemoveImagesLocal,
 			compose.RemoveVolumes(true),
 		)
+
+		if err != nil {
+			panic(fmt.Sprintf("failed to stop compose stack: %v", err))
+		}
 	}()
 
 	ctx := context.Background()
