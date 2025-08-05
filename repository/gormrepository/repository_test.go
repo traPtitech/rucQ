@@ -2,6 +2,9 @@ package gormrepository
 
 import (
 	"context"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"testing"
 	"time"
@@ -19,48 +22,69 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
-func setup(t *testing.T) *Repository {
-	t.Helper()
+var containerAddr string
 
+func TestMain(m *testing.M) {
 	composeStack, err := compose.NewDockerComposeWith(
 		compose.WithStackFiles("../../compose.yaml"),
 	)
-	require.NoError(t, err, "Failed to create compose stack")
 
-	// Set random ports via environment variables
-	composeWithEnv := composeStack.WithEnv(map[string]string{
-		"MARIADB_PORT": "0",
-	})
+	if err != nil {
+		panic(fmt.Sprintf("failed to create compose stack: %v", err))
+	}
 
-	t.Cleanup(func() {
-		require.NoError(
-			t,
-			composeStack.Down(
-				context.Background(),
-				compose.RemoveOrphans(true),
-				compose.RemoveImagesLocal,
-				compose.RemoveVolumes(true),
-			),
+	defer func() {
+		composeStack.Down(
+			context.Background(),
+			compose.RemoveOrphans(true),
+			compose.RemoveImagesLocal,
+			compose.RemoveVolumes(true),
 		)
-	})
+	}()
 
-	// Configure wait strategy for mariadb service and start all services
-	composeWithWait := composeWithEnv.WaitForService(
-		"mariadb",
-		wait.ForHealthCheck().WithStartupTimeout(60*time.Second),
-	)
-	err = composeWithWait.Up(t.Context(), compose.Wait(true), compose.RunServices("mariadb"))
+	ctx := context.Background()
 
-	require.NoError(t, err, "Failed to start compose stack")
+	if err := composeStack.
+		WithEnv(map[string]string{
+			"MARIADB_PORT": "0",
+		}).
+		WaitForService(
+			"mariadb",
+			wait.ForHealthCheck().WithStartupTimeout(60*time.Second),
+		).
+		Up(
+			ctx,
+			compose.Wait(true),
+			compose.RunServices("mariadb"),
+		); err != nil {
+		panic(fmt.Sprintf("failed to start compose stack: %v", err))
+	}
 
-	// Get MariaDB service container
-	mariadbContainer, err := composeStack.ServiceContainer(t.Context(), "mariadb")
-	require.NoError(t, err, "Failed to get MariaDB container")
+	mariadbContainer, err := composeStack.ServiceContainer(ctx, "mariadb")
 
-	host, err := mariadbContainer.Host(t.Context())
-	require.NoError(t, err)
-	port, err := mariadbContainer.MappedPort(t.Context(), "3306")
-	require.NoError(t, err)
+	if err != nil {
+		panic(fmt.Sprintf("failed to get MariaDB container: %v", err))
+	}
+
+	host, err := mariadbContainer.Host(ctx)
+
+	if err != nil {
+		panic(fmt.Sprintf("failed to get host: %v", err))
+	}
+
+	port, err := mariadbContainer.MappedPort(ctx, "3306")
+
+	if err != nil {
+		panic(fmt.Sprintf("failed to get mapped port: %v", err))
+	}
+
+	containerAddr = fmt.Sprintf("%s:%s", host, port.Port())
+
+	m.Run()
+}
+
+func setup(t *testing.T) *Repository {
+	t.Helper()
 
 	loc, err := time.LoadLocation("Asia/Tokyo")
 	require.NoError(t, err)
@@ -69,12 +93,32 @@ func setup(t *testing.T) *Repository {
 	config.User = "root"
 	config.Passwd = "password"
 	config.Net = "tcp"
-	config.Addr = fmt.Sprintf("%s:%s", host, port.Port())
+	config.Addr = containerAddr
 	config.DBName = "rucq" // /dev/db/init.sqlで作成されるデータベース名
 	config.Collation = "utf8mb4_general_ci"
 	config.ParseTime = true
 	config.Loc = loc
+	// テストごとに異なるデータベース名を使用するため、1回接続してデータベースを作成する
+	tmpDB, err := sql.Open("mysql", config.FormatDSN())
 
+	require.NoError(t, err)
+	defer tmpDB.Close()
+
+	// 一意な名前としてt.Name()を用いるが、長すぎる可能性があるため
+	// ハッシュ化して適切な長さにする (SHA-256は16進数で64文字)
+	h := sha256.New()
+
+	h.Write([]byte(t.Name()))
+
+	dbName := hex.EncodeToString(h.Sum(nil))
+	_, err = tmpDB.ExecContext(
+		t.Context(),
+		fmt.Sprintf("CREATE DATABASE `%s`", dbName),
+	)
+
+	require.NoError(t, err)
+
+	config.DBName = dbName
 	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
 		Logger:         logger.Default.LogMode(logger.Info),
 		TranslateError: true,
