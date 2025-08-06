@@ -70,7 +70,7 @@ func main() {
 	repo := gormrepository.NewGormRepository(db)
 
 	traqBaseURL := os.Getenv("TRAQ_API_BASE_URL")
-	botAccessToken := os.Getenv("TRAQ_BOT_TOKEN")
+	botAccessToken := os.Getenv("TRAQ_BOT_ACCESS_TOKEN")
 	traqService := service.NewTraqService(traqBaseURL, botAccessToken)
 
 	api.RegisterHandlers(e, router.NewServer(repo, traqService, isDev))
