@@ -16,5 +16,5 @@ func main() {
 		log.Fatalf("Failed to create bot: %v", err)
 	}
 
-	fmt.Println("TRAQ_BOT_TOKEN=" + accessToken)
+	fmt.Println("TRAQ_BOT_ACCESS_TOKEN=" + accessToken)
 }
