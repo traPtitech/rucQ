@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	"log"
 	"os"
@@ -69,7 +70,7 @@ func main() {
 
 	repo := gormrepository.NewGormRepository(db)
 
-	traqBaseURL := os.Getenv("TRAQ_API_BASE_URL")
+	traqBaseURL := cmp.Or(os.Getenv("TRAQ_API_BASE_URL"), "https://q.trap.jp/api/v3")
 	botAccessToken := os.Getenv("TRAQ_BOT_ACCESS_TOKEN")
 	traqService := service.NewTraqService(traqBaseURL, botAccessToken)
 
