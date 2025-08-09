@@ -202,7 +202,7 @@ paths:
   /api/admin/camps/{campId}/participants/{userId}:
     delete:
       summary: ユーザーの参加を取り消す（管理者用）
-      description: ユーザーの合宿参加を取り消します。対象のユーザーにtraQのDMで通知します。
+      description: 参加登録受付中かどうかに関わらず、ユーザーの合宿参加を取り消します。対象のユーザーにtraQのDMで通知します。
       tags:
         - Camps
       operationId: adminRemoveCampParticipant
