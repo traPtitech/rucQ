@@ -341,7 +341,7 @@ func (s *Server) PostCampRegister(
 	if !camp.IsRegistrationOpen {
 		slog.WarnContext(
 			e.Request().Context(),
-			"registration for camp is closed",
+			"attempting to register for closed camp",
 			slog.Int("campId", int(campID)),
 			slog.String("userId", *params.XForwardedUser),
 		)
@@ -418,7 +418,7 @@ func (s *Server) DeleteCampRegister(
 	if !camp.IsRegistrationOpen {
 		slog.WarnContext(
 			e.Request().Context(),
-			"registration for camp is closed",
+			"attempting to unregister from closed camp",
 			slog.Int("campId", int(campID)),
 			slog.String("userId", *params.XForwardedUser),
 		)
