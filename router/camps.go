@@ -392,7 +392,40 @@ func (s *Server) DeleteCampRegister(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	// TODO: Forbidden、 Not found エラーのハンドリングを追加
+	camp, err := s.repo.GetCampByID(uint(campID))
+
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"camp not found",
+				slog.Int("campId", int(campID)),
+			)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
+
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get camp",
+			slog.String("error", err.Error()),
+			slog.Int("campId", int(campID)),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !camp.IsRegistrationOpen {
+		slog.WarnContext(
+			e.Request().Context(),
+			"registration for camp is closed",
+			slog.Int("campId", int(campID)),
+			slog.String("userId", *params.XForwardedUser),
+		)
+
+		return echo.NewHTTPError(http.StatusForbidden, "Registration for this camp is closed")
+	}
+
 	if err := s.repo.RemoveCampParticipant(e.Request().Context(), uint(campID), user); err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
