@@ -46,7 +46,7 @@ services:
       retries: 10
 
   swagger:
-    image: swaggerapi/swagger-ui:v5.27.0
+    image: swaggerapi/swagger-ui:v5.27.1
     ports:
       - "${SWAGGER_PORT:-8081}:8080"
     environment:
@@ -91,7 +91,7 @@ services:
       - 80
 
   rucq_admin:
-    image: ghcr.io/traptitech/rucq-admin:0.3.0
+    image: ghcr.io/traptitech/rucq-admin:0.5.0
     expose:
       - 80
 
