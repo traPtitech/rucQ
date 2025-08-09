@@ -343,6 +343,7 @@ func (s *Server) PostCampRegister(
 			e.Request().Context(),
 			"registration for camp is closed",
 			slog.Int("campId", int(campID)),
+			slog.String("userId", *params.XForwardedUser),
 		)
 		return echo.NewHTTPError(http.StatusForbidden, "Registration for this camp is closed")
 	}
