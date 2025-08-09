@@ -56,6 +56,46 @@ func TestGetCamps(t *testing.T) {
 	})
 }
 
+func TestRepository_GetCampByID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+
+		retrievedCamp, err := r.GetCampByID(t.Context(), camp.ID)
+
+		assert.NoError(t, err)
+
+		if assert.NotNil(t, retrievedCamp) {
+			assert.Equal(t, camp.ID, retrievedCamp.ID)
+			assert.Equal(t, camp.DisplayID, retrievedCamp.DisplayID)
+			assert.Equal(t, camp.Name, retrievedCamp.Name)
+			assert.Equal(t, camp.Guidebook, retrievedCamp.Guidebook)
+			assert.Equal(t, camp.IsDraft, retrievedCamp.IsDraft)
+			assert.Equal(t, camp.IsPaymentOpen, retrievedCamp.IsPaymentOpen)
+			assert.Equal(t, camp.IsRegistrationOpen, retrievedCamp.IsRegistrationOpen)
+			assert.WithinDuration(t, camp.DateStart, retrievedCamp.DateStart, time.Second)
+			assert.WithinDuration(t, camp.DateEnd, retrievedCamp.DateEnd, time.Second)
+		}
+	})
+
+	t.Run("Camp not found", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+
+		// 存在しない合宿のIDを指定
+		nonExistentID := uint(random.PositiveInt(t))
+		retrievedCamp, err := r.GetCampByID(t.Context(), nonExistentID)
+
+		assert.Equal(t, repository.ErrCampNotFound, err)
+		assert.Nil(t, retrievedCamp)
+	})
+}
+
 func TestUpdateCamp(t *testing.T) {
 	t.Parallel()
 
@@ -89,7 +129,7 @@ func TestUpdateCamp(t *testing.T) {
 		require.NoError(t, err)
 
 		// 更新後のデータを取得して確認
-		retrievedCamp, err := r.GetCampByID(camp.ID)
+		retrievedCamp, err := r.GetCampByID(t.Context(), camp.ID)
 		require.NoError(t, err)
 
 		assert.Equal(t, camp.ID, retrievedCamp.ID)
@@ -118,7 +158,7 @@ func TestUpdateCamp(t *testing.T) {
 		require.NoError(t, err)
 
 		// 更新後のデータを取得して確認
-		retrievedCamp, err := r.GetCampByID(camp.ID)
+		retrievedCamp, err := r.GetCampByID(t.Context(), camp.ID)
 		require.NoError(t, err)
 
 		// 他のフィールドは元のまま
@@ -150,7 +190,7 @@ func TestUpdateCamp(t *testing.T) {
 		require.NoError(t, err)
 
 		// 更新後のデータを取得して確認
-		retrievedCamp, err := r.GetCampByID(camp.ID)
+		retrievedCamp, err := r.GetCampByID(t.Context(), camp.ID)
 		require.NoError(t, err)
 
 		// ゼロ値が設定されていることを確認
