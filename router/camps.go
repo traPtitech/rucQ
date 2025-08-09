@@ -125,10 +125,10 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 }
 
 func (s *Server) GetCamp(e echo.Context, campID api.CampId) error {
-	camp, err := s.repo.GetCampByID(uint(campID))
+	camp, err := s.repo.GetCampByID(e.Request().Context(), uint(campID))
 
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, repository.ErrCampNotFound) {
 			slog.WarnContext(
 				e.Request().Context(),
 				"camp not found",
@@ -319,9 +319,9 @@ func (s *Server) PostCampRegister(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	camp, err := s.repo.GetCampByID(uint(campID))
+	camp, err := s.repo.GetCampByID(e.Request().Context(), uint(campID))
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, repository.ErrCampNotFound) {
 			slog.WarnContext(
 				e.Request().Context(),
 				"camp not found",
@@ -392,10 +392,10 @@ func (s *Server) DeleteCampRegister(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	camp, err := s.repo.GetCampByID(uint(campID))
+	camp, err := s.repo.GetCampByID(e.Request().Context(), uint(campID))
 
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, repository.ErrCampNotFound) {
 			slog.WarnContext(
 				e.Request().Context(),
 				"camp not found",
@@ -550,10 +550,10 @@ func (s *Server) AdminAddCampParticipant(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	camp, err := s.repo.GetCampByID(uint(campID))
+	camp, err := s.repo.GetCampByID(e.Request().Context(), uint(campID))
 
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, repository.ErrCampNotFound) {
 			slog.WarnContext(
 				e.Request().Context(),
 				"camp not found",
@@ -654,10 +654,10 @@ func (s *Server) AdminRemoveCampParticipant(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	camp, err := s.repo.GetCampByID(uint(campID))
+	camp, err := s.repo.GetCampByID(e.Request().Context(), uint(campID))
 
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		if errors.Is(err, repository.ErrCampNotFound) {
 			slog.WarnContext(
 				e.Request().Context(),
 				"camp not found",

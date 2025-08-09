@@ -89,7 +89,7 @@ func TestUpdateCamp(t *testing.T) {
 		require.NoError(t, err)
 
 		// 更新後のデータを取得して確認
-		retrievedCamp, err := r.GetCampByID(camp.ID)
+		retrievedCamp, err := r.GetCampByID(t.Context(), camp.ID)
 		require.NoError(t, err)
 
 		assert.Equal(t, camp.ID, retrievedCamp.ID)
@@ -118,7 +118,7 @@ func TestUpdateCamp(t *testing.T) {
 		require.NoError(t, err)
 
 		// 更新後のデータを取得して確認
-		retrievedCamp, err := r.GetCampByID(camp.ID)
+		retrievedCamp, err := r.GetCampByID(t.Context(), camp.ID)
 		require.NoError(t, err)
 
 		// 他のフィールドは元のまま
@@ -150,7 +150,7 @@ func TestUpdateCamp(t *testing.T) {
 		require.NoError(t, err)
 
 		// 更新後のデータを取得して確認
-		retrievedCamp, err := r.GetCampByID(camp.ID)
+		retrievedCamp, err := r.GetCampByID(t.Context(), camp.ID)
 		require.NoError(t, err)
 
 		// ゼロ値が設定されていることを確認

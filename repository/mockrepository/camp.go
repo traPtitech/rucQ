@@ -84,18 +84,18 @@ func (mr *MockCampRepositoryMockRecorder) DeleteCamp(ctx, campID any) *gomock.Ca
 }
 
 // GetCampByID mocks base method.
-func (m *MockCampRepository) GetCampByID(id uint) (*model.Camp, error) {
+func (m *MockCampRepository) GetCampByID(ctx context.Context, id uint) (*model.Camp, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCampByID", id)
+	ret := m.ctrl.Call(m, "GetCampByID", ctx, id)
 	ret0, _ := ret[0].(*model.Camp)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCampByID indicates an expected call of GetCampByID.
-func (mr *MockCampRepositoryMockRecorder) GetCampByID(id any) *gomock.Call {
+func (mr *MockCampRepositoryMockRecorder) GetCampByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampByID", reflect.TypeOf((*MockCampRepository)(nil).GetCampByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampByID", reflect.TypeOf((*MockCampRepository)(nil).GetCampByID), ctx, id)
 }
 
 // GetCampParticipants mocks base method.

@@ -107,7 +107,7 @@ func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
 	require.NoError(t, err)
 
 	// 時刻の精度などを揃えるため再取得する
-	camp, err = r.GetCampByID(camp.ID)
+	camp, err = r.GetCampByID(t.Context(), camp.ID)
 
 	require.NoError(t, err)
 

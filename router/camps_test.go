@@ -332,7 +332,7 @@ func TestPostCampRegister(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil)
 		h.repo.MockCampRepository.EXPECT().
 			AddCampParticipant(gomock.Any(), uint(campID), user).
@@ -376,7 +376,7 @@ func TestPostCampRegister(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(nil, errors.New("camp error"))
 
 		h.expect.POST("/api/camps/{campId}/register", campID).
@@ -400,8 +400,8 @@ func TestPostCampRegister(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
-			Return(nil, model.ErrNotFound)
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound)
 
 		h.expect.POST("/api/camps/{campId}/register", campID).
 			WithHeader("X-Forwarded-User", username).
@@ -433,7 +433,7 @@ func TestPostCampRegister(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil)
 
 		h.expect.POST("/api/camps/{campId}/register", campID).
@@ -466,7 +466,7 @@ func TestPostCampRegister(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil)
 		h.repo.MockCampRepository.EXPECT().
 			AddCampParticipant(gomock.Any(), uint(campID), user).
@@ -517,7 +517,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil).
 			Times(1)
 		h.repo.MockCampRepository.EXPECT().
@@ -637,8 +637,8 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
-			Return(nil, model.ErrNotFound).
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound).
 			Times(1)
 
 		req := api.AdminAddCampParticipantJSONRequestBody{
@@ -690,7 +690,7 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil).
 			Times(1)
 		h.repo.MockCampRepository.EXPECT().
@@ -761,8 +761,8 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
-			Return(nil, model.ErrNotFound).
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound).
 			Times(1)
 
 		h.expect.DELETE("/api/admin/camps/{campId}/participants/{userId}", campID, targetUserID).
@@ -801,7 +801,7 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil).
 			Times(1)
 		h.repo.MockCampRepository.EXPECT().
