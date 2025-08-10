@@ -635,13 +635,13 @@ func (s *Server) AdminPutAnswer(
 			ctx,
 			*params.XForwardedUser,
 			oldAnswer,
-			answer,
+			newAnswer,
 		); err != nil {
 			slog.ErrorContext(
 				ctx,
 				"failed to send answer change message",
 				slog.String("error", err.Error()),
-				slog.Int("answerId", int(answer.ID)),
+				slog.Int("answerId", int(newAnswer.ID)),
 				slog.String("userId", *params.XForwardedUser),
 			)
 		}
