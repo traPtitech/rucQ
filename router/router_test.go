@@ -15,35 +15,9 @@ import (
 	"github.com/traPtitech/rucQ/service/mockservice"
 )
 
-type mockRepository struct {
-	*mockrepository.MockAnswerRepository
-	*mockrepository.MockCampRepository
-	*mockrepository.MockEventRepository
-	*mockrepository.MockOptionRepository
-	*mockrepository.MockPaymentRepository
-	*mockrepository.MockQuestionRepository
-	*mockrepository.MockQuestionGroupRepository
-	*mockrepository.MockRoomRepository
-	*mockrepository.MockUserRepository
-}
-
-func newMockRepository(ctrl *gomock.Controller) *mockRepository {
-	return &mockRepository{
-		MockAnswerRepository:        mockrepository.NewMockAnswerRepository(ctrl),
-		MockCampRepository:          mockrepository.NewMockCampRepository(ctrl),
-		MockEventRepository:         mockrepository.NewMockEventRepository(ctrl),
-		MockOptionRepository:        mockrepository.NewMockOptionRepository(ctrl),
-		MockPaymentRepository:       mockrepository.NewMockPaymentRepository(ctrl),
-		MockQuestionRepository:      mockrepository.NewMockQuestionRepository(ctrl),
-		MockQuestionGroupRepository: mockrepository.NewMockQuestionGroupRepository(ctrl),
-		MockRoomRepository:          mockrepository.NewMockRoomRepository(ctrl),
-		MockUserRepository:          mockrepository.NewMockUserRepository(ctrl),
-	}
-}
-
 type testHandler struct {
 	expect              *httpexpect.Expect
-	repo                *mockRepository
+	repo                *mockrepository.MockRepository
 	notificationService *mockservice.MockNotificationService
 	traqService         *mockservice.MockTraqService
 	server              *httptest.Server
@@ -53,7 +27,7 @@ func setup(t *testing.T) *testHandler {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
-	repo := newMockRepository(ctrl)
+	repo := mockrepository.NewMockRepository(ctrl)
 	traqService := mockservice.NewMockTraqService(ctrl)
 	notificationService := mockservice.NewMockNotificationService(ctrl)
 	server := NewServer(repo, notificationService, traqService, false)

@@ -5,42 +5,15 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository/mockrepository"
 	"github.com/traPtitech/rucQ/service/mockservice"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
-
-type mockRepository struct {
-	*mockrepository.MockAnswerRepository
-	*mockrepository.MockCampRepository
-	*mockrepository.MockEventRepository
-	*mockrepository.MockOptionRepository
-	*mockrepository.MockPaymentRepository
-	*mockrepository.MockQuestionRepository
-	*mockrepository.MockQuestionGroupRepository
-	*mockrepository.MockRoomRepository
-	*mockrepository.MockUserRepository
-}
-
-func newMockRepository(ctrl *gomock.Controller) *mockRepository {
-	return &mockRepository{
-		MockAnswerRepository:        mockrepository.NewMockAnswerRepository(ctrl),
-		MockCampRepository:          mockrepository.NewMockCampRepository(ctrl),
-		MockEventRepository:         mockrepository.NewMockEventRepository(ctrl),
-		MockOptionRepository:        mockrepository.NewMockOptionRepository(ctrl),
-		MockPaymentRepository:       mockrepository.NewMockPaymentRepository(ctrl),
-		MockQuestionRepository:      mockrepository.NewMockQuestionRepository(ctrl),
-		MockQuestionGroupRepository: mockrepository.NewMockQuestionGroupRepository(ctrl),
-		MockRoomRepository:          mockrepository.NewMockRoomRepository(ctrl),
-		MockUserRepository:          mockrepository.NewMockUserRepository(ctrl),
-	}
-}
 
 func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 	t.Parallel()
@@ -60,7 +33,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -96,7 +69,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -140,7 +113,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -181,7 +154,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -235,7 +208,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -271,7 +244,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -315,7 +288,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -357,7 +330,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -401,7 +374,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -428,7 +401,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -454,7 +427,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -488,7 +461,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -514,7 +487,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -548,7 +521,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -574,7 +547,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
@@ -608,7 +581,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 		t.Parallel()
 
 		ctrl := gomock.NewController(t)
-		repo := newMockRepository(ctrl)
+		repo := mockrepository.NewMockRepository(ctrl)
 		traqService := mockservice.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
