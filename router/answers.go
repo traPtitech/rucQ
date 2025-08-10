@@ -16,6 +16,10 @@ import (
 	"github.com/traPtitech/rucQ/repository"
 )
 
+// DMの文章の構築に使う
+// テンプレート部分が大体120バイトぐらいなので256バイト確保しておく
+const defaultBuilderSize = 256
+
 func (s *Server) GetMyAnswers(
 	e echo.Context,
 	questionGroupId api.QuestionGroupId,
@@ -501,6 +505,113 @@ func (s *Server) AdminPostAnswer(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
+	go func(newAnswer model.Answer) {
+		ctx := context.WithoutCancel(e.Request().Context())
+		question, err := s.repo.GetQuestionByID(newAnswer.QuestionID)
+
+		if err != nil {
+			slog.ErrorContext(
+				ctx,
+				"failed to get question by ID",
+				slog.String("error", err.Error()),
+				slog.Int("questionId", int(newAnswer.QuestionID)),
+				slog.Int("answerId", int(newAnswer.ID)),
+			)
+
+			return
+		}
+
+		var messageBuilder strings.Builder
+
+		messageBuilder.Grow(defaultBuilderSize)
+		messageBuilder.WriteString("@")
+		messageBuilder.WriteString(*params.XForwardedUser)
+		messageBuilder.WriteString("がアンケート「")
+		messageBuilder.WriteString(question.Title)
+		messageBuilder.WriteString("」のあなたの回答を変更しました。\n")
+
+		switch newAnswer.Type {
+		case model.FreeTextQuestion:
+			if newAnswer.FreeTextContent != nil {
+				messageBuilder.WriteString("### 変更前\n")
+				messageBuilder.WriteString("未回答\n")
+				messageBuilder.WriteString("### 変更後\n")
+				messageBuilder.WriteString("```\n")
+				messageBuilder.WriteString(*newAnswer.FreeTextContent)
+				messageBuilder.WriteString("\n```\n")
+			} else {
+				slog.ErrorContext(
+					ctx,
+					"FreeTextContent of answer is nil",
+					slog.Int("answerId", int(newAnswer.ID)),
+				)
+
+				return
+			}
+
+		case model.FreeNumberQuestion:
+			if newAnswer.FreeNumberContent != nil {
+				messageBuilder.WriteString("### 変更前\n")
+				messageBuilder.WriteString("未回答\n")
+				messageBuilder.WriteString("### 変更後\n")
+				messageBuilder.WriteString("```\n")
+				messageBuilder.WriteString(
+					strconv.FormatFloat(*newAnswer.FreeNumberContent, 'g', -1, 64),
+				)
+				messageBuilder.WriteString("\n```\n")
+			} else {
+				slog.ErrorContext(
+					ctx,
+					"FreeNumberContent of answer is nil",
+					slog.Int("answerId", int(newAnswer.ID)),
+				)
+
+				return
+			}
+
+		case model.SingleChoiceQuestion:
+			var newOptionContent string
+
+			if len(newAnswer.SelectedOptions) == 1 {
+				newOptionContent = newAnswer.SelectedOptions[0].Content
+			} else {
+				slog.ErrorContext(
+					ctx,
+					"The number of selected options for new answer is not 1",
+					slog.Int("answerId", int(newAnswer.ID)),
+				)
+
+				return
+			}
+
+			messageBuilder.WriteString("### 変更前\n")
+			messageBuilder.WriteString("未回答\n")
+			messageBuilder.WriteString("### 変更後\n")
+			messageBuilder.WriteString(newOptionContent)
+
+		case model.MultipleChoiceQuestion:
+			messageBuilder.WriteString("### 変更前\n")
+			messageBuilder.WriteString("未回答\n")
+			messageBuilder.WriteString("### 変更後\n")
+
+			for _, opt := range newAnswer.SelectedOptions {
+				messageBuilder.WriteString("- ")
+				messageBuilder.WriteString(opt.Content)
+				messageBuilder.WriteString("\n")
+			}
+		}
+
+		if err := s.traqService.PostDirectMessage(ctx, newAnswer.UserID, messageBuilder.String()); err != nil {
+			slog.ErrorContext(
+				ctx,
+				"failed to send direct message",
+				slog.String("error", err.Error()),
+				slog.String("userId", newAnswer.UserID),
+				slog.Int("answerId", int(newAnswer.ID)),
+			)
+		}
+	}(answer)
+
 	res, err := converter.Convert[api.AnswerResponse](answer)
 
 	if err != nil {
@@ -628,8 +739,6 @@ func (s *Server) AdminPutAnswer(
 		}
 
 		var messageBuilder strings.Builder
-		// テンプレート部分が大体120バイトぐらいなので256バイト確保しておく
-		const defaultBuilderSize = 256
 
 		messageBuilder.Grow(defaultBuilderSize)
 		messageBuilder.WriteString("@")

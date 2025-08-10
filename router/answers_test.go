@@ -1187,6 +1187,10 @@ func TestAdminPostAnswer(t *testing.T) {
 	t.Run("Success - Create FreeText Answer", func(t *testing.T) {
 		t.Parallel()
 
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+
 		h := setup(t)
 		adminUserID := random.AlphaNumericString(t, 32)
 		targetUserID := random.AlphaNumericString(t, 32)
@@ -1206,6 +1210,12 @@ func TestAdminPostAnswer(t *testing.T) {
 
 		content := random.AlphaNumericString(t, 50)
 
+		// 質問 (GetQuestionByIDで返される)
+		question := &model.Question{
+			Model: gorm.Model{ID: uint(questionID)},
+			Title: random.AlphaNumericString(t, 20),
+		}
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), adminUserID).
 			Return(adminUser, nil).
@@ -1214,10 +1224,34 @@ func TestAdminPostAnswer(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil).
 			Times(1)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(uint(questionID)).
+			Return(question, nil).
+			Times(1)
+
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n未回答\n### 変更後\n```\n%s\n```\n",
+			adminUserID,
+			question.Title,
+			content,
+		)
+
+		h.traqService.EXPECT().
+			PostDirectMessage(gomock.Any(), targetUserID, expectedMessage).
+			DoAndReturn(func(_, _, _ any) error {
+				defer wg.Done()
+
+				return nil
+			}).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			CreateAnswer(gomock.Any(), gomock.Any()).
 			DoAndReturn(func(_ any, answer *model.Answer) error {
 				answer.ID = uint(random.PositiveInt(t))
+				// FreeTextContentを設定
+				answer.FreeTextContent = &content
 
 				return nil
 			}).
@@ -1239,6 +1273,8 @@ func TestAdminPostAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusCreated).JSON().Object()
 
+		waitWithTimeout(t, &wg, 2*time.Second)
+
 		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
 		res.Value("type").String().IsEqual(string(api.FreeTextAnswerRequestTypeFreeText))
 		res.Value("userId").String().IsEqual(targetUserID)
@@ -1248,6 +1284,10 @@ func TestAdminPostAnswer(t *testing.T) {
 
 	t.Run("Success - Create FreeNumber Answer", func(t *testing.T) {
 		t.Parallel()
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
 
 		h := setup(t)
 		adminUserID := random.AlphaNumericString(t, 32)
@@ -1267,6 +1307,13 @@ func TestAdminPostAnswer(t *testing.T) {
 		}
 
 		content := random.Float32(t)
+		contentFloat64 := float64(content)
+
+		// 質問 (GetQuestionByIDで返される)
+		question := &model.Question{
+			Model: gorm.Model{ID: uint(questionID)},
+			Title: random.AlphaNumericString(t, 20),
+		}
 
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), adminUserID).
@@ -1276,10 +1323,34 @@ func TestAdminPostAnswer(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil).
 			Times(1)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(uint(questionID)).
+			Return(question, nil).
+			Times(1)
+
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n未回答\n### 変更後\n```\n%g\n```\n",
+			adminUserID,
+			question.Title,
+			contentFloat64,
+		)
+
+		h.traqService.EXPECT().
+			PostDirectMessage(gomock.Any(), targetUserID, expectedMessage).
+			DoAndReturn(func(_, _, _ any) error {
+				defer wg.Done()
+
+				return nil
+			}).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			CreateAnswer(gomock.Any(), gomock.Any()).
 			DoAndReturn(func(_ any, answer *model.Answer) error {
 				answer.ID = uint(random.PositiveInt(t))
+				// FreeNumberContentを設定
+				answer.FreeNumberContent = &contentFloat64
 
 				return nil
 			}).
@@ -1301,6 +1372,8 @@ func TestAdminPostAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusCreated).JSON().Object()
 
+		waitWithTimeout(t, &wg, 2*time.Second)
+
 		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "content")
 		res.Value("type").String().IsEqual(string(api.FreeNumberAnswerRequestTypeFreeNumber))
 		res.Value("userId").String().IsEqual(targetUserID)
@@ -1310,6 +1383,10 @@ func TestAdminPostAnswer(t *testing.T) {
 
 	t.Run("Success - Create SingleChoice Answer", func(t *testing.T) {
 		t.Parallel()
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
 
 		h := setup(t)
 		adminUserID := random.AlphaNumericString(t, 32)
@@ -1329,6 +1406,14 @@ func TestAdminPostAnswer(t *testing.T) {
 			IsStaff: false,
 		}
 
+		// 質問 (GetQuestionByIDで返される)
+		question := &model.Question{
+			Model: gorm.Model{ID: uint(questionID)},
+			Title: random.AlphaNumericString(t, 20),
+		}
+
+		optionContent := random.AlphaNumericString(t, 20)
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), adminUserID).
 			Return(adminUser, nil).
@@ -1339,10 +1424,38 @@ func TestAdminPostAnswer(t *testing.T) {
 			Return(targetUser, nil).
 			Times(1)
 
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(uint(questionID)).
+			Return(question, nil).
+			Times(1)
+
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n未回答\n### 変更後\n%s",
+			adminUserID,
+			question.Title,
+			optionContent,
+		)
+
+		h.traqService.EXPECT().
+			PostDirectMessage(gomock.Any(), targetUserID, expectedMessage).
+			DoAndReturn(func(_, _, _ any) error {
+				defer wg.Done()
+
+				return nil
+			}).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			CreateAnswer(gomock.Any(), gomock.Any()).
 			DoAndReturn(func(_ any, answer *model.Answer) error {
 				answer.ID = uint(random.PositiveInt(t))
+				// SelectedOptionsにオプションを設定
+				answer.SelectedOptions = []model.Option{
+					{
+						Model:   gorm.Model{ID: uint(optionID)},
+						Content: optionContent,
+					},
+				}
 
 				return nil
 			}).
@@ -1364,6 +1477,8 @@ func TestAdminPostAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusCreated).JSON().Object()
 
+		waitWithTimeout(t, &wg, 2*time.Second)
+
 		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOption")
 		res.Value("type").String().IsEqual(string(api.SingleChoiceAnswerRequestTypeSingle))
 		res.Value("userId").String().IsEqual(targetUserID)
@@ -1373,6 +1488,10 @@ func TestAdminPostAnswer(t *testing.T) {
 
 	t.Run("Success - Create MultipleChoice Answer", func(t *testing.T) {
 		t.Parallel()
+
+		var wg sync.WaitGroup
+
+		wg.Add(1)
 
 		h := setup(t)
 		adminUserID := random.AlphaNumericString(t, 32)
@@ -1392,6 +1511,15 @@ func TestAdminPostAnswer(t *testing.T) {
 			IsStaff: false,
 		}
 
+		// 質問 (GetQuestionByIDで返される)
+		question := &model.Question{
+			Model: gorm.Model{ID: uint(questionID)},
+			Title: random.AlphaNumericString(t, 20),
+		}
+
+		option1Content := random.AlphaNumericString(t, 20)
+		option2Content := random.AlphaNumericString(t, 20)
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), adminUserID).
 			Return(adminUser, nil).
@@ -1400,10 +1528,44 @@ func TestAdminPostAnswer(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil).
 			Times(1)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(uint(questionID)).
+			Return(question, nil).
+			Times(1)
+
+		expectedMessage := fmt.Sprintf(
+			"@%sがアンケート「%s」のあなたの回答を変更しました。\n### 変更前\n未回答\n### 変更後\n- %s\n- %s\n",
+			adminUserID,
+			question.Title,
+			option1Content,
+			option2Content,
+		)
+
+		h.traqService.EXPECT().
+			PostDirectMessage(gomock.Any(), targetUserID, expectedMessage).
+			DoAndReturn(func(_, _, _ any) error {
+				defer wg.Done()
+
+				return nil
+			}).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			CreateAnswer(gomock.Any(), gomock.Any()).
 			DoAndReturn(func(_ any, answer *model.Answer) error {
 				answer.ID = uint(random.PositiveInt(t))
+				// SelectedOptionsにオプションを設定
+				answer.SelectedOptions = []model.Option{
+					{
+						Model:   gorm.Model{ID: uint(optionIDs[0])},
+						Content: option1Content,
+					},
+					{
+						Model:   gorm.Model{ID: uint(optionIDs[1])},
+						Content: option2Content,
+					},
+				}
 
 				return nil
 			}).
@@ -1424,6 +1586,8 @@ func TestAdminPostAnswer(t *testing.T) {
 			WithJSON(req).
 			Expect().
 			Status(http.StatusCreated).JSON().Object()
+
+		waitWithTimeout(t, &wg, 2*time.Second)
 
 		res.Keys().ContainsOnly("id", "type", "userId", "questionId", "selectedOptions")
 		res.Value("type").String().IsEqual(string(api.MultipleChoiceAnswerRequestTypeMultiple))
