@@ -5,8 +5,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 
@@ -15,10 +13,6 @@ import (
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
 )
-
-// DMの文章の構築に使う
-// テンプレート部分が大体120バイトぐらいなので256バイト確保しておく
-const defaultBuilderSize = 256
 
 func (s *Server) GetMyAnswers(
 	e echo.Context,
@@ -507,107 +501,19 @@ func (s *Server) AdminPostAnswer(
 
 	go func(newAnswer model.Answer) {
 		ctx := context.WithoutCancel(e.Request().Context())
-		question, err := s.repo.GetQuestionByID(newAnswer.QuestionID)
 
-		if err != nil {
+		if err := s.notificationService.SendAnswerChangeMessage(
+			ctx,
+			*params.XForwardedUser,
+			nil,
+			newAnswer,
+		); err != nil {
 			slog.ErrorContext(
 				ctx,
-				"failed to get question by ID",
+				"failed to send answer change message",
 				slog.String("error", err.Error()),
-				slog.Int("questionId", int(newAnswer.QuestionID)),
 				slog.Int("answerId", int(newAnswer.ID)),
-			)
-
-			return
-		}
-
-		var messageBuilder strings.Builder
-
-		messageBuilder.Grow(defaultBuilderSize)
-		messageBuilder.WriteString("@")
-		messageBuilder.WriteString(*params.XForwardedUser)
-		messageBuilder.WriteString("がアンケート「")
-		messageBuilder.WriteString(question.Title)
-		messageBuilder.WriteString("」のあなたの回答を変更しました。\n")
-
-		switch newAnswer.Type {
-		case model.FreeTextQuestion:
-			if newAnswer.FreeTextContent != nil {
-				messageBuilder.WriteString("### 変更前\n")
-				messageBuilder.WriteString("未回答\n")
-				messageBuilder.WriteString("### 変更後\n")
-				messageBuilder.WriteString("```\n")
-				messageBuilder.WriteString(*newAnswer.FreeTextContent)
-				messageBuilder.WriteString("\n```\n")
-			} else {
-				slog.ErrorContext(
-					ctx,
-					"FreeTextContent of answer is nil",
-					slog.Int("answerId", int(newAnswer.ID)),
-				)
-
-				return
-			}
-
-		case model.FreeNumberQuestion:
-			if newAnswer.FreeNumberContent != nil {
-				messageBuilder.WriteString("### 変更前\n")
-				messageBuilder.WriteString("未回答\n")
-				messageBuilder.WriteString("### 変更後\n")
-				messageBuilder.WriteString("```\n")
-				messageBuilder.WriteString(
-					strconv.FormatFloat(*newAnswer.FreeNumberContent, 'g', -1, 64),
-				)
-				messageBuilder.WriteString("\n```\n")
-			} else {
-				slog.ErrorContext(
-					ctx,
-					"FreeNumberContent of answer is nil",
-					slog.Int("answerId", int(newAnswer.ID)),
-				)
-
-				return
-			}
-
-		case model.SingleChoiceQuestion:
-			var newOptionContent string
-
-			if len(newAnswer.SelectedOptions) == 1 {
-				newOptionContent = newAnswer.SelectedOptions[0].Content
-			} else {
-				slog.ErrorContext(
-					ctx,
-					"The number of selected options for new answer is not 1",
-					slog.Int("answerId", int(newAnswer.ID)),
-				)
-
-				return
-			}
-
-			messageBuilder.WriteString("### 変更前\n")
-			messageBuilder.WriteString("未回答\n")
-			messageBuilder.WriteString("### 変更後\n")
-			messageBuilder.WriteString(newOptionContent)
-
-		case model.MultipleChoiceQuestion:
-			messageBuilder.WriteString("### 変更前\n")
-			messageBuilder.WriteString("未回答\n")
-			messageBuilder.WriteString("### 変更後\n")
-
-			for _, opt := range newAnswer.SelectedOptions {
-				messageBuilder.WriteString("- ")
-				messageBuilder.WriteString(opt.Content)
-				messageBuilder.WriteString("\n")
-			}
-		}
-
-		if err := s.traqService.PostDirectMessage(ctx, newAnswer.UserID, messageBuilder.String()); err != nil {
-			slog.ErrorContext(
-				ctx,
-				"failed to send direct message",
-				slog.String("error", err.Error()),
-				slog.String("userId", newAnswer.UserID),
-				slog.Int("answerId", int(newAnswer.ID)),
+				slog.String("userId", *params.XForwardedUser),
 			)
 		}
 	}(answer)
@@ -722,132 +628,24 @@ func (s *Server) AdminPutAnswer(
 	}
 
 	// 回答者にDMを送信（非同期）
-	go func(oldAnswer, newAnswer model.Answer) {
+	go func(oldAnswer *model.Answer, newAnswer model.Answer) {
 		ctx := context.WithoutCancel(e.Request().Context())
-		question, err := s.repo.GetQuestionByID(newAnswer.QuestionID)
 
-		if err != nil {
+		if err := s.notificationService.SendAnswerChangeMessage(
+			ctx,
+			*params.XForwardedUser,
+			oldAnswer,
+			answer,
+		); err != nil {
 			slog.ErrorContext(
 				ctx,
-				"failed to get question by ID",
+				"failed to send answer change message",
 				slog.String("error", err.Error()),
-				slog.Int("questionId", int(newAnswer.QuestionID)),
-				slog.Int("answerId", answerID),
-			)
-
-			return
-		}
-
-		var messageBuilder strings.Builder
-
-		messageBuilder.Grow(defaultBuilderSize)
-		messageBuilder.WriteString("@")
-		messageBuilder.WriteString(*params.XForwardedUser)
-		messageBuilder.WriteString("がアンケート「")
-		messageBuilder.WriteString(question.Title)
-		messageBuilder.WriteString("」のあなたの回答を変更しました。\n")
-
-		switch newAnswer.Type {
-		case model.FreeTextQuestion:
-			if oldAnswer.FreeTextContent != nil && newAnswer.FreeTextContent != nil {
-				messageBuilder.WriteString("### 変更前\n```\n")
-				messageBuilder.WriteString(*oldAnswer.FreeTextContent)
-				messageBuilder.WriteString("\n```")
-				messageBuilder.WriteString("\n### 変更後\n```\n")
-				messageBuilder.WriteString(*newAnswer.FreeTextContent)
-				messageBuilder.WriteString("\n```")
-			} else {
-				slog.ErrorContext(
-					ctx,
-					"FreeTextContent of answer is nil",
-					slog.Int("answerId", answerID),
-				)
-
-				return
-			}
-
-		case model.FreeNumberQuestion:
-			if oldAnswer.FreeNumberContent != nil && newAnswer.FreeNumberContent != nil {
-				messageBuilder.WriteString("### 変更前\n```\n")
-				messageBuilder.WriteString(
-					strconv.FormatFloat(*oldAnswer.FreeNumberContent, 'g', -1, 64),
-				)
-				messageBuilder.WriteString("\n```")
-				messageBuilder.WriteString("\n### 変更後\n```\n")
-				messageBuilder.WriteString(
-					strconv.FormatFloat(*newAnswer.FreeNumberContent, 'g', -1, 64),
-				)
-				messageBuilder.WriteString("\n```")
-			} else {
-				slog.ErrorContext(
-					ctx,
-					"FreeNumberContent of answer is nil",
-					slog.Int("answerId", answerID),
-				)
-
-				return
-			}
-
-		case model.SingleChoiceQuestion:
-			var oldOptionContent, newOptionContent string
-
-			if len(oldAnswer.SelectedOptions) == 1 {
-				oldOptionContent = oldAnswer.SelectedOptions[0].Content
-			} else {
-				slog.ErrorContext(
-					ctx,
-					"The number of selected options for old answer is not 1",
-					slog.Int("answerId", answerID),
-				)
-
-				return
-			}
-
-			if len(newAnswer.SelectedOptions) == 1 {
-				newOptionContent = newAnswer.SelectedOptions[0].Content
-			} else {
-				slog.ErrorContext(
-					ctx,
-					"The number of selected options for new answer is not 1",
-					slog.Int("answerId", answerID),
-				)
-
-				return
-			}
-
-			messageBuilder.WriteString("### 変更前\n- ")
-			messageBuilder.WriteString(oldOptionContent)
-			messageBuilder.WriteString("\n")
-			messageBuilder.WriteString("### 変更後\n- ")
-			messageBuilder.WriteString(newOptionContent)
-
-		case model.MultipleChoiceQuestion:
-			messageBuilder.WriteString("### 変更前\n")
-
-			for _, opt := range oldAnswer.SelectedOptions {
-				messageBuilder.WriteString("- ")
-				messageBuilder.WriteString(opt.Content)
-				messageBuilder.WriteString("\n")
-			}
-			messageBuilder.WriteString("### 変更後\n")
-
-			for _, opt := range newAnswer.SelectedOptions {
-				messageBuilder.WriteString("- ")
-				messageBuilder.WriteString(opt.Content)
-				messageBuilder.WriteString("\n")
-			}
-		}
-
-		if err := s.traqService.PostDirectMessage(ctx, newAnswer.UserID, messageBuilder.String()); err != nil {
-			slog.ErrorContext(
-				ctx,
-				"failed to send direct message",
-				slog.String("error", err.Error()),
-				slog.String("userId", newAnswer.UserID),
-				slog.Int("answerId", answerID),
+				slog.Int("answerId", int(answer.ID)),
+				slog.String("userId", *params.XForwardedUser),
 			)
 		}
-	}(*oldAnswer, answer)
+	}(oldAnswer, answer)
 
 	res, err := converter.Convert[api.AnswerResponse](answer)
 

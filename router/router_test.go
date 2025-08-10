@@ -42,10 +42,11 @@ func newMockRepository(ctrl *gomock.Controller) *mockRepository {
 }
 
 type testHandler struct {
-	expect      *httpexpect.Expect
-	repo        *mockRepository
-	traqService *mockservice.MockTraqService
-	server      *httptest.Server
+	expect              *httpexpect.Expect
+	repo                *mockRepository
+	notificationService *mockservice.MockNotificationService
+	traqService         *mockservice.MockTraqService
+	server              *httptest.Server
 }
 
 func setup(t *testing.T) *testHandler {
@@ -54,7 +55,8 @@ func setup(t *testing.T) *testHandler {
 	ctrl := gomock.NewController(t)
 	repo := newMockRepository(ctrl)
 	traqService := mockservice.NewMockTraqService(ctrl)
-	server := NewServer(repo, traqService, false)
+	notificationService := mockservice.NewMockNotificationService(ctrl)
+	server := NewServer(repo, notificationService, traqService, false)
 	e := echo.New()
 
 	api.RegisterHandlers(e, server)
@@ -71,10 +73,11 @@ func setup(t *testing.T) *testHandler {
 	})
 
 	return &testHandler{
-		expect:      expect,
-		repo:        repo,
-		traqService: traqService,
-		server:      httptestServer,
+		expect:              expect,
+		repo:                repo,
+		notificationService: notificationService,
+		traqService:         traqService,
+		server:              httptestServer,
 	}
 }
 
