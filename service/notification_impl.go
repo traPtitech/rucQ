@@ -129,12 +129,12 @@ func (s *notificationServiceImpl) SendAnswerChangeMessage(
 		} else {
 			if len(oldAnswer.SelectedOptions) == 0 {
 				messageBuilder.WriteString("選択なし\n")
-			}
-
-			for _, opt := range oldAnswer.SelectedOptions {
-				messageBuilder.WriteString("- ")
-				messageBuilder.WriteString(opt.Content)
-				messageBuilder.WriteString("\n")
+			} else {
+				for _, opt := range oldAnswer.SelectedOptions {
+					messageBuilder.WriteString("- ")
+					messageBuilder.WriteString(opt.Content)
+					messageBuilder.WriteString("\n")
+				}
 			}
 		}
 
@@ -142,12 +142,12 @@ func (s *notificationServiceImpl) SendAnswerChangeMessage(
 
 		if len(newAnswer.SelectedOptions) == 0 {
 			messageBuilder.WriteString("選択なし\n")
-		}
-
-		for _, opt := range newAnswer.SelectedOptions {
-			messageBuilder.WriteString("- ")
-			messageBuilder.WriteString(opt.Content)
-			messageBuilder.WriteString("\n")
+		} else {
+			for _, opt := range newAnswer.SelectedOptions {
+				messageBuilder.WriteString("- ")
+				messageBuilder.WriteString(opt.Content)
+				messageBuilder.WriteString("\n")
+			}
 		}
 	}
 
