@@ -6,15 +6,22 @@ import (
 )
 
 type Server struct {
-	repo        repository.Repository
-	traqService service.TraqService
-	isDev       bool
+	repo                repository.Repository
+	notificationService service.NotificationService
+	traqService         service.TraqService
+	isDev               bool
 }
 
-func NewServer(repo repository.Repository, traqService service.TraqService, isDev bool) *Server {
+func NewServer(
+	repo repository.Repository,
+	notificationService service.NotificationService,
+	traqService service.TraqService,
+	isDev bool,
+) *Server {
 	return &Server{
-		repo:        repo,
-		traqService: traqService,
-		isDev:       isDev,
+		repo:                repo,
+		notificationService: notificationService,
+		traqService:         traqService,
+		isDev:               isDev,
 	}
 }
