@@ -160,9 +160,10 @@ func TestGetMyAnswers(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				UserID:                &userID,
-				QuestionGroupID:       &questionGroupID,
-				IncludePrivateAnswers: true,
+				UserID:                 &userID,
+				QuestionGroupID:        &questionGroupID,
+				IncludePrivateAnswers:  true,
+				IncludeNonParticipants: true,
 			}).
 			Return(answers, nil).
 			Times(1)
@@ -200,9 +201,10 @@ func TestGetMyAnswers(t *testing.T) {
 
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswers(gomock.Any(), repository.GetAnswersQuery{
-				UserID:                &userID,
-				QuestionGroupID:       &questionGroupID,
-				IncludePrivateAnswers: true,
+				UserID:                 &userID,
+				QuestionGroupID:        &questionGroupID,
+				IncludePrivateAnswers:  true,
+				IncludeNonParticipants: true,
 			}).
 			Return(nil, model.ErrNotFound).
 			Times(1)

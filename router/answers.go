@@ -21,9 +21,10 @@ func (s *Server) GetMyAnswers(
 ) error {
 	uintQuestionGroupID := uint(questionGroupId)
 	query := repository.GetAnswersQuery{
-		UserID:                params.XForwardedUser,
-		QuestionGroupID:       &uintQuestionGroupID,
-		IncludePrivateAnswers: true, // 自分の回答は非公開でも取得
+		UserID:                 params.XForwardedUser,
+		QuestionGroupID:        &uintQuestionGroupID,
+		IncludePrivateAnswers:  true, // 自分の回答は非公開でも取得
+		IncludeNonParticipants: true, // 参加していなくても自分の回答は見られるようにする
 	}
 
 	answers, err := s.repo.GetAnswers(e.Request().Context(), query)
