@@ -625,6 +625,9 @@ paths:
   /api/admin/questions/{questionId}/answers:
     get:
       summary: 質問の回答を取得（管理者用）
+      description: |
+        質問に対する回答一覧を取得します。
+        参加登録を解除したユーザーの回答は含まれません。
       tags:
         - Questions
       operationId: adminGetAnswers
@@ -653,6 +656,7 @@ paths:
         質問グループに対する回答一覧を取得します。
         userIdパラメータが指定された場合は特定のユーザーの回答のみを取得し、
         指定されなかった場合は全ユーザーの回答を取得します。
+        参加登録を解除したユーザーの回答は含まれません。
       tags:
         - Questions
       operationId: adminGetAnswersForQuestionGroup
@@ -679,6 +683,9 @@ paths:
   /api/questions/{questionId}/answers:
     get:
       summary: 質問の回答一覧を取得
+      description: |
+        質問に対する回答一覧を取得します。
+        参加登録を解除したユーザーの回答は含まれません。
       tags:
         - Questions
       operationId: getAnswers
@@ -700,6 +707,9 @@ paths:
   /api/me/question-groups/{questionGroupId}/answers:
     get:
       summary: ある質問グループに対する自分の回答を取得
+      description: |
+        ある質問グループに対する自分の回答を取得します。
+        参加登録を解除した場合でも回答は取得できます。
       tags:
         - Questions
       operationId: getMyAnswers
