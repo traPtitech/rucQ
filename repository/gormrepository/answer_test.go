@@ -875,7 +875,7 @@ func TestGetAnswers(t *testing.T) {
 			questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 			question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
 
-			// participantをキャンプに参加させる
+			// participantを合宿に参加させる
 			err := r.AddCampParticipant(t.Context(), camp.ID, &participant)
 			require.NoError(t, err)
 
@@ -927,7 +927,7 @@ func TestGetAnswers(t *testing.T) {
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
 
-		// participantをキャンプに参加させる
+		// participantを合宿に参加させる
 		err := r.AddCampParticipant(t.Context(), camp.ID, &participant)
 		require.NoError(t, err)
 
@@ -982,7 +982,7 @@ func TestGetAnswers(t *testing.T) {
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
 
-		// participantをキャンプに参加させる
+		// participantを合宿に参加させる
 		err := r.AddCampParticipant(t.Context(), camp.ID, &participant)
 		require.NoError(t, err)
 
