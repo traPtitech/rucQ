@@ -19,6 +19,7 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+// GORMのログをテストケースごとに分けて出力するためのロガー
 type testLogWriter struct {
 	t *testing.T
 }
