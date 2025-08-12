@@ -19,6 +19,16 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+// GORMのログをテストケースごとに分けて出力するためのロガー
+type testLogWriter struct {
+	t *testing.T
+}
+
+// Printf implements the gorm.io/gorm/logger.Writer interface.
+func (w *testLogWriter) Printf(format string, args ...any) {
+	w.t.Logf(format, args...)
+}
+
 func setup(t *testing.T) *Repository {
 	t.Helper()
 
@@ -76,7 +86,10 @@ func setup(t *testing.T) *Repository {
 	config.Loc = loc
 
 	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
-		Logger:         logger.Default.LogMode(logger.Info),
+		Logger: logger.New(
+			&testLogWriter{t: t},
+			logger.Config{Colorful: true, LogLevel: logger.Info},
+		),
 		TranslateError: true,
 	})
 	require.NoError(t, err)
