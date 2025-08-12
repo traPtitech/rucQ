@@ -23,7 +23,7 @@ type testLogWriter struct {
 	t *testing.T
 }
 
-// Printf implements the logger.Writer interface.
+// Printf implements the gorm.io/gorm/logger.Writer interface.
 func (w *testLogWriter) Printf(format string, args ...any) {
 	w.t.Logf(format, args...)
 }
