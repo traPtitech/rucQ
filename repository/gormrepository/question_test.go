@@ -2,6 +2,7 @@ package gormrepository
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -118,5 +119,8 @@ func TestUpdateQuestion(t *testing.T) {
 			assert.Equal(t, updatedOption.ID, retrievedQuestion.Options[i].ID)
 			assert.Equal(t, updatedOption.Content, retrievedQuestion.Options[i].Content)
 		}
+
+		// CreatedAtが変わっていないことを確認
+		assert.WithinDuration(t, question.CreatedAt, retrievedQuestion.CreatedAt, time.Second)
 	})
 }

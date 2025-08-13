@@ -142,6 +142,8 @@ func TestUpdateCamp(t *testing.T) {
 		// 時刻の比較は秒単位で行う（MySQLの時刻精度の問題を回避）
 		assert.WithinDuration(t, newDateStart, retrievedCamp.DateStart, time.Second)
 		assert.WithinDuration(t, newDateEnd, retrievedCamp.DateEnd, time.Second)
+		// CreatedAtが変わっていないことを確認
+		assert.WithinDuration(t, camp.CreatedAt, retrievedCamp.CreatedAt, time.Second)
 	})
 
 	t.Run("ゼロ値での更新", func(t *testing.T) {
@@ -171,6 +173,8 @@ func TestUpdateCamp(t *testing.T) {
 		assert.False(t, retrievedCamp.IsDraft)
 		assert.False(t, retrievedCamp.IsPaymentOpen)
 		assert.False(t, retrievedCamp.IsRegistrationOpen)
+		// CreatedAtが変わっていないことを確認
+		assert.WithinDuration(t, camp.CreatedAt, retrievedCamp.CreatedAt, time.Second)
 	})
 
 	t.Run("存在しない合宿での更新はエラーになる", func(t *testing.T) {
