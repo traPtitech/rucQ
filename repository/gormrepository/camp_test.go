@@ -144,40 +144,12 @@ func TestUpdateCamp(t *testing.T) {
 		assert.WithinDuration(t, newDateEnd, retrievedCamp.DateEnd, time.Second)
 	})
 
-	t.Run("部分更新", func(t *testing.T) {
-		t.Parallel()
-
-		r := setup(t)
-		camp := mustCreateCamp(t, r)
-
-		// 名前だけを更新するためのマップを使用
-		// Select("*")を使用しているため、構造体の場合はゼロ値も更新される
-		err := r.db.Model(&model.Camp{}).
-			Where("id = ?", camp.ID).
-			Update("name", random.AlphaNumericString(t, 25)).Error
-		require.NoError(t, err)
-
-		// 更新後のデータを取得して確認
-		retrievedCamp, err := r.GetCampByID(t.Context(), camp.ID)
-		require.NoError(t, err)
-
-		// 他のフィールドは元のまま
-		assert.Equal(t, camp.DisplayID, retrievedCamp.DisplayID)
-		assert.Equal(t, camp.Guidebook, retrievedCamp.Guidebook)
-		assert.Equal(t, camp.IsDraft, retrievedCamp.IsDraft)
-		assert.Equal(t, camp.IsPaymentOpen, retrievedCamp.IsPaymentOpen)
-		assert.Equal(t, camp.IsRegistrationOpen, retrievedCamp.IsRegistrationOpen)
-		assert.WithinDuration(t, camp.DateStart, retrievedCamp.DateStart, time.Second)
-		assert.WithinDuration(t, camp.DateEnd, retrievedCamp.DateEnd, time.Second)
-	})
-
 	t.Run("ゼロ値での更新", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
 		camp := mustCreateCamp(t, r)
 
-		// Select("*")を使用しているため、ゼロ値でも更新される
 		zeroValueUpdate := model.Camp{
 			Name:               "", // 空文字列
 			Guidebook:          "", // 空文字列
@@ -191,7 +163,7 @@ func TestUpdateCamp(t *testing.T) {
 
 		// 更新後のデータを取得して確認
 		retrievedCamp, err := r.GetCampByID(t.Context(), camp.ID)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		// ゼロ値が設定されていることを確認
 		assert.Equal(t, "", retrievedCamp.Name)

@@ -53,8 +53,15 @@ func (r *Repository) UpdateQuestion(
 
 	if err := r.db.WithContext(ctx).
 		Session(&gorm.Session{FullSaveAssociations: true}).
-		Select("*").
-		Omit("question_group_id").
+		Select(
+			"type",
+			"title",
+			"description",
+			"is_public",
+			"is_open",
+			"is_required",
+			"Options",
+		).
 		Updates(question).Error; err != nil {
 		return err
 	}
