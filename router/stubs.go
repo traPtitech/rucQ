@@ -38,15 +38,6 @@ func (s *Server) AdminPostRollCall(
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostRollCall not implemented")
 }
 
-// AdminPostRoomGroup 部屋グループを作成（管理者用）
-func (s *Server) AdminPostRoomGroup(
-	_ echo.Context,
-	_ api.CampId,
-	_ api.AdminPostRoomGroupParams,
-) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostRoomGroup not implemented")
-}
-
 // AdminDeleteRoomGroup 部屋グループを削除（管理者用）
 func (s *Server) AdminDeleteRoomGroup(
 	_ echo.Context,
@@ -54,15 +45,6 @@ func (s *Server) AdminDeleteRoomGroup(
 	_ api.AdminDeleteRoomGroupParams,
 ) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteRoomGroup not implemented")
-}
-
-// AdminPutRoomGroup 部屋グループを更新（管理者用）
-func (s *Server) AdminPutRoomGroup(
-	_ echo.Context,
-	_ api.RoomGroupId,
-	_ api.AdminPutRoomGroupParams,
-) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPutRoomGroup not implemented")
 }
 
 // AdminDeleteRoom 部屋を削除（管理者用）

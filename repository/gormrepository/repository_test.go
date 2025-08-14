@@ -298,3 +298,20 @@ func mustCreatePayment(t *testing.T, r *Repository, userID string, campID uint) 
 
 	return payment
 }
+
+func mustCreateRoomGroup(t *testing.T, r *Repository, campID uint) *model.RoomGroup {
+	t.Helper()
+
+	roomGroup := &model.RoomGroup{
+		Name:   random.AlphaNumericString(t, 20),
+		CampID: campID,
+	}
+
+	err := r.CreateRoomGroup(t.Context(), roomGroup)
+
+	require.NoError(t, err)
+	require.NotNil(t, roomGroup)
+	require.NotZero(t, roomGroup.ID)
+
+	return roomGroup
+}
