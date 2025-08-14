@@ -70,18 +70,18 @@ func (mr *MockQuestionGroupRepositoryMockRecorder) DeleteQuestionGroup(ID any) *
 }
 
 // GetQuestionGroup mocks base method.
-func (m *MockQuestionGroupRepository) GetQuestionGroup(ID uint) (*model.QuestionGroup, error) {
+func (m *MockQuestionGroupRepository) GetQuestionGroup(ctx context.Context, ID uint) (*model.QuestionGroup, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetQuestionGroup", ID)
+	ret := m.ctrl.Call(m, "GetQuestionGroup", ctx, ID)
 	ret0, _ := ret[0].(*model.QuestionGroup)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetQuestionGroup indicates an expected call of GetQuestionGroup.
-func (mr *MockQuestionGroupRepositoryMockRecorder) GetQuestionGroup(ID any) *gomock.Call {
+func (mr *MockQuestionGroupRepositoryMockRecorder) GetQuestionGroup(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuestionGroup", reflect.TypeOf((*MockQuestionGroupRepository)(nil).GetQuestionGroup), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuestionGroup", reflect.TypeOf((*MockQuestionGroupRepository)(nil).GetQuestionGroup), ctx, ID)
 }
 
 // GetQuestionGroups mocks base method.

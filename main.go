@@ -1,13 +1,14 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -16,15 +17,11 @@ import (
 	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/repository/gormrepository"
 	"github.com/traPtitech/rucQ/router"
+	"github.com/traPtitech/rucQ/service"
 )
 
 func main() {
 	e := echo.New()
-
-	if l, ok := e.Logger.(*log.Logger); ok {
-		l.SetHeader("${level}")
-	}
-
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	host := os.Getenv("DB_HOST")
@@ -51,11 +48,11 @@ func main() {
 	})
 
 	if err != nil {
-		e.Logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if err := migration.Migrate(db); err != nil {
-		e.Logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	if isDev {
@@ -73,7 +70,11 @@ func main() {
 
 	repo := gormrepository.NewGormRepository(db)
 
-	api.RegisterHandlers(e, router.NewServer(repo, isDev))
-	e.Logger.Fatal(e.Start("0.0.0.0:8080"))
+	traqBaseURL := cmp.Or(os.Getenv("TRAQ_API_BASE_URL"), "https://q.trap.jp/api/v3")
+	botAccessToken := os.Getenv("TRAQ_BOT_ACCESS_TOKEN")
+	traqService := service.NewTraqService(traqBaseURL, botAccessToken)
+	notificationService := service.NewNotificationService(repo, traqService)
 
+	api.RegisterHandlers(e, router.NewServer(repo, notificationService, traqService, isDev))
+	log.Fatal(e.Start("0.0.0.0:8080"))
 }

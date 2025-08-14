@@ -165,6 +165,61 @@ paths:
                   $ref: "#/components/schemas/UserResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/camps/{campId}/participants:
+    post:
+      summary: ユーザーを合宿に参加させる（管理者用）
+      description: 参加登録受付中かどうかに関わらず、ユーザーを合宿に参加させます。対象のユーザーにtraQのDMで通知します。
+      tags:
+        - Camps
+      operationId: adminAddCampParticipant
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+              required:
+                - userId
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/camps/{campId}/participants/{userId}:
+    delete:
+      summary: ユーザーの参加を取り消す（管理者用）
+      description: 参加登録受付中かどうかに関わらず、ユーザーの合宿参加を取り消します。対象のユーザーにtraQのDMで通知します。
+      tags:
+        - Camps
+      operationId: adminRemoveCampParticipant
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/camps/{campId}/events:
     get:
       summary: イベントの一覧を取得
@@ -570,6 +625,9 @@ paths:
   /api/admin/questions/{questionId}/answers:
     get:
       summary: 質問の回答を取得（管理者用）
+      description: |
+        質問に対する回答一覧を取得します。
+        参加登録を解除したユーザーの回答は含まれません。
       tags:
         - Questions
       operationId: adminGetAnswers
@@ -591,9 +649,43 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
+  /api/admin/question-groups/{questionGroupId}/answers:
+    get:
+      summary: 質問グループに対する回答一覧を取得（管理者用）
+      description: |
+        質問グループに対する回答一覧を取得します。
+        userIdパラメータが指定された場合は特定のユーザーの回答のみを取得し、
+        指定されなかった場合は全ユーザーの回答を取得します。
+        参加登録を解除したユーザーの回答は含まれません。
+      tags:
+        - Questions
+      operationId: adminGetAnswersForQuestionGroup
+      parameters:
+        - $ref: "#/components/parameters/QuestionGroupId"
+        - $ref: "#/components/parameters/UserIdInQuery"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnswerResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/questions/{questionId}/answers:
     get:
       summary: 質問の回答一覧を取得
+      description: |
+        質問に対する回答一覧を取得します。
+        参加登録を解除したユーザーの回答は含まれません。
       tags:
         - Questions
       operationId: getAnswers
@@ -615,6 +707,9 @@ paths:
   /api/me/question-groups/{questionGroupId}/answers:
     get:
       summary: ある質問グループに対する自分の回答を取得
+      description: |
+        ある質問グループに対する自分の回答を取得します。
+        参加登録を解除した場合でも回答は取得できます。
       tags:
         - Questions
       operationId: getMyAnswers
@@ -667,6 +762,38 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/admin/users/{userId}/answers:
+    post:
+      summary: ユーザーの回答を作成（管理者用）
+      tags:
+        - Questions
+      operationId: adminPostAnswer
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnswerRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnswerResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/answers/{answerId}:
     put:
       summary: 自分の回答を更新
@@ -700,6 +827,7 @@ paths:
   /api/admin/answers/{answerId}:
     put:
       summary: 管理者が回答を更新
+      description: QuestionのisOpenがfalseの場合でも回答を更新できます。更新するとユーザーにtraQでDMが送信されます。
       tags:
         - Questions
       operationId: adminPutAnswer
@@ -1295,7 +1423,7 @@ components:
     UserIdInQuery:
       name: userId
       in: query
-      description: User ID
+      description: User ID（省略時は全ユーザーの回答を取得）
       schema:
         type: string
     CampId:
@@ -1790,6 +1918,8 @@ components:
           type: boolean
         isOpen:
           type: boolean
+        isRequired:
+          type: boolean
       required:
         - title
         - isPublic
@@ -1806,6 +1936,28 @@ components:
         - $ref: "#/components/schemas/FreeNumberQuestionRequest"
         - $ref: "#/components/schemas/PutSingleChoiceQuestionRequest"
         - $ref: "#/components/schemas/PutMultipleChoiceQuestionRequest"
+
+    QuestionResponseBase:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        isPublic:
+          type: boolean
+        isOpen:
+          type: boolean
+        isRequired:
+          type: boolean
+      required:
+        - id
+        - title
+        - isPublic
+        - isOpen
+        - isRequired
     QuestionResponse:
       oneOf:
         - $ref: "#/components/schemas/FreeTextQuestionResponse"
@@ -1827,27 +1979,16 @@ components:
             - type
     FreeTextQuestionResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum:
-            - free_text
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-      required:
-        - id
-        - title
-        - type
-        - isPublic
-        - isOpen
+      allOf:
+        - $ref: "#/components/schemas/QuestionResponseBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - free_text
+          required:
+            - type
 
     FreeNumberQuestionRequest:
       type: object
@@ -1863,27 +2004,16 @@ components:
             - type
     FreeNumberQuestionResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum:
-            - free_number
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-      required:
-        - id
-        - title
-        - type
-        - isPublic
-        - isOpen
+      allOf:
+        - $ref: "#/components/schemas/QuestionResponseBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - free_number
+          required:
+            - type
 
     PostSingleChoiceQuestionRequest:
       type: object
@@ -1921,32 +2051,21 @@ components:
             - options
     SingleChoiceQuestionResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum:
-            - single
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-        options:
-          type: array
-          items:
-            $ref: "#/components/schemas/OptionResponse"
-      required:
-        - id
-        - title
-        - type
-        - isPublic
-        - isOpen
-        - options
+      allOf:
+        - $ref: "#/components/schemas/QuestionResponseBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - single
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/OptionResponse"
+          required:
+            - type
+            - options
 
     PostMultipleChoiceQuestionRequest:
       type: object
@@ -1984,32 +2103,22 @@ components:
             - options
     MultipleChoiceQuestionResponse:
       type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum:
-            - multiple
-        isPublic:
-          type: boolean
-        isOpen:
-          type: boolean
-        options:
-          type: array
-          items:
-            $ref: "#/components/schemas/OptionResponse"
-      required:
-        - id
-        - title
-        - type
-        - isPublic
-        - isOpen
-        - options
+      allOf:
+        - $ref: "#/components/schemas/QuestionResponseBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - multiple
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/OptionResponse"
+          required:
+            - type
+            - options
+
     PostOptionRequest:
       type: object
       properties:

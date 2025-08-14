@@ -1,6 +1,7 @@
 package router
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -14,7 +15,12 @@ func (s *Server) GetQuestionGroups(e echo.Context, campID api.CampId) error {
 	questionGroups, err := s.repo.GetQuestionGroups(e.Request().Context(), uint(campID))
 
 	if err != nil {
-		e.Logger().Errorf("failed to get question groups: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get question groups",
+			slog.String("error", err.Error()),
+			slog.Int("campId", int(campID)),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -22,7 +28,11 @@ func (s *Server) GetQuestionGroups(e echo.Context, campID api.CampId) error {
 	res, err := converter.Convert[[]api.QuestionGroupResponse](questionGroups)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -38,27 +48,46 @@ func (s *Server) AdminPostQuestionGroup(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !user.IsStaff {
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostQuestionGroupJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Errorf("failed to bind request body: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request body",
+			slog.String("error", err.Error()),
+		)
 
-		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		return err
 	}
 
 	questionGroup, err := converter.Convert[model.QuestionGroup](req)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert request body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -66,7 +95,12 @@ func (s *Server) AdminPostQuestionGroup(
 	questionGroup.CampID = uint(campID)
 
 	if err := s.repo.CreateQuestionGroup(&questionGroup); err != nil {
-		e.Logger().Errorf("failed to create question group: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to create question group",
+			slog.String("error", err.Error()),
+			slog.Int("campId", campID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -74,7 +108,11 @@ func (s *Server) AdminPostQuestionGroup(
 	res, err := converter.Convert[api.QuestionGroupResponse](questionGroup)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -84,47 +122,79 @@ func (s *Server) AdminPostQuestionGroup(
 
 func (s *Server) AdminPutQuestionGroupMetadata(
 	e echo.Context,
-	questionGroupId api.QuestionGroupId,
+	questionGroupID api.QuestionGroupId,
 	params api.AdminPutQuestionGroupMetadataParams,
 ) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !user.IsStaff {
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutQuestionGroupMetadataJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		e.Logger().Errorf("failed to bind request body: %v", err)
+		slog.WarnContext(
+			e.Request().Context(),
+			"failed to bind request body",
+			slog.String("error", err.Error()),
+		)
 
-		return echo.NewHTTPError(http.StatusBadRequest, "Bad request")
+		return err
 	}
 
 	questionGroup, err := converter.Convert[model.QuestionGroup](req)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert request body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateQuestionGroup(e.Request().Context(), uint(questionGroupId), questionGroup); err != nil {
-		e.Logger().Errorf("failed to update question group: %v", err)
+	if err := s.repo.UpdateQuestionGroup(e.Request().Context(), uint(questionGroupID), questionGroup); err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to update question group",
+			slog.String("error", err.Error()),
+			slog.Int("questionGroupId", questionGroupID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	updatedQuestionGroup, err := s.repo.GetQuestionGroup(uint(questionGroupId))
+	updatedQuestionGroup, err := s.repo.GetQuestionGroup(
+		e.Request().Context(),
+		uint(questionGroupID),
+	)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get updated question group: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get updated question group",
+			slog.String("error", err.Error()),
+			slog.Int("questionGroupId", questionGroupID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -132,7 +202,11 @@ func (s *Server) AdminPutQuestionGroupMetadata(
 	res, err := converter.Convert[api.QuestionGroupResponse](updatedQuestionGroup)
 
 	if err != nil {
-		e.Logger().Errorf("failed to convert response body: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
@@ -142,23 +216,39 @@ func (s *Server) AdminPutQuestionGroupMetadata(
 
 func (s *Server) AdminDeleteQuestionGroup(
 	e echo.Context,
-	questionGroupId api.QuestionGroupId,
+	questionGroupID api.QuestionGroupId,
 	params api.AdminDeleteQuestionGroupParams,
 ) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		e.Logger().Errorf("failed to get or create user: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
 	if !user.IsStaff {
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a staff member",
+			slog.String("userId", *params.XForwardedUser),
+		)
+
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	if err := s.repo.DeleteQuestionGroup(uint(questionGroupId)); err != nil {
-		e.Logger().Errorf("failed to delete question group: %v", err)
+	if err := s.repo.DeleteQuestionGroup(uint(questionGroupID)); err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to delete question group",
+			slog.String("error", err.Error()),
+			slog.Int("questionGroupId", questionGroupID),
+		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}

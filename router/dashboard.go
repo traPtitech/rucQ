@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -22,13 +23,24 @@ func (s *Server) GetDashboard(
 	)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"camp not found",
+				slog.Int("campId", int(campID)),
+			)
+
 			return echo.NewHTTPError(
 				http.StatusNotFound,
 				"Camp not found",
 			)
 		}
 
-		e.Logger().Errorf("Failed to check camp participation: %v", err)
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to check camp participation",
+			slog.String("error", err.Error()),
+			slog.Int("campId", int(campID)),
+		)
 
 		return echo.NewHTTPError(
 			http.StatusInternalServerError,
@@ -37,6 +49,13 @@ func (s *Server) GetDashboard(
 	}
 
 	if !isParticipant {
+		slog.WarnContext(
+			e.Request().Context(),
+			"user is not a participant of camp",
+			slog.String("userId", *params.XForwardedUser),
+			slog.Int("campId", int(campID)),
+		)
+
 		return echo.NewHTTPError(http.StatusNotFound, "User is not a participant of this camp")
 	}
 

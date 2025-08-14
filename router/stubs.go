@@ -77,11 +77,6 @@ func (s *Server) GetRoomGroups(_ echo.Context, _ api.CampId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetRoomGroups not implemented")
 }
 
-// GetAnswers 回答の一覧を取得
-func (s *Server) GetAnswers(_ echo.Context, _ api.QuestionId) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "GetAnswers not implemented")
-}
-
 // DeleteReaction リアクションを削除
 func (s *Server) DeleteReaction(
 	_ echo.Context,

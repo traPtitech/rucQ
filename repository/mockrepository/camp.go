@@ -84,18 +84,18 @@ func (mr *MockCampRepositoryMockRecorder) DeleteCamp(ctx, campID any) *gomock.Ca
 }
 
 // GetCampByID mocks base method.
-func (m *MockCampRepository) GetCampByID(id uint) (*model.Camp, error) {
+func (m *MockCampRepository) GetCampByID(ctx context.Context, id uint) (*model.Camp, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCampByID", id)
+	ret := m.ctrl.Call(m, "GetCampByID", ctx, id)
 	ret0, _ := ret[0].(*model.Camp)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCampByID indicates an expected call of GetCampByID.
-func (mr *MockCampRepositoryMockRecorder) GetCampByID(id any) *gomock.Call {
+func (mr *MockCampRepositoryMockRecorder) GetCampByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampByID", reflect.TypeOf((*MockCampRepository)(nil).GetCampByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampByID", reflect.TypeOf((*MockCampRepository)(nil).GetCampByID), ctx, id)
 }
 
 // GetCampParticipants mocks base method.
@@ -158,15 +158,15 @@ func (mr *MockCampRepositoryMockRecorder) RemoveCampParticipant(ctx, campID, use
 }
 
 // UpdateCamp mocks base method.
-func (m *MockCampRepository) UpdateCamp(campID uint, camp *model.Camp) error {
+func (m *MockCampRepository) UpdateCamp(ctx context.Context, campID uint, camp *model.Camp) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCamp", campID, camp)
+	ret := m.ctrl.Call(m, "UpdateCamp", ctx, campID, camp)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateCamp indicates an expected call of UpdateCamp.
-func (mr *MockCampRepositoryMockRecorder) UpdateCamp(campID, camp any) *gomock.Call {
+func (mr *MockCampRepositoryMockRecorder) UpdateCamp(ctx, campID, camp any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCamp", reflect.TypeOf((*MockCampRepository)(nil).UpdateCamp), campID, camp)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCamp", reflect.TypeOf((*MockCampRepository)(nil).UpdateCamp), ctx, campID, camp)
 }

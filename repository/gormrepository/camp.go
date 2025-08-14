@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (r *Repository) CreateCamp(camp *model.Camp) error {
@@ -34,27 +35,41 @@ func (r *Repository) GetCamps() ([]model.Camp, error) {
 	return camps, nil
 }
 
-func (r *Repository) GetCampByID(id uint) (*model.Camp, error) {
-	var camp model.Camp
+func (r *Repository) GetCampByID(ctx context.Context, id uint) (*model.Camp, error) {
+	camp, err := gorm.G[*model.Camp](r.db).Where("id = ?", id).First(ctx)
 
-	if err := r.db.Where(&model.Camp{
-		Model: gorm.Model{
-			ID: id,
-		},
-	}).First(&camp).Error; err != nil {
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, repository.ErrCampNotFound
+		}
+
 		return nil, err
 	}
 
-	return &camp, nil
+	return camp, nil
 }
 
-func (r *Repository) UpdateCamp(campID uint, camp *model.Camp) error {
-	if err := r.db.Where(&model.Camp{
-		Model: gorm.Model{
-			ID: campID,
-		},
-	}).Updates(camp).Error; err != nil {
+func (r *Repository) UpdateCamp(ctx context.Context, campID uint, camp *model.Camp) error {
+	rowsAffected, err := gorm.G[*model.Camp](r.db).
+		Where("id = ?", campID).
+		Select(
+			"display_id",
+			"name",
+			"guidebook",
+			"is_draft",
+			"is_payment_open",
+			"is_registration_open",
+			"date_start",
+			"date_end",
+		).
+		Updates(ctx, camp)
+
+	if err != nil {
 		return err
+	}
+
+	if rowsAffected == 0 {
+		return model.ErrNotFound
 	}
 
 	return nil
@@ -78,11 +93,11 @@ func (r *Repository) AddCampParticipant(ctx context.Context, campID uint, user *
 	}).First(ctx)
 
 	if err != nil {
-		return err
-	}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.ErrNotFound
+		}
 
-	if !camp.IsRegistrationOpen {
-		return model.ErrForbidden
+		return err
 	}
 
 	// Generics APIではまだAssociationが使えないため従来の書き方を使用
@@ -99,17 +114,21 @@ func (r *Repository) RemoveCampParticipant(
 	campID uint,
 	user *model.User,
 ) error {
-	camp, err := gorm.G[*model.Camp](r.db).Where(&model.Camp{
-		Model: gorm.Model{
-			ID: campID,
-		},
-	}).First(ctx)
+	// 参加者として登録されているかを確認 (この中でCampの存在も確認される)
+	isParticipant, err := r.IsCampParticipant(ctx, campID, user.ID)
 
 	if err != nil {
 		return err
 	}
 
-	if err := r.db.Model(camp).Association("Participants").Delete(user); err != nil {
+	if !isParticipant {
+		return repository.ErrParticipantNotFound
+	}
+
+	if err := r.db.
+		Model(&model.Camp{Model: gorm.Model{ID: campID}}).
+		Association("Participants").
+		Delete(user); err != nil {
 		return err
 	}
 
@@ -144,7 +163,7 @@ func (r *Repository) IsCampParticipant(
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, model.ErrNotFound
+			return false, repository.ErrCampNotFound
 		}
 		return false, err
 	}

@@ -2,11 +2,34 @@ package gormrepository
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
+
+func (r *Repository) CreateAnswer(ctx context.Context, answer *model.Answer) error {
+	if err := gorm.G[model.Answer](r.db).Create(ctx, answer); err != nil {
+		if errors.Is(err, gorm.ErrForeignKeyViolated) {
+			return model.ErrNotFound
+		}
+
+		return err
+	}
+
+	// 選択肢を反映するため再取得する
+	newAnswer, err := r.GetAnswerByID(ctx, answer.ID)
+
+	if err != nil {
+		return err
+	}
+
+	*answer = *newAnswer
+
+	return nil
+}
 
 func (r *Repository) CreateAnswers(ctx context.Context, answers *[]model.Answer) error {
 	if err := gorm.G[[]model.Answer](r.db).Create(ctx, answers); err != nil {
@@ -29,37 +52,114 @@ func (r *Repository) GetAnswerByID(ctx context.Context, id uint) (*model.Answer,
 	return &answer, nil
 }
 
-func (r *Repository) GetAnswersByUserAndQuestionGroup(
+func (r *Repository) GetAnswers(
 	ctx context.Context,
-	userID string,
-	questionGroupID uint,
+	query repository.GetAnswersQuery,
 ) ([]model.Answer, error) {
-	answers, err := gorm.G[model.Answer](r.db).
-		Where("user_id = ? AND question_id IN (?)", userID,
-			r.db.Model(&model.Question{}).
-				Select("id").
-				Where("question_group_id = ?", questionGroupID),
-		).
-		Preload("SelectedOptions", nil).
-		Find(ctx)
+	// QuestionIDが指定されている場合、質問の存在確認を行う
+	if query.QuestionID != nil {
+		question, err := gorm.G[model.Question](r.db).
+			Where("id = ?", query.QuestionID).
+			First(ctx)
 
-	if err != nil {
-		return nil, err
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, model.ErrNotFound
+			}
+			return nil, err
+		}
+
+		// 非公開回答を含めない場合は、公開質問かチェック
+		if !query.IncludePrivateAnswers && !question.IsPublic {
+			return nil, model.ErrForbidden
+		}
 	}
 
-	return answers, nil
-}
+	const maxScopes = 4
 
-func (r *Repository) GetAnswersByQuestionID(
-	ctx context.Context,
-	questionID uint,
-) ([]model.Answer, error) {
+	scopes := make([]func(*gorm.Statement), 0, maxScopes)
+
+	if query.UserID != nil {
+		scopes = append(scopes, func(s *gorm.Statement) {
+			s.Where("user_id = ?", query.UserID)
+		})
+
+	}
+
+	if query.QuestionGroupID != nil {
+		questionGroup, err := r.GetQuestionGroup(ctx, *query.QuestionGroupID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		questionIDs := make([]uint, len(questionGroup.Questions))
+
+		for i, question := range questionGroup.Questions {
+			questionIDs[i] = question.ID
+		}
+
+		scopes = append(scopes, func(s *gorm.Statement) {
+			s.Where("question_id IN (?)",
+				questionIDs,
+			)
+		})
+
+	}
+
+	if query.QuestionID != nil {
+		scopes = append(scopes, func(s *gorm.Statement) {
+			s.Where("question_id = ?", query.QuestionID)
+		})
+	}
+
+	// 参加者以外の回答を含めない場合
+	if !query.IncludeNonParticipants {
+		scopes = append(scopes, func(s *gorm.Statement) {
+			subQuery := r.db.Table("camp_participants").
+				Select("1").
+				Joins("JOIN question_groups ON question_groups.camp_id = camp_participants.camp_id").
+				Joins("JOIN questions ON questions.question_group_id = question_groups.id").
+				Where("questions.id = answers.question_id AND camp_participants.user_id = answers.user_id")
+
+			s.Where("EXISTS (?)", subQuery)
+		})
+	}
+
+	// 非公開回答を含めない場合は、公開質問のみにフィルタ
+	if !query.IncludePrivateAnswers && query.QuestionID == nil {
+		publicQuestions, err := gorm.G[model.Question](r.db).
+			Select("id").
+			Where("is_public = ?", true).
+			Find(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		publicQuestionIDs := make([]uint, len(publicQuestions))
+
+		for i, question := range publicQuestions {
+			publicQuestionIDs[i] = question.ID
+		}
+
+		scopes = append(scopes, func(s *gorm.Statement) {
+			s.Where("question_id IN (?)",
+				publicQuestionIDs,
+			)
+		})
+	}
+
 	answers, err := gorm.G[model.Answer](r.db).
-		Where("question_id = ?", questionID).
+		Scopes(scopes...).
 		Preload("SelectedOptions", nil).
 		Find(ctx)
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, model.ErrNotFound
+		}
+
 		return nil, err
 	}
 

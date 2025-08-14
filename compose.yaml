@@ -4,15 +4,19 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "${RUCQ_PORT:-8080}:8080"
     environment:
       DB_USER: root
       DB_PASSWORD: password
       DB_HOST: mariadb
       DB_PORT: 3306
-      DB_NAME: database
+      DB_NAME: rucq
       RUCQ_ENV: "development"
       RUCQ_CORS_ALLOW_ORIGINS: "*"
+      TRAQ_API_BASE_URL: "http://traq_server:3000/api/v3"
+    env_file:
+      - path: .env
+        required: false
     depends_on:
       mariadb:
         condition: service_healthy
@@ -24,20 +28,27 @@ services:
   mariadb:
     image: mariadb:11.8.2-noble
     ports:
-      - "3306:3306"
+      - "${MARIADB_PORT:-3306}:3306"
     environment:
       MARIADB_ROOT_PASSWORD: password
-      MARIADB_DATABASE: database
+    volumes:
+      - type: volume
+        source: mariadb_data
+        target: /var/lib/mysql
+      - type: bind
+        source: ./dev/db/
+        target: /docker-entrypoint-initdb.d/
     healthcheck:
-      test: mariadb-admin ping -h 127.0.0.1 -u root -p$$MARIADB_ROOT_PASSWORD
-      interval: 1s
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      start_period: 10s
+      interval: 5s
       timeout: 10s
       retries: 10
 
   swagger:
-    image: swaggerapi/swagger-ui:v5.26.0
+    image: swaggerapi/swagger-ui:v5.27.1
     ports:
-      - "8081:8080"
+      - "${SWAGGER_PORT:-8081}:8080"
     environment:
       SWAGGER_JSON: /openapi/openapi.yaml
     volumes:
@@ -48,9 +59,70 @@ services:
   adminer:
     image: adminer:5.3.0
     ports:
-      - "8082:8080"
+      - "${ADMINER_PORT:-8082}:8080"
     environment:
       ADMINER_DEFAULT_SERVER: mariadb
     depends_on:
       mariadb:
         condition: service_healthy
+
+  caddy:
+    image: caddy:2.10.0-alpine
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - ${CADDY_RUCQ_PORT:-3002}:3002
+      - ${CADDY_RUCQ_ADMIN_PORT:-3003}:3003
+      - ${CADDY_TRAQ_PORT:-3000}:3000
+    volumes:
+      - type: bind
+        source: ./dev/caddy/
+        target: /etc/caddy/
+    depends_on:
+      - rucq_ui
+      - rucq_admin
+      - traq_server
+      - traq_ui
+
+  rucq_ui:
+    image: ghcr.io/traptitech/rucq-ui:1.0.3
+    expose:
+      - 80
+
+  rucq_admin:
+    image: ghcr.io/traptitech/rucq-admin:0.5.1
+    expose:
+      - 80
+
+  traq_server:
+    image: ghcr.io/traptitech/traq:3.24.14
+    environment:
+      TRAQ_ALLOWSIGNUP: true
+      TRAQ_MARIADB_HOST: mariadb
+      TRAQ_STORAGE_LOCAL_DIR: /app/storage
+    volumes:
+      - type: volume
+        source: traq_storage
+        target: /app/storage
+    ports:
+      - "${TRAQ_SERVER_PORT:-3001}:3000"
+    expose:
+      - 3000
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  traq_ui:
+    image: ghcr.io/traptitech/traq-ui:3.26.2
+    volumes:
+      - type: volume
+        source: traq_override
+        target: /app/override
+    expose:
+      - 80
+
+volumes:
+  mariadb_data:
+  traq_storage:
+  traq_override:

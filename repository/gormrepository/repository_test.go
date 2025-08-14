@@ -1,55 +1,75 @@
 package gormrepository
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
-const initAndStartLogCount = 2
+// GORMのログをテストケースごとに分けて出力するためのロガー
+type testLogWriter struct {
+	t *testing.T
+}
+
+// Printf implements the gorm.io/gorm/logger.Writer interface.
+func (w *testLogWriter) Printf(format string, args ...any) {
+	w.t.Logf(format, args...)
+}
 
 func setup(t *testing.T) *Repository {
 	t.Helper()
 
-	req := testcontainers.ContainerRequest{
-		Image:        "mariadb:latest",
-		ExposedPorts: []string{"3306/tcp"},
-		Env: map[string]string{
-			"MYSQL_ROOT_PASSWORD": "password",
-			"MYSQL_DATABASE":      "database",
-		},
-		WaitingFor: wait.ForAll(
-			wait.ForLog("ready for connections").WithOccurrence(initAndStartLogCount), // 初期化と本起動の2回
-			wait.ForSQL("3306/tcp", "mysql", func(host string, port nat.Port) string {
-				return fmt.Sprintf("root:password@tcp(%s:%s)/database", host, port.Port())
-			}),
-		),
-	}
-	container, err := testcontainers.GenericContainer(
-		t.Context(),
-		testcontainers.GenericContainerRequest{
-			ContainerRequest: req,
-			Started:          true,
-		},
+	composeStack, err := compose.NewDockerComposeWith(
+		compose.WithStackFiles("../../compose.yaml"),
 	)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		testcontainers.CleanupContainer(t, container)
+	require.NoError(t, err, "Failed to create compose stack")
+
+	// Set random ports via environment variables
+	composeWithEnv := composeStack.WithEnv(map[string]string{
+		"MARIADB_PORT": "0",
 	})
 
-	port, err := container.MappedPort(t.Context(), "3306")
+	t.Cleanup(func() {
+		require.NoError(
+			t,
+			composeStack.Down(
+				context.Background(),
+				compose.RemoveOrphans(true),
+				compose.RemoveImagesLocal,
+				compose.RemoveVolumes(true),
+			),
+		)
+	})
+
+	// Configure wait strategy for mariadb service and start all services
+	composeWithWait := composeWithEnv.WaitForService(
+		"mariadb",
+		wait.ForHealthCheck().WithStartupTimeout(60*time.Second),
+	)
+	err = composeWithWait.Up(t.Context(), compose.Wait(true), compose.RunServices("mariadb"))
+
+	require.NoError(t, err, "Failed to start compose stack")
+
+	// Get MariaDB service container
+	mariadbContainer, err := composeStack.ServiceContainer(t.Context(), "mariadb")
+	require.NoError(t, err, "Failed to get MariaDB container")
+
+	host, err := mariadbContainer.Host(t.Context())
+	require.NoError(t, err)
+	port, err := mariadbContainer.MappedPort(t.Context(), "3306")
 	require.NoError(t, err)
 
 	loc, err := time.LoadLocation("Asia/Tokyo")
@@ -59,13 +79,17 @@ func setup(t *testing.T) *Repository {
 	config.User = "root"
 	config.Passwd = "password"
 	config.Net = "tcp"
-	config.Addr = "localhost:" + port.Port()
-	config.DBName = "database"
+	config.Addr = fmt.Sprintf("%s:%s", host, port.Port())
+	config.DBName = "rucq" // compose.yamlで定義したDB名'rucq'に合わせる
 	config.Collation = "utf8mb4_general_ci"
 	config.ParseTime = true
 	config.Loc = loc
 
 	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
+		Logger: logger.New(
+			&testLogWriter{t: t},
+			logger.Config{Colorful: true, LogLevel: logger.Info},
+		),
 		TranslateError: true,
 	})
 	require.NoError(t, err)
@@ -96,7 +120,7 @@ func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
 	require.NoError(t, err)
 
 	// 時刻の精度などを揃えるため再取得する
-	camp, err = r.GetCampByID(camp.ID)
+	camp, err = r.GetCampByID(t.Context(), camp.ID)
 
 	require.NoError(t, err)
 
@@ -184,7 +208,7 @@ func mustCreateQuestionGroup(t *testing.T, r *Repository, campID uint) model.Que
 	require.NoError(t, err)
 
 	// 時刻の精度などを揃えるため再取得する
-	questionGroup, err = r.GetQuestionGroup(questionGroup.ID)
+	questionGroup, err = r.GetQuestionGroup(t.Context(), questionGroup.ID)
 
 	require.NoError(t, err)
 	require.NotNil(t, questionGroup)
@@ -192,19 +216,28 @@ func mustCreateQuestionGroup(t *testing.T, r *Repository, campID uint) model.Que
 	return *questionGroup
 }
 
+const maxOptions = 5
+
 func mustCreateQuestion(
 	t *testing.T,
 	r *Repository,
 	questionGroupID uint,
 	questionType model.QuestionType,
+	isPublic *bool,
 ) model.Question {
 	t.Helper()
+
+	publicValue := random.Bool(t)
+
+	if isPublic != nil {
+		publicValue = *isPublic
+	}
 
 	question := &model.Question{
 		Type:            questionType,
 		Title:           random.AlphaNumericString(t, 20),
 		Description:     random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
-		IsPublic:        random.Bool(t),
+		IsPublic:        publicValue,
 		IsOpen:          random.Bool(t),
 		QuestionGroupID: questionGroupID,
 	}
@@ -212,7 +245,7 @@ func mustCreateQuestion(
 	switch questionType {
 	case model.SingleChoiceQuestion, model.MultipleChoiceQuestion:
 		// 2つ以上の選択肢を作成する
-		question.Options = make([]model.Option, random.PositiveIntN(t, 10)+1)
+		question.Options = make([]model.Option, random.PositiveIntN(t, maxOptions)+1)
 
 		for i := range question.Options {
 			question.Options[i] = model.Option{

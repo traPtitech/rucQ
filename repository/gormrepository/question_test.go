@@ -2,6 +2,7 @@ package gormrepository
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -24,6 +25,7 @@ func TestCreateQuestion(t *testing.T) {
 		description := random.PtrOrNil(t, random.AlphaNumericString(t, 20))
 		isPublic := random.Bool(t)
 		isOpen := random.Bool(t)
+		isRequired := random.Bool(t)
 		optionContent := random.AlphaNumericString(t, 10)
 		question := model.Question{
 			Type:            model.SingleChoiceQuestion,
@@ -32,6 +34,7 @@ func TestCreateQuestion(t *testing.T) {
 			Description:     description,
 			IsPublic:        isPublic,
 			IsOpen:          isOpen,
+			IsRequired:      isRequired,
 			Options: []model.Option{
 				{
 					Content: optionContent,
@@ -48,6 +51,7 @@ func TestCreateQuestion(t *testing.T) {
 		assert.Equal(t, description, question.Description)
 		assert.Equal(t, isPublic, question.IsPublic)
 		assert.Equal(t, isOpen, question.IsOpen)
+		assert.Equal(t, isRequired, question.IsRequired)
 		assert.Len(t, question.Options, 1)
 		assert.NotZero(t, question.Options[0].ID)
 		assert.Equal(t, optionContent, question.Options[0].Content)
@@ -63,12 +67,13 @@ func TestUpdateQuestion(t *testing.T) {
 		r := setup(t)
 		camp := mustCreateCamp(t, r)
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
-		question := mustCreateQuestion(t, r, questionGroup.ID, model.SingleChoiceQuestion)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.SingleChoiceQuestion, nil)
 
 		newTitle := random.AlphaNumericString(t, 15)
 		newDescription := random.PtrOrNil(t, random.AlphaNumericString(t, 25))
 		newIsPublic := random.Bool(t)
 		newIsOpen := random.Bool(t)
+		newIsRequired := random.Bool(t)
 
 		updatedOptions := make([]model.Option, len(question.Options))
 		for i, option := range question.Options {
@@ -80,14 +85,15 @@ func TestUpdateQuestion(t *testing.T) {
 			}
 		}
 
+		// QuestionGroupIDはゼロ値のままでも正常に更新されることを確認
 		newQuestion := model.Question{
-			Type:            model.SingleChoiceQuestion,
-			QuestionGroupID: questionGroup.ID,
-			Title:           newTitle,
-			Description:     newDescription,
-			IsPublic:        newIsPublic,
-			IsOpen:          newIsOpen,
-			Options:         updatedOptions,
+			Type:        model.SingleChoiceQuestion,
+			Title:       newTitle,
+			Description: newDescription,
+			IsPublic:    newIsPublic,
+			IsOpen:      newIsOpen,
+			IsRequired:  newIsRequired,
+			Options:     updatedOptions,
 		}
 
 		err := r.UpdateQuestion(t.Context(), question.ID, &newQuestion)
@@ -105,6 +111,7 @@ func TestUpdateQuestion(t *testing.T) {
 		assert.Equal(t, newDescription, retrievedQuestion.Description)
 		assert.Equal(t, newIsPublic, retrievedQuestion.IsPublic)
 		assert.Equal(t, newIsOpen, retrievedQuestion.IsOpen)
+		assert.Equal(t, newIsRequired, retrievedQuestion.IsRequired)
 		assert.Len(t, retrievedQuestion.Options, len(question.Options)) // 元のOptionと同じ個数
 
 		// 各Optionが正しく更新されているかチェック
@@ -112,5 +119,8 @@ func TestUpdateQuestion(t *testing.T) {
 			assert.Equal(t, updatedOption.ID, retrievedQuestion.Options[i].ID)
 			assert.Equal(t, updatedOption.Content, retrievedQuestion.Options[i].Content)
 		}
+
+		// CreatedAtが変わっていないことを確認
+		assert.WithinDuration(t, question.CreatedAt, retrievedQuestion.CreatedAt, time.Second)
 	})
 }

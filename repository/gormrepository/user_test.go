@@ -66,3 +66,23 @@ func TestGetOrCreateUser(t *testing.T) {
 		}
 	})
 }
+
+func TestUpdateUser(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		user := mustCreateUser(t, r)
+
+		user.IsStaff = !user.IsStaff
+		err := r.UpdateUser(t.Context(), &user)
+		assert.NoError(t, err)
+
+		// 更新が反映されているかを確認
+		updatedUser, err := r.GetOrCreateUser(t.Context(), user.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, user.IsStaff, updatedUser.IsStaff)
+	})
+}

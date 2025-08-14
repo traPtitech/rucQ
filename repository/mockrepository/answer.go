@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	model "github.com/traPtitech/rucQ/model"
+	repository "github.com/traPtitech/rucQ/repository"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -39,6 +40,20 @@ func NewMockAnswerRepository(ctrl *gomock.Controller) *MockAnswerRepository {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAnswerRepository) EXPECT() *MockAnswerRepositoryMockRecorder {
 	return m.recorder
+}
+
+// CreateAnswer mocks base method.
+func (m *MockAnswerRepository) CreateAnswer(ctx context.Context, answer *model.Answer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateAnswer", ctx, answer)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateAnswer indicates an expected call of CreateAnswer.
+func (mr *MockAnswerRepositoryMockRecorder) CreateAnswer(ctx, answer any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAnswer", reflect.TypeOf((*MockAnswerRepository)(nil).CreateAnswer), ctx, answer)
 }
 
 // CreateAnswers mocks base method.
@@ -70,34 +85,19 @@ func (mr *MockAnswerRepositoryMockRecorder) GetAnswerByID(ctx, id any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnswerByID", reflect.TypeOf((*MockAnswerRepository)(nil).GetAnswerByID), ctx, id)
 }
 
-// GetAnswersByQuestionID mocks base method.
-func (m *MockAnswerRepository) GetAnswersByQuestionID(ctx context.Context, questionID uint) ([]model.Answer, error) {
+// GetAnswers mocks base method.
+func (m *MockAnswerRepository) GetAnswers(ctx context.Context, query repository.GetAnswersQuery) ([]model.Answer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAnswersByQuestionID", ctx, questionID)
+	ret := m.ctrl.Call(m, "GetAnswers", ctx, query)
 	ret0, _ := ret[0].([]model.Answer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAnswersByQuestionID indicates an expected call of GetAnswersByQuestionID.
-func (mr *MockAnswerRepositoryMockRecorder) GetAnswersByQuestionID(ctx, questionID any) *gomock.Call {
+// GetAnswers indicates an expected call of GetAnswers.
+func (mr *MockAnswerRepositoryMockRecorder) GetAnswers(ctx, query any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnswersByQuestionID", reflect.TypeOf((*MockAnswerRepository)(nil).GetAnswersByQuestionID), ctx, questionID)
-}
-
-// GetAnswersByUserAndQuestionGroup mocks base method.
-func (m *MockAnswerRepository) GetAnswersByUserAndQuestionGroup(ctx context.Context, userID string, questionGroupID uint) ([]model.Answer, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAnswersByUserAndQuestionGroup", ctx, userID, questionGroupID)
-	ret0, _ := ret[0].([]model.Answer)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAnswersByUserAndQuestionGroup indicates an expected call of GetAnswersByUserAndQuestionGroup.
-func (mr *MockAnswerRepositoryMockRecorder) GetAnswersByUserAndQuestionGroup(ctx, userID, questionGroupID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnswersByUserAndQuestionGroup", reflect.TypeOf((*MockAnswerRepository)(nil).GetAnswersByUserAndQuestionGroup), ctx, userID, questionGroupID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAnswers", reflect.TypeOf((*MockAnswerRepository)(nil).GetAnswers), ctx, query)
 }
 
 // UpdateAnswer mocks base method.

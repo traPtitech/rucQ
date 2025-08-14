@@ -25,6 +25,7 @@ func TestAdminPostQuestion(t *testing.T) {
 			Description: random.PtrOrNil(t, random.AlphaNumericString(t, 20)),
 			IsPublic:    random.Bool(t),
 			IsOpen:      random.Bool(t),
+			IsRequired:  random.PtrOrNil(t, random.Bool(t)),
 			Options: []api.PostOptionRequest{
 				{
 					Content: random.AlphaNumericString(t, 10),
@@ -57,7 +58,7 @@ func TestAdminPostQuestion(t *testing.T) {
 			JSON().
 			Object()
 
-		res.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "options")
+		res.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "isRequired", "options")
 		res.Value("type").IsEqual(api.PostSingleChoiceQuestionRequestTypeSingle)
 		res.Value("title").IsEqual(singleChoiceQuestion.Title)
 
@@ -69,6 +70,13 @@ func TestAdminPostQuestion(t *testing.T) {
 
 		res.Value("isPublic").IsEqual(singleChoiceQuestion.IsPublic)
 		res.Value("isOpen").IsEqual(singleChoiceQuestion.IsOpen)
+
+		if singleChoiceQuestion.IsRequired != nil {
+			res.Value("isRequired").IsEqual(*singleChoiceQuestion.IsRequired)
+		} else {
+			// デフォルト値はfalseになることを確認
+			res.Value("isRequired").IsEqual(false)
+		}
 
 		options := res.Value("options").Array()
 
@@ -93,6 +101,7 @@ func TestAdminPutQuestion(t *testing.T) {
 		description := random.PtrOrNil(t, random.AlphaNumericString(t, 25))
 		isPublic := random.Bool(t)
 		isOpen := random.Bool(t)
+		isRequired := random.PtrOrNil(t, random.Bool(t))
 		optionContent := random.AlphaNumericString(t, 10)
 
 		req := api.PutSingleChoiceQuestionRequest{
@@ -101,6 +110,7 @@ func TestAdminPutQuestion(t *testing.T) {
 			Description: description,
 			IsPublic:    isPublic,
 			IsOpen:      isOpen,
+			IsRequired:  isRequired,
 			Options: []api.PutOptionRequest{
 				{
 					Content: optionContent,
@@ -114,6 +124,12 @@ func TestAdminPutQuestion(t *testing.T) {
 			IsStaff: true,
 		}, nil).Times(1)
 		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(questionID).
+			Return(&model.Question{
+				Type: model.SingleChoiceQuestion,
+			}, nil).
+			Times(1)
+		h.repo.MockQuestionRepository.EXPECT().
 			UpdateQuestion(gomock.Any(), questionID, gomock.Any()).
 			Return(nil).
 			Times(1)
@@ -126,7 +142,7 @@ func TestAdminPutQuestion(t *testing.T) {
 			JSON().
 			Object()
 
-		res.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "options")
+		res.Keys().ContainsAll("id", "type", "title", "isPublic", "isOpen", "isRequired", "options")
 		res.Value("type").IsEqual(api.PutSingleChoiceQuestionRequestTypeSingle)
 		res.Value("title").IsEqual(title)
 
@@ -139,6 +155,12 @@ func TestAdminPutQuestion(t *testing.T) {
 		res.Value("isPublic").IsEqual(isPublic)
 		res.Value("isOpen").IsEqual(isOpen)
 
+		if isRequired != nil {
+			res.Value("isRequired").IsEqual(*isRequired)
+		} else {
+			res.Value("isRequired").IsEqual(false)
+		}
+
 		options := res.Value("options").Array()
 
 		options.Length().IsEqual(len(req.Options))
@@ -147,5 +169,44 @@ func TestAdminPutQuestion(t *testing.T) {
 
 		option.Keys().ContainsOnly("id", "content")
 		option.Value("content").IsEqual(optionContent)
+	})
+
+	t.Run("Failure - Cannot change question type", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		questionID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		existingQuestion := &model.Question{
+			Type: model.SingleChoiceQuestion,
+		}
+
+		var req api.PutQuestionRequest
+		err := req.FromFreeTextQuestionRequest(api.FreeTextQuestionRequest{
+			Type:  api.FreeTextQuestionRequestTypeFreeText,
+			Title: random.AlphaNumericString(t, 15),
+		})
+		require.NoError(t, err)
+
+		h.repo.MockUserRepository.EXPECT().GetOrCreateUser(gomock.Any(), userID).Return(&model.User{
+			IsStaff: true,
+		}, nil).Times(1)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionByID(questionID).
+			Return(existingQuestion, nil).
+			Times(1)
+
+		h.expect.PUT("/api/admin/questions/{questionID}", questionID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusBadRequest).
+			JSON().
+			Object().
+			Value("message").
+			String().
+			IsEqual("question type cannot be changed")
 	})
 }

@@ -274,6 +274,7 @@ type FreeNumberQuestionRequest struct {
 	Description *string                       `json:"description,omitempty"`
 	IsOpen      bool                          `json:"isOpen"`
 	IsPublic    bool                          `json:"isPublic"`
+	IsRequired  *bool                         `json:"isRequired,omitempty"`
 	Title       string                        `json:"title"`
 	Type        FreeNumberQuestionRequestType `json:"type"`
 }
@@ -287,6 +288,7 @@ type FreeNumberQuestionResponse struct {
 	Id          int                            `json:"id"`
 	IsOpen      bool                           `json:"isOpen"`
 	IsPublic    bool                           `json:"isPublic"`
+	IsRequired  bool                           `json:"isRequired"`
 	Title       string                         `json:"title"`
 	Type        FreeNumberQuestionResponseType `json:"type"`
 }
@@ -321,6 +323,7 @@ type FreeTextQuestionRequest struct {
 	Description *string                     `json:"description,omitempty"`
 	IsOpen      bool                        `json:"isOpen"`
 	IsPublic    bool                        `json:"isPublic"`
+	IsRequired  *bool                       `json:"isRequired,omitempty"`
 	Title       string                      `json:"title"`
 	Type        FreeTextQuestionRequestType `json:"type"`
 }
@@ -334,6 +337,7 @@ type FreeTextQuestionResponse struct {
 	Id          int                          `json:"id"`
 	IsOpen      bool                         `json:"isOpen"`
 	IsPublic    bool                         `json:"isPublic"`
+	IsRequired  bool                         `json:"isRequired"`
 	Title       string                       `json:"title"`
 	Type        FreeTextQuestionResponseType `json:"type"`
 }
@@ -405,6 +409,7 @@ type MultipleChoiceQuestionResponse struct {
 	Id          int                                `json:"id"`
 	IsOpen      bool                               `json:"isOpen"`
 	IsPublic    bool                               `json:"isPublic"`
+	IsRequired  bool                               `json:"isRequired"`
 	Options     []OptionResponse                   `json:"options"`
 	Title       string                             `json:"title"`
 	Type        MultipleChoiceQuestionResponseType `json:"type"`
@@ -468,6 +473,7 @@ type PostMultipleChoiceQuestionRequest struct {
 	Description *string                               `json:"description,omitempty"`
 	IsOpen      bool                                  `json:"isOpen"`
 	IsPublic    bool                                  `json:"isPublic"`
+	IsRequired  *bool                                 `json:"isRequired,omitempty"`
 	Options     []PostOptionRequest                   `json:"options"`
 	Title       string                                `json:"title"`
 	Type        PostMultipleChoiceQuestionRequestType `json:"type"`
@@ -499,6 +505,7 @@ type PostSingleChoiceQuestionRequest struct {
 	Description *string                             `json:"description,omitempty"`
 	IsOpen      bool                                `json:"isOpen"`
 	IsPublic    bool                                `json:"isPublic"`
+	IsRequired  *bool                               `json:"isRequired,omitempty"`
 	Options     []PostOptionRequest                 `json:"options"`
 	Title       string                              `json:"title"`
 	Type        PostSingleChoiceQuestionRequestType `json:"type"`
@@ -512,6 +519,7 @@ type PutMultipleChoiceQuestionRequest struct {
 	Description *string                              `json:"description,omitempty"`
 	IsOpen      bool                                 `json:"isOpen"`
 	IsPublic    bool                                 `json:"isPublic"`
+	IsRequired  *bool                                `json:"isRequired,omitempty"`
 	Options     []PutOptionRequest                   `json:"options"`
 	Title       string                               `json:"title"`
 	Type        PutMultipleChoiceQuestionRequestType `json:"type"`
@@ -543,6 +551,7 @@ type PutSingleChoiceQuestionRequest struct {
 	Description *string                            `json:"description,omitempty"`
 	IsOpen      bool                               `json:"isOpen"`
 	IsPublic    bool                               `json:"isPublic"`
+	IsRequired  *bool                              `json:"isRequired,omitempty"`
 	Options     []PutOptionRequest                 `json:"options"`
 	Title       string                             `json:"title"`
 	Type        PutSingleChoiceQuestionRequestType `json:"type"`
@@ -565,12 +574,23 @@ type QuestionRequestBase struct {
 	Description *string `json:"description,omitempty"`
 	IsOpen      bool    `json:"isOpen"`
 	IsPublic    bool    `json:"isPublic"`
+	IsRequired  *bool   `json:"isRequired,omitempty"`
 	Title       string  `json:"title"`
 }
 
 // QuestionResponse defines model for QuestionResponse.
 type QuestionResponse struct {
 	union json.RawMessage
+}
+
+// QuestionResponseBase defines model for QuestionResponseBase.
+type QuestionResponseBase struct {
+	Description *string `json:"description,omitempty"`
+	Id          int     `json:"id"`
+	IsOpen      bool    `json:"isOpen"`
+	IsPublic    bool    `json:"isPublic"`
+	IsRequired  bool    `json:"isRequired"`
+	Title       string  `json:"title"`
 }
 
 // RollCallReactionRequest defines model for RollCallReactionRequest.
@@ -656,6 +676,7 @@ type SingleChoiceQuestionResponse struct {
 	Id          int                              `json:"id"`
 	IsOpen      bool                             `json:"isOpen"`
 	IsPublic    bool                             `json:"isPublic"`
+	IsRequired  bool                             `json:"isRequired"`
 	Options     []OptionResponse                 `json:"options"`
 	Title       string                           `json:"title"`
 	Type        SingleChoiceQuestionResponseType `json:"type"`
@@ -777,6 +798,23 @@ type AdminPostImageParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// AdminAddCampParticipantJSONBody defines parameters for AdminAddCampParticipant.
+type AdminAddCampParticipantJSONBody struct {
+	UserId string `json:"userId"`
+}
+
+// AdminAddCampParticipantParams defines parameters for AdminAddCampParticipant.
+type AdminAddCampParticipantParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminRemoveCampParticipantParams defines parameters for AdminRemoveCampParticipant.
+type AdminRemoveCampParticipantParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // AdminGetPaymentsParams defines parameters for AdminGetPayments.
 type AdminGetPaymentsParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -842,6 +880,15 @@ type AdminPutQuestionGroupMetadataParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// AdminGetAnswersForQuestionGroupParams defines parameters for AdminGetAnswersForQuestionGroup.
+type AdminGetAnswersForQuestionGroupParams struct {
+	// UserId User ID（省略時は全ユーザーの回答を取得）
+	UserId *UserIdInQuery `form:"userId,omitempty" json:"userId,omitempty"`
+
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // AdminPostQuestionParams defines parameters for AdminPostQuestion.
 type AdminPostQuestionParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -862,7 +909,7 @@ type AdminPutQuestionParams struct {
 
 // AdminGetAnswersParams defines parameters for AdminGetAnswers.
 type AdminGetAnswersParams struct {
-	// UserId User ID
+	// UserId User ID（省略時は全ユーザーの回答を取得）
 	UserId *UserIdInQuery `form:"userId,omitempty" json:"userId,omitempty"`
 
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -907,6 +954,12 @@ type AdminGetUserParams struct {
 
 // AdminPutUserParams defines parameters for AdminPutUser.
 type AdminPutUserParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// AdminPostAnswerParams defines parameters for AdminPostAnswer.
+type AdminPostAnswerParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
@@ -1010,6 +1063,9 @@ type AdminPutCampJSONRequestBody = CampRequest
 // AdminPostImageMultipartRequestBody defines body for AdminPostImage for multipart/form-data ContentType.
 type AdminPostImageMultipartRequestBody AdminPostImageMultipartBody
 
+// AdminAddCampParticipantJSONRequestBody defines body for AdminAddCampParticipant for application/json ContentType.
+type AdminAddCampParticipantJSONRequestBody AdminAddCampParticipantJSONBody
+
 // AdminPostPaymentJSONRequestBody defines body for AdminPostPayment for application/json ContentType.
 type AdminPostPaymentJSONRequestBody = PaymentRequest
 
@@ -1048,6 +1104,9 @@ type AdminPutRoomJSONRequestBody = RoomRequest
 
 // AdminPutUserJSONRequestBody defines body for AdminPutUser for application/json ContentType.
 type AdminPutUserJSONRequestBody = UserRequest
+
+// AdminPostAnswerJSONRequestBody defines body for AdminPostAnswer for application/json ContentType.
+type AdminPostAnswerJSONRequestBody = AnswerRequest
 
 // AdminPostMessageJSONRequestBody defines body for AdminPostMessage for application/json ContentType.
 type AdminPostMessageJSONRequestBody = MessageRequest
@@ -1833,6 +1892,12 @@ type ServerInterface interface {
 	// 画像をアップロード（管理者用）
 	// (POST /api/admin/camps/{campId}/images)
 	AdminPostImage(ctx echo.Context, campId CampId, params AdminPostImageParams) error
+	// ユーザーを合宿に参加させる（管理者用）
+	// (POST /api/admin/camps/{campId}/participants)
+	AdminAddCampParticipant(ctx echo.Context, campId CampId, params AdminAddCampParticipantParams) error
+	// ユーザーの参加を取り消す（管理者用）
+	// (DELETE /api/admin/camps/{campId}/participants/{userId})
+	AdminRemoveCampParticipant(ctx echo.Context, campId CampId, userId UserId, params AdminRemoveCampParticipantParams) error
 	// 支払い情報の一覧を取得（管理者用）
 	// (GET /api/admin/camps/{campId}/payments)
 	AdminGetPayments(ctx echo.Context, campId CampId, params AdminGetPaymentsParams) error
@@ -1863,6 +1928,9 @@ type ServerInterface interface {
 	// 質問グループを更新（管理者用）
 	// (PUT /api/admin/question-groups/{questionGroupId})
 	AdminPutQuestionGroupMetadata(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPutQuestionGroupMetadataParams) error
+	// 質問グループに対する回答一覧を取得（管理者用）
+	// (GET /api/admin/question-groups/{questionGroupId}/answers)
+	AdminGetAnswersForQuestionGroup(ctx echo.Context, questionGroupId QuestionGroupId, params AdminGetAnswersForQuestionGroupParams) error
 	// 質問を追加
 	// (POST /api/admin/question-groups/{questionGroupId}/questions)
 	AdminPostQuestion(ctx echo.Context, questionGroupId QuestionGroupId, params AdminPostQuestionParams) error
@@ -1896,6 +1964,9 @@ type ServerInterface interface {
 	// ユーザーの情報を更新（主に合宿係の権限管理用）
 	// (PUT /api/admin/users/{userId})
 	AdminPutUser(ctx echo.Context, userId UserId, params AdminPutUserParams) error
+	// ユーザーの回答を作成（管理者用）
+	// (POST /api/admin/users/{userId}/answers)
+	AdminPostAnswer(ctx echo.Context, userId UserId, params AdminPostAnswerParams) error
 	// ユーザーにDMを送信（管理者用）
 	// (POST /api/admin/users/{userId}/messages)
 	AdminPostMessage(ctx echo.Context, userId UserId, params AdminPostMessageParams) error
@@ -2151,6 +2222,86 @@ func (w *ServerInterfaceWrapper) AdminPostImage(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPostImage(ctx, campId, params)
+	return err
+}
+
+// AdminAddCampParticipant converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminAddCampParticipant(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminAddCampParticipantParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminAddCampParticipant(ctx, campId, params)
+	return err
+}
+
+// AdminRemoveCampParticipant converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminRemoveCampParticipant(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// ------------- Path parameter "userId" -------------
+	var userId UserId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "userId", ctx.Param("userId"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminRemoveCampParticipantParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminRemoveCampParticipant(ctx, campId, userId, params)
 	return err
 }
 
@@ -2511,6 +2662,48 @@ func (w *ServerInterfaceWrapper) AdminPutQuestionGroupMetadata(ctx echo.Context)
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPutQuestionGroupMetadata(ctx, questionGroupId, params)
+	return err
+}
+
+// AdminGetAnswersForQuestionGroup converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminGetAnswersForQuestionGroup(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "questionGroupId" -------------
+	var questionGroupId QuestionGroupId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "questionGroupId", ctx.Param("questionGroupId"), &questionGroupId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter questionGroupId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminGetAnswersForQuestionGroupParams
+	// ------------- Optional query parameter "userId" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "userId", ctx.QueryParams(), &params.UserId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
+	}
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminGetAnswersForQuestionGroup(ctx, questionGroupId, params)
 	return err
 }
 
@@ -2906,6 +3099,42 @@ func (w *ServerInterfaceWrapper) AdminPutUser(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminPutUser(ctx, userId, params)
+	return err
+}
+
+// AdminPostAnswer converts echo context to params.
+func (w *ServerInterfaceWrapper) AdminPostAnswer(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "userId" -------------
+	var userId UserId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "userId", ctx.Param("userId"), &userId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter userId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AdminPostAnswerParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AdminPostAnswer(ctx, userId, params)
 	return err
 }
 
@@ -3617,6 +3846,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.DELETE(baseURL+"/api/admin/camps/:campId", wrapper.AdminDeleteCamp)
 	router.PUT(baseURL+"/api/admin/camps/:campId", wrapper.AdminPutCamp)
 	router.POST(baseURL+"/api/admin/camps/:campId/images", wrapper.AdminPostImage)
+	router.POST(baseURL+"/api/admin/camps/:campId/participants", wrapper.AdminAddCampParticipant)
+	router.DELETE(baseURL+"/api/admin/camps/:campId/participants/:userId", wrapper.AdminRemoveCampParticipant)
 	router.GET(baseURL+"/api/admin/camps/:campId/payments", wrapper.AdminGetPayments)
 	router.POST(baseURL+"/api/admin/camps/:campId/payments", wrapper.AdminPostPayment)
 	router.POST(baseURL+"/api/admin/camps/:campId/question-groups", wrapper.AdminPostQuestionGroup)
@@ -3627,6 +3858,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/api/admin/payments/:paymentId", wrapper.AdminPutPayment)
 	router.DELETE(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminDeleteQuestionGroup)
 	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroupMetadata)
+	router.GET(baseURL+"/api/admin/question-groups/:questionGroupId/answers", wrapper.AdminGetAnswersForQuestionGroup)
 	router.POST(baseURL+"/api/admin/question-groups/:questionGroupId/questions", wrapper.AdminPostQuestion)
 	router.DELETE(baseURL+"/api/admin/questions/:questionId", wrapper.AdminDeleteQuestion)
 	router.PUT(baseURL+"/api/admin/questions/:questionId", wrapper.AdminPutQuestion)
@@ -3638,6 +3870,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PUT(baseURL+"/api/admin/rooms/:roomId", wrapper.AdminPutRoom)
 	router.GET(baseURL+"/api/admin/users/:userId", wrapper.AdminGetUser)
 	router.PUT(baseURL+"/api/admin/users/:userId", wrapper.AdminPutUser)
+	router.POST(baseURL+"/api/admin/users/:userId/answers", wrapper.AdminPostAnswer)
 	router.POST(baseURL+"/api/admin/users/:userId/messages", wrapper.AdminPostMessage)
 	router.PUT(baseURL+"/api/answers/:answerId", wrapper.PutAnswer)
 	router.GET(baseURL+"/api/camps", wrapper.GetCamps)

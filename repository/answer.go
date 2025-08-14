@@ -7,14 +7,18 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
+type GetAnswersQuery struct {
+	UserID                 *string
+	QuestionGroupID        *uint
+	QuestionID             *uint
+	IncludePrivateAnswers  bool
+	IncludeNonParticipants bool
+}
+
 type AnswerRepository interface {
+	CreateAnswer(ctx context.Context, answer *model.Answer) error
 	CreateAnswers(ctx context.Context, answers *[]model.Answer) error
 	GetAnswerByID(ctx context.Context, id uint) (*model.Answer, error)
-	GetAnswersByUserAndQuestionGroup(
-		ctx context.Context,
-		userID string,
-		questionGroupID uint,
-	) ([]model.Answer, error)
-	GetAnswersByQuestionID(ctx context.Context, questionID uint) ([]model.Answer, error)
+	GetAnswers(ctx context.Context, query GetAnswersQuery) ([]model.Answer, error)
 	UpdateAnswer(ctx context.Context, answerID uint, answer *model.Answer) error
 }

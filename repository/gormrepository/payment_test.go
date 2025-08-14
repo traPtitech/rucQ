@@ -177,7 +177,7 @@ func TestUpdatePayment(t *testing.T) {
 		user := mustCreateUser(t, r)
 
 		// 存在しないIDでUpdatePaymentをテスト
-		nonExistentID := uint(99999)
+		nonExistentID := uint(random.PositiveInt(t))
 		updatePayment := model.Payment{
 			Amount:     1000,
 			AmountPaid: 500,
