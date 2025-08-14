@@ -15,6 +15,8 @@ func (r *Repository) CreateRoomGroup(ctx context.Context, roomGroup *model.RoomG
 		if errors.Is(err, gorm.ErrForeignKeyViolated) {
 			return repository.ErrCampNotFound
 		}
+
+		return err
 	}
 
 	return nil

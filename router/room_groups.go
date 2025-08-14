@@ -177,6 +177,18 @@ func (s *Server) AdminPutRoomGroup(
 	}
 
 	updatedRoomGroup, err := s.repo.GetRoomGroupByID(e.Request().Context(), uint(roomGroupID))
+
+	if err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to retrieve updated room group",
+			slog.String("error", err.Error()),
+			slog.Int("roomGroupID", roomGroupID),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
 	res, err := converter.Convert[api.RoomGroupResponse](updatedRoomGroup)
 
 	if err != nil {
