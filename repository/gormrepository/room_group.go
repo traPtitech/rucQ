@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (r *Repository) CreateRoomGroup(ctx context.Context, roomGroup *model.RoomGroup) error {
@@ -25,12 +26,13 @@ func (r *Repository) UpdateRoomGroup(
 	rowsAffected, err := gorm.G[*model.RoomGroup](r.db).
 		Where("id = ?", roomGroupID).
 		Updates(ctx, roomGroup)
+
 	if err != nil {
 		return err
 	}
 
 	if rowsAffected == 0 {
-		return model.ErrNotFound
+		return repository.ErrRoomGroupNotFound
 	}
 
 	return nil
@@ -47,8 +49,9 @@ func (r *Repository) GetRoomGroupByID(
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, model.ErrNotFound
+			return nil, repository.ErrRoomGroupNotFound
 		}
+
 		return nil, err
 	}
 
