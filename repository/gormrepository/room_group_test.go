@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -130,7 +131,7 @@ func TestUpdateRoomGroup(t *testing.T) {
 
 		err := r.UpdateRoomGroup(context.Background(), nonExistentID, updatedRoomGroup)
 
-		assert.ErrorIs(t, err, model.ErrNotFound)
+		assert.ErrorIs(t, err, repository.ErrRoomGroupNotFound)
 	})
 
 	t.Run("Nil RoomGroup", func(t *testing.T) {
@@ -222,7 +223,7 @@ func TestGetRoomGroupByID(t *testing.T) {
 
 		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), nonExistentID)
 
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, repository.ErrRoomGroupNotFound)
 		assert.Nil(t, retrievedRoomGroup)
 	})
 }
