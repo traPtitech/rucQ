@@ -9,6 +9,7 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -202,7 +203,7 @@ func TestAdminPutRoomGroup(t *testing.T) {
 			Return(&model.User{IsStaff: true}, nil)
 		h.repo.MockRoomGroupRepository.EXPECT().
 			UpdateRoomGroup(gomock.Any(), uint(roomGroupID), gomock.Any()).
-			Return(model.ErrNotFound)
+			Return(repository.ErrRoomGroupNotFound)
 
 		h.expect.PUT("/api/admin/room-groups/{roomGroupId}", roomGroupID).
 			WithJSON(req).
