@@ -144,6 +144,54 @@ func TestUpdateRoomGroup(t *testing.T) {
 
 		assert.Error(t, err)
 	})
+
+	t.Run("Zero CampID", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		newName := random.AlphaNumericString(t, 20)
+
+		// CampIDは指定しない
+		updatedRoomGroup := &model.RoomGroup{
+			Name: newName,
+		}
+
+		err := r.UpdateRoomGroup(context.Background(), roomGroup.ID, updatedRoomGroup)
+
+		assert.NoError(t, err)
+
+		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), roomGroup.ID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, updatedRoomGroup.Name, retrievedRoomGroup.Name)
+		assert.NotZero(t, retrievedRoomGroup.ID)
+		assert.Equal(t, newName, retrievedRoomGroup.Name)
+		assert.Equal(t, camp.ID, retrievedRoomGroup.CampID) // CampIDは変更されないことを確認
+	})
+
+	t.Run("No Changes", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+
+		updatedRoomGroup := &model.RoomGroup{
+			Name:   roomGroup.Name,
+			CampID: roomGroup.CampID,
+		}
+
+		err := r.UpdateRoomGroup(context.Background(), roomGroup.ID, updatedRoomGroup)
+
+		assert.NoError(t, err)
+
+		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), roomGroup.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, roomGroup.Name, retrievedRoomGroup.Name)
+		assert.Equal(t, roomGroup.CampID, retrievedRoomGroup.CampID)
+	})
 }
 
 func TestGetRoomGroupByID(t *testing.T) {
