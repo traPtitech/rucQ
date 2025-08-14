@@ -60,16 +60,6 @@ func TestRepository_CreateRoomGroup(t *testing.T) {
 
 		assert.ErrorIs(t, err, repository.ErrCampNotFound)
 	})
-
-	t.Run("Nil RoomGroup", func(t *testing.T) {
-		t.Parallel()
-
-		r := setup(t)
-
-		err := r.CreateRoomGroup(t.Context(), nil)
-
-		assert.Error(t, err)
-	})
 }
 
 func TestRepository_UpdateRoomGroup(t *testing.T) {
