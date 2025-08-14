@@ -12,7 +12,9 @@ import (
 
 func (r *Repository) CreateRoomGroup(ctx context.Context, roomGroup *model.RoomGroup) error {
 	if err := gorm.G[model.RoomGroup](r.db).Create(ctx, roomGroup); err != nil {
-		return err
+		if errors.Is(err, gorm.ErrForeignKeyViolated) {
+			return repository.ErrCampNotFound
+		}
 	}
 
 	return nil

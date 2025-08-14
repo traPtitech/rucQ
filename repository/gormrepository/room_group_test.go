@@ -58,8 +58,7 @@ func TestRepository_CreateRoomGroup(t *testing.T) {
 
 		err := r.CreateRoomGroup(t.Context(), roomGroup)
 
-		// 外部キー制約違反によりエラーが発生することを確認
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, repository.ErrCampNotFound)
 	})
 
 	t.Run("Nil RoomGroup", func(t *testing.T) {
