@@ -27,7 +27,7 @@ func mustCreateRoomGroup(t *testing.T, r *Repository, campID uint) *model.RoomGr
 	return roomGroup
 }
 
-func TestCreateRoomGroup(t *testing.T) {
+func TestRepository_CreateRoomGroup(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
@@ -90,7 +90,7 @@ func TestCreateRoomGroup(t *testing.T) {
 	})
 }
 
-func TestUpdateRoomGroup(t *testing.T) {
+func TestRepository_UpdateRoomGroup(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
@@ -195,7 +195,7 @@ func TestUpdateRoomGroup(t *testing.T) {
 	})
 }
 
-func TestGetRoomGroupByID(t *testing.T) {
+func TestRepository_GetRoomGroupByID(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
