@@ -10,23 +10,6 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
-func mustCreateRoomGroup(t *testing.T, r *Repository, campID uint) *model.RoomGroup {
-	t.Helper()
-
-	roomGroup := &model.RoomGroup{
-		Name:   random.AlphaNumericString(t, 20),
-		CampID: campID,
-	}
-
-	err := r.CreateRoomGroup(t.Context(), roomGroup)
-
-	if err != nil {
-		t.Fatalf("failed to create room group: %v", err)
-	}
-
-	return roomGroup
-}
-
 func TestRepository_CreateRoomGroup(t *testing.T) {
 	t.Parallel()
 
