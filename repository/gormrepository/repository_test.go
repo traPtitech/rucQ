@@ -309,9 +309,9 @@ func mustCreateRoomGroup(t *testing.T, r *Repository, campID uint) *model.RoomGr
 
 	err := r.CreateRoomGroup(t.Context(), roomGroup)
 
-	if err != nil {
-		t.Fatalf("failed to create room group: %v", err)
-	}
+	require.NoError(t, err)
+	require.NotNil(t, roomGroup)
+	require.NotZero(t, roomGroup.ID)
 
 	return roomGroup
 }
