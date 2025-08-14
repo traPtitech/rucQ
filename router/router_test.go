@@ -9,34 +9,34 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/traPtitech/rucQ/api"
-	"github.com/traPtitech/rucQ/repository/mock"
+	"github.com/traPtitech/rucQ/repository/mockrepository"
 )
 
 type mockRepository struct {
-	*mock.MockAnswerRepository
-	*mock.MockCampRepository
-	*mock.MockEventRepository
-	*mock.MockOptionRepository
-	*mock.MockPaymentRepository
-	*mock.MockQuestionRepository
-	*mock.MockQuestionGroupRepository
-	*mock.MockRoomGroupRepository
-	*mock.MockRoomRepository
-	*mock.MockUserRepository
+	*mockrepository.MockAnswerRepository
+	*mockrepository.MockCampRepository
+	*mockrepository.MockEventRepository
+	*mockrepository.MockOptionRepository
+	*mockrepository.MockPaymentRepository
+	*mockrepository.MockQuestionRepository
+	*mockrepository.MockQuestionGroupRepository
+	*mockrepository.MockRoomGroupRepository
+	*mockrepository.MockRoomRepository
+	*mockrepository.MockUserRepository
 }
 
 func newMockRepository(ctrl *gomock.Controller) *mockRepository {
 	return &mockRepository{
-		MockAnswerRepository:        mock.NewMockAnswerRepository(ctrl),
-		MockCampRepository:          mock.NewMockCampRepository(ctrl),
-		MockEventRepository:         mock.NewMockEventRepository(ctrl),
-		MockOptionRepository:        mock.NewMockOptionRepository(ctrl),
-		MockPaymentRepository:       mock.NewMockPaymentRepository(ctrl),
-		MockQuestionRepository:      mock.NewMockQuestionRepository(ctrl),
-		MockQuestionGroupRepository: mock.NewMockQuestionGroupRepository(ctrl),
-		MockRoomGroupRepository:     mock.NewMockRoomGroupRepository(ctrl),
-		MockRoomRepository:          mock.NewMockRoomRepository(ctrl),
-		MockUserRepository:          mock.NewMockUserRepository(ctrl),
+		MockAnswerRepository:        mockrepository.NewMockAnswerRepository(ctrl),
+		MockCampRepository:          mockrepository.NewMockCampRepository(ctrl),
+		MockEventRepository:         mockrepository.NewMockEventRepository(ctrl),
+		MockOptionRepository:        mockrepository.NewMockOptionRepository(ctrl),
+		MockPaymentRepository:       mockrepository.NewMockPaymentRepository(ctrl),
+		MockQuestionRepository:      mockrepository.NewMockQuestionRepository(ctrl),
+		MockQuestionGroupRepository: mockrepository.NewMockQuestionGroupRepository(ctrl),
+		MockRoomGroupRepository:     mockrepository.NewMockRoomGroupRepository(ctrl),
+		MockRoomRepository:          mockrepository.NewMockRoomRepository(ctrl),
+		MockUserRepository:          mockrepository.NewMockUserRepository(ctrl),
 	}
 }
 
