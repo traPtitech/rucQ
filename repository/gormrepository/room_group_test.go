@@ -1,7 +1,6 @@
 package gormrepository
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,7 +18,8 @@ func mustCreateRoomGroup(t *testing.T, r *Repository, campID uint) *model.RoomGr
 		CampID: campID,
 	}
 
-	err := r.CreateRoomGroup(context.Background(), roomGroup)
+	err := r.CreateRoomGroup(t.Context(), roomGroup)
+
 	if err != nil {
 		t.Fatalf("failed to create room group: %v", err)
 	}
@@ -40,7 +40,7 @@ func TestRepository_CreateRoomGroup(t *testing.T) {
 			CampID: camp.ID,
 		}
 
-		err := r.CreateRoomGroup(context.Background(), roomGroup)
+		err := r.CreateRoomGroup(t.Context(), roomGroup)
 
 		assert.NoError(t, err)
 		assert.NotZero(t, roomGroup.ID)
@@ -57,7 +57,7 @@ func TestRepository_CreateRoomGroup(t *testing.T) {
 			CampID: camp.ID,
 		}
 
-		err := r.CreateRoomGroup(context.Background(), roomGroup)
+		err := r.CreateRoomGroup(t.Context(), roomGroup)
 
 		assert.NoError(t, err) // 空の名前でもエラーにならないことを確認
 		assert.NotZero(t, roomGroup.ID)
@@ -73,7 +73,7 @@ func TestRepository_CreateRoomGroup(t *testing.T) {
 			CampID: campID,
 		}
 
-		err := r.CreateRoomGroup(context.Background(), roomGroup)
+		err := r.CreateRoomGroup(t.Context(), roomGroup)
 
 		// 外部キー制約違反によりエラーが発生することを確認
 		assert.Error(t, err)
@@ -84,7 +84,7 @@ func TestRepository_CreateRoomGroup(t *testing.T) {
 
 		r := setup(t)
 
-		err := r.CreateRoomGroup(context.Background(), nil)
+		err := r.CreateRoomGroup(t.Context(), nil)
 
 		assert.Error(t, err)
 	})
@@ -106,12 +106,12 @@ func TestRepository_UpdateRoomGroup(t *testing.T) {
 			CampID: camp.ID,
 		}
 
-		err := r.UpdateRoomGroup(context.Background(), roomGroup.ID, updatedRoomGroup)
+		err := r.UpdateRoomGroup(t.Context(), roomGroup.ID, updatedRoomGroup)
 
 		assert.NoError(t, err)
 
 		// 更新が正しく反映されているか確認
-		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), roomGroup.ID)
+		retrievedRoomGroup, err := r.GetRoomGroupByID(t.Context(), roomGroup.ID)
 		assert.NoError(t, err)
 		assert.Equal(t, newName, retrievedRoomGroup.Name)
 		assert.Equal(t, camp.ID, retrievedRoomGroup.CampID)
@@ -129,7 +129,7 @@ func TestRepository_UpdateRoomGroup(t *testing.T) {
 			CampID: camp.ID,
 		}
 
-		err := r.UpdateRoomGroup(context.Background(), nonExistentID, updatedRoomGroup)
+		err := r.UpdateRoomGroup(t.Context(), nonExistentID, updatedRoomGroup)
 
 		assert.ErrorIs(t, err, repository.ErrRoomGroupNotFound)
 	})
@@ -141,7 +141,7 @@ func TestRepository_UpdateRoomGroup(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
 
-		err := r.UpdateRoomGroup(context.Background(), roomGroup.ID, nil)
+		err := r.UpdateRoomGroup(t.Context(), roomGroup.ID, nil)
 
 		assert.Error(t, err)
 	})
@@ -159,11 +159,11 @@ func TestRepository_UpdateRoomGroup(t *testing.T) {
 			Name: newName,
 		}
 
-		err := r.UpdateRoomGroup(context.Background(), roomGroup.ID, updatedRoomGroup)
+		err := r.UpdateRoomGroup(t.Context(), roomGroup.ID, updatedRoomGroup)
 
 		assert.NoError(t, err)
 
-		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), roomGroup.ID)
+		retrievedRoomGroup, err := r.GetRoomGroupByID(t.Context(), roomGroup.ID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, updatedRoomGroup.Name, retrievedRoomGroup.Name)
@@ -184,11 +184,11 @@ func TestRepository_UpdateRoomGroup(t *testing.T) {
 			CampID: roomGroup.CampID,
 		}
 
-		err := r.UpdateRoomGroup(context.Background(), roomGroup.ID, updatedRoomGroup)
+		err := r.UpdateRoomGroup(t.Context(), roomGroup.ID, updatedRoomGroup)
 
 		assert.NoError(t, err)
 
-		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), roomGroup.ID)
+		retrievedRoomGroup, err := r.GetRoomGroupByID(t.Context(), roomGroup.ID)
 		assert.NoError(t, err)
 		assert.Equal(t, roomGroup.Name, retrievedRoomGroup.Name)
 		assert.Equal(t, roomGroup.CampID, retrievedRoomGroup.CampID)
@@ -205,7 +205,7 @@ func TestRepository_GetRoomGroupByID(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
 
-		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), roomGroup.ID)
+		retrievedRoomGroup, err := r.GetRoomGroupByID(t.Context(), roomGroup.ID)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, retrievedRoomGroup)
@@ -221,7 +221,7 @@ func TestRepository_GetRoomGroupByID(t *testing.T) {
 		r := setup(t)
 		nonExistentID := uint(random.PositiveInt(t))
 
-		retrievedRoomGroup, err := r.GetRoomGroupByID(context.Background(), nonExistentID)
+		retrievedRoomGroup, err := r.GetRoomGroupByID(t.Context(), nonExistentID)
 
 		assert.ErrorIs(t, err, repository.ErrRoomGroupNotFound)
 		assert.Nil(t, retrievedRoomGroup)
