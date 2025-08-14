@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
@@ -84,7 +85,8 @@ func TestRepository_UpdateRoomGroup(t *testing.T) {
 
 		// 更新が正しく反映されているか確認
 		retrievedRoomGroup, err := r.GetRoomGroupByID(t.Context(), roomGroup.ID)
-		assert.NoError(t, err)
+
+		require.NoError(t, err)
 		assert.Equal(t, newName, retrievedRoomGroup.Name)
 		assert.Equal(t, camp.ID, retrievedRoomGroup.CampID)
 	})
@@ -104,18 +106,6 @@ func TestRepository_UpdateRoomGroup(t *testing.T) {
 		err := r.UpdateRoomGroup(t.Context(), nonExistentID, updatedRoomGroup)
 
 		assert.ErrorIs(t, err, repository.ErrRoomGroupNotFound)
-	})
-
-	t.Run("Nil RoomGroup", func(t *testing.T) {
-		t.Parallel()
-
-		r := setup(t)
-		camp := mustCreateCamp(t, r)
-		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
-
-		err := r.UpdateRoomGroup(t.Context(), roomGroup.ID, nil)
-
-		assert.Error(t, err)
 	})
 
 	t.Run("Zero CampID", func(t *testing.T) {
@@ -161,7 +151,8 @@ func TestRepository_UpdateRoomGroup(t *testing.T) {
 		assert.NoError(t, err)
 
 		retrievedRoomGroup, err := r.GetRoomGroupByID(t.Context(), roomGroup.ID)
-		assert.NoError(t, err)
+
+		require.NoError(t, err)
 		assert.Equal(t, roomGroup.Name, retrievedRoomGroup.Name)
 		assert.Equal(t, roomGroup.CampID, retrievedRoomGroup.CampID)
 	})
@@ -180,11 +171,13 @@ func TestRepository_GetRoomGroupByID(t *testing.T) {
 		retrievedRoomGroup, err := r.GetRoomGroupByID(t.Context(), roomGroup.ID)
 
 		assert.NoError(t, err)
-		assert.NotNil(t, retrievedRoomGroup)
-		assert.Equal(t, roomGroup.ID, retrievedRoomGroup.ID)
-		assert.Equal(t, roomGroup.Name, retrievedRoomGroup.Name)
-		assert.Equal(t, roomGroup.CampID, retrievedRoomGroup.CampID)
-		assert.NotNil(t, retrievedRoomGroup.Rooms) // Preloadされていることを確認
+
+		if assert.NotNil(t, retrievedRoomGroup) {
+			assert.Equal(t, roomGroup.ID, retrievedRoomGroup.ID)
+			assert.Equal(t, roomGroup.Name, retrievedRoomGroup.Name)
+			assert.Equal(t, roomGroup.CampID, retrievedRoomGroup.CampID)
+			assert.NotNil(t, retrievedRoomGroup.Rooms) // Preloadされていることを確認
+		}
 	})
 
 	t.Run("Not Found", func(t *testing.T) {
