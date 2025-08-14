@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"go.uber.org/mock/gomock"
+	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
@@ -179,6 +180,15 @@ func TestAdminPutRoomGroup(t *testing.T) {
 		h.repo.MockRoomGroupRepository.EXPECT().
 			UpdateRoomGroup(gomock.Any(), uint(roomGroupID), gomock.Any()).
 			Return(nil)
+		h.repo.MockRoomGroupRepository.EXPECT().
+			GetRoomGroupByID(gomock.Any(), uint(roomGroupID)).
+			Return(&model.RoomGroup{
+				Model: gorm.Model{
+					ID: uint(roomGroupID),
+				},
+				Name:  req.Name,
+				Rooms: []model.Room{},
+			}, nil)
 
 		res := h.expect.PUT("/api/admin/room-groups/{roomGroupId}", roomGroupID).
 			WithJSON(req).
@@ -187,6 +197,7 @@ func TestAdminPutRoomGroup(t *testing.T) {
 			Status(http.StatusOK).JSON().Object()
 
 		res.Keys().ContainsAll("id", "name", "rooms")
+		res.Value("id").Number().IsEqual(roomGroupID)
 		res.Value("name").String().IsEqual(req.Name)
 	})
 

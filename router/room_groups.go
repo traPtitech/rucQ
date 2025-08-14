@@ -176,7 +176,9 @@ func (s *Server) AdminPutRoomGroup(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	res, err := converter.Convert[api.RoomGroupResponse](roomGroup)
+	updatedRoomGroup, err := s.repo.GetRoomGroupByID(e.Request().Context(), uint(roomGroupID))
+	res, err := converter.Convert[api.RoomGroupResponse](updatedRoomGroup)
+
 	if err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
