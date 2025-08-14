@@ -132,6 +132,31 @@ func TestAdminPostRoomGroup(t *testing.T) {
 			Expect().
 			Status(http.StatusInternalServerError)
 	})
+
+	t.Run("Camp Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+
+		req := api.AdminPostRoomGroupJSONRequestBody{
+			Name: random.AlphaNumericString(t, 20),
+		}
+		username := random.AlphaNumericString(t, 32)
+		campID := random.PositiveInt(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil)
+		h.repo.MockRoomGroupRepository.EXPECT().
+			CreateRoomGroup(gomock.Any(), gomock.Any()).
+			Return(repository.ErrCampNotFound)
+
+		h.expect.POST("/api/admin/camps/{campId}/room-groups", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNotFound)
+	})
 }
 
 func TestAdminPutRoomGroup(t *testing.T) {
