@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -25,6 +26,13 @@ import (
 var containerAddr string
 
 func TestMain(m *testing.M) {
+	// クリーンアップはcomposeStack.Downで行われるためRyukはなくても問題ない
+	err := os.Setenv("TESTCONTAINERS_RYUK_DISABLED", "true")
+
+	if err != nil {
+		panic(fmt.Sprintf("failed to set environment variable: %v", err))
+	}
+
 	composeStack, err := compose.NewDockerComposeWith(
 		compose.WithStackFiles("../../compose.yaml"),
 	)

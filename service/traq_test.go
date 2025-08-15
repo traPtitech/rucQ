@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -18,6 +19,15 @@ import (
 var s *traqServiceImpl
 
 func TestMain(m *testing.M) {
+	// 詳しい原因は分からないが、Ryukが有効だとrepositoryのテストと
+	// 何かしら競合して失敗するので無効化する
+	// クリーンアップはcomposeStack.Downで行われるためRyukはなくても問題ない
+	err := os.Setenv("TESTCONTAINERS_RYUK_DISABLED", "true")
+
+	if err != nil {
+		panic(fmt.Sprintf("failed to set environment variable: %v", err))
+	}
+
 	composeStack, err := compose.NewDockerComposeWith(
 		compose.WithStackFiles("../compose.yaml"),
 	)
