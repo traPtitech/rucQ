@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
 
@@ -16,59 +16,90 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
-func setup(t *testing.T) *traqServiceImpl {
-	t.Helper()
+var s *traqServiceImpl
+
+func TestMain(m *testing.M) {
+	// 詳しい原因は分からないが、Ryukが有効だとrepositoryのテストと
+	// 何かしら競合して失敗するので無効化する
+	// クリーンアップはcomposeStack.Downで行われるためRyukはなくても問題ない
+	err := os.Setenv("TESTCONTAINERS_RYUK_DISABLED", "true")
+
+	if err != nil {
+		panic(fmt.Sprintf("failed to set environment variable: %v", err))
+	}
 
 	composeStack, err := compose.NewDockerComposeWith(
 		compose.WithStackFiles("../compose.yaml"),
 	)
-	require.NoError(t, err, "Failed to create compose stack")
 
-	// Set random ports via environment variables
-	composeWithEnv := composeStack.WithEnv(map[string]string{
-		"MARIADB_PORT":     "0",
-		"TRAQ_SERVER_PORT": "0",
-	})
+	if err != nil {
+		panic(fmt.Sprintf("failed to create compose stack: %v", err))
+	}
 
-	t.Cleanup(func() {
-		require.NoError(
-			t,
-			composeStack.Down(
-				context.Background(),
-				compose.RemoveOrphans(true),
-				compose.RemoveImagesLocal,
-				compose.RemoveVolumes(true),
-			),
+	defer func() {
+		err := composeStack.Down(
+			context.Background(),
+			compose.RemoveOrphans(true),
+			compose.RemoveImagesLocal,
+			compose.RemoveVolumes(true),
 		)
-	})
 
-	// Configure wait strategies for required services and start only those services
-	composeWithWait := composeWithEnv.
-		WaitForService("mariadb", wait.ForHealthCheck().WithStartupTimeout(60*time.Second)).
-		WaitForService("traq_server", wait.ForHTTP("/api/v3/version").WithPort("3000/tcp").WithStartupTimeout(120*time.Second))
+		if err != nil {
+			panic(fmt.Sprintf("failed to stop compose stack: %v", err))
+		}
+	}()
 
-	err = composeWithWait.Up(
-		t.Context(),
-		compose.Wait(true),
-		compose.RunServices("mariadb", "traq_server"),
-	)
-	require.NoError(t, err, "Failed to start compose stack")
+	ctx := context.Background()
 
-	// Get traQ server container
-	traqContainer, err := composeStack.ServiceContainer(t.Context(), "traq_server")
-	require.NoError(t, err, "Failed to get traQ server container")
+	if err := composeStack.
+		WithEnv(map[string]string{
+			"MARIADB_PORT":     "0",
+			"TRAQ_SERVER_PORT": "0",
+		}).
+		WaitForService(
+			"mariadb",
+			wait.ForHealthCheck().WithStartupTimeout(60*time.Second),
+		).
+		WaitForService(
+			"traq_server",
+			wait.ForHTTP("/api/v3/version").WithPort("3000/tcp").WithStartupTimeout(120*time.Second),
+		).
+		Up(
+			ctx,
+			compose.Wait(true),
+			compose.RunServices("mariadb", "traq_server"),
+		); err != nil {
+		panic(fmt.Sprintf("failed to start compose stack: %v", err))
+	}
 
-	traqHost, err := traqContainer.Host(t.Context())
-	require.NoError(t, err)
-	traqPort, err := traqContainer.MappedPort(t.Context(), "3000")
-	require.NoError(t, err)
+	traqContainer, err := composeStack.ServiceContainer(ctx, "traq_server")
+
+	if err != nil {
+		panic(fmt.Sprintf("failed to get traQ server container: %v", err))
+	}
+
+	traqHost, err := traqContainer.Host(ctx)
+
+	if err != nil {
+		panic(fmt.Sprintf("failed to get host: %v", err))
+	}
+
+	traqPort, err := traqContainer.MappedPort(ctx, "3000")
+
+	if err != nil {
+		panic(fmt.Sprintf("failed to get mapped port: %v", err))
+	}
 
 	traqAPIBaseURL := fmt.Sprintf("http://%s:%s/api/v3", traqHost, traqPort.Port())
 	accessToken, err := bot.CreateBot(traqAPIBaseURL)
 
-	require.NoError(t, err, "Failed to create bot")
+	if err != nil {
+		panic(fmt.Sprintf("failed to create bot: %v", err))
+	}
 
-	return NewTraqService(traqAPIBaseURL, accessToken)
+	s = NewTraqService(traqAPIBaseURL, accessToken)
+
+	m.Run()
 }
 
 const existingUserID = "traq" // 既存のユーザーID
@@ -79,7 +110,6 @@ func TestTraqServiceImpl_GetCanonicalUserName(t *testing.T) {
 	t.Run("存在するユーザーの正規化された名前を取得できる", func(t *testing.T) {
 		t.Parallel()
 
-		s := setup(t)
 		userName, err := s.GetCanonicalUserName(t.Context(), strings.ToUpper(existingUserID))
 
 		assert.NoError(t, err)
@@ -89,7 +119,6 @@ func TestTraqServiceImpl_GetCanonicalUserName(t *testing.T) {
 	t.Run("存在しないユーザーの場合はErrUserNotFoundを返す", func(t *testing.T) {
 		t.Parallel()
 
-		s := setup(t)
 		userID := random.AlphaNumericString(t, 32) // 非存在ユーザーID
 		_, err := s.GetCanonicalUserName(t.Context(), userID)
 
@@ -105,7 +134,6 @@ func TestTraqServiceImpl_PostDirectMessage(t *testing.T) {
 	t.Run("存在するユーザーへのメッセージ送信は成功する", func(t *testing.T) {
 		t.Parallel()
 
-		s := setup(t)
 		message := random.AlphaNumericString(t, 100)
 		err := s.PostDirectMessage(t.Context(), existingUserID, message)
 
@@ -115,7 +143,6 @@ func TestTraqServiceImpl_PostDirectMessage(t *testing.T) {
 	t.Run("存在しないユーザーへのメッセージ送信はエラーになる", func(t *testing.T) {
 		t.Parallel()
 
-		s := setup(t)
 		userID := random.AlphaNumericString(t, 32) // 非存在ユーザーID
 		message := random.AlphaNumericString(t, 100)
 		err := s.PostDirectMessage(t.Context(), userID, message)
