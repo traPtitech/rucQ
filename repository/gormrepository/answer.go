@@ -75,7 +75,7 @@ func (r *Repository) GetAnswers(
 		}
 	}
 
-	const maxScopes = 3
+	const maxScopes = 4
 
 	scopes := make([]func(*gorm.Statement), 0, maxScopes)
 
@@ -110,6 +110,19 @@ func (r *Repository) GetAnswers(
 	if query.QuestionID != nil {
 		scopes = append(scopes, func(s *gorm.Statement) {
 			s.Where("question_id = ?", query.QuestionID)
+		})
+	}
+
+	// 参加者以外の回答を含めない場合
+	if !query.IncludeNonParticipants {
+		scopes = append(scopes, func(s *gorm.Statement) {
+			subQuery := r.db.Table("camp_participants").
+				Select("1").
+				Joins("JOIN question_groups ON question_groups.camp_id = camp_participants.camp_id").
+				Joins("JOIN questions ON questions.question_group_id = question_groups.id").
+				Where("questions.id = answers.question_id AND camp_participants.user_id = answers.user_id")
+
+			s.Where("EXISTS (?)", subQuery)
 		})
 	}
 

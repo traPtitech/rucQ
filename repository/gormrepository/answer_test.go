@@ -327,9 +327,10 @@ func TestGetAnswers(t *testing.T) {
 
 		// 特定のquestion groupの回答のみ取得
 		query := repository.GetAnswersQuery{
-			UserID:                &user.ID,
-			QuestionGroupID:       &questionGroup.ID,
-			IncludePrivateAnswers: true,
+			UserID:                 &user.ID,
+			QuestionGroupID:        &questionGroup.ID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: true,
 		}
 		result, err := r.GetAnswers(t.Context(), query)
 
@@ -355,9 +356,10 @@ func TestGetAnswers(t *testing.T) {
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
 		query := repository.GetAnswersQuery{
-			UserID:                &user.ID,
-			QuestionGroupID:       &questionGroup.ID,
-			IncludePrivateAnswers: true,
+			UserID:                 &user.ID,
+			QuestionGroupID:        &questionGroup.ID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: true,
 		}
 		result, err := r.GetAnswers(t.Context(), query)
 
@@ -391,9 +393,10 @@ func TestGetAnswers(t *testing.T) {
 
 		// 別のユーザーで検索
 		query := repository.GetAnswersQuery{
-			UserID:                &user2.ID,
-			QuestionGroupID:       &questionGroup.ID,
-			IncludePrivateAnswers: true,
+			UserID:                 &user2.ID,
+			QuestionGroupID:        &questionGroup.ID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: true,
 		}
 		result, err := r.GetAnswers(t.Context(), query)
 
@@ -434,8 +437,9 @@ func TestGetAnswers(t *testing.T) {
 
 		// QuestionIDでAnswerを取得
 		query := repository.GetAnswersQuery{
-			QuestionID:            &question.ID,
-			IncludePrivateAnswers: true,
+			QuestionID:             &question.ID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
@@ -468,8 +472,9 @@ func TestGetAnswers(t *testing.T) {
 
 		// Answerが存在しない質問に対するクエリ
 		query := repository.GetAnswersQuery{
-			QuestionID:            &question.ID,
-			IncludePrivateAnswers: true,
+			QuestionID:             &question.ID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: true,
 		}
 		answers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
@@ -507,8 +512,9 @@ func TestGetAnswers(t *testing.T) {
 
 		// QuestionIDでAnswerを取得（SelectedOptionsも含む）
 		query := repository.GetAnswersQuery{
-			QuestionID:            &singleChoiceQuestion.ID,
-			IncludePrivateAnswers: true,
+			QuestionID:             &singleChoiceQuestion.ID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 
@@ -569,8 +575,9 @@ func TestGetAnswers(t *testing.T) {
 
 		// Public質問の回答を取得
 		query := repository.GetAnswersQuery{
-			QuestionID:            &publicQuestion.ID,
-			IncludePrivateAnswers: false,
+			QuestionID:             &publicQuestion.ID,
+			IncludePrivateAnswers:  false,
+			IncludeNonParticipants: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
@@ -624,8 +631,9 @@ func TestGetAnswers(t *testing.T) {
 
 		// Private質問の回答を取得
 		query := repository.GetAnswersQuery{
-			QuestionID:            &privateQuestion.ID,
-			IncludePrivateAnswers: false,
+			QuestionID:             &privateQuestion.ID,
+			IncludePrivateAnswers:  false,
+			IncludeNonParticipants: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 
@@ -643,8 +651,9 @@ func TestGetAnswers(t *testing.T) {
 		// 存在しない質問IDで回答を取得
 		nonExistentQuestionID := uint(random.PositiveInt(t))
 		query := repository.GetAnswersQuery{
-			QuestionID:            &nonExistentQuestionID,
-			IncludePrivateAnswers: false,
+			QuestionID:             &nonExistentQuestionID,
+			IncludePrivateAnswers:  false,
+			IncludeNonParticipants: true,
 		}
 		answers, err := r.GetAnswers(t.Context(), query)
 
@@ -688,8 +697,9 @@ func TestGetAnswers(t *testing.T) {
 
 		// Public質問の回答を取得（SelectedOptionsも含む）
 		query := repository.GetAnswersQuery{
-			QuestionID:            &publicSingleChoiceQuestion.ID,
-			IncludePrivateAnswers: false,
+			QuestionID:             &publicSingleChoiceQuestion.ID,
+			IncludePrivateAnswers:  false,
+			IncludeNonParticipants: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		assert.NoError(t, err)
@@ -748,8 +758,9 @@ func TestGetAnswers(t *testing.T) {
 
 		// Get all answers for the question group
 		query := repository.GetAnswersQuery{
-			QuestionGroupID:       &questionGroup.ID,
-			IncludePrivateAnswers: true,
+			QuestionGroupID:        &questionGroup.ID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		require.NoError(t, err)
@@ -777,8 +788,9 @@ func TestGetAnswers(t *testing.T) {
 		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
 
 		query := repository.GetAnswersQuery{
-			QuestionGroupID:       &questionGroup.ID,
-			IncludePrivateAnswers: true,
+			QuestionGroupID:        &questionGroup.ID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 		require.NoError(t, err)
@@ -820,8 +832,9 @@ func TestGetAnswers(t *testing.T) {
 
 			// Get answers for only question group 1
 			query := repository.GetAnswersQuery{
-				QuestionGroupID:       &questionGroup1.ID,
-				IncludePrivateAnswers: true,
+				QuestionGroupID:        &questionGroup1.ID,
+				IncludePrivateAnswers:  true,
+				IncludeNonParticipants: true,
 			}
 			retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 			require.NoError(t, err)
@@ -838,14 +851,174 @@ func TestGetAnswers(t *testing.T) {
 		nonExistentQuestionGroupID := uint(random.PositiveInt(t))
 
 		query := repository.GetAnswersQuery{
-			QuestionGroupID:       &nonExistentQuestionGroupID,
-			IncludePrivateAnswers: true,
+			QuestionGroupID:        &nonExistentQuestionGroupID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: true,
 		}
 		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
 
 		if assert.Error(t, err) {
 			assert.ErrorIs(t, err, model.ErrNotFound)
 			assert.Empty(t, retrievedAnswers)
+		}
+	})
+
+	t.Run(
+		"IncludeNonParticipants - false (default): excludes non-participants",
+		func(t *testing.T) {
+			t.Parallel()
+
+			r := setup(t)
+			camp := mustCreateCamp(t, r)
+			participant := mustCreateUser(t, r)
+			nonParticipant := mustCreateUser(t, r)
+			questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+			question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
+
+			// participantを合宿に参加させる
+			err := r.AddCampParticipant(t.Context(), camp.ID, &participant)
+			require.NoError(t, err)
+
+			// 両方のユーザーが同じ質問に回答
+			participantContent := random.AlphaNumericString(t, 20)
+			nonParticipantContent := random.AlphaNumericString(t, 20)
+
+			answers := []model.Answer{
+				{
+					QuestionID:      question.ID,
+					UserID:          participant.ID,
+					Type:            model.FreeTextQuestion,
+					FreeTextContent: &participantContent,
+				},
+				{
+					QuestionID:      question.ID,
+					UserID:          nonParticipant.ID,
+					Type:            model.FreeTextQuestion,
+					FreeTextContent: &nonParticipantContent,
+				},
+			}
+
+			err = r.CreateAnswers(t.Context(), &answers)
+			require.NoError(t, err)
+
+			// IncludeNonParticipants = false (デフォルト): 参加者の回答のみが返される
+			query := repository.GetAnswersQuery{
+				QuestionID:             &question.ID,
+				IncludePrivateAnswers:  true,
+				IncludeNonParticipants: false,
+			}
+			retrievedAnswers, err := r.GetAnswers(t.Context(), query)
+			assert.NoError(t, err)
+
+			if assert.Len(t, retrievedAnswers, 1) {
+				assert.Equal(t, participant.ID, retrievedAnswers[0].UserID)
+				assert.Equal(t, participantContent, *retrievedAnswers[0].FreeTextContent)
+			}
+		},
+	)
+
+	t.Run("IncludeNonParticipants - true: includes all answers", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		participant := mustCreateUser(t, r)
+		nonParticipant := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
+
+		// participantを合宿に参加させる
+		err := r.AddCampParticipant(t.Context(), camp.ID, &participant)
+		require.NoError(t, err)
+
+		// 両方のユーザーが同じ質問に回答
+		participantContent := random.AlphaNumericString(t, 20)
+		nonParticipantContent := random.AlphaNumericString(t, 20)
+
+		answers := []model.Answer{
+			{
+				QuestionID:      question.ID,
+				UserID:          participant.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &participantContent,
+			},
+			{
+				QuestionID:      question.ID,
+				UserID:          nonParticipant.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &nonParticipantContent,
+			},
+		}
+
+		err = r.CreateAnswers(t.Context(), &answers)
+		require.NoError(t, err)
+
+		// IncludeNonParticipants = true: 全ての回答が返される
+		query := repository.GetAnswersQuery{
+			QuestionID:             &question.ID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: true,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
+		require.NoError(t, err)
+		require.Len(t, retrievedAnswers, 2)
+
+		// 両方のユーザーの回答が含まれていることを確認
+		userIDs := make([]string, len(retrievedAnswers))
+		for i, answer := range retrievedAnswers {
+			userIDs[i] = answer.UserID
+		}
+		assert.Contains(t, userIDs, participant.ID)
+		assert.Contains(t, userIDs, nonParticipant.ID)
+	})
+
+	t.Run("IncludeNonParticipants - QuestionGroupID filtering", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		participant := mustCreateUser(t, r)
+		nonParticipant := mustCreateUser(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
+
+		// participantを合宿に参加させる
+		err := r.AddCampParticipant(t.Context(), camp.ID, &participant)
+		require.NoError(t, err)
+
+		// 両方のユーザーが同じ質問に回答
+		participantContent := random.AlphaNumericString(t, 20)
+		nonParticipantContent := random.AlphaNumericString(t, 20)
+
+		answers := []model.Answer{
+			{
+				QuestionID:      question.ID,
+				UserID:          participant.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &participantContent,
+			},
+			{
+				QuestionID:      question.ID,
+				UserID:          nonParticipant.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &nonParticipantContent,
+			},
+		}
+
+		err = r.CreateAnswers(t.Context(), &answers)
+		require.NoError(t, err)
+
+		// QuestionGroupIDでの絞り込み + IncludeNonParticipants = false
+		query := repository.GetAnswersQuery{
+			QuestionGroupID:        &questionGroup.ID,
+			IncludePrivateAnswers:  true,
+			IncludeNonParticipants: false,
+		}
+		retrievedAnswers, err := r.GetAnswers(t.Context(), query)
+		assert.NoError(t, err)
+
+		if assert.Len(t, retrievedAnswers, 1) {
+			assert.Equal(t, participant.ID, retrievedAnswers[0].UserID)
 		}
 	})
 }

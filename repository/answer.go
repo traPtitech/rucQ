@@ -8,10 +8,11 @@ import (
 )
 
 type GetAnswersQuery struct {
-	UserID                *string
-	QuestionGroupID       *uint
-	QuestionID            *uint
-	IncludePrivateAnswers bool
+	UserID                 *string
+	QuestionGroupID        *uint
+	QuestionID             *uint
+	IncludePrivateAnswers  bool
+	IncludeNonParticipants bool
 }
 
 type AnswerRepository interface {

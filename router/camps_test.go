@@ -332,7 +332,7 @@ func TestPostCampRegister(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil)
 		h.repo.MockCampRepository.EXPECT().
 			AddCampParticipant(gomock.Any(), uint(campID), user).
@@ -376,7 +376,7 @@ func TestPostCampRegister(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(nil, errors.New("camp error"))
 
 		h.expect.POST("/api/camps/{campId}/register", campID).
@@ -400,8 +400,8 @@ func TestPostCampRegister(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
-			Return(nil, model.ErrNotFound)
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound)
 
 		h.expect.POST("/api/camps/{campId}/register", campID).
 			WithHeader("X-Forwarded-User", username).
@@ -433,7 +433,7 @@ func TestPostCampRegister(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil)
 
 		h.expect.POST("/api/camps/{campId}/register", campID).
@@ -466,13 +466,163 @@ func TestPostCampRegister(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(user, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil)
 		h.repo.MockCampRepository.EXPECT().
 			AddCampParticipant(gomock.Any(), uint(campID), user).
 			Return(errors.New("participant error"))
 
 		h.expect.POST("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+}
+
+func TestServer_DeleteCampRegister(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+		user := &model.User{ID: username}
+		camp := &model.Camp{
+			Model:              gorm.Model{ID: uint(campID)},
+			IsRegistrationOpen: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(camp, nil)
+		h.repo.MockCampRepository.EXPECT().
+			RemoveCampParticipant(gomock.Any(), uint(campID), user).
+			Return(nil)
+
+		h.expect.DELETE("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNoContent)
+	})
+
+	t.Run("GetOrCreateUser Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(nil, errors.New("user error"))
+
+		h.expect.DELETE("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("GetCampByID Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+		user := &model.User{ID: username}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(nil, errors.New("camp error"))
+
+		h.expect.DELETE("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("Camp Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+		user := &model.User{ID: username}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound)
+
+		h.expect.DELETE("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNotFound).
+			JSON().
+			Object().
+			HasValue("message", "Camp not found")
+	})
+
+	t.Run("Registration Closed", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+		user := &model.User{ID: username}
+		camp := &model.Camp{
+			Model:              gorm.Model{ID: uint(campID)},
+			IsRegistrationOpen: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(camp, nil)
+
+		h.expect.DELETE("/api/camps/{campId}/register", campID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusForbidden).
+			JSON().
+			Object().
+			HasValue("message", "Registration for this camp is closed")
+	})
+
+	t.Run("RemoveCampParticipant Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		username := random.AlphaNumericString(t, 32)
+		user := &model.User{ID: username}
+		camp := &model.Camp{
+			Model:              gorm.Model{ID: uint(campID)},
+			IsRegistrationOpen: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(camp, nil)
+		h.repo.MockCampRepository.EXPECT().
+			RemoveCampParticipant(gomock.Any(), uint(campID), user).
+			Return(errors.New("remove error"))
+
+		h.expect.DELETE("/api/camps/{campId}/register", campID).
 			WithHeader("X-Forwarded-User", username).
 			Expect().
 			Status(http.StatusInternalServerError)
@@ -517,7 +667,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil).
 			Times(1)
 		h.repo.MockCampRepository.EXPECT().
@@ -637,8 +787,8 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
-			Return(nil, model.ErrNotFound).
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound).
 			Times(1)
 
 		req := api.AdminAddCampParticipantJSONRequestBody{
@@ -690,7 +840,7 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil).
 			Times(1)
 		h.repo.MockCampRepository.EXPECT().
@@ -761,8 +911,8 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
-			Return(nil, model.ErrNotFound).
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound).
 			Times(1)
 
 		h.expect.DELETE("/api/admin/camps/{campId}/participants/{userId}", campID, targetUserID).
@@ -801,7 +951,7 @@ func TestAdminRemoveCampParticipant(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), targetUserID).
 			Return(targetUser, nil)
 		h.repo.MockCampRepository.EXPECT().
-			GetCampByID(uint(campID)).
+			GetCampByID(gomock.Any(), uint(campID)).
 			Return(camp, nil).
 			Times(1)
 		h.repo.MockCampRepository.EXPECT().

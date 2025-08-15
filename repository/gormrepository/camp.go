@@ -35,24 +35,33 @@ func (r *Repository) GetCamps() ([]model.Camp, error) {
 	return camps, nil
 }
 
-func (r *Repository) GetCampByID(id uint) (*model.Camp, error) {
-	var camp model.Camp
+func (r *Repository) GetCampByID(ctx context.Context, id uint) (*model.Camp, error) {
+	camp, err := gorm.G[*model.Camp](r.db).Where("id = ?", id).First(ctx)
 
-	if err := r.db.Where(&model.Camp{
-		Model: gorm.Model{
-			ID: id,
-		},
-	}).First(&camp).Error; err != nil {
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, repository.ErrCampNotFound
+		}
+
 		return nil, err
 	}
 
-	return &camp, nil
+	return camp, nil
 }
 
 func (r *Repository) UpdateCamp(ctx context.Context, campID uint, camp *model.Camp) error {
 	rowsAffected, err := gorm.G[*model.Camp](r.db).
 		Where("id = ?", campID).
-		Select("*").
+		Select(
+			"display_id",
+			"name",
+			"guidebook",
+			"is_draft",
+			"is_payment_open",
+			"is_registration_open",
+			"date_start",
+			"date_end",
+		).
 		Updates(ctx, camp)
 
 	if err != nil {

@@ -23,6 +23,16 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+// GORMのログをテストケースごとに分けて出力するためのロガー
+type testLogWriter struct {
+	t *testing.T
+}
+
+// Printf implements the gorm.io/gorm/logger.Writer interface.
+func (w *testLogWriter) Printf(format string, args ...any) {
+	w.t.Logf(format, args...)
+}
+
 var containerAddr string
 
 func TestMain(m *testing.M) {
@@ -136,7 +146,10 @@ func setup(t *testing.T) *Repository {
 
 	config.DBName = dbName
 	db, err := gorm.Open(gormMysql.Open(config.FormatDSN()), &gorm.Config{
-		Logger:         logger.Default.LogMode(logger.Info),
+		Logger: logger.New(
+			&testLogWriter{t: t},
+			logger.Config{Colorful: true, LogLevel: logger.Info},
+		),
 		TranslateError: true,
 	})
 	require.NoError(t, err)
@@ -167,7 +180,7 @@ func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
 	require.NoError(t, err)
 
 	// 時刻の精度などを揃えるため再取得する
-	camp, err = r.GetCampByID(camp.ID)
+	camp, err = r.GetCampByID(t.Context(), camp.ID)
 
 	require.NoError(t, err)
 
@@ -344,4 +357,21 @@ func mustCreatePayment(t *testing.T, r *Repository, userID string, campID uint) 
 	require.NotZero(t, payment.ID)
 
 	return payment
+}
+
+func mustCreateRoomGroup(t *testing.T, r *Repository, campID uint) *model.RoomGroup {
+	t.Helper()
+
+	roomGroup := &model.RoomGroup{
+		Name:   random.AlphaNumericString(t, 20),
+		CampID: campID,
+	}
+
+	err := r.CreateRoomGroup(t.Context(), roomGroup)
+
+	require.NoError(t, err)
+	require.NotNil(t, roomGroup)
+	require.NotZero(t, roomGroup.ID)
+
+	return roomGroup
 }

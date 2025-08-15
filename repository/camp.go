@@ -16,7 +16,7 @@ var (
 type CampRepository interface {
 	CreateCamp(camp *model.Camp) error
 	GetCamps() ([]model.Camp, error)
-	GetCampByID(id uint) (*model.Camp, error)
+	GetCampByID(ctx context.Context, id uint) (*model.Camp, error)
 	UpdateCamp(ctx context.Context, campID uint, camp *model.Camp) error
 	DeleteCamp(ctx context.Context, campID uint) error
 	AddCampParticipant(ctx context.Context, campID uint, user *model.User) error
