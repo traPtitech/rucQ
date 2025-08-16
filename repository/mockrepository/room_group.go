@@ -70,6 +70,21 @@ func (mr *MockRoomGroupRepositoryMockRecorder) GetRoomGroupByID(ctx, roomGroupID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoomGroupByID", reflect.TypeOf((*MockRoomGroupRepository)(nil).GetRoomGroupByID), ctx, roomGroupID)
 }
 
+// GetRoomGroups mocks base method.
+func (m *MockRoomGroupRepository) GetRoomGroups(ctx context.Context, campID uint) ([]model.RoomGroup, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRoomGroups", ctx, campID)
+	ret0, _ := ret[0].([]model.RoomGroup)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRoomGroups indicates an expected call of GetRoomGroups.
+func (mr *MockRoomGroupRepositoryMockRecorder) GetRoomGroups(ctx, campID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoomGroups", reflect.TypeOf((*MockRoomGroupRepository)(nil).GetRoomGroups), ctx, campID)
+}
+
 // UpdateRoomGroup mocks base method.
 func (m *MockRoomGroupRepository) UpdateRoomGroup(ctx context.Context, roomGroupID uint, roomGroup *model.RoomGroup) error {
 	m.ctrl.T.Helper()

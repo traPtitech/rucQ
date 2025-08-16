@@ -72,11 +72,6 @@ func (s *Server) GetRollCalls(_ echo.Context, _ api.CampId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetRollCalls not implemented")
 }
 
-// GetRoomGroups 部屋グループの一覧を取得
-func (s *Server) GetRoomGroups(_ echo.Context, _ api.CampId) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "GetRoomGroups not implemented")
-}
-
 // DeleteReaction リアクションを削除
 func (s *Server) DeleteReaction(
 	_ echo.Context,

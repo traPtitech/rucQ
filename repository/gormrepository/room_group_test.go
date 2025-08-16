@@ -192,3 +192,104 @@ func TestRepository_GetRoomGroupByID(t *testing.T) {
 		assert.Nil(t, retrievedRoomGroup)
 	})
 }
+
+func TestRepository_GetRoomGroups(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp1 := mustCreateCamp(t, r)
+		camp2 := mustCreateCamp(t, r)
+		// camp1に2つの部屋グループを作成
+		roomGroup1 := mustCreateRoomGroup(t, r, camp1.ID)
+		roomGroup2 := mustCreateRoomGroup(t, r, camp1.ID)
+		// camp2に1つの部屋グループを作成（これは結果に含まれないはず）
+		_ = mustCreateRoomGroup(t, r, camp2.ID)
+		user1 := mustCreateUser(t, r)
+		user2 := mustCreateUser(t, r)
+		// room group1に部屋を作成
+		room1 := &model.Room{
+			Name:        random.AlphaNumericString(t, 10),
+			RoomGroupID: roomGroup1.ID,
+			Members:     []model.User{user1, user2},
+		}
+		err := r.CreateRoom(room1)
+
+		require.NoError(t, err)
+
+		// room group2に部屋を作成
+		room2 := &model.Room{
+			Name:        random.AlphaNumericString(t, 10),
+			RoomGroupID: roomGroup2.ID,
+			Members:     []model.User{user1},
+		}
+		err = r.CreateRoom(room2)
+
+		require.NoError(t, err)
+
+		roomGroups, err := r.GetRoomGroups(t.Context(), camp1.ID)
+
+		assert.NoError(t, err)
+
+		if assert.Len(t, roomGroups, 2) {
+			assert.Equal(t, roomGroup1.ID, roomGroups[0].ID)
+			assert.Equal(t, roomGroup1.Name, roomGroups[0].Name)
+
+			if assert.Len(t, roomGroups[0].Rooms, 1) {
+				assert.Equal(t, room1.ID, roomGroups[0].Rooms[0].ID)
+				assert.Equal(t, room1.Name, roomGroups[0].Rooms[0].Name)
+				assert.Equal(t, room1.RoomGroupID, roomGroups[0].Rooms[0].RoomGroupID)
+
+				if assert.Len(t, roomGroups[0].Rooms[0].Members, 2) {
+					expectedUserIDs := []string{user1.ID, user2.ID}
+					actualUserIDs := []string{
+						roomGroups[0].Rooms[0].Members[0].ID,
+						roomGroups[0].Rooms[0].Members[1].ID,
+					}
+
+					assert.ElementsMatch(t, expectedUserIDs, actualUserIDs)
+				}
+			}
+
+			assert.Equal(t, roomGroup2.ID, roomGroups[1].ID)
+			assert.Equal(t, roomGroup2.Name, roomGroups[1].Name)
+
+			if assert.Len(t, roomGroups[1].Rooms, 1) {
+				assert.Equal(t, room2.ID, roomGroups[1].Rooms[0].ID)
+				assert.Equal(t, room2.Name, roomGroups[1].Rooms[0].Name)
+				assert.Equal(t, room2.RoomGroupID, roomGroups[1].Rooms[0].RoomGroupID)
+
+				if assert.Len(t, roomGroups[1].Rooms[0].Members, 1) {
+					assert.Equal(t, user1.ID, roomGroups[1].Rooms[0].Members[0].ID)
+					assert.Equal(t, user1.IsStaff, roomGroups[1].Rooms[0].Members[0].IsStaff)
+				}
+			}
+		}
+	})
+
+	t.Run("Empty Result", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+
+		roomGroups, err := r.GetRoomGroups(t.Context(), camp.ID)
+
+		assert.NoError(t, err)
+		assert.Empty(t, roomGroups)
+	})
+
+	t.Run("Non-existent Camp", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentCampID := uint(random.PositiveInt(t))
+
+		roomGroups, err := r.GetRoomGroups(t.Context(), nonExistentCampID)
+
+		assert.ErrorIs(t, err, repository.ErrCampNotFound)
+		assert.Nil(t, roomGroups)
+	})
+}

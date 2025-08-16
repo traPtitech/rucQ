@@ -61,3 +61,27 @@ func (r *Repository) GetRoomGroupByID(
 
 	return &roomGroup, nil
 }
+
+func (r *Repository) GetRoomGroups(ctx context.Context, campID uint) ([]model.RoomGroup, error) {
+	roomGroups, err := gorm.G[model.RoomGroup](r.db).
+		Preload("Rooms.Members", nil).
+		Where("camp_id = ?", campID).
+		Find(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// RoomGroupが見つからなかった場合、Campが存在しない可能性を考慮してCampの存在確認を行う
+	if len(roomGroups) == 0 {
+		if _, err := gorm.G[*model.Camp](r.db).Where("id = ?", campID).First(ctx); err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, repository.ErrCampNotFound
+			}
+
+			return nil, err
+		}
+	}
+
+	return roomGroups, nil
+}
