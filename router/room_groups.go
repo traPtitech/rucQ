@@ -13,6 +13,45 @@ import (
 	"github.com/traPtitech/rucQ/repository"
 )
 
+func (s *Server) GetRoomGroups(e echo.Context, campID api.CampId) error {
+	roomGroups, err := s.repo.GetRoomGroups(e.Request().Context(), uint(campID))
+
+	if err != nil {
+		if errors.Is(err, repository.ErrCampNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"camp not found",
+				slog.Int("campID", campID),
+			)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
+
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get room groups",
+			slog.String("error", err.Error()),
+			slog.Int("campId", campID),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[[]api.RoomGroupResponse](roomGroups)
+
+	if err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert response body",
+			slog.String("error", err.Error()),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.JSON(http.StatusOK, res)
+}
+
 func (s *Server) AdminPostRoomGroup(
 	e echo.Context,
 	campID api.CampId,

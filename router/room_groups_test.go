@@ -14,6 +14,128 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+func TestServer_GetRoomGroups(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := random.PositiveInt(t)
+		roomGroups := []model.RoomGroup{
+			{
+				Model: gorm.Model{ID: uint(random.PositiveInt(t))},
+				Name:  random.AlphaNumericString(t, 20),
+				Rooms: []model.Room{
+					{
+						Model: gorm.Model{ID: uint(random.PositiveInt(t))},
+						Name:  random.AlphaNumericString(t, 15),
+						Members: []model.User{
+							{
+								ID:      random.AlphaNumericString(t, 32),
+								IsStaff: random.Bool(t),
+							},
+						},
+					},
+				},
+				CampID: uint(campID),
+			},
+			{
+				Model:  gorm.Model{ID: uint(random.PositiveInt(t))},
+				Name:   random.AlphaNumericString(t, 20),
+				Rooms:  []model.Room{},
+				CampID: uint(campID),
+			},
+		}
+
+		h.repo.MockRoomGroupRepository.EXPECT().
+			GetRoomGroups(gomock.Any(), uint(campID)).
+			Return(roomGroups, nil)
+
+		res := h.expect.GET("/api/camps/{campId}/room-groups", campID).
+			Expect().
+			Status(http.StatusOK).JSON().Array()
+
+		res.Length().IsEqual(2)
+
+		firstGroup := res.Value(0).Object()
+		firstGroup.Keys().ContainsAll("id", "name", "rooms")
+		firstGroup.Value("id").Number().IsEqual(roomGroups[0].ID)
+		firstGroup.Value("name").String().IsEqual(roomGroups[0].Name)
+		firstGroup.Value("rooms").Array().Length().IsEqual(1)
+
+		room := firstGroup.Value("rooms").Array().Value(0).Object()
+		room.Keys().ContainsAll("id", "name", "members")
+		room.Value("id").Number().IsEqual(roomGroups[0].Rooms[0].ID)
+		room.Value("name").String().IsEqual(roomGroups[0].Rooms[0].Name)
+		room.Value("members").Array().Length().IsEqual(1)
+
+		member := room.Value("members").Array().Value(0).Object()
+		member.Keys().ContainsAll("id", "isStaff")
+		member.Value("id").String().IsEqual(roomGroups[0].Rooms[0].Members[0].ID)
+		member.Value("isStaff").Boolean().IsEqual(roomGroups[0].Rooms[0].Members[0].IsStaff)
+
+		secondGroup := res.Value(1).Object()
+		secondGroup.Keys().ContainsAll("id", "name", "rooms")
+		secondGroup.Value("id").Number().IsEqual(roomGroups[1].ID)
+		secondGroup.Value("name").String().IsEqual(roomGroups[1].Name)
+		secondGroup.Value("rooms").Array().Length().IsEqual(0)
+	})
+
+	t.Run("Camp Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+
+		campID := random.PositiveInt(t)
+
+		h.repo.MockRoomGroupRepository.EXPECT().
+			GetRoomGroups(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound)
+
+		h.expect.GET("/api/camps/{campId}/room-groups", campID).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Camp not found")
+	})
+
+	t.Run("Repository Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+
+		campID := random.PositiveInt(t)
+
+		h.repo.MockRoomGroupRepository.EXPECT().
+			GetRoomGroups(gomock.Any(), uint(campID)).
+			Return(nil, errors.New("database error"))
+
+		h.expect.GET("/api/camps/{campId}/room-groups", campID).
+			Expect().
+			Status(http.StatusInternalServerError).JSON().Object().
+			Value("message").String().IsEqual("Internal server error")
+	})
+
+	t.Run("Empty Room Groups", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+
+		campID := random.PositiveInt(t)
+		roomGroups := []model.RoomGroup{}
+
+		h.repo.MockRoomGroupRepository.EXPECT().
+			GetRoomGroups(gomock.Any(), uint(campID)).
+			Return(roomGroups, nil)
+
+		res := h.expect.GET("/api/camps/{campId}/room-groups", campID).
+			Expect().
+			Status(http.StatusOK).JSON().Array()
+
+		res.Length().IsEqual(0)
+	})
+}
+
 func TestAdminPostRoomGroup(t *testing.T) {
 	t.Parallel()
 
