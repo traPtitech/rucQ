@@ -293,3 +293,59 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 		assert.Nil(t, roomGroups)
 	})
 }
+
+func TestRepository_DeleteRoomGroup(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		err := r.DeleteRoomGroup(t.Context(), roomGroup.ID)
+
+		assert.NoError(t, err)
+
+		// 削除されていることを確認
+		_, err = r.GetRoomGroupByID(t.Context(), roomGroup.ID)
+		assert.ErrorIs(t, err, repository.ErrRoomGroupNotFound)
+	})
+
+	t.Run("Non-existent RoomGroup", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentID := uint(random.PositiveInt(t))
+		err := r.DeleteRoomGroup(t.Context(), nonExistentID)
+
+		assert.ErrorIs(t, err, repository.ErrRoomGroupNotFound)
+	})
+
+	t.Run("Delete RoomGroup with Rooms", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		user := mustCreateUser(t, r)
+		// RoomGroupに関連するRoomを作成
+		room := &model.Room{
+			Name:        random.AlphaNumericString(t, 10),
+			RoomGroupID: roomGroup.ID,
+			Members:     []model.User{user},
+		}
+		err := r.CreateRoom(room)
+
+		require.NoError(t, err)
+
+		// RoomGroupを削除
+		err = r.DeleteRoomGroup(t.Context(), roomGroup.ID)
+
+		assert.NoError(t, err)
+
+		_, err = r.GetRoomGroupByID(t.Context(), roomGroup.ID)
+
+		assert.ErrorIs(t, err, repository.ErrRoomGroupNotFound)
+	})
+}

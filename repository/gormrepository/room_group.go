@@ -85,3 +85,19 @@ func (r *Repository) GetRoomGroups(ctx context.Context, campID uint) ([]model.Ro
 
 	return roomGroups, nil
 }
+
+func (r *Repository) DeleteRoomGroup(ctx context.Context, roomGroupID uint) error {
+	rowsAffected, err := gorm.G[model.RoomGroup](r.db).
+		Where("id = ?", roomGroupID).
+		Delete(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return repository.ErrRoomGroupNotFound
+	}
+
+	return nil
+}

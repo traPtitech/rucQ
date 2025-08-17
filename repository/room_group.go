@@ -15,4 +15,5 @@ type RoomGroupRepository interface {
 	UpdateRoomGroup(ctx context.Context, roomGroupID uint, roomGroup *model.RoomGroup) error
 	GetRoomGroupByID(ctx context.Context, roomGroupID uint) (*model.RoomGroup, error)
 	GetRoomGroups(ctx context.Context, campID uint) ([]model.RoomGroup, error)
+	DeleteRoomGroup(ctx context.Context, roomGroupID uint) error
 }
