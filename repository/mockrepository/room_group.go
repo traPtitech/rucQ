@@ -55,6 +55,20 @@ func (mr *MockRoomGroupRepositoryMockRecorder) CreateRoomGroup(ctx, roomGroup an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoomGroup", reflect.TypeOf((*MockRoomGroupRepository)(nil).CreateRoomGroup), ctx, roomGroup)
 }
 
+// DeleteRoomGroup mocks base method.
+func (m *MockRoomGroupRepository) DeleteRoomGroup(ctx context.Context, roomGroupID uint) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRoomGroup", ctx, roomGroupID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRoomGroup indicates an expected call of DeleteRoomGroup.
+func (mr *MockRoomGroupRepositoryMockRecorder) DeleteRoomGroup(ctx, roomGroupID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRoomGroup", reflect.TypeOf((*MockRoomGroupRepository)(nil).DeleteRoomGroup), ctx, roomGroupID)
+}
+
 // GetRoomGroupByID mocks base method.
 func (m *MockRoomGroupRepository) GetRoomGroupByID(ctx context.Context, roomGroupID uint) (*model.RoomGroup, error) {
 	m.ctrl.T.Helper()
