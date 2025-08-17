@@ -436,3 +436,109 @@ func TestAdminPutRoomGroup(t *testing.T) {
 			Status(http.StatusInternalServerError)
 	})
 }
+
+func TestServer_AdminDeleteRoomGroup(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		username := random.AlphaNumericString(t, 32)
+		roomGroupID := random.PositiveInt(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+		h.repo.MockRoomGroupRepository.EXPECT().
+			DeleteRoomGroup(gomock.Any(), uint(roomGroupID)).
+			Return(nil).
+			Times(1)
+
+		h.expect.DELETE("/api/admin/room-groups/{roomGroupId}", roomGroupID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNoContent)
+	})
+
+	t.Run("Non-staff user", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		username := random.AlphaNumericString(t, 32)
+		roomGroupID := random.PositiveInt(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: false}, nil).
+			Times(1)
+
+		h.expect.DELETE("/api/admin/room-groups/{roomGroupId}", roomGroupID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusForbidden)
+	})
+
+	t.Run("Room group not found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		username := random.AlphaNumericString(t, 32)
+		roomGroupID := random.PositiveInt(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+		h.repo.MockRoomGroupRepository.EXPECT().
+			DeleteRoomGroup(gomock.Any(), uint(roomGroupID)).
+			Return(repository.ErrRoomGroupNotFound).
+			Times(1)
+
+		h.expect.DELETE("/api/admin/room-groups/{roomGroupId}", roomGroupID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNotFound)
+	})
+
+	t.Run("Delete error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		username := random.AlphaNumericString(t, 32)
+		roomGroupID := random.PositiveInt(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+		h.repo.MockRoomGroupRepository.EXPECT().
+			DeleteRoomGroup(gomock.Any(), uint(roomGroupID)).
+			Return(errors.New("database error")).
+			Times(1)
+
+		h.expect.DELETE("/api/admin/room-groups/{roomGroupId}", roomGroupID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("GetOrCreateUser Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		username := random.AlphaNumericString(t, 32)
+		roomGroupID := random.PositiveInt(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(nil, errors.New("user error")).
+			Times(1)
+
+		h.expect.DELETE("/api/admin/room-groups/{roomGroupId}", roomGroupID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+}

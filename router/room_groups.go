@@ -242,3 +242,56 @@ func (s *Server) AdminPutRoomGroup(
 
 	return e.JSON(http.StatusOK, res)
 }
+
+func (s *Server) AdminDeleteRoomGroup(
+	e echo.Context,
+	roomGroupID api.RoomGroupId,
+	params api.AdminDeleteRoomGroupParams,
+) error {
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+
+	if err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get or create user",
+			slog.String("error", err.Error()),
+			slog.String("userId", *params.XForwardedUser),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if !user.IsStaff {
+		slog.WarnContext(
+			e.Request().Context(),
+			"non-staff user attempted to delete room group",
+			slog.String("userId", *params.XForwardedUser),
+			slog.Int("roomGroupID", roomGroupID),
+		)
+
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	if err := s.repo.DeleteRoomGroup(e.Request().Context(), uint(roomGroupID)); err != nil {
+		if errors.Is(err, repository.ErrRoomGroupNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"room group not found",
+				slog.Int("roomGroupID", roomGroupID),
+			)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Room group not found")
+		}
+
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to delete room group",
+			slog.String("error", err.Error()),
+			slog.Int("roomGroupID", roomGroupID),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	return e.NoContent(http.StatusNoContent)
+}
