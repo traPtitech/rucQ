@@ -91,8 +91,11 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 	}
 
 	if eventModel.OrganizerID != nil {
-		// TODO: ユーザーがtraQに存在するか確認する
-		organizer, err := s.repo.GetOrCreateUser(e.Request().Context(), *eventModel.OrganizerID)
+		isCampParticipant, err := s.repo.IsCampParticipant(
+			e.Request().Context(),
+			uint(campID),
+			*eventModel.OrganizerID,
+		)
 
 		if err != nil {
 			slog.ErrorContext(
@@ -104,8 +107,19 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 		}
 
-		// IDの正規化
-		eventModel.OrganizerID = &organizer.ID
+		if !isCampParticipant {
+			slog.WarnContext(
+				e.Request().Context(),
+				"organizer is not a participant of the camp",
+				slog.String("userId", *params.XForwardedUser),
+				slog.Int("campId", campID),
+			)
+
+			return echo.NewHTTPError(
+				http.StatusBadRequest,
+				"Organizer must be a participant of the camp",
+			)
+		}
 	}
 
 	if err := s.repo.CreateEvent(&eventModel); err != nil {
@@ -234,6 +248,38 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 		)
 
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	if newEvent.OrganizerID != nil {
+		isCampParticipant, err := s.repo.IsCampParticipant(
+			e.Request().Context(),
+			existingEvent.CampID,
+			*newEvent.OrganizerID,
+		)
+
+		if err != nil {
+			slog.ErrorContext(
+				e.Request().Context(),
+				"failed to check if organizer is a camp participant",
+				slog.String("error", err.Error()),
+			)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		if !isCampParticipant {
+			slog.WarnContext(
+				e.Request().Context(),
+				"organizer is not a participant of the camp",
+				slog.String("userId", *params.XForwardedUser),
+				slog.Int("campId", int(existingEvent.CampID)),
+			)
+
+			return echo.NewHTTPError(
+				http.StatusBadRequest,
+				"Organizer must be a participant of the camp",
+			)
+		}
 	}
 
 	if err := s.repo.UpdateEvent(e.Request().Context(), uint(eventID), &newEvent); err != nil {
