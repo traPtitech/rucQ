@@ -86,7 +86,7 @@ services:
       - traq_ui
 
   rucq_ui:
-    image: ghcr.io/traptitech/rucq-ui:1.0.3
+    image: ghcr.io/traptitech/rucq-ui:1.0.4
     expose:
       - 80
 
