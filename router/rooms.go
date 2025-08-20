@@ -1,7 +1,6 @@
 package router
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 
@@ -62,10 +61,6 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	}
 
 	if err := s.repo.CreateRoom(&roomModel); err != nil {
-		if errors.Is(err, model.ErrAlreadyExists) {
-			return echo.NewHTTPError(http.StatusConflict, "Room already exists")
-		}
-
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to create room",

@@ -1,9 +1,6 @@
 package gormrepository
 
 import (
-	"errors"
-
-	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
@@ -35,12 +32,6 @@ func (r *Repository) GetRoomByID(id uint) (*model.Room, error) {
 
 func (r *Repository) CreateRoom(room *model.Room) error {
 	if err := r.db.Create(room).Error; err != nil {
-		var mysqlErr *mysql.MySQLError
-
-		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
-			return model.ErrAlreadyExists
-		}
-
 		return err
 	}
 
