@@ -66,8 +66,16 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 			return err
 		}
 
-		return tx.Model(room).Updates(&model.Room{
-			Name: room.Name,
-		}).Error
+		_, err := gorm.G[*model.Room](tx).Updates(ctx, room)
+
+		if err != nil {
+			if errors.Is(err, gorm.ErrForeignKeyViolated) {
+				return repository.ErrRoomGroupNotFound
+			}
+
+			return err
+		}
+
+		return nil
 	})
 }

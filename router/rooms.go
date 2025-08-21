@@ -160,6 +160,16 @@ func (s *Server) AdminPutRoom(
 			return echo.NewHTTPError(http.StatusBadRequest, "User not found")
 		}
 
+		if errors.Is(err, repository.ErrRoomGroupNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"room group not found",
+				slog.Int("roomGroupId", int(roomModel.RoomGroupID)),
+			)
+
+			return echo.NewHTTPError(http.StatusBadRequest, "Room group not found")
+		}
+
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to update room",
