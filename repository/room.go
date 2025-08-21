@@ -8,7 +8,10 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-var ErrUserOrRoomGroupNotFound = errors.New("user or room group not found")
+var (
+	ErrRoomNotFound            = errors.New("room not found")
+	ErrUserOrRoomGroupNotFound = errors.New("user or room group not found")
+)
 
 type RoomRepository interface {
 	GetRooms() ([]model.Room, error)

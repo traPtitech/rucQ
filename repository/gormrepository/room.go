@@ -54,6 +54,20 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		room.ID = roomID
 
+		rowsAffected, err := gorm.G[*model.Room](tx).Omit("Members").Updates(ctx, room)
+
+		if err != nil {
+			if errors.Is(err, gorm.ErrForeignKeyViolated) {
+				return repository.ErrRoomGroupNotFound
+			}
+
+			return err
+		}
+
+		if rowsAffected == 0 {
+			return repository.ErrRoomNotFound
+		}
+
 		if err := tx.WithContext(ctx).
 			Model(room).
 			Omit("Members.*"). // ユーザーの新規作成はされないようにする
@@ -61,16 +75,6 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 			Replace(room.Members); err != nil {
 			if errors.Is(err, gorm.ErrForeignKeyViolated) {
 				return repository.ErrUserNotFound
-			}
-
-			return err
-		}
-
-		_, err := gorm.G[*model.Room](tx).Updates(ctx, room)
-
-		if err != nil {
-			if errors.Is(err, gorm.ErrForeignKeyViolated) {
-				return repository.ErrRoomGroupNotFound
 			}
 
 			return err
