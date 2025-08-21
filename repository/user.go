@@ -3,9 +3,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/traPtitech/rucQ/model"
 )
+
+var ErrUserNotFound = errors.New("user not found")
 
 type UserRepository interface {
 	GetOrCreateUser(ctx context.Context, traqID string) (*model.User, error)

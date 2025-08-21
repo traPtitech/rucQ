@@ -37,7 +37,7 @@ func (r *Repository) GetRoomByID(id uint) (*model.Room, error) {
 func (r *Repository) CreateRoom(ctx context.Context, room *model.Room) error {
 	if err := r.db.
 		WithContext(ctx).
-		Omit("Members.*").
+		Omit("Members.*"). // 関係は更新するがユーザーの新規作成はされないようにする
 		Create(room).
 		Error; err != nil {
 		if errors.Is(err, gorm.ErrForeignKeyViolated) {
@@ -54,7 +54,15 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		room.ID = roomID
 
-		if err := tx.Model(room).Association("Members").Replace(room.Members); err != nil {
+		if err := tx.WithContext(ctx).
+			Model(room).
+			Omit("Members.*"). // ユーザーの新規作成はされないようにする
+			Association("Members").
+			Replace(room.Members); err != nil {
+			if errors.Is(err, gorm.ErrForeignKeyViolated) {
+				return repository.ErrUserNotFound
+			}
+
 			return err
 		}
 

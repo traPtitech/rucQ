@@ -150,6 +150,16 @@ func (s *Server) AdminPutRoom(
 	}
 
 	if err := s.repo.UpdateRoom(e.Request().Context(), uint(roomID), &roomModel); err != nil {
+		if errors.Is(err, repository.ErrUserNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"user not found",
+				slog.Int("roomId", roomID),
+			)
+
+			return echo.NewHTTPError(http.StatusBadRequest, "User not found")
+		}
+
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to update room",
