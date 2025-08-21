@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
@@ -82,13 +81,27 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res api.RoomResponse
+	// MemberのisStaffなどを正しく返すために取得
+	updatedRoom, err := s.repo.GetRoomByID(roomModel.ID)
 
-	if err := copier.Copy(&res, &roomModel); err != nil {
+	if err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
-			"failed to copy model to response",
+			"failed to get room by ID",
 			slog.String("error", err.Error()),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[api.RoomResponse](updatedRoom)
+
+	if err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert model to response",
+			slog.String("error", err.Error()),
+			slog.Int("roomId", int(updatedRoom.ID)),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -190,13 +203,27 @@ func (s *Server) AdminPutRoom(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res api.RoomResponse
+	// MemberのisStaffなどを正しく返すために取得
+	updatedRoom, err := s.repo.GetRoomByID(roomModel.ID)
 
-	if err := copier.Copy(&res, roomModel); err != nil {
+	if err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
-			"failed to copy model to response",
+			"failed to get room by ID",
 			slog.String("error", err.Error()),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[api.RoomResponse](updatedRoom)
+
+	if err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert model to response",
+			slog.String("error", err.Error()),
+			slog.Int("roomId", int(updatedRoom.ID)),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
