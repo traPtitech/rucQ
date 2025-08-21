@@ -204,7 +204,7 @@ func (s *Server) AdminPutRoom(
 	}
 
 	// MemberのisStaffなどを正しく返すために取得
-	updatedRoom, err := s.repo.GetRoomByID(roomModel.ID)
+	updatedRoom, err := s.repo.GetRoomByID(uint(roomID))
 
 	if err != nil {
 		slog.ErrorContext(
