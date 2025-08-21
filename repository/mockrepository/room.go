@@ -86,15 +86,15 @@ func (mr *MockRoomRepositoryMockRecorder) GetRooms() *gomock.Call {
 }
 
 // UpdateRoom mocks base method.
-func (m *MockRoomRepository) UpdateRoom(room *model.Room) error {
+func (m *MockRoomRepository) UpdateRoom(ctx context.Context, room *model.Room) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateRoom", room)
+	ret := m.ctrl.Call(m, "UpdateRoom", ctx, room)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateRoom indicates an expected call of UpdateRoom.
-func (mr *MockRoomRepositoryMockRecorder) UpdateRoom(room any) *gomock.Call {
+func (mr *MockRoomRepositoryMockRecorder) UpdateRoom(ctx, room any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRoom", reflect.TypeOf((*MockRoomRepository)(nil).UpdateRoom), room)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRoom", reflect.TypeOf((*MockRoomRepository)(nil).UpdateRoom), ctx, room)
 }

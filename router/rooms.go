@@ -149,7 +149,7 @@ func (s *Server) AdminPutRoom(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateRoom(&roomModel); err != nil {
+	if err := s.repo.UpdateRoom(e.Request().Context(), &roomModel); err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to update room",
