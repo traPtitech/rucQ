@@ -375,3 +375,25 @@ func mustCreateRoomGroup(t *testing.T, r *Repository, campID uint) *model.RoomGr
 
 	return roomGroup
 }
+
+func mustCreateRoom(
+	t *testing.T,
+	r *Repository,
+	roomGroupID uint,
+	members []model.User,
+) *model.Room {
+	t.Helper()
+
+	room := &model.Room{
+		Name:        random.AlphaNumericString(t, 20),
+		RoomGroupID: roomGroupID,
+		Members:     members,
+	}
+
+	err := r.CreateRoom(t.Context(), room)
+
+	require.NoError(t, err)
+	require.NotZero(t, room.ID)
+
+	return room
+}
