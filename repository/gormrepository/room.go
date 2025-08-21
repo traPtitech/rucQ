@@ -50,8 +50,10 @@ func (r *Repository) CreateRoom(ctx context.Context, room *model.Room) error {
 	return nil
 }
 
-func (r *Repository) UpdateRoom(ctx context.Context, room *model.Room) error {
+func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Room) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
+		room.ID = roomID
+
 		if err := tx.Model(room).Association("Members").Replace(room.Members); err != nil {
 			return err
 		}

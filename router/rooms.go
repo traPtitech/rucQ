@@ -99,7 +99,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 
 func (s *Server) AdminPutRoom(
 	e echo.Context,
-	roomId api.RoomId,
+	roomID api.RoomId,
 	params api.AdminPutRoomParams,
 ) error {
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
@@ -149,12 +149,12 @@ func (s *Server) AdminPutRoom(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.UpdateRoom(e.Request().Context(), &roomModel); err != nil {
+	if err := s.repo.UpdateRoom(e.Request().Context(), uint(roomID), &roomModel); err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to update room",
 			slog.String("error", err.Error()),
-			slog.Int("roomId", int(roomId)),
+			slog.Int("roomId", roomID),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
