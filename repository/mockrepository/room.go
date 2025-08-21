@@ -10,6 +10,7 @@
 package mockrepository
 
 import (
+	context "context"
 	reflect "reflect"
 
 	model "github.com/traPtitech/rucQ/model"
@@ -41,17 +42,17 @@ func (m *MockRoomRepository) EXPECT() *MockRoomRepositoryMockRecorder {
 }
 
 // CreateRoom mocks base method.
-func (m *MockRoomRepository) CreateRoom(room *model.Room) error {
+func (m *MockRoomRepository) CreateRoom(ctx context.Context, room *model.Room) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRoom", room)
+	ret := m.ctrl.Call(m, "CreateRoom", ctx, room)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateRoom indicates an expected call of CreateRoom.
-func (mr *MockRoomRepositoryMockRecorder) CreateRoom(room any) *gomock.Call {
+func (mr *MockRoomRepositoryMockRecorder) CreateRoom(ctx, room any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoom", reflect.TypeOf((*MockRoomRepository)(nil).CreateRoom), room)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoom", reflect.TypeOf((*MockRoomRepository)(nil).CreateRoom), ctx, room)
 }
 
 // GetRoomByID mocks base method.

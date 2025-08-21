@@ -215,7 +215,7 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 			RoomGroupID: roomGroup1.ID,
 			Members:     []model.User{user1, user2},
 		}
-		err := r.CreateRoom(room1)
+		err := r.CreateRoom(t.Context(), room1)
 
 		require.NoError(t, err)
 
@@ -225,7 +225,7 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 			RoomGroupID: roomGroup2.ID,
 			Members:     []model.User{user1},
 		}
-		err = r.CreateRoom(room2)
+		err = r.CreateRoom(t.Context(), room2)
 
 		require.NoError(t, err)
 
@@ -335,7 +335,7 @@ func TestRepository_DeleteRoomGroup(t *testing.T) {
 			RoomGroupID: roomGroup.ID,
 			Members:     []model.User{user},
 		}
-		err := r.CreateRoom(room)
+		err := r.CreateRoom(t.Context(), room)
 
 		require.NoError(t, err)
 

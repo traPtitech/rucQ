@@ -1,6 +1,8 @@
 package gormrepository
 
 import (
+	"context"
+
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
@@ -30,8 +32,8 @@ func (r *Repository) GetRoomByID(id uint) (*model.Room, error) {
 	return &room, nil
 }
 
-func (r *Repository) CreateRoom(room *model.Room) error {
-	if err := r.db.Create(room).Error; err != nil {
+func (r *Repository) CreateRoom(ctx context.Context, room *model.Room) error {
+	if err := r.db.WithContext(ctx).Create(room).Error; err != nil {
 		return err
 	}
 

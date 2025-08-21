@@ -60,7 +60,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	if err := s.repo.CreateRoom(&roomModel); err != nil {
+	if err := s.repo.CreateRoom(e.Request().Context(), &roomModel); err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to create room",
