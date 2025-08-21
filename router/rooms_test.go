@@ -42,7 +42,7 @@ func TestServer_AdminPostRoom(t *testing.T) {
 
 		h.repo.MockRoomRepository.EXPECT().
 			CreateRoom(gomock.Any(), gomock.Any()).
-			DoAndReturn(func(ctx any, room *model.Room) error {
+			DoAndReturn(func(_ any, room *model.Room) error {
 				room.ID = roomID
 				return nil
 			}).Times(1)
@@ -112,7 +112,7 @@ func TestServer_AdminPostRoom(t *testing.T) {
 
 		h.repo.MockRoomRepository.EXPECT().
 			CreateRoom(gomock.Any(), gomock.Any()).
-			DoAndReturn(func(ctx any, room *model.Room) error {
+			DoAndReturn(func(_ any, room *model.Room) error {
 				room.ID = roomID
 				return nil
 			}).Times(1)
@@ -299,7 +299,7 @@ func TestServer_AdminPutRoom(t *testing.T) {
 			Times(1)
 		h.repo.MockRoomRepository.EXPECT().
 			UpdateRoom(gomock.Any(), roomID, gomock.Any()).
-			DoAndReturn(func(ctx any, id uint, room *model.Room) error {
+			DoAndReturn(func(_ any, id uint, room *model.Room) error {
 				*room = *updatedRoom
 				return nil
 			}).Times(1)
@@ -372,7 +372,7 @@ func TestServer_AdminPutRoom(t *testing.T) {
 			Times(1)
 		h.repo.MockRoomRepository.EXPECT().
 			UpdateRoom(gomock.Any(), uint(roomID), gomock.Any()).
-			DoAndReturn(func(ctx any, id uint, room *model.Room) error {
+			DoAndReturn(func(_ any, id uint, room *model.Room) error {
 				*room = *updatedRoom
 				return nil
 			}).Times(1)
@@ -428,7 +428,7 @@ func TestServer_AdminPutRoom(t *testing.T) {
 			Times(1)
 		h.repo.MockRoomRepository.EXPECT().
 			UpdateRoom(gomock.Any(), uint(roomID), gomock.Any()).
-			DoAndReturn(func(ctx any, id uint, room *model.Room) error {
+			DoAndReturn(func(_ any, id uint, room *model.Room) error {
 				*room = *updatedRoom
 				return nil
 			}).Times(1)
