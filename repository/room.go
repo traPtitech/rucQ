@@ -3,9 +3,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/traPtitech/rucQ/model"
 )
+
+var ErrUserOrRoomGroupNotFound = errors.New("user or room group not found")
 
 type RoomRepository interface {
 	GetRooms() ([]model.Room, error)

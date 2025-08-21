@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) error {
@@ -61,6 +63,16 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	}
 
 	if err := s.repo.CreateRoom(e.Request().Context(), &roomModel); err != nil {
+		if errors.Is(err, repository.ErrUserOrRoomGroupNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"user or room group not found",
+				slog.Int("roomGroupId", int(roomModel.RoomGroupID)),
+			)
+
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid user or room group ID")
+		}
+
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to create room",
