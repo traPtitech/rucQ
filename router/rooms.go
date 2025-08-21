@@ -5,11 +5,12 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/jinzhu/copier"
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) error {
@@ -48,44 +49,27 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 		return err
 	}
 
-	var roomModel model.Room
+	roomModel, err := converter.Convert[model.Room](req)
 
-	if err := copier.Copy(&roomModel, &req); err != nil {
+	if err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
-			"failed to copy request to model",
+			"failed to convert request to model",
 			slog.String("error", err.Error()),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	roomModel.Members = make([]model.User, len(req.MemberIds))
-
-	for i := range req.MemberIds {
-		member, err := s.repo.GetOrCreateUser(e.Request().Context(), req.MemberIds[i])
-
-		if err != nil {
-			if errors.Is(err, model.ErrNotFound) {
-				return echo.NewHTTPError(http.StatusNotFound, "User not found")
-			}
-
-			slog.ErrorContext(
+	if err := s.repo.CreateRoom(e.Request().Context(), &roomModel); err != nil {
+		if errors.Is(err, repository.ErrUserOrRoomGroupNotFound) {
+			slog.WarnContext(
 				e.Request().Context(),
-				"failed to get user",
-				slog.String("error", err.Error()),
-				slog.String("userId", req.MemberIds[i]),
+				"user or room group not found",
+				slog.Int("roomGroupId", int(roomModel.RoomGroupID)),
 			)
 
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-		roomModel.Members[i] = *member
-	}
-
-	if err := s.repo.CreateRoom(&roomModel); err != nil {
-		if errors.Is(err, model.ErrAlreadyExists) {
-			return echo.NewHTTPError(http.StatusConflict, "Room already exists")
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid user or room group ID")
 		}
 
 		slog.ErrorContext(
@@ -97,13 +81,27 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res api.RoomResponse
+	// MemberのisStaffなどを正しく返すために取得
+	updatedRoom, err := s.repo.GetRoomByID(roomModel.ID)
 
-	if err := copier.Copy(&res, &roomModel); err != nil {
+	if err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
-			"failed to copy model to response",
+			"failed to get room by ID",
 			slog.String("error", err.Error()),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[api.RoomResponse](updatedRoom)
+
+	if err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert model to response",
+			slog.String("error", err.Error()),
+			slog.Int("roomId", int(updatedRoom.ID)),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -114,7 +112,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 
 func (s *Server) AdminPutRoom(
 	e echo.Context,
-	roomId api.RoomId,
+	roomID api.RoomId,
 	params api.AdminPutRoomParams,
 ) error {
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
@@ -152,14 +150,44 @@ func (s *Server) AdminPutRoom(
 		return err
 	}
 
-	roomModel, err := s.repo.GetRoomByID(uint(roomId))
+	roomModel, err := converter.Convert[model.Room](req)
 
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request to model",
+			slog.String("error", err.Error()),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if err := s.repo.UpdateRoom(e.Request().Context(), uint(roomID), &roomModel); err != nil {
+		if errors.Is(err, repository.ErrUserNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"user not found",
+				slog.Int("roomId", roomID),
+			)
+
+			return echo.NewHTTPError(http.StatusBadRequest, "User not found")
+		}
+
+		if errors.Is(err, repository.ErrRoomGroupNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"room group not found",
+				slog.Int("roomGroupId", int(roomModel.RoomGroupID)),
+			)
+
+			return echo.NewHTTPError(http.StatusBadRequest, "Room group not found")
+		}
+
+		if errors.Is(err, repository.ErrRoomNotFound) {
 			slog.WarnContext(
 				e.Request().Context(),
 				"room not found",
-				slog.Int("roomId", int(roomId)),
+				slog.Int("roomId", roomID),
 			)
 
 			return echo.NewHTTPError(http.StatusNotFound, "Room not found")
@@ -167,65 +195,35 @@ func (s *Server) AdminPutRoom(
 
 		slog.ErrorContext(
 			e.Request().Context(),
-			"failed to get room",
-			slog.String("error", err.Error()),
-			slog.Int("roomId", int(roomId)),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	if err := copier.Copy(roomModel, &req); err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to copy request to model",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	roomModel.Members = make([]model.User, len(req.MemberIds))
-
-	for i := range req.MemberIds {
-		member, err := s.repo.GetOrCreateUser(e.Request().Context(), req.MemberIds[i])
-
-		if err != nil {
-			if errors.Is(err, model.ErrNotFound) {
-				return echo.NewHTTPError(http.StatusNotFound, "User not found")
-			}
-
-			slog.ErrorContext(
-				e.Request().Context(),
-				"failed to get user",
-				slog.String("error", err.Error()),
-				slog.String("userId", req.MemberIds[i]),
-			)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-		}
-
-		roomModel.Members[i] = *member
-	}
-
-	if err := s.repo.UpdateRoom(roomModel); err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
 			"failed to update room",
 			slog.String("error", err.Error()),
-			slog.Int("roomId", int(roomId)),
+			slog.Int("roomId", roomID),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	var res api.RoomResponse
+	// MemberのisStaffなどを正しく返すために取得
+	updatedRoom, err := s.repo.GetRoomByID(uint(roomID))
 
-	if err := copier.Copy(&res, roomModel); err != nil {
+	if err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
-			"failed to copy model to response",
+			"failed to get room by ID",
 			slog.String("error", err.Error()),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	res, err := converter.Convert[api.RoomResponse](updatedRoom)
+
+	if err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert model to response",
+			slog.String("error", err.Error()),
+			slog.Int("roomId", int(updatedRoom.ID)),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
