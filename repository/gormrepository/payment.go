@@ -2,10 +2,12 @@ package gormrepository
 
 import (
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (r *Repository) CreatePayment(ctx context.Context, payment *model.Payment) error {
@@ -27,6 +29,25 @@ func (r *Repository) GetPayments(ctx context.Context, campID uint) ([]model.Paym
 	}
 
 	return payments, nil
+}
+
+func (r *Repository) GetPaymentByUserID(
+	ctx context.Context,
+	userID string,
+) (*model.Payment, error) {
+	payment, err := gorm.G[model.Payment](r.db).
+		Where("user_id = ?", userID).
+		First(ctx)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, repository.ErrPaymentNotFound
+		}
+
+		return nil, err
+	}
+
+	return &payment, nil
 }
 
 func (r *Repository) UpdatePayment(

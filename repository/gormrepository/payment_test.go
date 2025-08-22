@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -120,6 +121,41 @@ func TestGetPayments(t *testing.T) {
 		assert.Len(t, paymentsForCamp2, 1)
 		assert.Equal(t, payment2.ID, paymentsForCamp2[0].ID)
 		assert.Equal(t, camp2.ID, paymentsForCamp2[0].CampID)
+	})
+}
+
+func TestRepository_GetPaymentByUserID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		payment := mustCreatePayment(t, r, user.ID, camp.ID)
+		retrievedPayment, err := r.GetPaymentByUserID(t.Context(), user.ID)
+
+		assert.NoError(t, err)
+
+		if assert.NotNil(t, retrievedPayment) {
+			assert.Equal(t, payment.ID, retrievedPayment.ID)
+			assert.Equal(t, payment.Amount, retrievedPayment.Amount)
+			assert.Equal(t, payment.AmountPaid, retrievedPayment.AmountPaid)
+			assert.Equal(t, payment.UserID, retrievedPayment.UserID)
+			assert.Equal(t, payment.CampID, retrievedPayment.CampID)
+		}
+	})
+
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		user := mustCreateUser(t, r)
+		payment, err := r.GetPaymentByUserID(t.Context(), user.ID)
+
+		assert.ErrorIs(t, err, repository.ErrPaymentNotFound)
+		assert.Nil(t, payment)
 	})
 }
 

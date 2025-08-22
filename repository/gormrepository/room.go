@@ -34,6 +34,25 @@ func (r *Repository) GetRoomByID(id uint) (*model.Room, error) {
 	return &room, nil
 }
 
+func (r *Repository) GetRoomByUserID(ctx context.Context, userID string) (*model.Room, error) {
+	var room model.Room
+
+	if err := r.db.
+		WithContext(ctx).
+		Joins("JOIN room_members ON room_members.room_id = rooms.id").
+		Where("room_members.user_id = ?", userID).
+		Preload("Members").
+		First(&room).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, repository.ErrRoomNotFound
+		}
+
+		return nil, err
+	}
+
+	return &room, nil
+}
+
 func (r *Repository) CreateRoom(ctx context.Context, room *model.Room) error {
 	if err := r.db.
 		WithContext(ctx).
