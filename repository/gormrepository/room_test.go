@@ -42,6 +42,17 @@ func TestRepository_GetRoomByUserID(t *testing.T) {
 			assert.Contains(t, memberIDs, user2.ID)
 		}
 	})
+
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		// ユーザーは作成するが部屋には所属させない
+		user := mustCreateUser(t, r)
+		_, err := r.GetRoomByUserID(t.Context(), user.ID)
+
+		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
+	})
 }
 
 func TestRepository_CreateRoom(t *testing.T) {
