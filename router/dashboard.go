@@ -61,7 +61,6 @@ func (s *Server) GetDashboard(
 		return echo.NewHTTPError(http.StatusNotFound, "User is not a participant of this camp")
 	}
 
-	// TODO: ユーザーのRoomを取得してレスポンスに含める
 	res := api.DashboardResponse{
 		Id: *params.XForwardedUser,
 	}
@@ -94,6 +93,34 @@ func (s *Server) GetDashboard(
 		}
 
 		res.Payment = &apiPayment
+	}
+
+	room, err := s.repo.GetRoomByUserID(e.Request().Context(), *params.XForwardedUser)
+
+	if err != nil && !errors.Is(err, repository.ErrRoomNotFound) {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get room",
+			slog.String("userId", *params.XForwardedUser),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if room != nil {
+		apiRoom, err := converter.Convert[api.RoomResponse](room)
+
+		if err != nil {
+			slog.ErrorContext(
+				e.Request().Context(),
+				"failed to convert room",
+				slog.String("userId", *params.XForwardedUser),
+			)
+
+			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		}
+
+		res.Room = &apiRoom
 	}
 
 	return e.JSON(http.StatusOK, &res)

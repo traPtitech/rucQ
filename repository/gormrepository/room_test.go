@@ -11,6 +11,39 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+func TestRepository_GetRoomByUserID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		user1 := mustCreateUser(t, r)
+		user2 := mustCreateUser(t, r)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{user1, user2})
+
+		retrievedRoom, err := r.GetRoomByUserID(t.Context(), user1.ID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, room.ID, retrievedRoom.ID)
+		assert.Equal(t, room.Name, retrievedRoom.Name)
+		assert.Equal(t, room.RoomGroupID, retrievedRoom.RoomGroupID)
+
+		if assert.Len(t, retrievedRoom.Members, 2) {
+			memberIDs := make([]string, len(retrievedRoom.Members))
+
+			for i, member := range retrievedRoom.Members {
+				memberIDs[i] = member.ID
+			}
+
+			assert.Contains(t, memberIDs, user1.ID)
+			assert.Contains(t, memberIDs, user2.ID)
+		}
+	})
+}
+
 func TestRepository_CreateRoom(t *testing.T) {
 	t.Parallel()
 
