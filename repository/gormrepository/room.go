@@ -34,13 +34,19 @@ func (r *Repository) GetRoomByID(id uint) (*model.Room, error) {
 	return &room, nil
 }
 
-func (r *Repository) GetRoomByUserID(ctx context.Context, userID string) (*model.Room, error) {
+func (r *Repository) GetRoomByUserID(
+	ctx context.Context,
+	campID uint,
+	userID string,
+) (*model.Room, error) {
 	var room model.Room
 
 	if err := r.db.
 		WithContext(ctx).
 		Joins("JOIN room_members ON room_members.room_id = rooms.id").
+		Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
 		Where("room_members.user_id = ?", userID).
+		Where("room_groups.camp_id = ?", campID).
 		Preload("Members").
 		First(&room).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

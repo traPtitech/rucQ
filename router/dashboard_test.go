@@ -29,11 +29,11 @@ func TestServer_GetDashboard(t *testing.T) {
 			Return(true, nil).
 			Times(1)
 		h.repo.MockPaymentRepository.EXPECT().
-			GetPaymentByUserID(gomock.Any(), userID).
+			GetPaymentByUserID(gomock.Any(), uint(campID), userID).
 			Return(nil, repository.ErrPaymentNotFound).
 			Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByUserID(gomock.Any(), userID).
+			GetRoomByUserID(gomock.Any(), uint(campID), userID).
 			Return(nil, repository.ErrRoomNotFound).
 			Times(1)
 
@@ -69,7 +69,7 @@ func TestServer_GetDashboard(t *testing.T) {
 			CampID:     uint(campID),
 		}
 		h.repo.MockPaymentRepository.EXPECT().
-			GetPaymentByUserID(gomock.Any(), userID).
+			GetPaymentByUserID(gomock.Any(), uint(campID), userID).
 			Return(payment, nil).
 			Times(1)
 
@@ -88,7 +88,7 @@ func TestServer_GetDashboard(t *testing.T) {
 		}
 
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByUserID(gomock.Any(), userID).
+			GetRoomByUserID(gomock.Any(), uint(campID), userID).
 			Return(room, nil).
 			Times(1)
 
@@ -151,11 +151,11 @@ func TestServer_GetDashboard(t *testing.T) {
 		}
 
 		h.repo.MockPaymentRepository.EXPECT().
-			GetPaymentByUserID(gomock.Any(), userID).
+			GetPaymentByUserID(gomock.Any(), uint(campID), userID).
 			Return(payment, nil).
 			Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByUserID(gomock.Any(), userID).
+			GetRoomByUserID(gomock.Any(), uint(campID), userID).
 			Return(nil, repository.ErrRoomNotFound).
 			Times(1)
 
@@ -191,7 +191,7 @@ func TestServer_GetDashboard(t *testing.T) {
 			Return(true, nil).
 			Times(1)
 		h.repo.MockPaymentRepository.EXPECT().
-			GetPaymentByUserID(gomock.Any(), userID).
+			GetPaymentByUserID(gomock.Any(), uint(campID), userID).
 			Return(nil, repository.ErrPaymentNotFound).
 			Times(1)
 		room := &model.Room{
@@ -209,7 +209,7 @@ func TestServer_GetDashboard(t *testing.T) {
 		}
 
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByUserID(gomock.Any(), userID).
+			GetRoomByUserID(gomock.Any(), uint(campID), userID).
 			Return(room, nil).
 			Times(1)
 
@@ -313,7 +313,7 @@ func TestServer_GetDashboard(t *testing.T) {
 			Return(true, nil).
 			Times(1)
 		h.repo.MockPaymentRepository.EXPECT().
-			GetPaymentByUserID(gomock.Any(), userID).
+			GetPaymentByUserID(gomock.Any(), uint(campID), userID).
 			Return(nil, errors.New("database error")).
 			Times(1)
 		h.expect.GET("/api/camps/{campId}/me", campID).
@@ -338,11 +338,11 @@ func TestServer_GetDashboard(t *testing.T) {
 			Times(1)
 
 		h.repo.MockPaymentRepository.EXPECT().
-			GetPaymentByUserID(gomock.Any(), userID).
+			GetPaymentByUserID(gomock.Any(), uint(campID), userID).
 			Return(nil, repository.ErrPaymentNotFound).
 			Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByUserID(gomock.Any(), userID).
+			GetRoomByUserID(gomock.Any(), uint(campID), userID).
 			Return(nil, errors.New("database error")).
 			Times(1)
 		h.expect.GET("/api/camps/{campId}/me", campID).
