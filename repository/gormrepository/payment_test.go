@@ -134,7 +134,7 @@ func TestRepository_GetPaymentByUserID(t *testing.T) {
 		camp := mustCreateCamp(t, r)
 		user := mustCreateUser(t, r)
 		payment := mustCreatePayment(t, r, user.ID, camp.ID)
-		retrievedPayment, err := r.GetPaymentByUserID(t.Context(), user.ID)
+		retrievedPayment, err := r.GetPaymentByUserID(t.Context(), camp.ID, user.ID)
 
 		assert.NoError(t, err)
 
@@ -151,8 +151,9 @@ func TestRepository_GetPaymentByUserID(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
+		camp := mustCreateCamp(t, r)
 		user := mustCreateUser(t, r)
-		payment, err := r.GetPaymentByUserID(t.Context(), user.ID)
+		payment, err := r.GetPaymentByUserID(t.Context(), camp.ID, user.ID)
 
 		assert.ErrorIs(t, err, repository.ErrPaymentNotFound)
 		assert.Nil(t, payment)

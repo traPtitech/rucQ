@@ -65,7 +65,11 @@ func (s *Server) GetDashboard(
 		Id: *params.XForwardedUser,
 	}
 
-	payment, err := s.repo.GetPaymentByUserID(e.Request().Context(), *params.XForwardedUser)
+	payment, err := s.repo.GetPaymentByUserID(
+		e.Request().Context(),
+		uint(campID),
+		*params.XForwardedUser,
+	)
 
 	if err != nil && !errors.Is(err, repository.ErrPaymentNotFound) {
 		slog.ErrorContext(
@@ -95,13 +99,14 @@ func (s *Server) GetDashboard(
 		res.Payment = &apiPayment
 	}
 
-	room, err := s.repo.GetRoomByUserID(e.Request().Context(), *params.XForwardedUser)
+	room, err := s.repo.GetRoomByUserID(e.Request().Context(), uint(campID), *params.XForwardedUser)
 
 	if err != nil && !errors.Is(err, repository.ErrRoomNotFound) {
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to get room",
 			slog.String("userId", *params.XForwardedUser),
+			slog.Int("campId", campID),
 		)
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -115,6 +120,7 @@ func (s *Server) GetDashboard(
 				e.Request().Context(),
 				"failed to convert room",
 				slog.String("userId", *params.XForwardedUser),
+				slog.Int("campId", campID),
 			)
 
 			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")

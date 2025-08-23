@@ -24,7 +24,7 @@ func TestRepository_GetRoomByUserID(t *testing.T) {
 		user2 := mustCreateUser(t, r)
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{user1, user2})
 
-		retrievedRoom, err := r.GetRoomByUserID(t.Context(), user1.ID)
+		retrievedRoom, err := r.GetRoomByUserID(t.Context(), camp.ID, user1.ID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, room.ID, retrievedRoom.ID)
@@ -47,9 +47,10 @@ func TestRepository_GetRoomByUserID(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
+		camp := mustCreateCamp(t, r)
 		// ユーザーは作成するが部屋には所属させない
 		user := mustCreateUser(t, r)
-		_, err := r.GetRoomByUserID(t.Context(), user.ID)
+		_, err := r.GetRoomByUserID(t.Context(), camp.ID, user.ID)
 
 		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
 	})

@@ -33,9 +33,11 @@ func (r *Repository) GetPayments(ctx context.Context, campID uint) ([]model.Paym
 
 func (r *Repository) GetPaymentByUserID(
 	ctx context.Context,
+	campID uint,
 	userID string,
 ) (*model.Payment, error) {
 	payment, err := gorm.G[model.Payment](r.db).
+		Where("camp_id = ?", campID).
 		Where("user_id = ?", userID).
 		First(ctx)
 
