@@ -16,15 +16,18 @@ type SchedulerService interface {
 	Start(ctx context.Context)
 }
 
-type schedulerService struct {
+type schedulerServiceImpl struct {
 	repo        repository.Repository
 	traqService TraqService
 	interval    time.Duration
 }
 
 // NewSchedulerService はSchedulerServiceの新しいインスタンスを作成します
-func NewSchedulerService(repo repository.Repository, traqService TraqService) SchedulerService {
-	return &schedulerService{
+func NewSchedulerService(
+	repo repository.Repository,
+	traqService TraqService,
+) *schedulerServiceImpl {
+	return &schedulerServiceImpl{
 		repo:        repo,
 		traqService: traqService,
 		interval:    time.Minute, // 1分間隔でチェック
@@ -32,7 +35,7 @@ func NewSchedulerService(repo repository.Repository, traqService TraqService) Sc
 }
 
 // Start はメッセージ送信スケジューラーを開始します
-func (s *schedulerService) Start(ctx context.Context) {
+func (s *schedulerServiceImpl) Start(ctx context.Context) {
 	ticker := time.NewTicker(s.interval)
 	defer ticker.Stop()
 
@@ -50,7 +53,7 @@ func (s *schedulerService) Start(ctx context.Context) {
 }
 
 // processReadyMessages は送信準備が整ったメッセージを処理します
-func (s *schedulerService) processReadyMessages(ctx context.Context) {
+func (s *schedulerServiceImpl) processReadyMessages(ctx context.Context) {
 	messages, err := s.repo.GetReadyToSendMessages(ctx)
 	if err != nil {
 		slog.ErrorContext(ctx, "failed to get ready messages", slog.String("error", err.Error()))
@@ -84,6 +87,6 @@ func (s *schedulerService) processReadyMessages(ctx context.Context) {
 }
 
 // sendMessage は個別のメッセージを送信します
-func (s *schedulerService) sendMessage(ctx context.Context, message *model.Message) error {
+func (s *schedulerServiceImpl) sendMessage(ctx context.Context, message *model.Message) error {
 	return s.traqService.PostDirectMessage(ctx, message.TargetUserID, message.Content)
 }
