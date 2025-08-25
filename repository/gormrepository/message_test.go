@@ -33,7 +33,7 @@ func TestRepository_CreateMessage(t *testing.T) {
 		}
 
 		err = r.CreateMessage(t.Context(), message)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		assert.NotZero(t, message.ID)
 	})
 
@@ -44,13 +44,13 @@ func TestRepository_CreateMessage(t *testing.T) {
 
 		// 存在しないユーザーIDでメッセージを作成
 		message := &model.Message{
-			TargetUserID: "nonexistent_user",
+			TargetUserID: random.AlphaNumericString(t, 32),
 			Content:      random.AlphaNumericString(t, 100),
 			SendAt:       time.Now().Add(time.Hour),
 		}
 
 		err := r.CreateMessage(t.Context(), message)
-		assert.Equal(t, repository.ErrUserNotFound, err)
+		assert.ErrorIs(t, err, repository.ErrUserNotFound)
 		assert.Zero(t, message.ID)
 	})
 
@@ -128,7 +128,7 @@ func TestRepository_GetReadyToSendMessages(t *testing.T) {
 		require.NoError(t, err)
 
 		messages, err := r.GetReadyToSendMessages(t.Context())
-		require.NoError(t, err)
+		assert.NoError(t, err)
 
 		// 過去の送信予定時刻で未送信のメッセージのみ取得されることを確認
 		assert.Len(t, messages, 1)
@@ -141,7 +141,7 @@ func TestRepository_GetReadyToSendMessages(t *testing.T) {
 		r := setup(t)
 
 		messages, err := r.GetReadyToSendMessages(t.Context())
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		assert.Empty(t, messages)
 	})
 
@@ -190,7 +190,7 @@ func TestRepository_UpdateMessage(t *testing.T) {
 
 		// 更新されたメッセージが送信済みとして扱われることを確認
 		messages, err := r.GetReadyToSendMessages(t.Context())
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		assert.Len(t, messages, 0)
 	})
 
