@@ -36,7 +36,7 @@ func setupSchedulerTest(t *testing.T) *schedulerTestSetup {
 	}
 }
 
-func TestSchedulerService_processReadyMessages(t *testing.T) {
+func TestSchedulerServiceImpl_processReadyMessages(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
