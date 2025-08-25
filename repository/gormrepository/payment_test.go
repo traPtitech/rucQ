@@ -160,7 +160,7 @@ func TestRepository_GetPaymentByUserID(t *testing.T) {
 	})
 }
 
-func TestUpdatePayment(t *testing.T) {
+func TestRepository_UpdatePayment(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
@@ -202,6 +202,42 @@ func TestUpdatePayment(t *testing.T) {
 		require.NotNil(t, foundPayment, "updated payment should be found")
 		assert.Equal(t, updatedAmount, foundPayment.Amount)
 		assert.Equal(t, updatedAmountPaid, foundPayment.AmountPaid)
+		assert.Equal(t, user.ID, foundPayment.UserID)
+		assert.Equal(t, camp.ID, foundPayment.CampID)
+	})
+
+	t.Run("Update with zero", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// テスト用のpaymentを作成
+		originalPayment := mustCreatePayment(t, r, user.ID, camp.ID)
+
+		// 更新用のデータ
+		updatePayment := model.Payment{
+			Amount:     0,
+			AmountPaid: 0,
+			UserID:     user.ID,
+			CampID:     camp.ID,
+		}
+
+		// UpdatePaymentをテスト
+		err := r.UpdatePayment(t.Context(), originalPayment.ID, &updatePayment)
+		assert.NoError(t, err)
+
+		// 更新されたデータを取得して確認
+		payments, err := r.GetPayments(t.Context(), camp.ID)
+
+		require.NoError(t, err)
+		require.Len(t, payments, 1)
+
+		foundPayment := payments[0]
+
+		assert.Equal(t, updatePayment.Amount, foundPayment.Amount)
+		assert.Equal(t, updatePayment.AmountPaid, foundPayment.AmountPaid)
 		assert.Equal(t, user.ID, foundPayment.UserID)
 		assert.Equal(t, camp.ID, foundPayment.CampID)
 	})
