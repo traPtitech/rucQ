@@ -3,18 +3,18 @@ package router
 import (
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
 )
 
 // AdminPostMessage は DM を送信するハンドラです。
 func (s *Server) AdminPostMessage(
 	e echo.Context,
-	userID api.UserId,
+	targetUserID api.UserId,
 	params api.AdminPostMessageParams,
 ) error {
 	var req api.AdminPostMessageJSONRequestBody
@@ -52,25 +52,27 @@ func (s *Server) AdminPostMessage(
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	// 指定時刻まで待機してからDMを送信する
-	sendAt := req.SendAt
-	if sendAt.IsZero() {
-		sendAt = time.Now()
+	message, err := converter.Convert[model.Message](req)
+
+	if err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request",
+			slog.String("error", err.Error()),
+		)
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request")
 	}
 
-	message := &model.Message{
-		TargetUserID: string(userID),
-		Content:      req.Content,
-		SendAt:       sendAt,
-	}
+	message.TargetUserID = targetUserID
 
-	if err := s.repo.CreateMessage(e.Request().Context(), message); err != nil {
+	if err := s.repo.CreateMessage(e.Request().Context(), &message); err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to create message",
 			slog.String("error", err.Error()),
-			slog.String("userId", string(userID)),
+			slog.String("userId", targetUserID),
 		)
+
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
