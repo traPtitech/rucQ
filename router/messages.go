@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"time"
@@ -9,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/model"
 )
 
 // AdminPostMessage は DM を送信するハンドラです。
@@ -53,21 +53,26 @@ func (s *Server) AdminPostMessage(
 	}
 
 	// 指定時刻まで待機してからDMを送信する
-	go func() {
-		if !req.SendAt.IsZero() {
-			time.Sleep(time.Until(req.SendAt))
-		}
+	sendAt := req.SendAt
+	if sendAt.IsZero() {
+		sendAt = time.Now()
+	}
 
-		err := s.traqService.PostDirectMessage(context.Background(), string(userID), req.Content)
-		if err != nil {
-			slog.ErrorContext(
-				context.Background(),
-				"failed to send direct message",
-				slog.String("error", err.Error()),
-				slog.String("userId", string(userID)),
-			)
-		}
-	}()
+	message := &model.Message{
+		TargetUserID: string(userID),
+		Content:      req.Content,
+		SendAt:       sendAt,
+	}
+
+	if err := s.repo.CreateMessage(e.Request().Context(), message); err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to create message",
+			slog.String("error", err.Error()),
+			slog.String("userId", string(userID)),
+		)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
 
 	return e.NoContent(http.StatusAccepted)
 }
