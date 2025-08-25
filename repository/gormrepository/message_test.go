@@ -22,7 +22,7 @@ func TestRepository_CreateMessage(t *testing.T) {
 		r := setup(t)
 
 		// 先にユーザーを作成
-		userID := random.AlphaNumericString(t, 20)
+		userID := random.AlphaNumericString(t, 32)
 		_, err := r.GetOrCreateUser(t.Context(), userID)
 		require.NoError(t, err)
 
@@ -60,7 +60,7 @@ func TestRepository_CreateMessage(t *testing.T) {
 		r := setup(t)
 
 		// 先にユーザーを作成
-		userID := random.AlphaNumericString(t, 20)
+		userID := random.AlphaNumericString(t, 32)
 		_, err := r.GetOrCreateUser(t.Context(), userID)
 		require.NoError(t, err)
 
@@ -88,9 +88,9 @@ func TestRepository_GetReadyToSendMessages(t *testing.T) {
 		r := setup(t)
 
 		// 共通のユーザーIDを作成
-		userID1 := random.AlphaNumericString(t, 20)
-		userID2 := random.AlphaNumericString(t, 20)
-		userID3 := random.AlphaNumericString(t, 20)
+		userID1 := random.AlphaNumericString(t, 32)
+		userID2 := random.AlphaNumericString(t, 32)
+		userID3 := random.AlphaNumericString(t, 32)
 		_, err := r.GetOrCreateUser(t.Context(), userID1)
 		require.NoError(t, err)
 		_, err = r.GetOrCreateUser(t.Context(), userID2)
@@ -169,7 +169,7 @@ func TestRepository_UpdateMessage(t *testing.T) {
 		r := setup(t)
 
 		// 先にユーザーを作成
-		userID := random.AlphaNumericString(t, 20)
+		userID := random.AlphaNumericString(t, 32)
 		_, err := r.GetOrCreateUser(t.Context(), userID)
 		require.NoError(t, err)
 
@@ -213,7 +213,7 @@ func TestRepository_UpdateMessage(t *testing.T) {
 		r := setup(t)
 
 		// 先にユーザーを作成
-		userID := random.AlphaNumericString(t, 20)
+		userID := random.AlphaNumericString(t, 32)
 		_, err := r.GetOrCreateUser(t.Context(), userID)
 		require.NoError(t, err)
 
