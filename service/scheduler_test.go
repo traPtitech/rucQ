@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository/mockrepository"
@@ -46,12 +47,12 @@ func TestSchedulerService_processReadyMessages(t *testing.T) {
 
 		messages := []model.Message{
 			{
-				TargetUserID: random.AlphaNumericString(t, 20),
+				Model:        gorm.Model{ID: uint(random.PositiveInt(t))},
+				TargetUserID: random.AlphaNumericString(t, 32),
 				Content:      random.AlphaNumericString(t, 100),
 				SendAt:       time.Now().Add(-time.Hour),
 			},
 		}
-		messages[0].ID = 1
 
 		// GetReadyToSendMessagesが呼ばれることを期待
 		s.mockRepo.MockMessageRepository.EXPECT().
@@ -82,12 +83,12 @@ func TestSchedulerService_processReadyMessages(t *testing.T) {
 
 		messages := []model.Message{
 			{
-				TargetUserID: random.AlphaNumericString(t, 20),
+				Model:        gorm.Model{ID: uint(random.PositiveInt(t))},
+				TargetUserID: random.AlphaNumericString(t, 32),
 				Content:      random.AlphaNumericString(t, 100),
 				SendAt:       time.Now().Add(-time.Hour),
 			},
 		}
-		messages[0].ID = 1
 
 		s.mockRepo.MockMessageRepository.EXPECT().
 			GetReadyToSendMessages(gomock.Any()).
