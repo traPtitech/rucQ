@@ -34,12 +34,17 @@ func (r *Repository) GetReadyToSendMessages(ctx context.Context) ([]model.Messag
 	return messages, err
 }
 
-func (r *Repository) UpdateMessage(ctx context.Context, messageID uint, message *model.Message) error {
+func (r *Repository) UpdateMessage(
+	ctx context.Context,
+	messageID uint,
+	message *model.Message,
+) error {
 	if messageID == 0 {
 		return repository.ErrMessageNotFound
 	}
 
-	rowsAffected, err := gorm.G[*model.Message](r.db).Where("id = ?", messageID).Updates(ctx, message)
+	rowsAffected, err := gorm.G[*model.Message](r.db).
+		Where("id = ?", messageID).Updates(ctx, message)
 
 	if err != nil {
 		return err
