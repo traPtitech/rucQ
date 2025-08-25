@@ -22,17 +22,15 @@ func TestRepository_CreateMessage(t *testing.T) {
 		r := setup(t)
 
 		// 先にユーザーを作成
-		userID := random.AlphaNumericString(t, 32)
-		_, err := r.GetOrCreateUser(t.Context(), userID)
-		require.NoError(t, err)
+		user := mustCreateUser(t, r)
 
 		message := &model.Message{
-			TargetUserID: userID,
+			TargetUserID: user.ID,
 			Content:      random.AlphaNumericString(t, 100),
 			SendAt:       time.Now().Add(time.Hour),
 		}
 
-		err = r.CreateMessage(t.Context(), message)
+		err := r.CreateMessage(t.Context(), message)
 		assert.NoError(t, err)
 		assert.NotZero(t, message.ID)
 	})
@@ -60,12 +58,10 @@ func TestRepository_CreateMessage(t *testing.T) {
 		r := setup(t)
 
 		// 先にユーザーを作成
-		userID := random.AlphaNumericString(t, 32)
-		_, err := r.GetOrCreateUser(t.Context(), userID)
-		require.NoError(t, err)
+		user := mustCreateUser(t, r)
 
 		message := &model.Message{
-			TargetUserID: userID,
+			TargetUserID: user.ID,
 			Content:      random.AlphaNumericString(t, 100),
 			SendAt:       time.Now().Add(time.Hour),
 		}
@@ -74,7 +70,7 @@ func TestRepository_CreateMessage(t *testing.T) {
 		ctx, cancel := context.WithCancel(t.Context())
 		cancel()
 
-		err = r.CreateMessage(ctx, message)
+		err := r.CreateMessage(ctx, message)
 		assert.ErrorIs(t, err, context.Canceled)
 	})
 }
@@ -87,29 +83,22 @@ func TestRepository_GetReadyToSendMessages(t *testing.T) {
 
 		r := setup(t)
 
-		// 共通のユーザーIDを作成
-		userID1 := random.AlphaNumericString(t, 32)
-		userID2 := random.AlphaNumericString(t, 32)
-		userID3 := random.AlphaNumericString(t, 32)
-		_, err := r.GetOrCreateUser(t.Context(), userID1)
-		require.NoError(t, err)
-		_, err = r.GetOrCreateUser(t.Context(), userID2)
-		require.NoError(t, err)
-		_, err = r.GetOrCreateUser(t.Context(), userID3)
-		require.NoError(t, err)
+		user1 := mustCreateUser(t, r)
+		user2 := mustCreateUser(t, r)
+		user3 := mustCreateUser(t, r)
 
 		// 過去の送信予定時刻のメッセージを作成
 		pastMessage := &model.Message{
-			TargetUserID: userID1,
+			TargetUserID: user1.ID,
 			Content:      random.AlphaNumericString(t, 100),
 			SendAt:       time.Now().Add(-time.Hour),
 		}
-		err = r.CreateMessage(t.Context(), pastMessage)
+		err := r.CreateMessage(t.Context(), pastMessage)
 		require.NoError(t, err)
 
 		// 未来の送信予定時刻のメッセージを作成
 		futureMessage := &model.Message{
-			TargetUserID: userID2,
+			TargetUserID: user2.ID,
 			Content:      random.AlphaNumericString(t, 100),
 			SendAt:       time.Now().Add(time.Hour),
 		}
@@ -119,7 +108,7 @@ func TestRepository_GetReadyToSendMessages(t *testing.T) {
 		// 送信済みのメッセージを作成
 		sentTime := time.Now()
 		sentMessage := &model.Message{
-			TargetUserID: userID3,
+			TargetUserID: user3.ID,
 			Content:      random.AlphaNumericString(t, 100),
 			SendAt:       time.Now().Add(-time.Hour),
 			SentAt:       &sentTime,
@@ -169,16 +158,14 @@ func TestRepository_UpdateMessage(t *testing.T) {
 		r := setup(t)
 
 		// 先にユーザーを作成
-		userID := random.AlphaNumericString(t, 32)
-		_, err := r.GetOrCreateUser(t.Context(), userID)
-		require.NoError(t, err)
+		user := mustCreateUser(t, r)
 
 		message := &model.Message{
-			TargetUserID: userID,
+			TargetUserID: user.ID,
 			Content:      random.AlphaNumericString(t, 100),
 			SendAt:       time.Now().Add(-time.Hour),
 		}
-		err = r.CreateMessage(t.Context(), message)
+		err := r.CreateMessage(t.Context(), message)
 		require.NoError(t, err)
 
 		// 送信時刻を設定
@@ -213,16 +200,14 @@ func TestRepository_UpdateMessage(t *testing.T) {
 		r := setup(t)
 
 		// 先にユーザーを作成
-		userID := random.AlphaNumericString(t, 32)
-		_, err := r.GetOrCreateUser(t.Context(), userID)
-		require.NoError(t, err)
+		user := mustCreateUser(t, r)
 
 		message := &model.Message{
-			TargetUserID: userID,
+			TargetUserID: user.ID,
 			Content:      random.AlphaNumericString(t, 100),
 			SendAt:       time.Now().Add(-time.Hour),
 		}
-		err = r.CreateMessage(t.Context(), message)
+		err := r.CreateMessage(t.Context(), message)
 		require.NoError(t, err)
 
 		// キャンセルされたコンテキストを使用
