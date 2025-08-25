@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 // AdminPostMessage は DM を送信するハンドラです。
@@ -66,6 +68,16 @@ func (s *Server) AdminPostMessage(
 	message.TargetUserID = targetUserID
 
 	if err := s.repo.CreateMessage(e.Request().Context(), &message); err != nil {
+		if errors.Is(err, repository.ErrUserNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"user not found",
+				slog.String("userId", targetUserID),
+			)
+
+			return echo.NewHTTPError(http.StatusNotFound, "User not found")
+		}
+
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to create message",
