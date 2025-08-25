@@ -15,17 +15,39 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+type schedulerTestSetup struct {
+	scheduler *schedulerServiceImpl
+	mockRepo  *mockrepository.MockRepository
+	mockTraq  *mockservice.MockTraqService
+}
+
+func setupSchedulerTest(t *testing.T) *schedulerTestSetup {
+	t.Helper()
+
+	ctrl := gomock.NewController(t)
+	mockRepo := mockrepository.NewMockRepository(ctrl)
+	mockTraq := mockservice.NewMockTraqService(ctrl)
+
+	t.Cleanup(func() {
+		ctrl.Finish()
+	})
+
+	scheduler := NewSchedulerService(mockRepo, mockTraq)
+
+	return &schedulerTestSetup{
+		scheduler: scheduler,
+		mockRepo:  mockRepo,
+		mockTraq:  mockTraq,
+	}
+}
+
 func TestSchedulerService_processReadyMessages(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockRepo := mockrepository.NewMockRepository(ctrl)
-		mockTraq := mockservice.NewMockTraqService(ctrl)
+		s := setupSchedulerTest(t)
 
 		messages := []model.Message{
 			{
@@ -37,36 +59,31 @@ func TestSchedulerService_processReadyMessages(t *testing.T) {
 		messages[0].ID = 1
 
 		// GetReadyToSendMessagesが呼ばれることを期待
-		mockRepo.MockMessageRepository.EXPECT().
+		s.mockRepo.MockMessageRepository.EXPECT().
 			GetReadyToSendMessages(gomock.Any()).
 			Return(messages, nil).
 			Times(1)
 
 		// メッセージ送信が呼ばれることを期待
-		mockTraq.EXPECT().PostDirectMessage(
+		s.mockTraq.EXPECT().PostDirectMessage(
 			gomock.Any(),
 			messages[0].TargetUserID,
 			messages[0].Content,
 		).Return(nil).Times(1)
 
 		// メッセージ更新が呼ばれることを期待
-		mockRepo.MockMessageRepository.EXPECT().
+		s.mockRepo.MockMessageRepository.EXPECT().
 			UpdateMessage(gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
-		scheduler := NewSchedulerService(mockRepo, mockTraq)
-		scheduler.processReadyMessages(context.Background())
+		s.scheduler.processReadyMessages(context.Background())
 	})
 
 	t.Run("Send Message Error", func(t *testing.T) {
 		t.Parallel()
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		mockRepo := mockrepository.NewMockRepository(ctrl)
-		mockTraq := mockservice.NewMockTraqService(ctrl)
+		s := setupSchedulerTest(t)
 
 		messages := []model.Message{
 			{
@@ -77,54 +94,46 @@ func TestSchedulerService_processReadyMessages(t *testing.T) {
 		}
 		messages[0].ID = 1
 
-		mockRepo.MockMessageRepository.EXPECT().
+		s.mockRepo.MockMessageRepository.EXPECT().
 			GetReadyToSendMessages(gomock.Any()).
 			Return(messages, nil).
 			Times(1)
-		mockTraq.EXPECT().PostDirectMessage(gomock.Any(), gomock.Any(), gomock.Any()).
+		s.mockTraq.EXPECT().PostDirectMessage(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("send error")).Times(1)
 
 		// 送信に失敗した場合、UpdateMessageは呼ばれない
-		mockRepo.MockMessageRepository.EXPECT().UpdateMessage(gomock.Any(), gomock.Any()).Times(0)
+		s.mockRepo.MockMessageRepository.EXPECT().
+			UpdateMessage(gomock.Any(), gomock.Any()).
+			Times(0)
 
-		scheduler := NewSchedulerService(mockRepo, mockTraq)
-		scheduler.processReadyMessages(context.Background())
+		s.scheduler.processReadyMessages(context.Background())
 	})
 
 	t.Run("Get Messages Error", func(t *testing.T) {
 		t.Parallel()
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		setup := setupSchedulerTest(t)
 
-		mockRepo := mockrepository.NewMockRepository(ctrl)
-		mockTraq := mockservice.NewMockTraqService(ctrl)
-
-		mockRepo.MockMessageRepository.EXPECT().GetReadyToSendMessages(gomock.Any()).
+		setup.mockRepo.MockMessageRepository.EXPECT().GetReadyToSendMessages(gomock.Any()).
 			Return(nil, errors.New("database error")).Times(1)
 
 		// エラーの場合、他のメソッドは呼ばれない
-		mockTraq.EXPECT().PostDirectMessage(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
-		mockRepo.MockMessageRepository.EXPECT().UpdateMessage(gomock.Any(), gomock.Any()).Times(0)
+		setup.mockTraq.EXPECT().PostDirectMessage(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+		setup.mockRepo.MockMessageRepository.EXPECT().
+			UpdateMessage(gomock.Any(), gomock.Any()).
+			Times(0)
 
-		scheduler := NewSchedulerService(mockRepo, mockTraq)
-		scheduler.processReadyMessages(context.Background())
+		setup.scheduler.processReadyMessages(context.Background())
 	})
 }
 
 func TestNewSchedulerService(t *testing.T) {
 	t.Parallel()
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	s := setupSchedulerTest(t)
 
-	mockRepo := mockrepository.NewMockRepository(ctrl)
-	mockTraq := mockservice.NewMockTraqService(ctrl)
+	assert.NotNil(t, s.scheduler)
 
-	scheduler := NewSchedulerService(mockRepo, mockTraq)
-	assert.NotNil(t, scheduler)
-
-	// 型アサーションでintervalが正しく設定されていることを確認
-	schedulerImpl := scheduler
-	assert.Equal(t, time.Minute, schedulerImpl.interval)
+	// intervalが正しく設定されていることを確認
+	assert.Equal(t, time.Minute, s.scheduler.interval)
 }
