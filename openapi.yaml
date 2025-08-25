@@ -434,8 +434,8 @@ paths:
             schema:
               $ref: "#/components/schemas/MessageRequest"
       responses:
-        "204":
-          $ref: "#/components/responses/NoContent"
+        "202":
+          $ref: "#/components/responses/Accepted"
         "400":
           $ref: "#/components/responses/BadRequest"
         "403":
@@ -1519,6 +1519,8 @@ components:
       schema:
         type: integer
   responses:
+    Accepted:
+      description: Accepted
     NoContent:
       description: No Content
     BadRequest:
