@@ -73,7 +73,7 @@ func TestSchedulerServiceImpl_processReadyMessages(t *testing.T) {
 			Return(nil).
 			Times(1)
 
-		s.scheduler.processReadyMessages(context.Background())
+		s.scheduler.processReadyMessages(t.Context())
 	})
 
 	t.Run("Send Message Error", func(t *testing.T) {
@@ -102,7 +102,7 @@ func TestSchedulerServiceImpl_processReadyMessages(t *testing.T) {
 			UpdateMessage(gomock.Any(), gomock.Any()).
 			Times(0)
 
-		s.scheduler.processReadyMessages(context.Background())
+		s.scheduler.processReadyMessages(t.Context())
 	})
 
 	t.Run("Get Messages Error", func(t *testing.T) {
@@ -119,7 +119,7 @@ func TestSchedulerServiceImpl_processReadyMessages(t *testing.T) {
 			UpdateMessage(gomock.Any(), gomock.Any()).
 			Times(0)
 
-		setup.scheduler.processReadyMessages(context.Background())
+		setup.scheduler.processReadyMessages(t.Context())
 	})
 }
 
@@ -139,7 +139,7 @@ func TestSchedulerServiceImpl_Start(t *testing.T) {
 				Times(2)
 
 			// Startを別のgoroutineで実行
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			go s.scheduler.Start(ctx)
 
 			// 1分間進める（1回目のtick）
@@ -169,7 +169,7 @@ func TestSchedulerServiceImpl_Start(t *testing.T) {
 				Times(0)
 
 			// Startを別のgoroutineで実行
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			go s.scheduler.Start(ctx)
 
 			// すぐにキャンセルする
@@ -218,7 +218,7 @@ func TestSchedulerServiceImpl_Start(t *testing.T) {
 				Times(1)
 
 			// Startを別のgoroutineで実行
-			ctx, cancel := context.WithCancel(context.Background())
+			ctx, cancel := context.WithCancel(t.Context())
 			go s.scheduler.Start(ctx)
 
 			// 1分間進める（1回目のtick - メッセージ処理）
