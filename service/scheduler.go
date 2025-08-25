@@ -1,3 +1,4 @@
+//go:generate go tool mockgen -source=$GOFILE -destination=mockservice/$GOFILE -package=mockservice
 package service
 
 import (
@@ -8,8 +9,6 @@ import (
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
 )
-
-//go:generate go tool mockgen -source=$GOFILE -destination=mockservice/$GOFILE -package=mockservice
 
 // SchedulerService はメッセージ送信スケジューリングを管理するサービスです
 type SchedulerService interface {

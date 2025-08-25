@@ -1,3 +1,4 @@
+//go:generate go tool mockgen -source=$GOFILE -destination=mockrepository/$GOFILE -package=mockrepository
 package repository
 
 import (
@@ -5,8 +6,6 @@ import (
 
 	"github.com/traPtitech/rucQ/model"
 )
-
-//go:generate go tool mockgen -source=$GOFILE -destination=mockrepository/$GOFILE -package=mockrepository
 
 type MessageRepository interface {
 	// CreateMessage メッセージをデータベースに作成します
