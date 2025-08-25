@@ -174,8 +174,8 @@ func TestRepository_UpdatePayment(t *testing.T) {
 		originalPayment := mustCreatePayment(t, r, user.ID, camp.ID)
 
 		// 更新用のデータ
-		updatedAmount := 2000
-		updatedAmountPaid := 1500
+		updatedAmount := random.PositiveInt(t)
+		updatedAmountPaid := random.PositiveInt(t)
 		updatePayment := model.Payment{
 			Amount:     updatedAmount,
 			AmountPaid: updatedAmountPaid,
@@ -252,15 +252,14 @@ func TestRepository_UpdatePayment(t *testing.T) {
 		// 存在しないIDでUpdatePaymentをテスト
 		nonExistentID := uint(random.PositiveInt(t))
 		updatePayment := model.Payment{
-			Amount:     1000,
-			AmountPaid: 500,
+			Amount:     random.PositiveInt(t),
+			AmountPaid: random.PositiveInt(t),
 			UserID:     user.ID,
 			CampID:     camp.ID,
 		}
 
 		err := r.UpdatePayment(t.Context(), nonExistentID, &updatePayment)
-		// GORMのUpdatesは存在しないレコードでもエラーを返さないことがある
-		// 実際のビジネスロジックではレコードの存在確認が必要な場合がある
-		assert.NoError(t, err)
+
+		assert.ErrorIs(t, err, repository.ErrPaymentNotFound)
 	})
 }
