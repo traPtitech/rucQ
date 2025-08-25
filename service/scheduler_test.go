@@ -27,11 +27,6 @@ func setupSchedulerTest(t *testing.T) *schedulerTestSetup {
 	ctrl := gomock.NewController(t)
 	mockRepo := mockrepository.NewMockRepository(ctrl)
 	mockTraq := mockservice.NewMockTraqService(ctrl)
-
-	t.Cleanup(func() {
-		ctrl.Finish()
-	})
-
 	scheduler := NewSchedulerService(mockRepo, mockTraq)
 
 	return &schedulerTestSetup{
