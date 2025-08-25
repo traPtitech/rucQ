@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 // AdminGetPayments 支払い情報の一覧を取得（管理者用）
@@ -196,6 +198,16 @@ func (s *Server) AdminPutPayment(
 	}
 
 	if err := s.repo.UpdatePayment(e.Request().Context(), uint(paymentID), &payment); err != nil {
+		if errors.Is(err, repository.ErrPaymentNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"payment not found",
+				slog.Int("paymentId", paymentID),
+			)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Payment not found")
+		}
+
 		slog.ErrorContext(
 			e.Request().Context(),
 			"failed to update payment",

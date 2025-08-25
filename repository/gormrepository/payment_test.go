@@ -160,7 +160,7 @@ func TestRepository_GetPaymentByUserID(t *testing.T) {
 	})
 }
 
-func TestUpdatePayment(t *testing.T) {
+func TestRepository_UpdatePayment(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
@@ -174,8 +174,8 @@ func TestUpdatePayment(t *testing.T) {
 		originalPayment := mustCreatePayment(t, r, user.ID, camp.ID)
 
 		// 更新用のデータ
-		updatedAmount := 2000
-		updatedAmountPaid := 1500
+		updatedAmount := random.PositiveInt(t)
+		updatedAmountPaid := random.PositiveInt(t)
 		updatePayment := model.Payment{
 			Amount:     updatedAmount,
 			AmountPaid: updatedAmountPaid,
@@ -206,6 +206,42 @@ func TestUpdatePayment(t *testing.T) {
 		assert.Equal(t, camp.ID, foundPayment.CampID)
 	})
 
+	t.Run("Update with zero", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// テスト用のpaymentを作成
+		originalPayment := mustCreatePayment(t, r, user.ID, camp.ID)
+
+		// 更新用のデータ
+		updatePayment := model.Payment{
+			Amount:     0,
+			AmountPaid: 0,
+			UserID:     user.ID,
+			CampID:     camp.ID,
+		}
+
+		// UpdatePaymentをテスト
+		err := r.UpdatePayment(t.Context(), originalPayment.ID, &updatePayment)
+		assert.NoError(t, err)
+
+		// 更新されたデータを取得して確認
+		payments, err := r.GetPayments(t.Context(), camp.ID)
+
+		require.NoError(t, err)
+		require.Len(t, payments, 1)
+
+		foundPayment := payments[0]
+
+		assert.Equal(t, updatePayment.Amount, foundPayment.Amount)
+		assert.Equal(t, updatePayment.AmountPaid, foundPayment.AmountPaid)
+		assert.Equal(t, user.ID, foundPayment.UserID)
+		assert.Equal(t, camp.ID, foundPayment.CampID)
+	})
+
 	t.Run("NotFound", func(t *testing.T) {
 		t.Parallel()
 
@@ -216,15 +252,14 @@ func TestUpdatePayment(t *testing.T) {
 		// 存在しないIDでUpdatePaymentをテスト
 		nonExistentID := uint(random.PositiveInt(t))
 		updatePayment := model.Payment{
-			Amount:     1000,
-			AmountPaid: 500,
+			Amount:     random.PositiveInt(t),
+			AmountPaid: random.PositiveInt(t),
 			UserID:     user.ID,
 			CampID:     camp.ID,
 		}
 
 		err := r.UpdatePayment(t.Context(), nonExistentID, &updatePayment)
-		// GORMのUpdatesは存在しないレコードでもエラーを返さないことがある
-		// 実際のビジネスロジックではレコードの存在確認が必要な場合がある
-		assert.NoError(t, err)
+
+		assert.ErrorIs(t, err, repository.ErrPaymentNotFound)
 	})
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -153,7 +154,7 @@ func TestAdminGetPayments(t *testing.T) {
 	})
 }
 
-func TestAdminPutPayment(t *testing.T) {
+func TestServer_AdminPutPayment(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Success", func(t *testing.T) {
@@ -217,6 +218,35 @@ func TestAdminPutPayment(t *testing.T) {
 			WithJSON(req).
 			WithHeader("X-Forwarded-User", userID).
 			Expect().Status(http.StatusForbidden)
+	})
+
+	t.Run("Payment Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		paymentID := random.PositiveInt(t)
+		campID := random.PositiveInt(t)
+		req := api.AdminPutPaymentJSONRequestBody{
+			Amount:     random.PositiveInt(t),
+			AmountPaid: random.PositiveInt(t),
+			UserId:     random.AlphaNumericString(t, 32),
+			CampId:     campID,
+		}
+		adminUserID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(&model.User{
+				IsStaff: true,
+			}, nil).Times(1)
+		h.repo.MockPaymentRepository.EXPECT().
+			UpdatePayment(gomock.Any(), uint(paymentID), gomock.Any()).
+			Return(repository.ErrPaymentNotFound).Times(1)
+
+		h.expect.PUT("/api/admin/payments/{paymentId}", paymentID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().Status(http.StatusNotFound)
 	})
 
 	t.Run("Bad Request", func(t *testing.T) {

@@ -59,9 +59,17 @@ func (r *Repository) UpdatePayment(
 ) error {
 	payment.ID = paymentID
 
-	_, err := gorm.G[*model.Payment](r.db).Where("id = ?", paymentID).Updates(ctx, payment)
+	rowsAffected, err := gorm.G[*model.Payment](r.db).
+		Select("amount", "amount_paid").
+		Where("id = ?", paymentID).
+		Updates(ctx, payment)
+
 	if err != nil {
 		return err
+	}
+
+	if rowsAffected == 0 {
+		return repository.ErrPaymentNotFound
 	}
 
 	return nil
