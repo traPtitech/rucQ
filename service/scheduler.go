@@ -66,7 +66,7 @@ func (s *schedulerServiceImpl) processReadyMessages(ctx context.Context) {
 				ctx,
 				"failed to send message",
 				slog.String("error", err.Error()),
-				slog.Any("messageId", message.ID),
+				slog.Int("messageId", int(message.ID)),
 				slog.String("targetUserId", message.TargetUserID),
 			)
 			continue
@@ -80,7 +80,7 @@ func (s *schedulerServiceImpl) processReadyMessages(ctx context.Context) {
 				ctx,
 				"failed to update message sent status",
 				slog.String("error", err.Error()),
-				slog.Any("messageId", message.ID),
+				slog.Int("messageId", int(message.ID)),
 			)
 		}
 	}
