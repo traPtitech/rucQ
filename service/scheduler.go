@@ -75,7 +75,7 @@ func (s *schedulerServiceImpl) processReadyMessages(ctx context.Context) {
 		// 送信成功時刻を記録
 		now := time.Now()
 		message.SentAt = &now
-		if err := s.repo.UpdateMessage(ctx, &message); err != nil {
+		if err := s.repo.UpdateMessage(ctx, message.ID, &message); err != nil {
 			slog.ErrorContext(
 				ctx,
 				"failed to update message sent status",

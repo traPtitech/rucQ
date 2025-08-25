@@ -69,7 +69,7 @@ func TestSchedulerServiceImpl_processReadyMessages(t *testing.T) {
 
 		// メッセージ更新が呼ばれることを期待
 		s.mockRepo.MockMessageRepository.EXPECT().
-			UpdateMessage(gomock.Any(), gomock.Any()).
+			UpdateMessage(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -99,7 +99,7 @@ func TestSchedulerServiceImpl_processReadyMessages(t *testing.T) {
 
 		// 送信に失敗した場合、UpdateMessageは呼ばれない
 		s.mockRepo.MockMessageRepository.EXPECT().
-			UpdateMessage(gomock.Any(), gomock.Any()).
+			UpdateMessage(gomock.Any(), gomock.Any(), gomock.Any()).
 			Times(0)
 
 		s.scheduler.processReadyMessages(t.Context())
@@ -116,7 +116,7 @@ func TestSchedulerServiceImpl_processReadyMessages(t *testing.T) {
 		// エラーの場合、他のメソッドは呼ばれない
 		setup.mockTraq.EXPECT().PostDirectMessage(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 		setup.mockRepo.MockMessageRepository.EXPECT().
-			UpdateMessage(gomock.Any(), gomock.Any()).
+			UpdateMessage(gomock.Any(), gomock.Any(), gomock.Any()).
 			Times(0)
 
 		setup.scheduler.processReadyMessages(t.Context())
@@ -207,7 +207,7 @@ func TestSchedulerServiceImpl_Start(t *testing.T) {
 
 			// メッセージ更新が呼ばれることを期待
 			s.mockRepo.MockMessageRepository.EXPECT().
-				UpdateMessage(gomock.Any(), gomock.Any()).
+				UpdateMessage(gomock.Any(), gomock.Any(), gomock.Any()).
 				Return(nil).
 				Times(1)
 

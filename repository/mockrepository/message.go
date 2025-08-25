@@ -71,15 +71,15 @@ func (mr *MockMessageRepositoryMockRecorder) GetReadyToSendMessages(ctx any) *go
 }
 
 // UpdateMessage mocks base method.
-func (m *MockMessageRepository) UpdateMessage(ctx context.Context, message *model.Message) error {
+func (m *MockMessageRepository) UpdateMessage(ctx context.Context, messageID uint, message *model.Message) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateMessage", ctx, message)
+	ret := m.ctrl.Call(m, "UpdateMessage", ctx, messageID, message)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateMessage indicates an expected call of UpdateMessage.
-func (mr *MockMessageRepositoryMockRecorder) UpdateMessage(ctx, message any) *gomock.Call {
+func (mr *MockMessageRepositoryMockRecorder) UpdateMessage(ctx, messageID, message any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMessage", reflect.TypeOf((*MockMessageRepository)(nil).UpdateMessage), ctx, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMessage", reflect.TypeOf((*MockMessageRepository)(nil).UpdateMessage), ctx, messageID, message)
 }
