@@ -21,5 +21,6 @@ func getAllMigrations() []*gormigrate.Migration {
 	return []*gormigrate.Migration{
 		v1(), // questionsテーブルにis_requiredカラムを追加
 		v2(), // ゼロ値で上書きされてしまっていたcreated_atを修正
+		v3(), // messagesテーブルにsent_atカラムを追加
 	}
 }

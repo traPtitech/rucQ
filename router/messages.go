@@ -1,20 +1,22 @@
 package router
 
 import (
-	"context"
+	"errors"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/converter"
+	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 // AdminPostMessage は DM を送信するハンドラです。
 func (s *Server) AdminPostMessage(
 	e echo.Context,
-	userID api.UserId,
+	targetUserID api.UserId,
 	params api.AdminPostMessageParams,
 ) error {
 	var req api.AdminPostMessageJSONRequestBody
@@ -52,22 +54,39 @@ func (s *Server) AdminPostMessage(
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
-	// 指定時刻まで待機してからDMを送信する
-	go func() {
-		if !req.SendAt.IsZero() {
-			time.Sleep(time.Until(req.SendAt))
+	message, err := converter.Convert[model.Message](req)
+
+	if err != nil {
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to convert request",
+			slog.String("error", err.Error()),
+		)
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request")
+	}
+
+	message.TargetUserID = targetUserID
+
+	if err := s.repo.CreateMessage(e.Request().Context(), &message); err != nil {
+		if errors.Is(err, repository.ErrUserNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"user not found",
+				slog.String("userId", targetUserID),
+			)
+
+			return echo.NewHTTPError(http.StatusNotFound, "User not found")
 		}
 
-		err := s.traqService.PostDirectMessage(context.Background(), string(userID), req.Content)
-		if err != nil {
-			slog.ErrorContext(
-				context.Background(),
-				"failed to send direct message",
-				slog.String("error", err.Error()),
-				slog.String("userId", string(userID)),
-			)
-		}
-	}()
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to create message",
+			slog.String("error", err.Error()),
+			slog.String("userId", targetUserID),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
 
 	return e.NoContent(http.StatusAccepted)
 }

@@ -1,8 +1,6 @@
 module github.com/traPtitech/rucQ
 
-go 1.24
-
-toolchain go1.24.4
+go 1.25
 
 require (
 	github.com/gavv/httpexpect/v2 v2.17.0

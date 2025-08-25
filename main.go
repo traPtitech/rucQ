@@ -2,6 +2,7 @@ package main
 
 import (
 	"cmp"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -74,6 +75,9 @@ func main() {
 	botAccessToken := os.Getenv("TRAQ_BOT_ACCESS_TOKEN")
 	traqService := service.NewTraqService(traqBaseURL, botAccessToken)
 	notificationService := service.NewNotificationService(repo, traqService)
+	schedulerService := service.NewSchedulerService(repo, traqService)
+
+	go schedulerService.Start(context.Background())
 
 	api.RegisterHandlers(e, router.NewServer(repo, notificationService, traqService, isDev))
 	log.Fatal(e.Start("0.0.0.0:8080"))
