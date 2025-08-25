@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -41,7 +40,7 @@ func TestServer_AdminPostMessage(t *testing.T) {
 		// メッセージ作成をモック
 		h.repo.MockMessageRepository.EXPECT().
 			CreateMessage(gomock.Any(), gomock.Any()).
-			DoAndReturn(func(ctx context.Context, message *model.Message) error {
+			DoAndReturn(func(_ any, message *model.Message) error {
 				// 引数をチェック
 				assert.Equal(t, targetUserId, message.TargetUserID)
 				assert.Equal(t, content, message.Content)
