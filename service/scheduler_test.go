@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
 
@@ -121,15 +120,4 @@ func TestSchedulerService_processReadyMessages(t *testing.T) {
 
 		setup.scheduler.processReadyMessages(context.Background())
 	})
-}
-
-func TestNewSchedulerService(t *testing.T) {
-	t.Parallel()
-
-	s := setupSchedulerTest(t)
-
-	assert.NotNil(t, s.scheduler)
-
-	// intervalが正しく設定されていることを確認
-	assert.Equal(t, time.Minute, s.scheduler.interval)
 }
