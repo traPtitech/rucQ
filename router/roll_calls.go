@@ -103,16 +103,24 @@ func (s *Server) AdminPostRollCall(
 	rollCall.CampID = uint(campID)
 
 	if err := s.repo.CreateRollCall(e.Request().Context(), &rollCall); err != nil {
-		if errors.Is(err, repository.ErrCampNotFound) ||
-			errors.Is(err, repository.ErrUserNotFound) {
+		if errors.Is(err, repository.ErrCampNotFound) {
 			slog.WarnContext(
 				e.Request().Context(),
-				"failed to create roll call",
-				slog.String("error", err.Error()),
+				"camp not found",
 				slog.Int("campId", campID),
 			)
 
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
+
+		if errors.Is(err, repository.ErrUserNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"user not found in subjects",
+				slog.Int("campId", campID),
+			)
+
+			return echo.NewHTTPError(http.StatusBadRequest, "One or more subject users not found")
 		}
 
 		slog.ErrorContext(
