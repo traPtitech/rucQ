@@ -258,10 +258,10 @@ func TestServer_AdminPostRollCall(t *testing.T) {
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(requestBody).
 			Expect().
-			Status(http.StatusBadRequest).
+			Status(http.StatusNotFound).
 			JSON().
 			Object().
-			Value("message").String().IsEqual(repository.ErrCampNotFound.Error())
+			Value("message").String().IsEqual("Camp not found")
 	})
 
 	t.Run("Subject user not found", func(t *testing.T) {
@@ -304,7 +304,7 @@ func TestServer_AdminPostRollCall(t *testing.T) {
 			Status(http.StatusBadRequest).
 			JSON().
 			Object().
-			Value("message").String().IsEqual(repository.ErrUserNotFound.Error())
+			Value("message").String().IsEqual("One or more subject users not found")
 	})
 
 }
