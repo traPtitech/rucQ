@@ -74,12 +74,14 @@ func (r *Repository) GetRoomGroups(ctx context.Context, campID uint) ([]model.Ro
 
 	// RoomGroupが見つからなかった場合、Campが存在しない可能性を考慮してCampの存在確認を行う
 	if len(roomGroups) == 0 {
-		if _, err := gorm.G[*model.Camp](r.db).Where("id = ?", campID).First(ctx); err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, repository.ErrCampNotFound
-			}
+		campExists, err := r.campExists(ctx, campID)
 
+		if err != nil {
 			return nil, err
+		}
+
+		if !campExists {
+			return nil, repository.ErrCampNotFound
 		}
 	}
 

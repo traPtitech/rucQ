@@ -15,13 +15,17 @@ func (r *Repository) CreateRollCall(ctx context.Context, rollCall *model.RollCal
 		if errors.Is(err, gorm.ErrForeignKeyViolated) {
 			// 外部キーエラーが起きたときはCampかUserが存在しないので、
 			// どちらが存在しないかを確認して適切なエラーを返す
-			if _, err := gorm.G[*model.Camp](r.db).
-				Where("id = ?", rollCall.CampID).
-				First(ctx); errors.Is(err, gorm.ErrRecordNotFound) {
-				return repository.ErrCampNotFound
-			} else {
-				return repository.ErrUserNotFound
+			campExists, err := r.campExists(ctx, rollCall.CampID)
+
+			if err != nil {
+				return err
 			}
+
+			if !campExists {
+				return repository.ErrCampNotFound
+			}
+
+			return repository.ErrUserNotFound
 		}
 
 		return err
@@ -43,14 +47,14 @@ func (r *Repository) GetRollCalls(ctx context.Context, campID uint) ([]model.Rol
 
 	// RollCallが見つからなかった場合、Campが存在しない可能性を考慮してCampの存在確認を行う
 	if len(rollCalls) == 0 {
-		if _, err := gorm.G[*model.Camp](r.db).
-			Where("id = ?", campID).
-			First(ctx); err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, repository.ErrCampNotFound
-			}
+		campExists, err := r.campExists(ctx, campID)
 
+		if err != nil {
 			return nil, err
+		}
+
+		if !campExists {
+			return nil, repository.ErrCampNotFound
 		}
 	}
 

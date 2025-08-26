@@ -181,3 +181,16 @@ func (r *Repository) IsCampParticipant(
 
 	return count > 0, nil
 }
+
+func (r *Repository) campExists(ctx context.Context, campID uint) (bool, error) {
+	var count int64
+
+	if err := r.db.WithContext(ctx).
+		Model(&model.Camp{}).
+		Where("id = ?", campID).
+		Count(&count).Error; err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
