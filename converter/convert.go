@@ -19,6 +19,8 @@ func Convert[T any](src any) (T, error) {
 			postQuestionSchemaToModel,
 			putQuestionSchemaToModel,
 			questionModelToSchema,
+			rollCallModelToSchema,
+			rollCallSchemaToModel,
 			roomSchemaToModel,
 		},
 	})

@@ -9,6 +9,7 @@ type Repository interface {
 	PaymentRepository
 	QuestionRepository
 	QuestionGroupRepository
+	RollCallRepository
 	RoomGroupRepository
 	RoomRepository
 	UserRepository

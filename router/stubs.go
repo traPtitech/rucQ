@@ -29,15 +29,6 @@ func (s *Server) AdminPostImage(_ echo.Context, _ api.CampId, _ api.AdminPostIma
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostImage not implemented")
 }
 
-// AdminPostRollCall 点呼を作成（管理者用）
-func (s *Server) AdminPostRollCall(
-	_ echo.Context,
-	_ api.CampId,
-	_ api.AdminPostRollCallParams,
-) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostRollCall not implemented")
-}
-
 // AdminDeleteRoom 部屋を削除（管理者用）
 func (s *Server) AdminDeleteRoom(_ echo.Context, _ api.RoomId, _ api.AdminDeleteRoomParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteRoom not implemented")
@@ -56,11 +47,6 @@ func (s *Server) GetImages(_ echo.Context, _ api.CampId) error {
 // GetImage 画像を取得
 func (s *Server) GetImage(_ echo.Context, _ api.ImageId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetImage not implemented")
-}
-
-// GetRollCalls 点呼の一覧を取得
-func (s *Server) GetRollCalls(_ echo.Context, _ api.CampId) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "GetRollCalls not implemented")
 }
 
 // DeleteReaction リアクションを削除

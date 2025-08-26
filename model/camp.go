@@ -21,6 +21,7 @@ type Camp struct {
 	Payments       []Payment
 	Events         []Event
 	QuestionGroups []QuestionGroup
+	RollCalls      []RollCall
 	RoomGroups     []RoomGroup
 	Images         []Image
 }

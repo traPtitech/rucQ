@@ -10,4 +10,6 @@ type RollCall struct {
 	Subjects    []User   `gorm:"many2many:roll_call_subjects;"`
 
 	Reactions []RollCallReaction
+
+	CampID uint `gorm:"not null"`
 }
