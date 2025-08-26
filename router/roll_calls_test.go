@@ -137,7 +137,7 @@ func TestServer_AdminPostRollCall(t *testing.T) {
 		h.repo.MockRollCallRepository.EXPECT().
 			CreateRollCall(gomock.Any(), gomock.Any()).
 			Return(nil).
-			Do(func(ctx, rollCall any) {
+			Do(func(_, rollCall any) {
 				rc := rollCall.(*model.RollCall)
 				rc.ID = uint(random.PositiveInt(t))
 			}).Times(1)
