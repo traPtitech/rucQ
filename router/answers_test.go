@@ -236,6 +236,17 @@ func TestPutAnswer(t *testing.T) {
 		err := req.FromFreeTextAnswerRequest(freeTextAnswer)
 		require.NoError(t, err)
 
+		// 既存の回答（同じユーザーが所有）
+		oldAnswer := &model.Answer{
+			Model:  gorm.Model{ID: answerID},
+			UserID: userID,
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
@@ -274,6 +285,17 @@ func TestPutAnswer(t *testing.T) {
 		var req api.AnswerRequest
 		err := req.FromFreeNumberAnswerRequest(freeNumberAnswer)
 		require.NoError(t, err)
+
+		// 既存の回答（同じユーザーが所有）
+		oldAnswer := &model.Answer{
+			Model:  gorm.Model{ID: answerID},
+			UserID: userID,
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
@@ -316,6 +338,17 @@ func TestPutAnswer(t *testing.T) {
 		var req api.AnswerRequest
 		err := req.FromSingleChoiceAnswerRequest(singleChoiceAnswer)
 		require.NoError(t, err)
+
+		// 既存の回答（同じユーザーが所有）
+		oldAnswer := &model.Answer{
+			Model:  gorm.Model{ID: answerID},
+			UserID: userID,
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
@@ -370,6 +403,17 @@ func TestPutAnswer(t *testing.T) {
 		err := req.FromMultipleChoiceAnswerRequest(multipleChoiceAnswer)
 		require.NoError(t, err)
 
+		// 既存の回答（同じユーザーが所有）
+		oldAnswer := &model.Answer{
+			Model:  gorm.Model{ID: answerID},
+			UserID: userID,
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
@@ -409,6 +453,47 @@ func TestPutAnswer(t *testing.T) {
 			option.Value("id").Number().IsEqual(optionID)
 			option.Value("content").String().NotEmpty()
 		}
+	})
+
+	t.Run("Forbidden when updating other user's answer", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		ownerUserID := random.AlphaNumericString(t, 32)
+		attackerUserID := random.AlphaNumericString(t, 32)
+		answerID := uint(random.PositiveInt(t))
+		questionID := random.PositiveInt(t)
+		oldContent := random.AlphaNumericString(t, 50)
+		newContent := random.AlphaNumericString(t, 50)
+
+		oldAnswer := &model.Answer{
+			Model:           gorm.Model{ID: answerID},
+			UserID:          ownerUserID,
+			QuestionID:      uint(questionID),
+			Type:            model.FreeTextQuestion,
+			FreeTextContent: &oldContent,
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
+
+		reqBody := api.FreeTextAnswerRequest{
+			Type:       api.FreeTextAnswerRequestTypeFreeText,
+			QuestionId: questionID,
+			Content:    newContent,
+		}
+		var req api.AnswerRequest
+		err := req.FromFreeTextAnswerRequest(reqBody)
+		require.NoError(t, err)
+
+		h.expect.PUT("/api/answers/{answerId}", answerID).
+			WithJSON(api.PutAnswerJSONRequestBody(req)).
+			WithHeader("X-Forwarded-User", attackerUserID).
+			Expect().
+			Status(http.StatusForbidden).JSON().Object().
+			Value("message").String().IsEqual("You don't have permission to edit this answer")
 	})
 }
 

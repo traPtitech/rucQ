@@ -188,6 +188,45 @@ func (s *Server) PutAnswer(
 		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
 	}
 
+	// 変更前の回答を取得して、権限を確認する
+	oldAnswer, err := s.repo.GetAnswerByID(e.Request().Context(), uint(answerID))
+
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			slog.WarnContext(
+				e.Request().Context(),
+				"answer not found",
+				slog.Int("answerId", answerID),
+			)
+
+			return echo.NewHTTPError(http.StatusNotFound, "Answer not found")
+		}
+
+		slog.ErrorContext(
+			e.Request().Context(),
+			"failed to get answer",
+			slog.String("error", err.Error()),
+			slog.Int("answerId", answerID),
+		)
+
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	if oldAnswer.UserID != *params.XForwardedUser {
+		slog.WarnContext(
+			e.Request().Context(),
+			"user does not have permission to update this answer",
+			slog.String("requestUser", *params.XForwardedUser),
+			slog.String("answerOwner", oldAnswer.UserID),
+			slog.Int("answerId", answerID),
+		)
+
+		return echo.NewHTTPError(
+			http.StatusForbidden,
+			"You don't have permission to edit this answer",
+		)
+	}
+
 	var req api.PutAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
@@ -212,8 +251,6 @@ func (s *Server) PutAnswer(
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
-	answer.UserID = *params.XForwardedUser
-
 	if err := s.repo.UpdateAnswer(e.Request().Context(), uint(answerID), &answer); err != nil {
 		slog.ErrorContext(
 			e.Request().Context(),
@@ -224,6 +261,9 @@ func (s *Server) PutAnswer(
 
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
+
+	// レスポンス作成のためにUserIDを設定
+	answer.UserID = oldAnswer.UserID
 
 	res, err := converter.Convert[api.AnswerResponse](answer)
 
