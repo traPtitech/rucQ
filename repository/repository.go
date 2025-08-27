@@ -10,6 +10,7 @@ type Repository interface {
 	QuestionRepository
 	QuestionGroupRepository
 	RollCallRepository
+	RollCallReactionRepository
 	RoomGroupRepository
 	RoomRepository
 	UserRepository
