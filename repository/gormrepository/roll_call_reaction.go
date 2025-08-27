@@ -10,7 +10,10 @@ import (
 	"github.com/traPtitech/rucQ/repository"
 )
 
-func (r *Repository) CreateRollCallReaction(ctx context.Context, reaction *model.RollCallReaction) error {
+func (r *Repository) CreateRollCallReaction(
+	ctx context.Context,
+	reaction *model.RollCallReaction,
+) error {
 	if err := r.db.WithContext(ctx).Create(reaction).Error; err != nil {
 		if errors.Is(err, gorm.ErrForeignKeyViolated) {
 			// 外部キーエラーが起きたときはRollCallが存在しないかどうかを確認
@@ -33,7 +36,10 @@ func (r *Repository) CreateRollCallReaction(ctx context.Context, reaction *model
 	return nil
 }
 
-func (r *Repository) GetRollCallReactions(ctx context.Context, rollCallID uint) ([]model.RollCallReaction, error) {
+func (r *Repository) GetRollCallReactions(
+	ctx context.Context,
+	rollCallID uint,
+) ([]model.RollCallReaction, error) {
 	var reactions []model.RollCallReaction
 
 	if err := r.db.WithContext(ctx).Where("roll_call_id = ?", rollCallID).Find(&reactions).Error; err != nil {
@@ -56,7 +62,10 @@ func (r *Repository) GetRollCallReactions(ctx context.Context, rollCallID uint) 
 	return reactions, nil
 }
 
-func (r *Repository) GetRollCallReactionByID(ctx context.Context, id uint) (*model.RollCallReaction, error) {
+func (r *Repository) GetRollCallReactionByID(
+	ctx context.Context,
+	id uint,
+) (*model.RollCallReaction, error) {
 	var reaction model.RollCallReaction
 
 	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&reaction).Error; err != nil {
@@ -70,7 +79,11 @@ func (r *Repository) GetRollCallReactionByID(ctx context.Context, id uint) (*mod
 	return &reaction, nil
 }
 
-func (r *Repository) UpdateRollCallReaction(ctx context.Context, id uint, reaction *model.RollCallReaction) error {
+func (r *Repository) UpdateRollCallReaction(
+	ctx context.Context,
+	id uint,
+	reaction *model.RollCallReaction,
+) error {
 	result := r.db.WithContext(ctx).Where("id = ?", id).Updates(reaction)
 
 	if result.Error != nil {
@@ -96,15 +109,4 @@ func (r *Repository) DeleteRollCallReaction(ctx context.Context, id uint) error 
 	}
 
 	return nil
-}
-
-// rollCallExists checks if a roll call exists
-func (r *Repository) rollCallExists(ctx context.Context, rollCallID uint) (bool, error) {
-	var count int64
-
-	if err := r.db.WithContext(ctx).Model(&model.RollCall{}).Where("id = ?", rollCallID).Count(&count).Error; err != nil {
-		return false, err
-	}
-
-	return count > 0, nil
 }

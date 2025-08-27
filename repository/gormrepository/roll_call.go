@@ -60,3 +60,18 @@ func (r *Repository) GetRollCalls(ctx context.Context, campID uint) ([]model.Rol
 
 	return rollCalls, nil
 }
+
+func (r *Repository) rollCallExists(ctx context.Context, rollCallID uint) (bool, error) {
+	var count int64
+
+	if err := r.db.
+		WithContext(ctx).
+		Model(&model.RollCall{}).
+		Where("id = ?", rollCallID).
+		Count(&count).
+		Error; err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}

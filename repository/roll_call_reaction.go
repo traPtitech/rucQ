@@ -8,10 +8,7 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-var (
-	ErrRollCallNotFound         = errors.New("roll call not found")
-	ErrRollCallReactionNotFound = errors.New("roll call reaction not found")
-)
+var ErrRollCallReactionNotFound = errors.New("roll call reaction not found")
 
 type RollCallReactionRepository interface {
 	CreateRollCallReaction(ctx context.Context, reaction *model.RollCallReaction) error
