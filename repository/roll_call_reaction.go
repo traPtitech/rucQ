@@ -13,7 +13,11 @@ var ErrRollCallReactionNotFound = errors.New("roll call reaction not found")
 type RollCallReactionRepository interface {
 	CreateRollCallReaction(ctx context.Context, reaction *model.RollCallReaction) error
 	GetRollCallReactions(ctx context.Context, rollCallID uint) ([]model.RollCallReaction, error)
-	GetRollCallReactionByID(ctx context.Context, id uint) (*model.RollCallReaction, error)
-	UpdateRollCallReaction(ctx context.Context, id uint, reaction *model.RollCallReaction) error
-	DeleteRollCallReaction(ctx context.Context, id uint) error
+	GetRollCallReactionByID(ctx context.Context, reactionID uint) (*model.RollCallReaction, error)
+	UpdateRollCallReaction(
+		ctx context.Context,
+		reactionID uint,
+		reaction *model.RollCallReaction,
+	) error
+	DeleteRollCallReaction(ctx context.Context, reactionID uint) error
 }

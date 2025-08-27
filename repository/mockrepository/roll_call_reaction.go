@@ -56,32 +56,32 @@ func (mr *MockRollCallReactionRepositoryMockRecorder) CreateRollCallReaction(ctx
 }
 
 // DeleteRollCallReaction mocks base method.
-func (m *MockRollCallReactionRepository) DeleteRollCallReaction(ctx context.Context, id uint) error {
+func (m *MockRollCallReactionRepository) DeleteRollCallReaction(ctx context.Context, reactionID uint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteRollCallReaction", ctx, id)
+	ret := m.ctrl.Call(m, "DeleteRollCallReaction", ctx, reactionID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteRollCallReaction indicates an expected call of DeleteRollCallReaction.
-func (mr *MockRollCallReactionRepositoryMockRecorder) DeleteRollCallReaction(ctx, id any) *gomock.Call {
+func (mr *MockRollCallReactionRepositoryMockRecorder) DeleteRollCallReaction(ctx, reactionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRollCallReaction", reflect.TypeOf((*MockRollCallReactionRepository)(nil).DeleteRollCallReaction), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRollCallReaction", reflect.TypeOf((*MockRollCallReactionRepository)(nil).DeleteRollCallReaction), ctx, reactionID)
 }
 
 // GetRollCallReactionByID mocks base method.
-func (m *MockRollCallReactionRepository) GetRollCallReactionByID(ctx context.Context, id uint) (*model.RollCallReaction, error) {
+func (m *MockRollCallReactionRepository) GetRollCallReactionByID(ctx context.Context, reactionID uint) (*model.RollCallReaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRollCallReactionByID", ctx, id)
+	ret := m.ctrl.Call(m, "GetRollCallReactionByID", ctx, reactionID)
 	ret0, _ := ret[0].(*model.RollCallReaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetRollCallReactionByID indicates an expected call of GetRollCallReactionByID.
-func (mr *MockRollCallReactionRepositoryMockRecorder) GetRollCallReactionByID(ctx, id any) *gomock.Call {
+func (mr *MockRollCallReactionRepositoryMockRecorder) GetRollCallReactionByID(ctx, reactionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRollCallReactionByID", reflect.TypeOf((*MockRollCallReactionRepository)(nil).GetRollCallReactionByID), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRollCallReactionByID", reflect.TypeOf((*MockRollCallReactionRepository)(nil).GetRollCallReactionByID), ctx, reactionID)
 }
 
 // GetRollCallReactions mocks base method.
@@ -100,15 +100,15 @@ func (mr *MockRollCallReactionRepositoryMockRecorder) GetRollCallReactions(ctx, 
 }
 
 // UpdateRollCallReaction mocks base method.
-func (m *MockRollCallReactionRepository) UpdateRollCallReaction(ctx context.Context, id uint, reaction *model.RollCallReaction) error {
+func (m *MockRollCallReactionRepository) UpdateRollCallReaction(ctx context.Context, reactionID uint, reaction *model.RollCallReaction) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateRollCallReaction", ctx, id, reaction)
+	ret := m.ctrl.Call(m, "UpdateRollCallReaction", ctx, reactionID, reaction)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateRollCallReaction indicates an expected call of UpdateRollCallReaction.
-func (mr *MockRollCallReactionRepositoryMockRecorder) UpdateRollCallReaction(ctx, id, reaction any) *gomock.Call {
+func (mr *MockRollCallReactionRepositoryMockRecorder) UpdateRollCallReaction(ctx, reactionID, reaction any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRollCallReaction", reflect.TypeOf((*MockRollCallReactionRepository)(nil).UpdateRollCallReaction), ctx, id, reaction)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRollCallReaction", reflect.TypeOf((*MockRollCallReactionRepository)(nil).UpdateRollCallReaction), ctx, reactionID, reaction)
 }

@@ -64,11 +64,11 @@ func (r *Repository) GetRollCallReactions(
 
 func (r *Repository) GetRollCallReactionByID(
 	ctx context.Context,
-	id uint,
+	reactionID uint,
 ) (*model.RollCallReaction, error) {
 	var reaction model.RollCallReaction
 
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&reaction).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", reactionID).First(&reaction).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, repository.ErrRollCallReactionNotFound
 		}
@@ -81,10 +81,10 @@ func (r *Repository) GetRollCallReactionByID(
 
 func (r *Repository) UpdateRollCallReaction(
 	ctx context.Context,
-	id uint,
+	reactionID uint,
 	reaction *model.RollCallReaction,
 ) error {
-	result := r.db.WithContext(ctx).Where("id = ?", id).Updates(reaction)
+	result := r.db.WithContext(ctx).Where("id = ?", reactionID).Updates(reaction)
 
 	if result.Error != nil {
 		return result.Error
@@ -97,8 +97,8 @@ func (r *Repository) UpdateRollCallReaction(
 	return nil
 }
 
-func (r *Repository) DeleteRollCallReaction(ctx context.Context, id uint) error {
-	result := r.db.WithContext(ctx).Where("id = ?", id).Delete(&model.RollCallReaction{})
+func (r *Repository) DeleteRollCallReaction(ctx context.Context, reactionID uint) error {
+	result := r.db.WithContext(ctx).Where("id = ?", reactionID).Delete(&model.RollCallReaction{})
 
 	if result.Error != nil {
 		return result.Error
