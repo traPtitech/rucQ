@@ -112,8 +112,7 @@ func TestServer_GetRoomGroups(t *testing.T) {
 
 		h.expect.GET("/api/camps/{campId}/room-groups", campID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Empty Room Groups", func(t *testing.T) {

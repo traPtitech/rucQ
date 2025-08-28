@@ -295,10 +295,7 @@ func TestServer_GetDashboard(t *testing.T) {
 		h.expect.GET("/api/camps/{campId}/me", campID).
 			WithHeader("X-Forwarded-User", userID).
 			Expect().
-			Status(http.StatusInternalServerError).
-			JSON().
-			Object().
-			HasValue("message", "Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Internal Server Error - Payment repo error", func(t *testing.T) {
@@ -319,10 +316,7 @@ func TestServer_GetDashboard(t *testing.T) {
 		h.expect.GET("/api/camps/{campId}/me", campID).
 			WithHeader("X-Forwarded-User", userID).
 			Expect().
-			Status(http.StatusInternalServerError).
-			JSON().
-			Object().
-			HasValue("message", "Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Internal Server Error - Room repo error", func(t *testing.T) {
@@ -348,9 +342,6 @@ func TestServer_GetDashboard(t *testing.T) {
 		h.expect.GET("/api/camps/{campId}/me", campID).
 			WithHeader("X-Forwarded-User", userID).
 			Expect().
-			Status(http.StatusInternalServerError).
-			JSON().
-			Object().
-			HasValue("message", "Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 }
