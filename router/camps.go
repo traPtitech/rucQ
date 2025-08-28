@@ -112,39 +112,6 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	return e.JSON(http.StatusCreated, &response)
 }
 
-func (s *Server) GetCamp(e echo.Context, campID api.CampId) error {
-	camp, err := s.repo.GetCampByID(e.Request().Context(), uint(campID))
-
-	if err != nil {
-		if errors.Is(err, repository.ErrCampNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
-		}
-
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get camp",
-			slog.String("error", err.Error()),
-			slog.Int("campId", int(campID)),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	response, err := converter.Convert[api.CampResponse](camp)
-
-	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert camp to response",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
-	}
-
-	return e.JSON(http.StatusOK, &response)
-}
-
 // AdminPutCamp キャンプ情報編集
 // (PUT /api/admin/camps/{campId})
 func (s *Server) AdminPutCamp(
