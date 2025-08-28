@@ -66,9 +66,14 @@ func main() {
 		LogURI:      true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			logLevel := slog.LevelInfo
-			maxAttrs := 3
+			maxAttrs := 4
 			attrs := make([]slog.Attr, 0, maxAttrs)
-			attrs = append(attrs, slog.String("uri", v.URI), slog.Int("status", v.Status))
+			attrs = append(
+				attrs,
+				slog.String("method", v.Method),
+				slog.String("uri", v.URI),
+				slog.Int("status", v.Status),
+			)
 
 			if v.Error != nil {
 				logLevel = slog.LevelWarn
