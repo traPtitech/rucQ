@@ -3,8 +3,11 @@ package main
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"log/slog"
+	"net/http"
 	"os"
 	"strings"
 
@@ -55,6 +58,55 @@ func main() {
 	if err := migration.Migrate(db); err != nil {
 		log.Fatal(err)
 	}
+
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		HandleError: true,
+		LogError:    true,
+		LogMethod:   true,
+		LogStatus:   true,
+		LogURI:      true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			logLevel := slog.LevelInfo
+			maxAttrs := 4
+			attrs := make([]slog.Attr, 0, maxAttrs)
+			attrs = append(
+				attrs,
+				slog.String("method", v.Method),
+				slog.String("uri", v.URI),
+				slog.Int("status", v.Status),
+			)
+
+			if v.Error != nil {
+				logLevel = slog.LevelWarn
+
+				if v.Status >= http.StatusInternalServerError {
+					logLevel = slog.LevelError
+				}
+
+				var errorMessage any = v.Error.Error()
+				var httpError *echo.HTTPError
+
+				if errors.As(v.Error, &httpError) {
+					errorMessage = httpError.Message
+
+					if v.Status == http.StatusInternalServerError {
+						errorMessage = httpError.Internal.Error()
+					}
+				}
+
+				attrs = append(attrs, slog.Any("error", errorMessage))
+			}
+
+			slog.LogAttrs(
+				c.Request().Context(),
+				logLevel,
+				"request",
+				attrs...,
+			)
+
+			return nil
+		},
+	}))
 
 	if isDev {
 		e.Use(middleware.CORS())

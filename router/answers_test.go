@@ -236,6 +236,17 @@ func TestPutAnswer(t *testing.T) {
 		err := req.FromFreeTextAnswerRequest(freeTextAnswer)
 		require.NoError(t, err)
 
+		// 既存の回答（同じユーザーが所有）
+		oldAnswer := &model.Answer{
+			Model:  gorm.Model{ID: answerID},
+			UserID: userID,
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
@@ -274,6 +285,17 @@ func TestPutAnswer(t *testing.T) {
 		var req api.AnswerRequest
 		err := req.FromFreeNumberAnswerRequest(freeNumberAnswer)
 		require.NoError(t, err)
+
+		// 既存の回答（同じユーザーが所有）
+		oldAnswer := &model.Answer{
+			Model:  gorm.Model{ID: answerID},
+			UserID: userID,
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
@@ -316,6 +338,17 @@ func TestPutAnswer(t *testing.T) {
 		var req api.AnswerRequest
 		err := req.FromSingleChoiceAnswerRequest(singleChoiceAnswer)
 		require.NoError(t, err)
+
+		// 既存の回答（同じユーザーが所有）
+		oldAnswer := &model.Answer{
+			Model:  gorm.Model{ID: answerID},
+			UserID: userID,
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
@@ -370,6 +403,17 @@ func TestPutAnswer(t *testing.T) {
 		err := req.FromMultipleChoiceAnswerRequest(multipleChoiceAnswer)
 		require.NoError(t, err)
 
+		// 既存の回答（同じユーザーが所有）
+		oldAnswer := &model.Answer{
+			Model:  gorm.Model{ID: answerID},
+			UserID: userID,
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
@@ -409,6 +453,47 @@ func TestPutAnswer(t *testing.T) {
 			option.Value("id").Number().IsEqual(optionID)
 			option.Value("content").String().NotEmpty()
 		}
+	})
+
+	t.Run("Forbidden when updating other user's answer", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		ownerUserID := random.AlphaNumericString(t, 32)
+		attackerUserID := random.AlphaNumericString(t, 32)
+		answerID := uint(random.PositiveInt(t))
+		questionID := random.PositiveInt(t)
+		oldContent := random.AlphaNumericString(t, 50)
+		newContent := random.AlphaNumericString(t, 50)
+
+		oldAnswer := &model.Answer{
+			Model:           gorm.Model{ID: answerID},
+			UserID:          ownerUserID,
+			QuestionID:      uint(questionID),
+			Type:            model.FreeTextQuestion,
+			FreeTextContent: &oldContent,
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
+
+		reqBody := api.FreeTextAnswerRequest{
+			Type:       api.FreeTextAnswerRequestTypeFreeText,
+			QuestionId: questionID,
+			Content:    newContent,
+		}
+		var req api.AnswerRequest
+		err := req.FromFreeTextAnswerRequest(reqBody)
+		require.NoError(t, err)
+
+		h.expect.PUT("/api/answers/{answerId}", answerID).
+			WithJSON(api.PutAnswerJSONRequestBody(req)).
+			WithHeader("X-Forwarded-User", attackerUserID).
+			Expect().
+			Status(http.StatusForbidden).JSON().Object().
+			Value("message").String().IsEqual("You don't have permission to edit this answer")
 	})
 }
 
@@ -607,8 +692,7 @@ func TestAdminGetAnswers(t *testing.T) {
 		h.expect.GET("/api/admin/questions/{questionId}/answers", questionID).
 			WithHeader("X-Forwarded-User", userID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("EmptyResult", func(t *testing.T) {
@@ -674,8 +758,7 @@ func TestAdminGetAnswers(t *testing.T) {
 		h.expect.GET("/api/admin/questions/{questionId}/answers", questionID).
 			WithHeader("X-Forwarded-User", userID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("NotFound - Question Does Not Exist", func(t *testing.T) {
@@ -1565,8 +1648,7 @@ func TestAdminPostAnswer(t *testing.T) {
 			WithHeader("X-Forwarded-User", adminUserID).
 			WithJSON(req).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("InternalServerError - Target user repository error", func(t *testing.T) {
@@ -1607,8 +1689,7 @@ func TestAdminPostAnswer(t *testing.T) {
 			WithHeader("X-Forwarded-User", adminUserID).
 			WithJSON(req).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("InternalServerError - CreateAnswer repository error", func(t *testing.T) {
@@ -1660,8 +1741,7 @@ func TestAdminPostAnswer(t *testing.T) {
 			WithHeader("X-Forwarded-User", adminUserID).
 			WithJSON(req).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("NotFound - Question or option not found", func(t *testing.T) {
@@ -1941,8 +2021,7 @@ func TestGetAnswers(t *testing.T) {
 
 		h.expect.GET("/api/questions/{questionId}/answers", questionID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 }
 
@@ -2122,8 +2201,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 			WithQuery("userId", targetUserID).
 			WithHeader("X-Forwarded-User", adminUserID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Internal Server Error - GetAnswersByUserAndQuestionGroup Error", func(t *testing.T) {
@@ -2157,8 +2235,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 			WithQuery("userId", targetUserID).
 			WithHeader("X-Forwarded-User", adminUserID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Internal Server Error - GetAnswersByQuestionGroup Error", func(t *testing.T) {
@@ -2189,8 +2266,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
 			WithHeader("X-Forwarded-User", adminUserID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Not Found - Question group does not exist", func(t *testing.T) {
