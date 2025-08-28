@@ -98,34 +98,18 @@ func (s *Server) GetRollCallReactions(e echo.Context, rollCallID api.RollCallId)
 
 	if err != nil {
 		if errors.Is(err, repository.ErrRollCallNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"roll call not found when getting reactions",
-				slog.Int("rollCallId", rollCallID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Roll call not found")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get roll call reactions",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get roll call reactions: %w", err))
 	}
 
 	res, err := converter.Convert[[]api.RollCallReactionResponse](reactions)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert roll call reactions",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert roll call reactions: %w", err))
 	}
 
 	return e.JSON(http.StatusOK, res)
@@ -143,24 +127,13 @@ func (s *Server) PostRollCallReaction(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
 	}
 
 	var req api.PostRollCallReactionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -172,40 +145,28 @@ func (s *Server) PostRollCallReaction(
 
 	if err := s.repo.CreateRollCallReaction(e.Request().Context(), &reaction); err != nil {
 		if errors.Is(err, repository.ErrRollCallNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"roll call not found",
-				slog.Int("rollCallId", rollCallID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Roll call not found")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to create roll call reaction",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create roll call reaction: %w", err))
 	}
 
 	res, err := converter.Convert[api.RollCallReactionResponse](reaction)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert roll call reaction",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert roll call reaction: %w", err))
 	}
 
 	return e.JSON(http.StatusCreated, res)
 }
 
-func (s *Server) PutReaction(e echo.Context, reactionID api.ReactionId, params api.PutReactionParams) error {
+func (s *Server) PutReaction(
+	e echo.Context,
+	reactionID api.ReactionId,
+	params api.PutReactionParams,
+) error {
 	if params.XForwardedUser == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
 	}
@@ -215,22 +176,11 @@ func (s *Server) PutReaction(e echo.Context, reactionID api.ReactionId, params a
 
 	if err != nil {
 		if errors.Is(err, repository.ErrRollCallReactionNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"roll call reaction not found",
-				slog.Int("reactionId", reactionID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Reaction not found")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get roll call reaction",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get roll call reaction: %w", err))
 	}
 
 	// ユーザーの所有者チェック
@@ -241,12 +191,6 @@ func (s *Server) PutReaction(e echo.Context, reactionID api.ReactionId, params a
 	var req api.PutReactionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -255,38 +199,23 @@ func (s *Server) PutReaction(e echo.Context, reactionID api.ReactionId, params a
 	}
 
 	if err := s.repo.UpdateRollCallReaction(e.Request().Context(), uint(reactionID), &updateData); err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to update roll call reaction",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to update roll call reaction: %w", err))
 	}
 
 	// 更新後のデータを取得
 	updatedReaction, err := s.repo.GetRollCallReactionByID(e.Request().Context(), uint(reactionID))
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get updated roll call reaction",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get updated roll call reaction: %w", err))
 	}
 
 	res, err := converter.Convert[api.RollCallReactionResponse](*updatedReaction)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert roll call reaction",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert roll call reaction: %w", err))
 	}
 
 	return e.JSON(http.StatusOK, res)
@@ -306,22 +235,11 @@ func (s *Server) DeleteReaction(
 
 	if err != nil {
 		if errors.Is(err, repository.ErrRollCallReactionNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"roll call reaction not found",
-				slog.Int("reactionId", reactionID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Reaction not found")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get roll call reaction",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get roll call reaction: %w", err))
 	}
 
 	// ユーザーの所有者チェック
@@ -330,13 +248,8 @@ func (s *Server) DeleteReaction(
 	}
 
 	if err := s.repo.DeleteRollCallReaction(e.Request().Context(), uint(reactionID)); err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to delete roll call reaction",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to delete roll call reaction: %w", err))
 	}
 
 	return e.NoContent(http.StatusNoContent)
