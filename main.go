@@ -62,6 +62,7 @@ func main() {
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		HandleError: true,
 		LogError:    true,
+		LogMethod:   true,
 		LogStatus:   true,
 		LogURI:      true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
