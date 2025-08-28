@@ -2,7 +2,7 @@ package router
 
 import (
 	"errors"
-	"log/slog"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -17,94 +17,49 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-			slog.String("userId", *params.XForwardedUser),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user (userId: %s): %w", *params.XForwardedUser, err))
 	}
 
 	if !operator.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
 	roomModel, err := converter.Convert[model.Room](req)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert request to model",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request to model: %w", err))
 	}
 
 	if err := s.repo.CreateRoom(e.Request().Context(), &roomModel); err != nil {
 		if errors.Is(err, repository.ErrUserOrRoomGroupNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"user or room group not found",
-				slog.Int("roomGroupId", int(roomModel.RoomGroupID)),
-			)
-
 			return echo.NewHTTPError(http.StatusBadRequest, "Invalid user or room group ID")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to create room",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create room: %w", err))
 	}
 
 	// MemberのisStaffなどを正しく返すために取得
 	updatedRoom, err := s.repo.GetRoomByID(roomModel.ID)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get room by ID",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get room by ID: %w", err))
 	}
 
 	res, err := converter.Convert[api.RoomResponse](updatedRoom)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert model to response",
-			slog.String("error", err.Error()),
-			slog.Int("roomId", int(updatedRoom.ID)),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert model to response (roomId: %d): %w", updatedRoom.ID, err))
 	}
 
 	return e.JSON(http.StatusCreated, res)
@@ -118,115 +73,57 @@ func (s *Server) AdminPutRoom(
 	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-			slog.String("userId", *params.XForwardedUser),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user (userId: %s): %w", *params.XForwardedUser, err))
 	}
 
 	if !operator.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
 	roomModel, err := converter.Convert[model.Room](req)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert request to model",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request to model: %w", err))
 	}
 
 	if err := s.repo.UpdateRoom(e.Request().Context(), uint(roomID), &roomModel); err != nil {
 		if errors.Is(err, repository.ErrUserNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"user not found",
-				slog.Int("roomId", roomID),
-			)
-
 			return echo.NewHTTPError(http.StatusBadRequest, "User not found")
 		}
 
 		if errors.Is(err, repository.ErrRoomGroupNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"room group not found",
-				slog.Int("roomGroupId", int(roomModel.RoomGroupID)),
-			)
-
 			return echo.NewHTTPError(http.StatusBadRequest, "Room group not found")
 		}
 
 		if errors.Is(err, repository.ErrRoomNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"room not found",
-				slog.Int("roomId", roomID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Room not found")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to update room",
-			slog.String("error", err.Error()),
-			slog.Int("roomId", roomID),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to update room (roomId: %d): %w", roomID, err))
 	}
 
 	// MemberのisStaffなどを正しく返すために取得
 	updatedRoom, err := s.repo.GetRoomByID(uint(roomID))
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get room by ID",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get room by ID: %w", err))
 	}
 
 	res, err := converter.Convert[api.RoomResponse](updatedRoom)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert model to response",
-			slog.String("error", err.Error()),
-			slog.Int("roomId", int(updatedRoom.ID)),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert model to response (roomId: %d): %w", updatedRoom.ID, err))
 	}
 
 	return e.JSON(http.StatusOK, res)

@@ -2,7 +2,7 @@ package router
 
 import (
 	"errors"
-	"log/slog"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -21,71 +21,37 @@ func (s *Server) AdminPostMessage(
 ) error {
 	var req api.AdminPostMessageJSONRequestBody
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
 	// スタッフだけがbotを用いてdmを送信できるようにする
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-			slog.String("userId", *params.XForwardedUser),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
 	}
 
 	// スタッフじゃなければはじく
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	message, err := converter.Convert[model.Message](req)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert request",
-			slog.String("error", err.Error()),
-		)
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
 
 	message.TargetUserID = targetUserID
 
 	if err := s.repo.CreateMessage(e.Request().Context(), &message); err != nil {
 		if errors.Is(err, repository.ErrUserNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"user not found",
-				slog.String("userId", targetUserID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "User not found")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to create message",
-			slog.String("error", err.Error()),
-			slog.String("userId", targetUserID),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create message: %w", err))
 	}
 
 	return e.NoContent(http.StatusAccepted)

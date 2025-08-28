@@ -692,8 +692,7 @@ func TestAdminGetAnswers(t *testing.T) {
 		h.expect.GET("/api/admin/questions/{questionId}/answers", questionID).
 			WithHeader("X-Forwarded-User", userID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("EmptyResult", func(t *testing.T) {
@@ -759,8 +758,7 @@ func TestAdminGetAnswers(t *testing.T) {
 		h.expect.GET("/api/admin/questions/{questionId}/answers", questionID).
 			WithHeader("X-Forwarded-User", userID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("NotFound - Question Does Not Exist", func(t *testing.T) {
@@ -1650,8 +1648,7 @@ func TestAdminPostAnswer(t *testing.T) {
 			WithHeader("X-Forwarded-User", adminUserID).
 			WithJSON(req).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("InternalServerError - Target user repository error", func(t *testing.T) {
@@ -1692,8 +1689,7 @@ func TestAdminPostAnswer(t *testing.T) {
 			WithHeader("X-Forwarded-User", adminUserID).
 			WithJSON(req).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("InternalServerError - CreateAnswer repository error", func(t *testing.T) {
@@ -1745,8 +1741,7 @@ func TestAdminPostAnswer(t *testing.T) {
 			WithHeader("X-Forwarded-User", adminUserID).
 			WithJSON(req).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("NotFound - Question or option not found", func(t *testing.T) {
@@ -2026,8 +2021,7 @@ func TestGetAnswers(t *testing.T) {
 
 		h.expect.GET("/api/questions/{questionId}/answers", questionID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 }
 
@@ -2207,8 +2201,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 			WithQuery("userId", targetUserID).
 			WithHeader("X-Forwarded-User", adminUserID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Internal Server Error - GetAnswersByUserAndQuestionGroup Error", func(t *testing.T) {
@@ -2242,8 +2235,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 			WithQuery("userId", targetUserID).
 			WithHeader("X-Forwarded-User", adminUserID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Internal Server Error - GetAnswersByQuestionGroup Error", func(t *testing.T) {
@@ -2274,8 +2266,7 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 		h.expect.GET("/api/admin/question-groups/{questionGroupId}/answers", questionGroupID).
 			WithHeader("X-Forwarded-User", adminUserID).
 			Expect().
-			Status(http.StatusInternalServerError).JSON().Object().
-			Value("message").String().IsEqual("Internal server error")
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Not Found - Question group does not exist", func(t *testing.T) {

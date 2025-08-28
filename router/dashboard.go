@@ -2,7 +2,7 @@ package router
 
 import (
 	"errors"
-	"log/slog"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -25,39 +25,17 @@ func (s *Server) GetDashboard(
 	)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", int(campID)),
-			)
-
 			return echo.NewHTTPError(
 				http.StatusNotFound,
 				"Camp not found",
 			)
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to check camp participation",
-			slog.String("error", err.Error()),
-			slog.Int("campId", int(campID)),
-		)
-
-		return echo.NewHTTPError(
-			http.StatusInternalServerError,
-			"Internal server error",
-		)
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to check camp participation: %w", err))
 	}
 
 	if !isParticipant {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a participant of camp",
-			slog.String("userId", *params.XForwardedUser),
-			slog.Int("campId", int(campID)),
-		)
-
 		return echo.NewHTTPError(http.StatusNotFound, "User is not a participant of this camp")
 	}
 
@@ -72,28 +50,16 @@ func (s *Server) GetDashboard(
 	)
 
 	if err != nil && !errors.Is(err, repository.ErrPaymentNotFound) {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get payment",
-			slog.String("userId", *params.XForwardedUser),
-			slog.Int("campId", campID),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get payment: %w", err))
 	}
 
 	if payment != nil {
 		apiPayment, err := converter.Convert[api.PaymentResponse](payment)
 
 		if err != nil {
-			slog.ErrorContext(
-				e.Request().Context(),
-				"failed to convert payment",
-				slog.String("userId", *params.XForwardedUser),
-				slog.Int("campId", campID),
-			)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			return echo.NewHTTPError(http.StatusInternalServerError).
+				SetInternal(fmt.Errorf("failed to convert payment: %w", err))
 		}
 
 		res.Payment = &apiPayment
@@ -102,28 +68,16 @@ func (s *Server) GetDashboard(
 	room, err := s.repo.GetRoomByUserID(e.Request().Context(), uint(campID), *params.XForwardedUser)
 
 	if err != nil && !errors.Is(err, repository.ErrRoomNotFound) {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get room",
-			slog.String("userId", *params.XForwardedUser),
-			slog.Int("campId", campID),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get room: %w", err))
 	}
 
 	if room != nil {
 		apiRoom, err := converter.Convert[api.RoomResponse](room)
 
 		if err != nil {
-			slog.ErrorContext(
-				e.Request().Context(),
-				"failed to convert room",
-				slog.String("userId", *params.XForwardedUser),
-				slog.Int("campId", campID),
-			)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			return echo.NewHTTPError(http.StatusInternalServerError).
+				SetInternal(fmt.Errorf("failed to convert room: %w", err))
 		}
 
 		res.Room = &apiRoom
