@@ -2,7 +2,7 @@ package router
 
 import (
 	"errors"
-	"log/slog"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -27,14 +27,8 @@ func (s *Server) AdminPostMessage(
 	// スタッフだけがbotを用いてdmを送信できるようにする
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-			slog.String("userId", *params.XForwardedUser),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
 	}
 
 	// スタッフじゃなければはじく
@@ -45,12 +39,8 @@ func (s *Server) AdminPostMessage(
 	message, err := converter.Convert[model.Message](req)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert request",
-			slog.String("error", err.Error()),
-		)
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
 
 	message.TargetUserID = targetUserID
@@ -60,14 +50,8 @@ func (s *Server) AdminPostMessage(
 			return echo.NewHTTPError(http.StatusNotFound, "User not found")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to create message",
-			slog.String("error", err.Error()),
-			slog.String("userId", targetUserID),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create message: %w", err))
 	}
 
 	return e.NoContent(http.StatusAccepted)

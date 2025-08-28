@@ -2,7 +2,7 @@ package router
 
 import (
 	"errors"
-	"log/slog"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -21,25 +21,15 @@ func (s *Server) GetRollCalls(e echo.Context, campID api.CampId) error {
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get roll calls",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get roll calls: %w", err))
 	}
 
 	res, err := converter.Convert[[]api.RollCallResponse](rollCalls)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert roll calls",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert roll calls: %w", err))
 	}
 
 	return e.JSON(http.StatusOK, res)
@@ -57,13 +47,8 @@ func (s *Server) AdminPostRollCall(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
 	}
 
 	if !user.IsStaff {
@@ -79,13 +64,8 @@ func (s *Server) AdminPostRollCall(
 	rollCall, err := converter.Convert[model.RollCall](req)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert request body",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
 
 	rollCall.CampID = uint(campID)
@@ -99,25 +79,15 @@ func (s *Server) AdminPostRollCall(
 			return echo.NewHTTPError(http.StatusBadRequest, "One or more subject users not found")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to create roll call",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create roll call: %w", err))
 	}
 
 	res, err := converter.Convert[api.RollCallResponse](rollCall)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert roll call",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert roll call: %w", err))
 	}
 
 	return e.JSON(http.StatusCreated, res)

@@ -1,7 +1,7 @@
 package router
 
 import (
-	"log/slog"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -15,26 +15,15 @@ func (s *Server) GetEvents(e echo.Context, campID api.CampId) error {
 	events, err := s.repo.GetEvents(e.Request().Context(), uint(campID))
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get events",
-			slog.String("error", err.Error()),
-			slog.Int("campId", int(campID)),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get events: %w", err))
 	}
 
 	response, err := converter.Convert[[]api.EventResponse](events)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert events to response",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert events to response: %w", err))
 	}
 
 	return e.JSON(http.StatusOK, response)
@@ -50,26 +39,16 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 	eventModel, err := converter.Convert[model.Event](req)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert request to model",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request to model: %w", err))
 	}
 
 	eventModel.CampID = uint(campID)
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
 	}
 
 	if (eventModel.Type == model.EventTypeOfficial || eventModel.Type == model.EventTypeMoment) &&
@@ -85,13 +64,8 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 		)
 
 		if err != nil {
-			slog.ErrorContext(
-				e.Request().Context(),
-				"failed to get or create organizer user",
-				slog.String("error", err.Error()),
-			)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			return echo.NewHTTPError(http.StatusInternalServerError).
+				SetInternal(fmt.Errorf("failed to get or create organizer user: %w", err))
 		}
 
 		if !isCampParticipant {
@@ -103,25 +77,15 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 	}
 
 	if err := s.repo.CreateEvent(&eventModel); err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to create event",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create event: %w", err))
 	}
 
 	response, err := converter.Convert[api.EventResponse](eventModel)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert event to response",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert event to response: %w", err))
 	}
 
 	return e.JSON(http.StatusCreated, &response)
@@ -130,26 +94,15 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 func (s *Server) GetEvent(e echo.Context, eventID api.EventId) error {
 	event, err := s.repo.GetEventByID(uint(eventID))
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get event",
-			slog.String("error", err.Error()),
-			slog.Int("eventId", int(eventID)),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get event (eventId: %d): %w", eventID, err))
 	}
 
 	response, err := converter.Convert[api.EventResponse](event)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert event to response",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert event to response: %w", err))
 	}
 
 	return e.JSON(http.StatusOK, &response)
@@ -158,26 +111,14 @@ func (s *Server) GetEvent(e echo.Context, eventID api.EventId) error {
 func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEventParams) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-			slog.String("userId", *params.XForwardedUser),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user (userId: %s): %w", *params.XForwardedUser, err))
 	}
 
 	existingEvent, err := s.repo.GetEventByID(uint(eventID))
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get event",
-			slog.String("error", err.Error()),
-			slog.Int("eventId", int(eventID)),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get event (eventId: %d): %w", eventID, err))
 	}
 
 	if (existingEvent.Type == model.EventTypeOfficial || existingEvent.Type == model.EventTypeMoment) &&
@@ -194,13 +135,8 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 	newEvent, err := converter.Convert[model.Event](req)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert request to model",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request to model: %w", err))
 	}
 
 	newEvent.ID = existingEvent.ID
@@ -218,13 +154,8 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 		)
 
 		if err != nil {
-			slog.ErrorContext(
-				e.Request().Context(),
-				"failed to check if organizer is a camp participant",
-				slog.String("error", err.Error()),
-			)
-
-			return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+			return echo.NewHTTPError(http.StatusInternalServerError).
+				SetInternal(fmt.Errorf("failed to check if organizer is a camp participant: %w", err))
 		}
 
 		if !isCampParticipant {
@@ -236,26 +167,15 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 	}
 
 	if err := s.repo.UpdateEvent(e.Request().Context(), uint(eventID), &newEvent); err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to update event",
-			slog.String("error", err.Error()),
-			slog.Int("eventId", int(eventID)),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to update event (eventId: %d): %w", eventID, err))
 	}
 
 	response, err := converter.Convert[api.EventResponse](newEvent)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert event to response",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert event to response: %w", err))
 	}
 
 	return e.JSON(http.StatusOK, &response)
@@ -268,26 +188,14 @@ func (s *Server) DeleteEvent(
 ) error {
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-			slog.String("userId", *params.XForwardedUser),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user (userId: %s): %w", *params.XForwardedUser, err))
 	}
 
 	deleteEvent, err := s.repo.GetEventByID(uint(eventID))
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get event",
-			slog.String("error", err.Error()),
-			slog.Int("eventId", int(eventID)),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get event (eventId: %d): %w", eventID, err))
 	}
 
 	if (deleteEvent.Type == model.EventTypeOfficial || deleteEvent.Type == model.EventTypeMoment) &&
@@ -296,13 +204,8 @@ func (s *Server) DeleteEvent(
 	}
 
 	if err := s.repo.DeleteEvent(uint(eventID)); err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to delete event",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to delete event: %w", err))
 	}
 
 	return e.NoContent(http.StatusNoContent)

@@ -82,6 +82,10 @@ func main() {
 
 				if errors.As(v.Error, &httpError) {
 					errorMessage = httpError.Message
+
+					if v.Status == http.StatusInternalServerError {
+						errorMessage = httpError.Internal.Error()
+					}
 				}
 
 				attrs = append(attrs, slog.Any("error", errorMessage))

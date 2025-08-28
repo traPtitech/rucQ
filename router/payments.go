@@ -2,7 +2,7 @@ package router
 
 import (
 	"errors"
-	"log/slog"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -22,14 +22,8 @@ func (s *Server) AdminGetPayments(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-			slog.String("userId", *params.XForwardedUser),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
 	}
 
 	if !user.IsStaff {
@@ -39,26 +33,15 @@ func (s *Server) AdminGetPayments(
 	payments, err := s.repo.GetPayments(e.Request().Context(), uint(campID))
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get payments",
-			slog.String("error", err.Error()),
-			slog.Int("campId", int(campID)),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get payments: %w", err))
 	}
 
 	response, err := converter.Convert[[]api.PaymentResponse](payments)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert payments to response",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert payments to response: %w", err))
 	}
 
 	return e.JSON(http.StatusOK, response)
@@ -73,14 +56,8 @@ func (s *Server) AdminPostPayment(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-			slog.String("userId", *params.XForwardedUser),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
 	}
 
 	if !user.IsStaff {
@@ -96,37 +73,22 @@ func (s *Server) AdminPostPayment(
 	payment, err := converter.Convert[model.Payment](req)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert request to model",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request to model: %w", err))
 	}
 
 	payment.CampID = uint(campID)
 
 	if err := s.repo.CreatePayment(e.Request().Context(), &payment); err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to create payment",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create payment: %w", err))
 	}
 
 	res, err := converter.Convert[api.PaymentResponse](payment)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert model to response",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert model to response: %w", err))
 	}
 
 	return e.JSON(http.StatusCreated, res)
@@ -141,14 +103,8 @@ func (s *Server) AdminPutPayment(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to get or create user",
-			slog.String("error", err.Error()),
-			slog.String("userId", *params.XForwardedUser),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
 	}
 
 	if !user.IsStaff {
@@ -164,13 +120,8 @@ func (s *Server) AdminPutPayment(
 	payment, err := converter.Convert[model.Payment](req)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert request to model",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request to model: %w", err))
 	}
 
 	if err := s.repo.UpdatePayment(e.Request().Context(), uint(paymentID), &payment); err != nil {
@@ -178,14 +129,8 @@ func (s *Server) AdminPutPayment(
 			return echo.NewHTTPError(http.StatusNotFound, "Payment not found")
 		}
 
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to update payment",
-			slog.String("error", err.Error()),
-			slog.Int("paymentId", paymentID),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to update payment: %w", err))
 	}
 
 	// 更新後のPaymentオブジェクトにIDを設定してレスポンスを作成
@@ -194,13 +139,8 @@ func (s *Server) AdminPutPayment(
 	res, err := converter.Convert[api.PaymentResponse](payment)
 
 	if err != nil {
-		slog.ErrorContext(
-			e.Request().Context(),
-			"failed to convert model to response",
-			slog.String("error", err.Error()),
-		)
-
-		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert model to response: %w", err))
 	}
 
 	return e.JSON(http.StatusOK, res)
