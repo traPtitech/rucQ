@@ -59,24 +59,12 @@ func (s *Server) AdminPostQuestionGroup(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostQuestionGroupJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -139,24 +127,12 @@ func (s *Server) AdminPutQuestionGroupMetadata(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutQuestionGroupMetadataJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -233,12 +209,6 @@ func (s *Server) AdminDeleteQuestionGroup(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 

@@ -84,24 +84,12 @@ func (s *Server) AdminPostPayment(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostPaymentJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -164,24 +152,12 @@ func (s *Server) AdminPutPayment(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutPaymentJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -199,12 +175,6 @@ func (s *Server) AdminPutPayment(
 
 	if err := s.repo.UpdatePayment(e.Request().Context(), uint(paymentID), &payment); err != nil {
 		if errors.Is(err, repository.ErrPaymentNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"payment not found",
-				slog.Int("paymentId", paymentID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Payment not found")
 		}
 

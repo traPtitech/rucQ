@@ -89,12 +89,6 @@ func (s *Server) AdminPutUser(
 
 	// 開発環境では管理者でなくてもユーザー情報を更新できるようにする
 	if !s.isDev && !operator.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -114,12 +108,6 @@ func (s *Server) AdminPutUser(
 	var req api.AdminPutUserJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 

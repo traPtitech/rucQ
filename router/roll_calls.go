@@ -18,12 +18,6 @@ func (s *Server) GetRollCalls(e echo.Context, campID api.CampId) error {
 
 	if err != nil {
 		if errors.Is(err, repository.ErrCampNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found when getting roll calls",
-				slog.Int("campId", campID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
@@ -79,12 +73,6 @@ func (s *Server) AdminPostRollCall(
 	var req api.AdminPostRollCallJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -104,22 +92,10 @@ func (s *Server) AdminPostRollCall(
 
 	if err := s.repo.CreateRollCall(e.Request().Context(), &rollCall); err != nil {
 		if errors.Is(err, repository.ErrCampNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", campID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
 		if errors.Is(err, repository.ErrUserNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"user not found in subjects",
-				slog.Int("campId", campID),
-			)
-
 			return echo.NewHTTPError(http.StatusBadRequest, "One or more subject users not found")
 		}
 

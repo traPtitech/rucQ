@@ -51,12 +51,6 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	var req api.AdminPostCampJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -74,12 +68,6 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -129,12 +117,6 @@ func (s *Server) GetCamp(e echo.Context, campID api.CampId) error {
 
 	if err != nil {
 		if errors.Is(err, repository.ErrCampNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", int(campID)),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
@@ -184,24 +166,12 @@ func (s *Server) AdminPutCamp(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutCampJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -221,12 +191,6 @@ func (s *Server) AdminPutCamp(
 
 	if err := s.repo.UpdateCamp(e.Request().Context(), uint(campID), &newCamp); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", int(campID)),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
@@ -276,12 +240,6 @@ func (s *Server) AdminDeleteCamp(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -322,11 +280,6 @@ func (s *Server) PostCampRegister(
 	camp, err := s.repo.GetCampByID(e.Request().Context(), uint(campID))
 	if err != nil {
 		if errors.Is(err, repository.ErrCampNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", int(campID)),
-			)
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 		slog.ErrorContext(
@@ -339,23 +292,11 @@ func (s *Server) PostCampRegister(
 	}
 
 	if !camp.IsRegistrationOpen {
-		slog.WarnContext(
-			e.Request().Context(),
-			"attempting to register for closed camp",
-			slog.Int("campId", int(campID)),
-			slog.String("userId", *params.XForwardedUser),
-		)
 		return echo.NewHTTPError(http.StatusForbidden, "Registration for this camp is closed")
 	}
 
 	if err := s.repo.AddCampParticipant(e.Request().Context(), uint(campID), user); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", int(campID)),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
@@ -396,12 +337,6 @@ func (s *Server) DeleteCampRegister(
 
 	if err != nil {
 		if errors.Is(err, repository.ErrCampNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", int(campID)),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
@@ -416,13 +351,6 @@ func (s *Server) DeleteCampRegister(
 	}
 
 	if !camp.IsRegistrationOpen {
-		slog.WarnContext(
-			e.Request().Context(),
-			"attempting to unregister from closed camp",
-			slog.Int("campId", int(campID)),
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Registration for this camp is closed")
 	}
 
@@ -493,24 +421,12 @@ func (s *Server) AdminAddCampParticipant(
 	}
 
 	if !operator.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminAddCampParticipantJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -518,12 +434,6 @@ func (s *Server) AdminAddCampParticipant(
 
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"user not found",
-				slog.String("userId", req.UserId),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "User not found")
 		}
 
@@ -554,12 +464,6 @@ func (s *Server) AdminAddCampParticipant(
 
 	if err != nil {
 		if errors.Is(err, repository.ErrCampNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", campID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
@@ -575,12 +479,6 @@ func (s *Server) AdminAddCampParticipant(
 
 	if err := s.repo.AddCampParticipant(e.Request().Context(), uint(campID), targetUser); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", campID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
@@ -633,12 +531,6 @@ func (s *Server) AdminRemoveCampParticipant(
 	}
 
 	if !operator.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -658,12 +550,6 @@ func (s *Server) AdminRemoveCampParticipant(
 
 	if err != nil {
 		if errors.Is(err, repository.ErrCampNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", campID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
@@ -680,22 +566,9 @@ func (s *Server) AdminRemoveCampParticipant(
 	if err := s.repo.RemoveCampParticipant(e.Request().Context(), uint(campID), targetUser); err != nil {
 		switch {
 		case errors.Is(err, repository.ErrCampNotFound):
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campId", campID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 
 		case errors.Is(err, repository.ErrParticipantNotFound):
-			slog.WarnContext(
-				e.Request().Context(),
-				"participant not found",
-				slog.Int("campId", campID),
-				slog.String("userId", userID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Participant not found")
 
 		default:

@@ -44,12 +44,6 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 	var req api.PostEventJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -80,13 +74,6 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 
 	if (eventModel.Type == model.EventTypeOfficial || eventModel.Type == model.EventTypeMoment) &&
 		!user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not permitted to create event of this type",
-			slog.String("userId", *params.XForwardedUser),
-			slog.String("eventType", string(eventModel.Type)),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -108,13 +95,6 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 		}
 
 		if !isCampParticipant {
-			slog.WarnContext(
-				e.Request().Context(),
-				"organizer is not a participant of the camp",
-				slog.String("userId", *params.XForwardedUser),
-				slog.Int("campId", campID),
-			)
-
 			return echo.NewHTTPError(
 				http.StatusBadRequest,
 				"Organizer must be a participant of the camp",
@@ -202,25 +182,12 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 
 	if (existingEvent.Type == model.EventTypeOfficial || existingEvent.Type == model.EventTypeMoment) &&
 		!user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not permitted to update event of this type",
-			slog.String("userId", *params.XForwardedUser),
-			slog.String("eventType", string(existingEvent.Type)),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.PutEventJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -240,13 +207,6 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 
 	if (newEvent.Type == model.EventTypeOfficial || newEvent.Type == model.EventTypeMoment) &&
 		!user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not permitted to update event to this type",
-			slog.String("userId", *params.XForwardedUser),
-			slog.String("eventType", string(newEvent.Type)),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -268,13 +228,6 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 		}
 
 		if !isCampParticipant {
-			slog.WarnContext(
-				e.Request().Context(),
-				"organizer is not a participant of the camp",
-				slog.String("userId", *params.XForwardedUser),
-				slog.Int("campId", int(existingEvent.CampID)),
-			)
-
 			return echo.NewHTTPError(
 				http.StatusBadRequest,
 				"Organizer must be a participant of the camp",
@@ -339,13 +292,6 @@ func (s *Server) DeleteEvent(
 
 	if (deleteEvent.Type == model.EventTypeOfficial || deleteEvent.Type == model.EventTypeMoment) &&
 		!user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not permitted to delete event of this type",
-			slog.String("userId", *params.XForwardedUser),
-			slog.String("eventType", string(deleteEvent.Type)),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 

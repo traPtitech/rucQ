@@ -28,24 +28,12 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	}
 
 	if !operator.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -63,12 +51,6 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 
 	if err := s.repo.CreateRoom(e.Request().Context(), &roomModel); err != nil {
 		if errors.Is(err, repository.ErrUserOrRoomGroupNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"user or room group not found",
-				slog.Int("roomGroupId", int(roomModel.RoomGroupID)),
-			)
-
 			return echo.NewHTTPError(http.StatusBadRequest, "Invalid user or room group ID")
 		}
 
@@ -129,24 +111,12 @@ func (s *Server) AdminPutRoom(
 	}
 
 	if !operator.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutRoomJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -164,32 +134,14 @@ func (s *Server) AdminPutRoom(
 
 	if err := s.repo.UpdateRoom(e.Request().Context(), uint(roomID), &roomModel); err != nil {
 		if errors.Is(err, repository.ErrUserNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"user not found",
-				slog.Int("roomId", roomID),
-			)
-
 			return echo.NewHTTPError(http.StatusBadRequest, "User not found")
 		}
 
 		if errors.Is(err, repository.ErrRoomGroupNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"room group not found",
-				slog.Int("roomGroupId", int(roomModel.RoomGroupID)),
-			)
-
 			return echo.NewHTTPError(http.StatusBadRequest, "Room group not found")
 		}
 
 		if errors.Is(err, repository.ErrRoomNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"room not found",
-				slog.Int("roomId", roomID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Room not found")
 		}
 

@@ -31,12 +31,6 @@ func (s *Server) GetMyAnswers(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"question group not found",
-				slog.Int("questionGroupId", questionGroupId),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Question group not found")
 		}
 
@@ -76,22 +70,10 @@ func (s *Server) GetAnswers(e echo.Context, questionID api.QuestionId) error {
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"question not found",
-				slog.Int("questionId", questionID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}
 
 		if errors.Is(err, model.ErrForbidden) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"question is not public",
-				slog.Int("questionId", questionID),
-			)
-
 			return echo.NewHTTPError(http.StatusForbidden, "Question is not public")
 		}
 
@@ -128,12 +110,6 @@ func (s *Server) PostAnswers(
 	var req api.PostAnswersJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -193,12 +169,6 @@ func (s *Server) PutAnswer(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"answer not found",
-				slog.Int("answerId", answerID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Answer not found")
 		}
 
@@ -213,14 +183,6 @@ func (s *Server) PutAnswer(
 	}
 
 	if oldAnswer.UserID != *params.XForwardedUser {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user does not have permission to update this answer",
-			slog.String("requestUser", *params.XForwardedUser),
-			slog.String("answerOwner", oldAnswer.UserID),
-			slog.Int("answerId", answerID),
-		)
-
 		return echo.NewHTTPError(
 			http.StatusForbidden,
 			"You don't have permission to edit this answer",
@@ -230,12 +192,6 @@ func (s *Server) PutAnswer(
 	var req api.PutAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -303,12 +259,6 @@ func (s *Server) AdminGetAnswers(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -322,12 +272,6 @@ func (s *Server) AdminGetAnswers(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"question not found",
-				slog.Int("questionId", questionID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}
 
@@ -382,12 +326,6 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -404,12 +342,6 @@ func (s *Server) AdminGetAnswersForQuestionGroup(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"question group not found",
-				slog.Int("questionGroupId", questionGroupID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Question group not found")
 		}
 
@@ -465,12 +397,6 @@ func (s *Server) AdminPostAnswer(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -493,12 +419,6 @@ func (s *Server) AdminPostAnswer(
 	var req api.AdminPostAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -520,13 +440,6 @@ func (s *Server) AdminPostAnswer(
 	// 回答を作成
 	if err := s.repo.CreateAnswer(e.Request().Context(), &answer); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"question or option not found",
-				slog.String("error", err.Error()),
-				slog.Int("questionId", int(answer.QuestionID)),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Question or option not found")
 		}
 
@@ -600,24 +513,12 @@ func (s *Server) AdminPutAnswer(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutAnswerJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -638,12 +539,6 @@ func (s *Server) AdminPutAnswer(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"answer not found",
-				slog.Int("answerId", answerID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Answer not found")
 		}
 

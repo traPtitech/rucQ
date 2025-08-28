@@ -18,12 +18,6 @@ func (s *Server) GetRoomGroups(e echo.Context, campID api.CampId) error {
 
 	if err != nil {
 		if errors.Is(err, repository.ErrCampNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campID", campID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
@@ -71,25 +65,12 @@ func (s *Server) AdminPostRoomGroup(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"non-staff user attempted to create room group",
-			slog.String("userId", *params.XForwardedUser),
-			slog.Int("campID", campID),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostRoomGroupJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -109,12 +90,6 @@ func (s *Server) AdminPostRoomGroup(
 
 	if err := s.repo.CreateRoomGroup(e.Request().Context(), &roomGroup); err != nil {
 		if errors.Is(err, repository.ErrCampNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"camp not found",
-				slog.Int("campID", campID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
@@ -161,25 +136,12 @@ func (s *Server) AdminPutRoomGroup(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"non-staff user attempted to update room group",
-			slog.String("userId", *params.XForwardedUser),
-			slog.Int("roomGroupID", roomGroupID),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutRoomGroupJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -196,12 +158,6 @@ func (s *Server) AdminPutRoomGroup(
 
 	if err := s.repo.UpdateRoomGroup(e.Request().Context(), uint(roomGroupID), &roomGroup); err != nil {
 		if errors.Is(err, repository.ErrRoomGroupNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"room group not found",
-				slog.Int("roomGroupID", roomGroupID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Room group not found")
 		}
 
@@ -262,24 +218,11 @@ func (s *Server) AdminDeleteRoomGroup(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"non-staff user attempted to delete room group",
-			slog.String("userId", *params.XForwardedUser),
-			slog.Int("roomGroupID", roomGroupID),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	if err := s.repo.DeleteRoomGroup(e.Request().Context(), uint(roomGroupID)); err != nil {
 		if errors.Is(err, repository.ErrRoomGroupNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"room group not found",
-				slog.Int("roomGroupID", roomGroupID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Room group not found")
 		}
 

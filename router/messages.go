@@ -21,12 +21,6 @@ func (s *Server) AdminPostMessage(
 ) error {
 	var req api.AdminPostMessageJSONRequestBody
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -45,12 +39,6 @@ func (s *Server) AdminPostMessage(
 
 	// スタッフじゃなければはじく
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
@@ -69,12 +57,6 @@ func (s *Server) AdminPostMessage(
 
 	if err := s.repo.CreateMessage(e.Request().Context(), &message); err != nil {
 		if errors.Is(err, repository.ErrUserNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"user not found",
-				slog.String("userId", targetUserID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "User not found")
 		}
 

@@ -31,23 +31,11 @@ func (s *Server) AdminDeleteQuestion(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	if err := s.repo.DeleteQuestionByID(uint(questionID)); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"question not found",
-				slog.Int("questionId", questionID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}
 
@@ -83,24 +71,12 @@ func (s *Server) AdminPostQuestion(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPostQuestionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -163,24 +139,12 @@ func (s *Server) AdminPutQuestion(
 	}
 
 	if !user.IsStaff {
-		slog.WarnContext(
-			e.Request().Context(),
-			"user is not a staff member",
-			slog.String("userId", *params.XForwardedUser),
-		)
-
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
 	var req api.AdminPutQuestionJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
-		slog.WarnContext(
-			e.Request().Context(),
-			"failed to bind request body",
-			slog.String("error", err.Error()),
-		)
-
 		return err
 	}
 
@@ -201,12 +165,6 @@ func (s *Server) AdminPutQuestion(
 
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"question not found",
-				slog.Int("questionId", questionID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}
 
@@ -222,14 +180,6 @@ func (s *Server) AdminPutQuestion(
 
 	// typeは変更できない
 	if existingQuestion.Type != requestQuestion.Type {
-		slog.WarnContext(
-			e.Request().Context(),
-			"attempt to change question type",
-			slog.Int("questionId", int(existingQuestion.ID)),
-			slog.String("fromType", string(existingQuestion.Type)),
-			slog.String("toType", string(requestQuestion.Type)),
-		)
-
 		return echo.NewHTTPError(http.StatusBadRequest, "question type cannot be changed")
 	}
 
@@ -237,12 +187,6 @@ func (s *Server) AdminPutQuestion(
 
 	if err := s.repo.UpdateQuestion(e.Request().Context(), uint(questionID), &requestQuestion); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			slog.WarnContext(
-				e.Request().Context(),
-				"question not found",
-				slog.Int("questionId", questionID),
-			)
-
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}
 
