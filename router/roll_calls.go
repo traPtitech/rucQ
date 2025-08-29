@@ -144,6 +144,7 @@ func (s *Server) PostRollCallReaction(
 			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
 
+	reaction.RollCallID = uint(rollCallID)
 	reaction.UserID = user.ID
 
 	if err := s.repo.CreateRollCallReaction(e.Request().Context(), &reaction); err != nil {
