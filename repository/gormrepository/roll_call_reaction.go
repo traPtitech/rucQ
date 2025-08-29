@@ -16,7 +16,16 @@ func (r *Repository) CreateRollCallReaction(
 ) error {
 	if err := gorm.G[model.RollCallReaction](r.db).Create(ctx, reaction); err != nil {
 		if errors.Is(err, gorm.ErrForeignKeyViolated) {
-			// 外部キーエラーが起きたときはRollCallが存在しないかどうかを確認
+			userExists, err := r.userExists(ctx, reaction.UserID)
+
+			if err != nil {
+				return err
+			}
+
+			if !userExists {
+				return repository.ErrUserNotFound
+			}
+
 			rollCallExists, err := r.rollCallExists(ctx, reaction.RollCallID)
 
 			if err != nil {
@@ -26,8 +35,6 @@ func (r *Repository) CreateRollCallReaction(
 			if !rollCallExists {
 				return repository.ErrRollCallNotFound
 			}
-
-			return repository.ErrUserNotFound
 		}
 
 		return err
