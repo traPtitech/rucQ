@@ -408,7 +408,7 @@ func TestServer_PostRollCallReaction(t *testing.T) {
 
 		h.repo.MockRollCallReactionRepository.EXPECT().
 			CreateRollCallReaction(gomock.Any(), gomock.Any()).
-			DoAndReturn(func(_ interface{}, reaction *model.RollCallReaction) error {
+			DoAndReturn(func(_ any, reaction *model.RollCallReaction) error {
 				*reaction = expectedReaction
 				return nil
 			}).
