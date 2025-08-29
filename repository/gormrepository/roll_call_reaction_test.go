@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
@@ -71,15 +72,23 @@ func TestRepository_GetRollCallReactions(t *testing.T) {
 		reactions, err := r.GetRollCallReactions(t.Context(), rollCall.ID)
 
 		assert.NoError(t, err)
-		assert.Len(t, reactions, 2)
 
-		// IDでソートして比較
-		if reactions[0].ID > reactions[1].ID {
-			reactions[0], reactions[1] = reactions[1], reactions[0]
+		if assert.Len(t, reactions, 2) {
+			// IDでソートして比較
+			if reactions[0].ID > reactions[1].ID {
+				reactions[0], reactions[1] = reactions[1], reactions[0]
+			}
+
+			assert.Equal(t, reaction1.ID, reactions[0].ID)
+			assert.Equal(t, reaction1.Content, reactions[0].Content)
+			assert.Equal(t, reaction1.UserID, reactions[0].UserID)
+			assert.Equal(t, reaction1.RollCallID, reactions[0].RollCallID)
+
+			assert.Equal(t, reaction2.ID, reactions[1].ID)
+			assert.Equal(t, reaction2.Content, reactions[1].Content)
+			assert.Equal(t, reaction2.UserID, reactions[1].UserID)
+			assert.Equal(t, reaction2.RollCallID, reactions[1].RollCallID)
 		}
-
-		assert.Equal(t, reaction1.ID, reactions[0].ID)
-		assert.Equal(t, reaction2.ID, reactions[1].ID)
 	})
 
 	t.Run("Empty result", func(t *testing.T) {
@@ -214,7 +223,12 @@ func TestRepository_DeleteRollCallReaction(t *testing.T) {
 }
 
 // mustCreateRollCallReaction creates a roll call reaction for testing purposes
-func mustCreateRollCallReaction(t *testing.T, r *Repository, rollCallID uint, userID string) model.RollCallReaction {
+func mustCreateRollCallReaction(
+	t *testing.T,
+	r *Repository,
+	rollCallID uint,
+	userID string,
+) model.RollCallReaction {
 	t.Helper()
 
 	reaction := model.RollCallReaction{
@@ -224,9 +238,8 @@ func mustCreateRollCallReaction(t *testing.T, r *Repository, rollCallID uint, us
 	}
 
 	err := r.CreateRollCallReaction(t.Context(), &reaction)
-	if err != nil {
-		t.Fatalf("failed to create roll call reaction: %v", err)
-	}
+
+	require.NoError(t, err)
 
 	return reaction
 }
