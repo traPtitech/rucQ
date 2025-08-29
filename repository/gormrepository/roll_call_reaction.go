@@ -14,7 +14,7 @@ func (r *Repository) CreateRollCallReaction(
 	ctx context.Context,
 	reaction *model.RollCallReaction,
 ) error {
-	if err := r.db.WithContext(ctx).Create(reaction).Error; err != nil {
+	if err := gorm.G[model.RollCallReaction](r.db).Create(ctx, reaction); err != nil {
 		if errors.Is(err, gorm.ErrForeignKeyViolated) {
 			// 外部キーエラーが起きたときはRollCallが存在しないかどうかを確認
 			rollCallExists, err := r.rollCallExists(ctx, reaction.RollCallID)
@@ -40,9 +40,11 @@ func (r *Repository) GetRollCallReactions(
 	ctx context.Context,
 	rollCallID uint,
 ) ([]model.RollCallReaction, error) {
-	var reactions []model.RollCallReaction
+	reactions, err := gorm.G[model.RollCallReaction](r.db).
+		Where("roll_call_id = ?", rollCallID).
+		Find(ctx)
 
-	if err := r.db.WithContext(ctx).Where("roll_call_id = ?", rollCallID).Find(&reactions).Error; err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -66,9 +68,11 @@ func (r *Repository) GetRollCallReactionByID(
 	ctx context.Context,
 	reactionID uint,
 ) (*model.RollCallReaction, error) {
-	var reaction model.RollCallReaction
+	reaction, err := gorm.G[model.RollCallReaction](r.db).
+		Where("id = ?", reactionID).
+		First(ctx)
 
-	if err := r.db.WithContext(ctx).Where("id = ?", reactionID).First(&reaction).Error; err != nil {
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, repository.ErrRollCallReactionNotFound
 		}
@@ -84,13 +88,15 @@ func (r *Repository) UpdateRollCallReaction(
 	reactionID uint,
 	reaction *model.RollCallReaction,
 ) error {
-	result := r.db.WithContext(ctx).Where("id = ?", reactionID).Updates(reaction)
+	rowsAffected, err := gorm.G[*model.RollCallReaction](r.db).
+		Where("id = ?", reactionID).
+		Updates(ctx, reaction)
 
-	if result.Error != nil {
-		return result.Error
+	if err != nil {
+		return err
 	}
 
-	if result.RowsAffected == 0 {
+	if rowsAffected == 0 {
 		return repository.ErrRollCallReactionNotFound
 	}
 
@@ -98,13 +104,15 @@ func (r *Repository) UpdateRollCallReaction(
 }
 
 func (r *Repository) DeleteRollCallReaction(ctx context.Context, reactionID uint) error {
-	result := r.db.WithContext(ctx).Where("id = ?", reactionID).Delete(&model.RollCallReaction{})
+	rowsAffected, err := gorm.G[model.RollCallReaction](r.db).
+		Where("id = ?", reactionID).
+		Delete(ctx)
 
-	if result.Error != nil {
-		return result.Error
+	if err != nil {
+		return err
 	}
 
-	if result.RowsAffected == 0 {
+	if rowsAffected == 0 {
 		return repository.ErrRollCallReactionNotFound
 	}
 
