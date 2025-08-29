@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -102,6 +103,21 @@ func TestServer_GetRollCalls(t *testing.T) {
 			JSON().
 			Object().
 			Value("message").String().IsEqual("Camp not found")
+	})
+
+	t.Run("Repository error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockRollCallRepository.EXPECT().GetRollCalls(gomock.Any(), campID).Return(
+			nil, errors.New("repository error"),
+		).Times(1)
+
+		h.expect.GET("/api/camps/{campId}/roll-calls", campID).
+			Expect().
+			Status(http.StatusInternalServerError)
 	})
 }
 
@@ -306,6 +322,77 @@ func TestServer_AdminPostRollCall(t *testing.T) {
 			Object().
 			Value("message").String().IsEqual("One or more subject users not found")
 	})
+
+	t.Run("GetOrCreateUser Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		requestBody := api.RollCallRequest{
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.AlphaNumericString(t, 100),
+			Options: []string{
+				random.AlphaNumericString(t, 5),
+				random.AlphaNumericString(t, 5),
+			},
+			Subjects: []string{
+				random.AlphaNumericString(t, 32),
+			},
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(nil, errors.New("user repository error")).
+			Times(1)
+
+		h.expect.POST("/api/admin/camps/{campId}/roll-calls", campID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(requestBody).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("CreateRollCall repository error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		user := model.User{
+			ID:      userID,
+			IsStaff: true,
+		}
+
+		requestBody := api.RollCallRequest{
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.AlphaNumericString(t, 100),
+			Options: []string{
+				random.AlphaNumericString(t, 5),
+				random.AlphaNumericString(t, 5),
+			},
+			Subjects: []string{
+				random.AlphaNumericString(t, 32),
+			},
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil).
+			Times(1)
+
+		h.repo.MockRollCallRepository.EXPECT().
+			CreateRollCall(gomock.Any(), gomock.Any()).
+			Return(errors.New("create roll call error")).
+			Times(1)
+
+		h.expect.POST("/api/admin/camps/{campId}/roll-calls", campID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(requestBody).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
 }
 
 func TestServer_GetRollCallReactions(t *testing.T) {
@@ -376,6 +463,22 @@ func TestServer_GetRollCallReactions(t *testing.T) {
 			JSON().
 			Object().
 			Value("message").String().IsEqual("Roll call not found")
+	})
+
+	t.Run("Repository error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		rollCallID := uint(random.PositiveInt(t))
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactions(gomock.Any(), rollCallID).
+			Return(nil, errors.New("repository error")).
+			Times(1)
+
+		h.expect.GET("/api/roll-calls/{rollCallId}/reactions", rollCallID).
+			Expect().
+			Status(http.StatusInternalServerError)
 	})
 }
 
@@ -477,6 +580,58 @@ func TestServer_PostRollCallReaction(t *testing.T) {
 			JSON().
 			Object().
 			Value("message").String().IsEqual("Roll call not found")
+	})
+
+	t.Run("GetOrCreateUser Error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		rollCallID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		requestBody := api.PostRollCallReactionJSONRequestBody{
+			Content: random.AlphaNumericString(t, 20),
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(nil, errors.New("user repository error")).
+			Times(1)
+
+		h.expect.POST("/api/roll-calls/{rollCallId}/reactions", rollCallID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(requestBody).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("CreateRollCallReaction repository error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		rollCallID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		user := model.User{ID: userID}
+
+		requestBody := api.PostRollCallReactionJSONRequestBody{
+			Content: random.AlphaNumericString(t, 20),
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil).
+			Times(1)
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			CreateRollCallReaction(gomock.Any(), gomock.Any()).
+			Return(errors.New("create reaction error")).
+			Times(1)
+
+		h.expect.POST("/api/roll-calls/{rollCallId}/reactions", rollCallID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(requestBody).
+			Expect().
+			Status(http.StatusInternalServerError)
 	})
 }
 
@@ -592,6 +747,104 @@ func TestServer_PutReaction(t *testing.T) {
 			Object().
 			Value("message").String().IsEqual("You can only edit your own reactions")
 	})
+
+	t.Run("GetRollCallReactionByID error - initial check", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		reactionID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		requestBody := api.PutReactionJSONRequestBody{
+			Content: random.AlphaNumericString(t, 20),
+		}
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(nil, errors.New("get reaction error")).
+			Times(1)
+
+		h.expect.PUT("/api/reactions/{reactionId}", reactionID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(requestBody).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("UpdateRollCallReaction error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		reactionID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		existingReaction := model.RollCallReaction{
+			Model:      gorm.Model{ID: reactionID},
+			Content:    random.AlphaNumericString(t, 10),
+			UserID:     userID,
+			RollCallID: uint(random.PositiveInt(t)),
+		}
+
+		requestBody := api.PutReactionJSONRequestBody{
+			Content: random.AlphaNumericString(t, 20),
+		}
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(&existingReaction, nil).
+			Times(1)
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			UpdateRollCallReaction(gomock.Any(), reactionID, gomock.Any()).
+			Return(errors.New("update reaction error")).
+			Times(1)
+
+		h.expect.PUT("/api/reactions/{reactionId}", reactionID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(requestBody).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("GetRollCallReactionByID error - after update", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		reactionID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		existingReaction := model.RollCallReaction{
+			Model:      gorm.Model{ID: reactionID},
+			Content:    random.AlphaNumericString(t, 10),
+			UserID:     userID,
+			RollCallID: uint(random.PositiveInt(t)),
+		}
+
+		requestBody := api.PutReactionJSONRequestBody{
+			Content: random.AlphaNumericString(t, 20),
+		}
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(&existingReaction, nil).
+			Times(1)
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			UpdateRollCallReaction(gomock.Any(), reactionID, gomock.Any()).
+			Return(nil).
+			Times(1)
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(nil, errors.New("get updated reaction error")).
+			Times(1)
+
+		h.expect.PUT("/api/reactions/{reactionId}", reactionID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(requestBody).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
 }
 
 func TestServer_DeleteReaction(t *testing.T) {
@@ -676,5 +929,53 @@ func TestServer_DeleteReaction(t *testing.T) {
 			JSON().
 			Object().
 			Value("message").String().IsEqual("You can only delete your own reactions")
+	})
+
+	t.Run("GetRollCallReactionByID error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		reactionID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(nil, errors.New("get reaction error")).
+			Times(1)
+
+		h.expect.DELETE("/api/reactions/{reactionId}", reactionID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("DeleteRollCallReaction error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		reactionID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		existingReaction := model.RollCallReaction{
+			Model:      gorm.Model{ID: reactionID},
+			Content:    random.AlphaNumericString(t, 10),
+			UserID:     userID,
+			RollCallID: uint(random.PositiveInt(t)),
+		}
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(&existingReaction, nil).
+			Times(1)
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			DeleteRollCallReaction(gomock.Any(), reactionID).
+			Return(errors.New("delete reaction error")).
+			Times(1)
+
+		h.expect.DELETE("/api/reactions/{reactionId}", reactionID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusInternalServerError)
 	})
 }
