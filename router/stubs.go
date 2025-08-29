@@ -49,34 +49,6 @@ func (s *Server) GetImage(_ echo.Context, _ api.ImageId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetImage not implemented")
 }
 
-// DeleteReaction リアクションを削除
-func (s *Server) DeleteReaction(
-	_ echo.Context,
-	_ api.RollCallId,
-	_ api.DeleteReactionParams,
-) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "DeleteReaction not implemented")
-}
-
-// PutReaction リアクションを更新
-func (s *Server) PutReaction(_ echo.Context, _ api.RollCallId, _ api.PutReactionParams) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "PutReaction not implemented")
-}
-
-// GetRollCallReactions 点呼のリアクション一覧を取得
-func (s *Server) GetRollCallReactions(_ echo.Context, _ api.RollCallId) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "GetRollCallReactions not implemented")
-}
-
-// PostRollCallReaction 点呼にリアクション
-func (s *Server) PostRollCallReaction(
-	_ echo.Context,
-	_ api.RollCallId,
-	_ api.PostRollCallReactionParams,
-) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "PostRollCallReaction not implemented")
-}
-
 // StreamRollCallReactions 点呼のリアクションをストリーミング
 func (s *Server) StreamRollCallReactions(_ echo.Context, _ api.RollCallId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "StreamRollCallReactions not implemented")

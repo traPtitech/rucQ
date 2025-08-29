@@ -67,3 +67,18 @@ func (r *Repository) UpdateUser(ctx context.Context, user *model.User) error {
 
 	return err
 }
+
+func (r *Repository) userExists(ctx context.Context, userID string) (bool, error) {
+	var count int64
+
+	if err := r.db.
+		WithContext(ctx).
+		Model(&model.User{}).
+		Where("id = ?", userID).
+		Count(&count).
+		Error; err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}

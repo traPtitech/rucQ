@@ -92,3 +92,172 @@ func (s *Server) AdminPostRollCall(
 
 	return e.JSON(http.StatusCreated, res)
 }
+
+func (s *Server) GetRollCallReactions(e echo.Context, rollCallID api.RollCallId) error {
+	reactions, err := s.repo.GetRollCallReactions(e.Request().Context(), uint(rollCallID))
+
+	if err != nil {
+		if errors.Is(err, repository.ErrRollCallNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Roll call not found")
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get roll call reactions: %w", err))
+	}
+
+	res, err := converter.Convert[[]api.RollCallReactionResponse](reactions)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert roll call reactions: %w", err))
+	}
+
+	return e.JSON(http.StatusOK, res)
+}
+
+func (s *Server) PostRollCallReaction(
+	e echo.Context,
+	rollCallID api.RollCallId,
+	params api.PostRollCallReactionParams,
+) error {
+	if params.XForwardedUser == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
+	}
+
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
+	}
+
+	var req api.PostRollCallReactionJSONRequestBody
+
+	if err := e.Bind(&req); err != nil {
+		return err
+	}
+
+	reaction, err := converter.Convert[model.RollCallReaction](req)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
+	}
+
+	reaction.RollCallID = uint(rollCallID)
+	reaction.UserID = user.ID
+
+	if err := s.repo.CreateRollCallReaction(e.Request().Context(), &reaction); err != nil {
+		if errors.Is(err, repository.ErrRollCallNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Roll call not found")
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create roll call reaction: %w", err))
+	}
+
+	res, err := converter.Convert[api.RollCallReactionResponse](reaction)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert roll call reaction: %w", err))
+	}
+
+	return e.JSON(http.StatusCreated, res)
+}
+
+func (s *Server) PutReaction(
+	e echo.Context,
+	reactionID api.ReactionId,
+	params api.PutReactionParams,
+) error {
+	if params.XForwardedUser == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
+	}
+
+	// リアクションの存在確認と所有者チェック
+	existingReaction, err := s.repo.GetRollCallReactionByID(e.Request().Context(), uint(reactionID))
+
+	if err != nil {
+		if errors.Is(err, repository.ErrRollCallReactionNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Reaction not found")
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get roll call reaction: %w", err))
+	}
+
+	// ユーザーの所有者チェック
+	if existingReaction.UserID != *params.XForwardedUser {
+		return echo.NewHTTPError(http.StatusForbidden, "You can only edit your own reactions")
+	}
+
+	var req api.PutReactionJSONRequestBody
+
+	if err := e.Bind(&req); err != nil {
+		return err
+	}
+
+	updateData, err := converter.Convert[model.RollCallReaction](req)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
+	}
+
+	if err := s.repo.UpdateRollCallReaction(e.Request().Context(), uint(reactionID), &updateData); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to update roll call reaction: %w", err))
+	}
+
+	// 更新後のデータを取得
+	updatedReaction, err := s.repo.GetRollCallReactionByID(e.Request().Context(), uint(reactionID))
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get updated roll call reaction: %w", err))
+	}
+
+	res, err := converter.Convert[api.RollCallReactionResponse](*updatedReaction)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert roll call reaction: %w", err))
+	}
+
+	return e.JSON(http.StatusOK, res)
+}
+
+func (s *Server) DeleteReaction(
+	e echo.Context,
+	reactionID api.ReactionId,
+	params api.DeleteReactionParams,
+) error {
+	if params.XForwardedUser == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
+	}
+
+	// リアクションの存在確認と所有者チェック
+	existingReaction, err := s.repo.GetRollCallReactionByID(e.Request().Context(), uint(reactionID))
+
+	if err != nil {
+		if errors.Is(err, repository.ErrRollCallReactionNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Reaction not found")
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get roll call reaction: %w", err))
+	}
+
+	// ユーザーの所有者チェック
+	if existingReaction.UserID != *params.XForwardedUser {
+		return echo.NewHTTPError(http.StatusForbidden, "You can only delete your own reactions")
+	}
+
+	if err := s.repo.DeleteRollCallReaction(e.Request().Context(), uint(reactionID)); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to delete roll call reaction: %w", err))
+	}
+
+	return e.NoContent(http.StatusNoContent)
+}
