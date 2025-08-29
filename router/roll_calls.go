@@ -137,11 +137,14 @@ func (s *Server) PostRollCallReaction(
 		return err
 	}
 
-	reaction := model.RollCallReaction{
-		Content:    req.Content,
-		UserID:     user.ID,
-		RollCallID: uint(rollCallID),
+	reaction, err := converter.Convert[model.RollCallReaction](req)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
+
+	reaction.UserID = user.ID
 
 	if err := s.repo.CreateRollCallReaction(e.Request().Context(), &reaction); err != nil {
 		if errors.Is(err, repository.ErrRollCallNotFound) {
@@ -194,8 +197,11 @@ func (s *Server) PutReaction(
 		return err
 	}
 
-	updateData := model.RollCallReaction{
-		Content: req.Content,
+	updateData, err := converter.Convert[model.RollCallReaction](req)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
 
 	if err := s.repo.UpdateRollCallReaction(e.Request().Context(), uint(reactionID), &updateData); err != nil {
