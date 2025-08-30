@@ -27,6 +27,10 @@ func (r *Repository) GetRoomByID(ctx context.Context, roomID uint) (*model.Room,
 		First(ctx)
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, repository.ErrRoomNotFound
+		}
+
 		return nil, err
 	}
 

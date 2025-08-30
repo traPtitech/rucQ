@@ -369,7 +369,7 @@ func TestRepository_DeleteRoom(t *testing.T) {
 
 		// 削除されているかを確認
 		_, err = r.GetRoomByID(t.Context(), room.ID)
-		assert.Error(t, err)
+		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
