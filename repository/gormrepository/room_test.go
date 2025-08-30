@@ -377,7 +377,7 @@ func TestRepository_DeleteRoom(t *testing.T) {
 
 		r := setup(t)
 
-		err := r.DeleteRoom(t.Context(), 999)
+		err := r.DeleteRoom(t.Context(), uint(random.PositiveInt(t)))
 
 		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
 	})
