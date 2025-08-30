@@ -47,7 +47,7 @@ func TestServer_AdminPostRoom(t *testing.T) {
 				return nil
 			}).Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByID(roomID).
+			GetRoomByID(gomock.Any(), roomID).
 			Return(&model.Room{
 				Model: gorm.Model{
 					ID: roomID,
@@ -117,7 +117,7 @@ func TestServer_AdminPostRoom(t *testing.T) {
 				return nil
 			}).Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByID(roomID).
+			GetRoomByID(gomock.Any(), roomID).
 			Return(&model.Room{
 				Model: gorm.Model{
 					ID: roomID,
@@ -304,7 +304,7 @@ func TestServer_AdminPutRoom(t *testing.T) {
 				return nil
 			}).Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByID(roomID).
+			GetRoomByID(gomock.Any(), roomID).
 			Return(&model.Room{
 				Model: gorm.Model{
 					ID: roomID,
@@ -377,7 +377,7 @@ func TestServer_AdminPutRoom(t *testing.T) {
 				return nil
 			}).Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByID(roomID).
+			GetRoomByID(gomock.Any(), roomID).
 			Return(&model.Room{
 				Model: gorm.Model{
 					ID: roomID,
@@ -433,7 +433,7 @@ func TestServer_AdminPutRoom(t *testing.T) {
 				return nil
 			}).Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByID(roomID).
+			GetRoomByID(gomock.Any(), roomID).
 			Return(&model.Room{
 				Model: gorm.Model{
 					ID: roomID,
@@ -637,6 +637,112 @@ func TestServer_AdminPutRoom(t *testing.T) {
 			Times(1)
 		h.expect.PUT("/api/admin/rooms/{roomId}", roomID).
 			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+}
+
+func TestServer_AdminDeleteRoom(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		roomID := random.PositiveInt(t)
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+		h.repo.MockRoomRepository.EXPECT().
+			DeleteRoom(gomock.Any(), uint(roomID)).
+			Return(nil).
+			Times(1)
+
+		h.expect.DELETE("/api/admin/rooms/{roomId}", roomID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNoContent)
+	})
+
+	t.Run("Forbidden", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		roomID := random.PositiveInt(t)
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: false}, nil).
+			Times(1)
+
+		h.expect.DELETE("/api/admin/rooms/{roomId}", roomID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusForbidden)
+	})
+
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		roomID := random.PositiveInt(t)
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+		h.repo.MockRoomRepository.EXPECT().
+			DeleteRoom(gomock.Any(), uint(roomID)).
+			Return(repository.ErrRoomNotFound).
+			Times(1)
+
+		h.expect.DELETE("/api/admin/rooms/{roomId}", roomID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNotFound)
+	})
+
+	t.Run("InternalServerError_GetUser", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		roomID := random.PositiveInt(t)
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(nil, errors.New("database error")).
+			Times(1)
+
+		h.expect.DELETE("/api/admin/rooms/{roomId}", roomID).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("InternalServerError_DeleteRoom", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		roomID := random.PositiveInt(t)
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+		h.repo.MockRoomRepository.EXPECT().
+			DeleteRoom(gomock.Any(), uint(roomID)).
+			Return(errors.New("database error")).
+			Times(1)
+
+		h.expect.DELETE("/api/admin/rooms/{roomId}", roomID).
 			WithHeader("X-Forwarded-User", username).
 			Expect().
 			Status(http.StatusInternalServerError)

@@ -55,19 +55,33 @@ func (mr *MockRoomRepositoryMockRecorder) CreateRoom(ctx, room any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoom", reflect.TypeOf((*MockRoomRepository)(nil).CreateRoom), ctx, room)
 }
 
-// GetRoomByID mocks base method.
-func (m *MockRoomRepository) GetRoomByID(id uint) (*model.Room, error) {
+// DeleteRoom mocks base method.
+func (m *MockRoomRepository) DeleteRoom(ctx context.Context, roomID uint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRoomByID", id)
+	ret := m.ctrl.Call(m, "DeleteRoom", ctx, roomID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRoom indicates an expected call of DeleteRoom.
+func (mr *MockRoomRepositoryMockRecorder) DeleteRoom(ctx, roomID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRoom", reflect.TypeOf((*MockRoomRepository)(nil).DeleteRoom), ctx, roomID)
+}
+
+// GetRoomByID mocks base method.
+func (m *MockRoomRepository) GetRoomByID(ctx context.Context, roomID uint) (*model.Room, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRoomByID", ctx, roomID)
 	ret0, _ := ret[0].(*model.Room)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetRoomByID indicates an expected call of GetRoomByID.
-func (mr *MockRoomRepositoryMockRecorder) GetRoomByID(id any) *gomock.Call {
+func (mr *MockRoomRepositoryMockRecorder) GetRoomByID(ctx, roomID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoomByID", reflect.TypeOf((*MockRoomRepository)(nil).GetRoomByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoomByID", reflect.TypeOf((*MockRoomRepository)(nil).GetRoomByID), ctx, roomID)
 }
 
 // GetRoomByUserID mocks base method.

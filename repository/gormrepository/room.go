@@ -20,14 +20,17 @@ func (r *Repository) GetRooms() ([]model.Room, error) {
 	return rooms, nil
 }
 
-func (r *Repository) GetRoomByID(id uint) (*model.Room, error) {
-	var room model.Room
+func (r *Repository) GetRoomByID(ctx context.Context, roomID uint) (*model.Room, error) {
+	room, err := gorm.G[model.Room](r.db).
+		Preload("Members", nil).
+		Where("id = ?", roomID).
+		First(ctx)
 
-	if err := r.db.Preload("Members").Where(&model.Room{
-		Model: gorm.Model{
-			ID: id,
-		},
-	}).First(&room).Error; err != nil {
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, repository.ErrRoomNotFound
+		}
+
 		return nil, err
 	}
 
@@ -107,4 +110,20 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 
 		return nil
 	})
+}
+
+func (r *Repository) DeleteRoom(ctx context.Context, roomID uint) error {
+	rowsAffected, err := gorm.G[model.Room](r.db).
+		Where("id = ?", roomID).
+		Delete(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return repository.ErrRoomNotFound
+	}
+
+	return nil
 }
