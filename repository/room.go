@@ -19,4 +19,5 @@ type RoomRepository interface {
 	GetRoomByUserID(ctx context.Context, campID uint, userID string) (*model.Room, error)
 	CreateRoom(ctx context.Context, room *model.Room) error
 	UpdateRoom(ctx context.Context, roomID uint, room *model.Room) error
+	DeleteRoom(ctx context.Context, roomID uint) error
 }

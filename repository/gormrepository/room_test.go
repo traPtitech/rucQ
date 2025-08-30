@@ -350,3 +350,35 @@ func TestRepository_UpdateRoom(t *testing.T) {
 		assert.ErrorIs(t, err, repository.ErrUserNotFound)
 	})
 }
+
+func TestRepository_DeleteRoom(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		user := mustCreateUser(t, r)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{user})
+
+		err := r.DeleteRoom(t.Context(), room.ID)
+
+		assert.NoError(t, err)
+
+		// 削除されているかを確認
+		_, err = r.GetRoomByID(room.ID)
+		assert.Error(t, err)
+	})
+
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+
+		err := r.DeleteRoom(t.Context(), 999)
+
+		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
+	})
+}

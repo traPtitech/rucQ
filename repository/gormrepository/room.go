@@ -108,3 +108,19 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 		return nil
 	})
 }
+
+func (r *Repository) DeleteRoom(ctx context.Context, roomID uint) error {
+	rowsAffected, err := gorm.G[model.Room](r.db).
+		Where("id = ?", roomID).
+		Delete(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return repository.ErrRoomNotFound
+	}
+
+	return nil
+}

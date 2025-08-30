@@ -29,11 +29,6 @@ func (s *Server) AdminPostImage(_ echo.Context, _ api.CampId, _ api.AdminPostIma
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostImage not implemented")
 }
 
-// AdminDeleteRoom 部屋を削除（管理者用）
-func (s *Server) AdminDeleteRoom(_ echo.Context, _ api.RoomId, _ api.AdminDeleteRoomParams) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteRoom not implemented")
-}
-
 // AdminGetUser ユーザー詳細を取得（管理者用）
 func (s *Server) AdminGetUser(_ echo.Context, _ string, _ api.AdminGetUserParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetUser not implemented")

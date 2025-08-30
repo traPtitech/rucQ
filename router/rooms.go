@@ -128,3 +128,31 @@ func (s *Server) AdminPutRoom(
 
 	return e.JSON(http.StatusOK, res)
 }
+
+func (s *Server) AdminDeleteRoom(
+	e echo.Context,
+	roomID api.RoomId,
+	params api.AdminDeleteRoomParams,
+) error {
+	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user (userId: %s): %w", *params.XForwardedUser, err))
+	}
+
+	if !operator.IsStaff {
+		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
+	}
+
+	if err := s.repo.DeleteRoom(e.Request().Context(), uint(roomID)); err != nil {
+		if errors.Is(err, repository.ErrRoomNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Room not found")
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to delete room: %w", err))
+	}
+
+	return e.NoContent(http.StatusNoContent)
+}
