@@ -47,7 +47,7 @@ func TestServer_AdminPostRoom(t *testing.T) {
 				return nil
 			}).Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByID(roomID).
+			GetRoomByID(gomock.Any(), roomID).
 			Return(&model.Room{
 				Model: gorm.Model{
 					ID: roomID,
@@ -117,7 +117,7 @@ func TestServer_AdminPostRoom(t *testing.T) {
 				return nil
 			}).Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByID(roomID).
+			GetRoomByID(gomock.Any(), roomID).
 			Return(&model.Room{
 				Model: gorm.Model{
 					ID: roomID,
@@ -304,7 +304,7 @@ func TestServer_AdminPutRoom(t *testing.T) {
 				return nil
 			}).Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByID(roomID).
+			GetRoomByID(gomock.Any(), roomID).
 			Return(&model.Room{
 				Model: gorm.Model{
 					ID: roomID,
@@ -377,7 +377,7 @@ func TestServer_AdminPutRoom(t *testing.T) {
 				return nil
 			}).Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByID(roomID).
+			GetRoomByID(gomock.Any(), roomID).
 			Return(&model.Room{
 				Model: gorm.Model{
 					ID: roomID,
@@ -433,7 +433,7 @@ func TestServer_AdminPutRoom(t *testing.T) {
 				return nil
 			}).Times(1)
 		h.repo.MockRoomRepository.EXPECT().
-			GetRoomByID(roomID).
+			GetRoomByID(gomock.Any(), roomID).
 			Return(&model.Room{
 				Model: gorm.Model{
 					ID: roomID,

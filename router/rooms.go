@@ -48,7 +48,7 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 	}
 
 	// MemberのisStaffなどを正しく返すために取得
-	updatedRoom, err := s.repo.GetRoomByID(roomModel.ID)
+	updatedRoom, err := s.repo.GetRoomByID(e.Request().Context(), roomModel.ID)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
@@ -112,7 +112,7 @@ func (s *Server) AdminPutRoom(
 	}
 
 	// MemberのisStaffなどを正しく返すために取得
-	updatedRoom, err := s.repo.GetRoomByID(uint(roomID))
+	updatedRoom, err := s.repo.GetRoomByID(e.Request().Context(), uint(roomID))
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).

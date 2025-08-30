@@ -82,7 +82,7 @@ func TestRepository_CreateRoom(t *testing.T) {
 		assert.Equal(t, roomGroup.ID, room.RoomGroupID)
 
 		// 作成された部屋を取得して確認
-		retrievedRoom, err := r.GetRoomByID(room.ID)
+		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 
 		require.NoError(t, err)
 		assert.Equal(t, room.Name, retrievedRoom.Name)
@@ -120,7 +120,7 @@ func TestRepository_CreateRoom(t *testing.T) {
 		assert.NotZero(t, room.ID)
 
 		// 作成された部屋を取得して確認
-		retrievedRoom, err := r.GetRoomByID(room.ID)
+		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 
 		require.NoError(t, err)
 		assert.Equal(t, room.Name, retrievedRoom.Name)
@@ -214,7 +214,7 @@ func TestRepository_UpdateRoom(t *testing.T) {
 		assert.NoError(t, err)
 
 		// 更新が正しく反映されているか確認
-		retrievedRoom, err := r.GetRoomByID(room.ID)
+		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 
 		require.NoError(t, err)
 		assert.Equal(t, newName, retrievedRoom.Name)
@@ -255,7 +255,7 @@ func TestRepository_UpdateRoom(t *testing.T) {
 		assert.NoError(t, err)
 
 		// 更新が正しく反映されているか確認
-		retrievedRoom, err := r.GetRoomByID(room.ID)
+		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 
 		require.NoError(t, err)
 		assert.Equal(t, room.Name, retrievedRoom.Name)
@@ -283,7 +283,7 @@ func TestRepository_UpdateRoom(t *testing.T) {
 		assert.NoError(t, err)
 
 		// 更新が正しく反映されているか確認
-		retrievedRoom, err := r.GetRoomByID(room.ID)
+		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 
 		require.NoError(t, err)
 		assert.Equal(t, newRoomGroup.ID, retrievedRoom.RoomGroupID)
@@ -368,7 +368,7 @@ func TestRepository_DeleteRoom(t *testing.T) {
 		assert.NoError(t, err)
 
 		// 削除されているかを確認
-		_, err = r.GetRoomByID(room.ID)
+		_, err = r.GetRoomByID(t.Context(), room.ID)
 		assert.Error(t, err)
 	})
 

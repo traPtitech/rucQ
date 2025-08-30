@@ -20,12 +20,12 @@ func (r *Repository) GetRooms() ([]model.Room, error) {
 	return rooms, nil
 }
 
-func (r *Repository) GetRoomByID(id uint) (*model.Room, error) {
+func (r *Repository) GetRoomByID(ctx context.Context, roomID uint) (*model.Room, error) {
 	var room model.Room
 
 	if err := r.db.Preload("Members").Where(&model.Room{
 		Model: gorm.Model{
-			ID: id,
+			ID: roomID,
 		},
 	}).First(&room).Error; err != nil {
 		return nil, err

@@ -15,7 +15,7 @@ var (
 
 type RoomRepository interface {
 	GetRooms() ([]model.Room, error)
-	GetRoomByID(id uint) (*model.Room, error)
+	GetRoomByID(ctx context.Context, roomID uint) (*model.Room, error)
 	GetRoomByUserID(ctx context.Context, campID uint, userID string) (*model.Room, error)
 	CreateRoom(ctx context.Context, room *model.Room) error
 	UpdateRoom(ctx context.Context, roomID uint, room *model.Room) error
