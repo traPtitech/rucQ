@@ -21,13 +21,12 @@ func (r *Repository) GetRooms() ([]model.Room, error) {
 }
 
 func (r *Repository) GetRoomByID(ctx context.Context, roomID uint) (*model.Room, error) {
-	var room model.Room
+	room, err := gorm.G[model.Room](r.db).
+		Preload("Members", nil).
+		Where("id = ?", roomID).
+		First(ctx)
 
-	if err := r.db.Preload("Members").Where(&model.Room{
-		Model: gorm.Model{
-			ID: roomID,
-		},
-	}).First(&room).Error; err != nil {
+	if err != nil {
 		return nil, err
 	}
 
