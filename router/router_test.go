@@ -20,7 +20,6 @@ type testHandler struct {
 	repo                *mockrepository.MockRepository
 	notificationService *mockservice.MockNotificationService
 	traqService         *mockservice.MockTraqService
-	server              *httptest.Server
 }
 
 func setup(t *testing.T) *testHandler {
@@ -51,7 +50,6 @@ func setup(t *testing.T) *testHandler {
 		repo:                repo,
 		notificationService: notificationService,
 		traqService:         traqService,
-		server:              httptestServer,
 	}
 }
 
