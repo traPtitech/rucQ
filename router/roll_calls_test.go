@@ -1051,7 +1051,7 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 			Status(http.StatusCreated)
 
 		// SSEイベントの受信と検証 (Created)
-		if assert.True(t, scanner.Scan()) {
+		if assert.Eventually(t, scanner.Scan, 2*time.Second, 50*time.Millisecond) {
 			line := scanner.Text()
 
 			if assert.True(
@@ -1073,7 +1073,7 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 			}
 		}
 
-		if assert.True(t, scanner.Scan()) {
+		if assert.Eventually(t, scanner.Scan, 2*time.Second, 50*time.Millisecond) {
 			assert.Empty(t, scanner.Text())
 		}
 
@@ -1113,7 +1113,7 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 			Status(http.StatusOK)
 
 		// SSEイベントの受信と検証 (Updated)
-		if assert.True(t, scanner.Scan()) {
+		if assert.Eventually(t, scanner.Scan, 2*time.Second, 50*time.Millisecond) {
 			line := scanner.Text()
 
 			if assert.True(
@@ -1135,7 +1135,7 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 			}
 		}
 
-		if assert.True(t, scanner.Scan()) {
+		if assert.Eventually(t, scanner.Scan, 2*time.Second, 50*time.Millisecond) {
 			assert.Empty(t, scanner.Text())
 		}
 
@@ -1155,7 +1155,7 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 			Status(http.StatusNoContent)
 
 			// SSEイベントの受信と検証 (Deleted)
-		if assert.True(t, scanner.Scan(), "should receive a line") {
+		if assert.Eventually(t, scanner.Scan, 2*time.Second, 50*time.Millisecond) {
 			line := scanner.Text()
 
 			if assert.True(
@@ -1172,7 +1172,7 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 			}
 		}
 
-		if assert.True(t, scanner.Scan()) {
+		if assert.Eventually(t, scanner.Scan, 2*time.Second, 50*time.Millisecond) {
 			assert.Empty(t, scanner.Text())
 		}
 	})
@@ -1363,10 +1363,12 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 		)
 
 		for i := range numClients {
-			if assert.True(
+			if assert.Eventually(
 				t,
-				scanners[i].Scan(),
-				fmt.Sprintf("client %d should receive a line", i),
+				scanners[i].Scan,
+				2*time.Second,
+				50*time.Millisecond,
+				fmt.Sprintf("client %d should receive line", i),
 			) {
 				line := scanners[i].Text()
 
@@ -1385,10 +1387,12 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 				}
 			}
 
-			if assert.True(
+			if assert.Eventually(
 				t,
-				scanners[i].Scan(),
-				fmt.Sprintf("client %d should receive an empty line", i),
+				scanners[i].Scan,
+				2*time.Second,
+				50*time.Millisecond,
+				fmt.Sprintf("client %d should receive line", i),
 			) {
 				assert.Empty(
 					t,
@@ -1442,10 +1446,12 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 		)
 
 		for i := range numClients {
-			if assert.True(
+			if assert.Eventually(
 				t,
-				scanners[i].Scan(),
-				fmt.Sprintf("client %d should receive update line", i),
+				scanners[i].Scan,
+				2*time.Second,
+				50*time.Millisecond,
+				fmt.Sprintf("client %d should receive line", i),
 			) {
 				line := scanners[i].Text()
 
@@ -1464,10 +1470,12 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 				}
 			}
 
-			if assert.True(
+			if assert.Eventually(
 				t,
-				scanners[i].Scan(),
-				fmt.Sprintf("client %d should receive an empty line after update", i),
+				scanners[i].Scan,
+				2*time.Second,
+				50*time.Millisecond,
+				fmt.Sprintf("client %d should receive line", i),
 			) {
 				assert.Empty(
 					t,
