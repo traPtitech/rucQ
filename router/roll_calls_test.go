@@ -1,10 +1,18 @@
 package router
 
 import (
+	"bufio"
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
 
@@ -977,5 +985,295 @@ func TestServer_DeleteReaction(t *testing.T) {
 			WithHeader("X-Forwarded-User", userID).
 			Expect().
 			Status(http.StatusInternalServerError)
+	})
+}
+
+const eventStreamDataPrefix = "data: "
+
+func TestServer_StreamRollCallReactions(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		rollCallID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		user := model.User{ID: userID}
+
+		// SSEリクエストの準備
+		ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+
+		defer cancel()
+
+		req := httptest.NewRequestWithContext(
+			ctx,
+			http.MethodGet,
+			fmt.Sprintf("/api/roll-calls/%d/reactions/stream", rollCallID),
+			nil,
+		)
+		rec := httptest.NewRecorder()
+
+		// SSEハンドラを非同期で実行
+		go func() {
+			h.e.ServeHTTP(rec, req)
+		}()
+
+		// レスポンスヘッダーの確認
+		assert.Eventually(t, func() bool {
+			return rec.Header().Get(echo.HeaderContentType) == "text/event-stream"
+		}, 2*time.Second, 50*time.Millisecond, "content-type not text/event-stream", rec.Header().Get(echo.HeaderContentType))
+
+		// イベントを読み取るためのスキャナ
+		scanner := bufio.NewScanner(rec.Body)
+
+		// 1. Create Reaction
+		originalContent := random.AlphaNumericString(t, 20)
+		createReqBody := api.PostRollCallReactionJSONRequestBody{Content: originalContent}
+		reactionID := uint(random.PositiveInt(t))
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil).
+			Times(1)
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			CreateRollCallReaction(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ context.Context, reaction *model.RollCallReaction) error {
+				reaction.ID = reactionID
+
+				return nil
+			}).
+			Times(1)
+
+		h.expect.POST("/api/roll-calls/{rollCallId}/reactions", rollCallID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(createReqBody).
+			Expect().
+			Status(http.StatusCreated)
+
+		// SSEイベントの受信と検証 (Created)
+		if assert.True(t, scanner.Scan()) {
+			line := scanner.Text()
+
+			if assert.True(
+				t,
+				strings.HasPrefix(line, eventStreamDataPrefix),
+				"line not start with 'data: '",
+				line,
+			) {
+				assert.JSONEq(
+					t,
+					fmt.Sprintf(
+						`{"id":%d,"type":"created","userId":"%s","content":"%s"}`,
+						reactionID,
+						userID,
+						originalContent,
+					),
+					strings.TrimPrefix(line, eventStreamDataPrefix),
+				)
+			}
+		}
+
+		if assert.True(t, scanner.Scan()) {
+			assert.Empty(t, scanner.Text())
+		}
+
+		// 2. Update Reaction
+		updatedContent := random.AlphaNumericString(t, 20)
+		updateReqBody := api.PutReactionJSONRequestBody{Content: updatedContent}
+		existingReaction := model.RollCallReaction{
+			Model:      gorm.Model{ID: reactionID},
+			UserID:     userID,
+			RollCallID: rollCallID,
+			Content:    originalContent,
+		}
+		updatedReaction := model.RollCallReaction{
+			Model:      gorm.Model{ID: reactionID},
+			UserID:     userID,
+			RollCallID: rollCallID,
+			Content:    updatedContent,
+		}
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(&existingReaction, nil).
+			Times(1)
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			UpdateRollCallReaction(gomock.Any(), reactionID, gomock.Any()).
+			Return(nil).
+			Times(1)
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(&updatedReaction, nil).
+			Times(1)
+
+		h.expect.PUT("/api/reactions/{reactionId}", reactionID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(updateReqBody).
+			Expect().
+			Status(http.StatusOK)
+
+		// SSEイベントの受信と検証 (Updated)
+		if assert.True(t, scanner.Scan()) {
+			line := scanner.Text()
+
+			if assert.True(
+				t,
+				strings.HasPrefix(line, eventStreamDataPrefix),
+				"line not start with 'data: '",
+				line,
+			) {
+				assert.JSONEq(
+					t,
+					fmt.Sprintf(
+						`{"id":%d,"type":"updated","userId":"%s","content":"%s"}`,
+						reactionID,
+						userID,
+						updatedContent,
+					),
+					strings.TrimPrefix(line, eventStreamDataPrefix),
+				)
+			}
+		}
+
+		if assert.True(t, scanner.Scan()) {
+			assert.Empty(t, scanner.Text())
+		}
+
+		// 3. Delete Reaction
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(&updatedReaction, nil).
+			Times(1)
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			DeleteRollCallReaction(gomock.Any(), reactionID).
+			Return(nil).
+			Times(1)
+
+		h.expect.DELETE("/api/reactions/{reactionId}", reactionID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusNoContent)
+
+			// SSEイベントの受信と検証 (Deleted)
+		if assert.True(t, scanner.Scan(), "should receive a line") {
+			line := scanner.Text()
+
+			if assert.True(
+				t,
+				strings.HasPrefix(line, eventStreamDataPrefix),
+				"line not start with 'data: '",
+				line,
+			) {
+				assert.JSONEq(
+					t,
+					fmt.Sprintf(`{"id":%d,"type":"deleted","userId":"%s"}`, reactionID, userID),
+					strings.TrimPrefix(line, eventStreamDataPrefix),
+				)
+			}
+		}
+
+		if assert.True(t, scanner.Scan()) {
+			assert.Empty(t, scanner.Text())
+		}
+	})
+
+	t.Run("Filtering", func(t *testing.T) {
+		t.Parallel()
+		h := setup(t)
+		rollCallID1 := uint(random.PositiveInt(t))
+		rollCallID2 := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		user := model.User{ID: userID}
+
+		// rollCallID1のストリームに接続
+		ctx, cancel := context.WithTimeout(t.Context(), 1*time.Second)
+
+		defer cancel()
+
+		req := httptest.NewRequestWithContext(
+			ctx,
+			http.MethodGet,
+			fmt.Sprintf("/api/roll-calls/%d/reactions/stream", rollCallID1),
+			nil,
+		)
+		rec := httptest.NewRecorder()
+
+		go func() {
+			h.e.ServeHTTP(rec, req)
+		}()
+
+		// レスポンスヘッダーの確認
+		assert.Eventually(t, func() bool {
+			return rec.Header().Get(echo.HeaderContentType) == "text/event-stream"
+		}, 500*time.Millisecond, 10*time.Millisecond, "content-type not text/event-stream", rec.Header().Get(echo.HeaderContentType))
+
+		// rollCallID2のイベントを発生させる
+		content := random.AlphaNumericString(t, 20)
+		createReqBody := api.PostRollCallReactionJSONRequestBody{Content: content}
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil).
+			Times(1)
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			CreateRollCallReaction(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ context.Context, reaction *model.RollCallReaction) error {
+				reaction.ID = uint(random.PositiveInt(t))
+				reaction.RollCallID = rollCallID2
+				reaction.Content = content
+				return nil
+			}).
+			Times(1)
+
+		h.expect.POST("/api/roll-calls/{rollCallId}/reactions", rollCallID2).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(createReqBody).
+			Expect().
+			Status(http.StatusCreated)
+
+		// ストリームにデータが流れてこないことを確認
+		// コンテキストがタイムアウトするまで待機
+		<-ctx.Done()
+
+		// レスポンスボディに何も書き込まれていないことを確認
+		body := rec.Body.String()
+		// SSEヘッダーのみでイベントデータは含まれていないことを確認
+		assert.Empty(t, body)
+	})
+
+	t.Run("Context Cancellation", func(t *testing.T) {
+		t.Parallel()
+		h := setup(t)
+		rollCallID := uint(random.PositiveInt(t))
+
+		ctx, cancel := context.WithCancel(t.Context())
+		req := httptest.NewRequestWithContext(
+			ctx,
+			http.MethodGet,
+			fmt.Sprintf("/api/roll-calls/%d/reactions/stream", rollCallID),
+			nil,
+		)
+		rec := httptest.NewRecorder()
+
+		done := make(chan struct{})
+		go func() {
+			h.e.ServeHTTP(rec, req)
+			close(done)
+		}()
+
+		// レスポンスヘッダーの確認
+		assert.Eventually(t, func() bool {
+			return rec.Header().Get(echo.HeaderContentType) == "text/event-stream"
+		}, time.Second, 10*time.Millisecond, "content-type not text/event-stream", rec.Header().Get(echo.HeaderContentType))
+
+		// コンテキストをキャンセル（クライアント切断をシミュレート）
+		cancel()
+
+		// ハンドラが正常に終了することを確認
+		select {
+		case <-done:
+			// 正常に終了
+		case <-time.After(2 * time.Second):
+			t.Error("handler should finish when context is cancelled")
+		}
 	})
 }

@@ -20,6 +20,9 @@ type testHandler struct {
 	repo                *mockrepository.MockRepository
 	notificationService *mockservice.MockNotificationService
 	traqService         *mockservice.MockTraqService
+	// 基本的にはexpectを使うこと。
+	// SSEなど、httpexpectでテストしづらいものをテストするときにのみ使用する
+	e *echo.Echo
 }
 
 func setup(t *testing.T) *testHandler {
@@ -50,6 +53,7 @@ func setup(t *testing.T) *testHandler {
 		repo:                repo,
 		notificationService: notificationService,
 		traqService:         traqService,
+		e:                   e,
 	}
 }
 
