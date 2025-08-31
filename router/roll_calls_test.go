@@ -1276,4 +1276,205 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 			t.Error("handler should finish when context is cancelled")
 		}
 	})
+
+	t.Run("Multiple Clients", func(t *testing.T) {
+		t.Parallel()
+		h := setup(t)
+		rollCallID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		user := model.User{ID: userID}
+
+		// 複数のクライアントを用意
+		const numClients = 3
+		reqs := make([]*http.Request, numClients)
+		recs := make([]*httptest.ResponseRecorder, numClients)
+		scanners := make([]*bufio.Scanner, numClients)
+		ctxs := make([]context.Context, numClients)
+		cancels := make([]context.CancelFunc, numClients)
+
+		// 各クライアントのSSEストリーム接続を準備
+		for i := range numClients {
+			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+			req := httptest.NewRequestWithContext(
+				ctx,
+				http.MethodGet,
+				fmt.Sprintf("/api/roll-calls/%d/reactions/stream", rollCallID),
+				nil,
+			)
+			rec := httptest.NewRecorder()
+
+			reqs[i] = req
+			recs[i] = rec
+			scanners[i] = bufio.NewScanner(rec.Body)
+			ctxs[i] = ctx
+			cancels[i] = cancel
+
+			// 各ハンドラをゴルーチンで実行
+			go func(idx int) {
+				h.e.ServeHTTP(recs[idx], reqs[idx])
+			}(i)
+		}
+
+		// クリーンアップ
+		defer func() {
+			for _, cancel := range cancels {
+				cancel()
+			}
+		}()
+
+		// 全てのクライアントのレスポンスヘッダーを確認
+		for i := range numClients {
+			assert.Eventually(t, func() bool {
+				return recs[i].Header().Get("Content-Type") == "text/event-stream"
+			}, 2*time.Second, 50*time.Millisecond, fmt.Sprintf("client %d content-type not text/event-stream", i), recs[i].Header().Get("Content-Type"))
+		}
+
+		// リアクション作成イベントを発生させる
+		originalContent := random.AlphaNumericString(t, 20)
+		createReqBody := api.PostRollCallReactionJSONRequestBody{Content: originalContent}
+		reactionID := uint(random.PositiveInt(t))
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil).
+			Times(1)
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			CreateRollCallReaction(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ context.Context, reaction *model.RollCallReaction) error {
+				reaction.ID = reactionID
+				reaction.UserID = userID
+				reaction.RollCallID = rollCallID
+				reaction.Content = originalContent
+				return nil
+			}).
+			Times(1)
+
+		h.expect.POST("/api/roll-calls/{rollCallId}/reactions", rollCallID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(createReqBody).
+			Expect().
+			Status(http.StatusCreated)
+
+		// 全てのクライアントが同じイベントを受信することを確認
+		expectedJSON := fmt.Sprintf(
+			`{"id":%d,"type":"created","userId":"%s","content":"%s"}`,
+			reactionID,
+			userID,
+			originalContent,
+		)
+
+		for i := range numClients {
+			if assert.True(
+				t,
+				scanners[i].Scan(),
+				fmt.Sprintf("client %d should receive a line", i),
+			) {
+				line := scanners[i].Text()
+
+				if assert.True(
+					t,
+					strings.HasPrefix(line, eventStreamDataPrefix),
+					fmt.Sprintf("client %d line not start with 'data: '", i),
+					line,
+				) {
+					assert.JSONEq(
+						t,
+						expectedJSON,
+						strings.TrimPrefix(line, eventStreamDataPrefix),
+						fmt.Sprintf("client %d should receive correct JSON", i),
+					)
+				}
+			}
+
+			if assert.True(
+				t,
+				scanners[i].Scan(),
+				fmt.Sprintf("client %d should receive an empty line", i),
+			) {
+				assert.Empty(
+					t,
+					scanners[i].Text(),
+					fmt.Sprintf("client %d second line should be empty", i),
+				)
+			}
+		}
+
+		// リアクション更新イベントを発生させる
+		updatedContent := random.AlphaNumericString(t, 20)
+		updateReqBody := api.PutReactionJSONRequestBody{Content: updatedContent}
+		existingReaction := model.RollCallReaction{
+			Model:      gorm.Model{ID: reactionID},
+			UserID:     userID,
+			RollCallID: rollCallID,
+			Content:    originalContent,
+		}
+		updatedReaction := model.RollCallReaction{
+			Model:      gorm.Model{ID: reactionID},
+			UserID:     userID,
+			RollCallID: rollCallID,
+			Content:    updatedContent,
+		}
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(&existingReaction, nil).
+			Times(1)
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			UpdateRollCallReaction(gomock.Any(), reactionID, gomock.Any()).
+			Return(nil).
+			Times(1)
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(&updatedReaction, nil).
+			Times(1)
+
+		h.expect.PUT("/api/reactions/{reactionId}", reactionID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(updateReqBody).
+			Expect().
+			Status(http.StatusOK)
+
+		// 全てのクライアントが更新イベントを受信することを確認
+		expectedUpdatedJSON := fmt.Sprintf(
+			`{"id":%d,"type":"updated","userId":"%s","content":"%s"}`,
+			reactionID,
+			userID,
+			updatedContent,
+		)
+
+		for i := range numClients {
+			if assert.True(
+				t,
+				scanners[i].Scan(),
+				fmt.Sprintf("client %d should receive update line", i),
+			) {
+				line := scanners[i].Text()
+
+				if assert.True(
+					t,
+					strings.HasPrefix(line, eventStreamDataPrefix),
+					fmt.Sprintf("client %d update line not start with 'data: '", i),
+					line,
+				) {
+					assert.JSONEq(
+						t,
+						expectedUpdatedJSON,
+						strings.TrimPrefix(line, eventStreamDataPrefix),
+						fmt.Sprintf("client %d should receive correct update JSON", i),
+					)
+				}
+			}
+
+			if assert.True(
+				t,
+				scanners[i].Scan(),
+				fmt.Sprintf("client %d should receive an empty line after update", i),
+			) {
+				assert.Empty(
+					t,
+					scanners[i].Text(),
+					fmt.Sprintf("client %d second line should be empty", i),
+				)
+			}
+		}
+	})
 }
