@@ -26,6 +26,7 @@ type Server struct {
 const maxReactionEventBuffer = 100
 
 func NewServer(
+	ctx context.Context,
 	repo repository.Repository,
 	notificationService service.NotificationService,
 	traqService service.TraqService,
@@ -36,7 +37,7 @@ func NewServer(
 		notificationService: notificationService,
 		traqService:         traqService,
 		reactionPubSub: genericpubsub.New[reactionEvent](
-			context.Background(),
+			ctx,
 			maxReactionEventBuffer,
 		),
 		isDev: isDev,

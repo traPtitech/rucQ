@@ -32,7 +32,7 @@ func setup(t *testing.T) *testHandler {
 	repo := mockrepository.NewMockRepository(ctrl)
 	traqService := mockservice.NewMockTraqService(ctrl)
 	notificationService := mockservice.NewMockNotificationService(ctrl)
-	server := NewServer(repo, notificationService, traqService, false)
+	server := NewServer(t.Context(), repo, notificationService, traqService, false)
 	e := echo.New()
 
 	api.RegisterHandlers(e, server)
