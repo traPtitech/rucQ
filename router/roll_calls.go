@@ -156,6 +156,23 @@ func (s *Server) PostRollCallReaction(
 			SetInternal(fmt.Errorf("failed to create roll call reaction: %w", err))
 	}
 
+	var eventData api.RollCallReactionEvent
+
+	if err := eventData.FromRollCallReactionCreatedEvent(api.RollCallReactionCreatedEvent{
+		Id:      int(reaction.ID),
+		Type:    api.Created,
+		UserId:  user.ID,
+		Content: reaction.Content,
+	}); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create event data: %w", err))
+	}
+
+	go s.reactionPubSub.Send(reactionEvent{
+		rollCallID: uint(rollCallID),
+		data:       eventData,
+	})
+
 	res, err := converter.Convert[api.RollCallReactionResponse](reaction)
 
 	if err != nil {
@@ -218,6 +235,23 @@ func (s *Server) PutReaction(
 			SetInternal(fmt.Errorf("failed to get updated roll call reaction: %w", err))
 	}
 
+	var eventData api.RollCallReactionEvent
+
+	if err := eventData.FromRollCallReactionUpdatedEvent(api.RollCallReactionUpdatedEvent{
+		Id:      int(updatedReaction.ID),
+		Type:    api.Updated,
+		UserId:  updatedReaction.UserID,
+		Content: updatedReaction.Content,
+	}); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create event data: %w", err))
+	}
+
+	go s.reactionPubSub.Send(reactionEvent{
+		rollCallID: uint(updatedReaction.RollCallID),
+		data:       eventData,
+	})
+
 	res, err := converter.Convert[api.RollCallReactionResponse](*updatedReaction)
 
 	if err != nil {
@@ -259,5 +293,51 @@ func (s *Server) DeleteReaction(
 			SetInternal(fmt.Errorf("failed to delete roll call reaction: %w", err))
 	}
 
+	var eventData api.RollCallReactionEvent
+
+	if err := eventData.FromRollCallReactionDeletedEvent(api.RollCallReactionDeletedEvent{
+		Id:     int(existingReaction.ID),
+		Type:   api.Deleted,
+		UserId: existingReaction.UserID,
+	}); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to create event data: %w", err))
+	}
+
+	go s.reactionPubSub.Send(reactionEvent{
+		rollCallID: uint(existingReaction.RollCallID),
+		data:       eventData,
+	})
+
 	return e.NoContent(http.StatusNoContent)
+}
+
+func (s *Server) StreamRollCallReactions(e echo.Context, rollCallID api.RollCallId) error {
+	res := e.Response()
+
+	res.Header().Set(echo.HeaderContentType, "text/event-stream")
+
+	sub := s.reactionPubSub.Subscribe(e.Request().Context(), maxReactionEventBuffer)
+
+	for event := range sub {
+		if event.rollCallID != uint(rollCallID) {
+			continue
+		}
+
+		b, err := event.data.MarshalJSON()
+
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError).
+				SetInternal(fmt.Errorf("failed to marshal event data: %w", err))
+		}
+
+		if _, err := fmt.Fprintf(res, "data: %s\n\n", b); err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError).
+				SetInternal(fmt.Errorf("failed to write event data: %w", err))
+		}
+
+		res.Flush()
+	}
+
+	return nil
 }

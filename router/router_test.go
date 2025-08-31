@@ -20,7 +20,9 @@ type testHandler struct {
 	repo                *mockrepository.MockRepository
 	notificationService *mockservice.MockNotificationService
 	traqService         *mockservice.MockTraqService
-	server              *httptest.Server
+	// 基本的にはexpectを使うこと。
+	// SSEなど、httpexpectでテストしづらいものをテストするときにのみ使用する
+	e *echo.Echo
 }
 
 func setup(t *testing.T) *testHandler {
@@ -30,7 +32,7 @@ func setup(t *testing.T) *testHandler {
 	repo := mockrepository.NewMockRepository(ctrl)
 	traqService := mockservice.NewMockTraqService(ctrl)
 	notificationService := mockservice.NewMockNotificationService(ctrl)
-	server := NewServer(repo, notificationService, traqService, false)
+	server := NewServer(t.Context(), repo, notificationService, traqService, false)
 	e := echo.New()
 
 	api.RegisterHandlers(e, server)
@@ -51,7 +53,7 @@ func setup(t *testing.T) *testHandler {
 		repo:                repo,
 		notificationService: notificationService,
 		traqService:         traqService,
-		server:              httptestServer,
+		e:                   e,
 	}
 }
 

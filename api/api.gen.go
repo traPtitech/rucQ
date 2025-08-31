@@ -139,6 +139,21 @@ const (
 	PutSingleChoiceQuestionRequestTypeSingle PutSingleChoiceQuestionRequestType = "single"
 )
 
+// Defines values for RollCallReactionCreatedEventType.
+const (
+	Created RollCallReactionCreatedEventType = "created"
+)
+
+// Defines values for RollCallReactionDeletedEventType.
+const (
+	Deleted RollCallReactionDeletedEventType = "deleted"
+)
+
+// Defines values for RollCallReactionUpdatedEventType.
+const (
+	Updated RollCallReactionUpdatedEventType = "updated"
+)
+
 // Defines values for SingleChoiceAnswerRequestType.
 const (
 	SingleChoiceAnswerRequestTypeSingle SingleChoiceAnswerRequestType = "single"
@@ -593,6 +608,38 @@ type QuestionResponseBase struct {
 	Title       string  `json:"title"`
 }
 
+// RollCallReactionCreatedEvent defines model for RollCallReactionCreatedEvent.
+type RollCallReactionCreatedEvent struct {
+	Content string                           `json:"content"`
+	Id      int                              `json:"id"`
+	Type    RollCallReactionCreatedEventType `json:"type"`
+	UserId  string                           `json:"userId"`
+}
+
+// RollCallReactionCreatedEventType defines model for RollCallReactionCreatedEvent.Type.
+type RollCallReactionCreatedEventType string
+
+// RollCallReactionDeletedEvent defines model for RollCallReactionDeletedEvent.
+type RollCallReactionDeletedEvent struct {
+	Id     int                              `json:"id"`
+	Type   RollCallReactionDeletedEventType `json:"type"`
+	UserId string                           `json:"userId"`
+}
+
+// RollCallReactionDeletedEventType defines model for RollCallReactionDeletedEvent.Type.
+type RollCallReactionDeletedEventType string
+
+// RollCallReactionEvent defines model for RollCallReactionEvent.
+type RollCallReactionEvent struct {
+	union json.RawMessage
+}
+
+// RollCallReactionEventBase defines model for RollCallReactionEventBase.
+type RollCallReactionEventBase struct {
+	Id     int    `json:"id"`
+	UserId string `json:"userId"`
+}
+
 // RollCallReactionRequest defines model for RollCallReactionRequest.
 type RollCallReactionRequest struct {
 	Content string `json:"content"`
@@ -604,6 +651,17 @@ type RollCallReactionResponse struct {
 	Id      int    `json:"id"`
 	UserId  string `json:"userId"`
 }
+
+// RollCallReactionUpdatedEvent defines model for RollCallReactionUpdatedEvent.
+type RollCallReactionUpdatedEvent struct {
+	Content string                           `json:"content"`
+	Id      int                              `json:"id"`
+	Type    RollCallReactionUpdatedEventType `json:"type"`
+	UserId  string                           `json:"userId"`
+}
+
+// RollCallReactionUpdatedEventType defines model for RollCallReactionUpdatedEvent.Type.
+type RollCallReactionUpdatedEventType string
 
 // RollCallRequest defines model for RollCallRequest.
 type RollCallRequest struct {
@@ -1871,6 +1929,94 @@ func (t QuestionResponse) MarshalJSON() ([]byte, error) {
 }
 
 func (t *QuestionResponse) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsRollCallReactionCreatedEvent returns the union data inside the RollCallReactionEvent as a RollCallReactionCreatedEvent
+func (t RollCallReactionEvent) AsRollCallReactionCreatedEvent() (RollCallReactionCreatedEvent, error) {
+	var body RollCallReactionCreatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRollCallReactionCreatedEvent overwrites any union data inside the RollCallReactionEvent as the provided RollCallReactionCreatedEvent
+func (t *RollCallReactionEvent) FromRollCallReactionCreatedEvent(v RollCallReactionCreatedEvent) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRollCallReactionCreatedEvent performs a merge with any union data inside the RollCallReactionEvent, using the provided RollCallReactionCreatedEvent
+func (t *RollCallReactionEvent) MergeRollCallReactionCreatedEvent(v RollCallReactionCreatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsRollCallReactionUpdatedEvent returns the union data inside the RollCallReactionEvent as a RollCallReactionUpdatedEvent
+func (t RollCallReactionEvent) AsRollCallReactionUpdatedEvent() (RollCallReactionUpdatedEvent, error) {
+	var body RollCallReactionUpdatedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRollCallReactionUpdatedEvent overwrites any union data inside the RollCallReactionEvent as the provided RollCallReactionUpdatedEvent
+func (t *RollCallReactionEvent) FromRollCallReactionUpdatedEvent(v RollCallReactionUpdatedEvent) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRollCallReactionUpdatedEvent performs a merge with any union data inside the RollCallReactionEvent, using the provided RollCallReactionUpdatedEvent
+func (t *RollCallReactionEvent) MergeRollCallReactionUpdatedEvent(v RollCallReactionUpdatedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsRollCallReactionDeletedEvent returns the union data inside the RollCallReactionEvent as a RollCallReactionDeletedEvent
+func (t RollCallReactionEvent) AsRollCallReactionDeletedEvent() (RollCallReactionDeletedEvent, error) {
+	var body RollCallReactionDeletedEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRollCallReactionDeletedEvent overwrites any union data inside the RollCallReactionEvent as the provided RollCallReactionDeletedEvent
+func (t *RollCallReactionEvent) FromRollCallReactionDeletedEvent(v RollCallReactionDeletedEvent) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRollCallReactionDeletedEvent performs a merge with any union data inside the RollCallReactionEvent, using the provided RollCallReactionDeletedEvent
+func (t *RollCallReactionEvent) MergeRollCallReactionDeletedEvent(v RollCallReactionDeletedEvent) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t RollCallReactionEvent) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *RollCallReactionEvent) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

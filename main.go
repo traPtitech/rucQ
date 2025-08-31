@@ -25,6 +25,8 @@ import (
 )
 
 func main() {
+	// TODO: graceful shutdownを実装する
+	ctx := context.Background()
 	e := echo.New()
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
@@ -129,8 +131,8 @@ func main() {
 	notificationService := service.NewNotificationService(repo, traqService)
 	schedulerService := service.NewSchedulerService(repo, traqService)
 
-	go schedulerService.Start(context.Background())
+	go schedulerService.Start(ctx)
 
-	api.RegisterHandlers(e, router.NewServer(repo, notificationService, traqService, isDev))
+	api.RegisterHandlers(e, router.NewServer(ctx, repo, notificationService, traqService, isDev))
 	log.Fatal(e.Start("0.0.0.0:8080"))
 }

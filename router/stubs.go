@@ -43,8 +43,3 @@ func (s *Server) GetImages(_ echo.Context, _ api.CampId) error {
 func (s *Server) GetImage(_ echo.Context, _ api.ImageId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetImage not implemented")
 }
-
-// StreamRollCallReactions 点呼のリアクションをストリーミング
-func (s *Server) StreamRollCallReactions(_ echo.Context, _ api.RollCallId) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "StreamRollCallReactions not implemented")
-}
