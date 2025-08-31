@@ -1356,7 +1356,7 @@ paths:
           content:
             text/event-stream:
               schema:
-                $ref: "#/components/schemas/RollCallReactionResponse"
+                $ref: "#/components/schemas/RollCallReactionEvent"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -2476,6 +2476,61 @@ components:
         - id
         - userId
         - content
+
+    RollCallReactionEventBase:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+      required:
+        - id
+        - userId
+    RollCallReactionCreatedEvent:
+      allOf:
+        - $ref: "#/components/schemas/RollCallReactionEventBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - created
+            content:
+              type: string
+          required:
+            - type
+            - content
+    RollCallReactionUpdatedEvent:
+      allOf:
+        - $ref: "#/components/schemas/RollCallReactionEventBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - updated
+            content:
+              type: string
+          required:
+            - type
+            - content
+    RollCallReactionDeletedEvent:
+      allOf:
+        - $ref: "#/components/schemas/RollCallReactionEventBase"
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - deleted
+          required:
+            - type
+    RollCallReactionEvent:
+      oneOf:
+        - $ref: "#/components/schemas/RollCallReactionCreatedEvent"
+        - $ref: "#/components/schemas/RollCallReactionUpdatedEvent"
+        - $ref: "#/components/schemas/RollCallReactionDeletedEvent"
 
 tags:
   - name: Camps
