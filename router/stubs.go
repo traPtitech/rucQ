@@ -29,11 +29,6 @@ func (s *Server) AdminPostImage(_ echo.Context, _ api.CampId, _ api.AdminPostIma
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostImage not implemented")
 }
 
-// AdminGetUser ユーザー詳細を取得（管理者用）
-func (s *Server) AdminGetUser(_ echo.Context, _ string, _ api.AdminGetUserParams) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "AdminGetUser not implemented")
-}
-
 // GetImages 画像の一覧を取得
 func (s *Server) GetImages(_ echo.Context, _ api.CampId) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "GetImages not implemented")

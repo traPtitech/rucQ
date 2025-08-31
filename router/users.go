@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -8,6 +9,8 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
+	"github.com/traPtitech/rucQ/converter"
+	"github.com/traPtitech/rucQ/service"
 )
 
 func (s *Server) GetMe(e echo.Context, params api.GetMeParams) error {
@@ -26,6 +29,53 @@ func (s *Server) GetMe(e echo.Context, params api.GetMeParams) error {
 	}
 
 	return e.JSON(http.StatusOK, &response)
+}
+
+func (s *Server) AdminGetUser(
+	e echo.Context,
+	userID api.UserId,
+	params api.AdminGetUserParams,
+) error {
+	operator, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+
+	if err != nil {
+		return echo.ErrInternalServerError.
+			SetInternal(fmt.Errorf("failed to get or create operator: %w", err))
+	}
+
+	if !operator.IsStaff {
+		return echo.ErrForbidden
+	}
+
+	targetUserID, err := s.traqService.GetCanonicalUserName(e.Request().Context(), userID)
+
+	if err != nil {
+		if errors.Is(err, service.ErrUserNotFound) {
+			return echo.ErrNotFound
+		}
+
+		return echo.ErrInternalServerError.SetInternal(
+			fmt.Errorf("failed to get canonical user name: %w", err),
+		)
+	}
+
+	targetUser, err := s.repo.GetOrCreateUser(e.Request().Context(), targetUserID)
+
+	if err != nil {
+		return echo.ErrInternalServerError.SetInternal(
+			fmt.Errorf("failed to get or create target user: %w", err),
+		)
+	}
+
+	res, err := converter.Convert[api.UserResponse](targetUser)
+
+	if err != nil {
+		return echo.ErrInternalServerError.SetInternal(
+			fmt.Errorf("failed to convert target user: %w", err),
+		)
+	}
+
+	return e.JSON(http.StatusOK, &res)
 }
 
 func (s *Server) GetStaffs(e echo.Context) error {
