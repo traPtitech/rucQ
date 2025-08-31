@@ -339,5 +339,5 @@ func (s *Server) StreamRollCallReactions(e echo.Context, rollCallID api.RollCall
 		res.Flush()
 	}
 
-	return e.NoContent(http.StatusOK)
+	return nil
 }
