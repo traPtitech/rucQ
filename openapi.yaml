@@ -1190,39 +1190,6 @@ paths:
           $ref: "#/components/responses/InternalServerError"
 
   /api/admin/images/{imageId}:
-    put:
-      summary: 画像を更新（管理者用）
-      tags:
-        - Images
-      operationId: adminPutImage
-      parameters:
-        - $ref: "#/components/parameters/ImageId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file:
-                  type: string
-                  format: binary
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ImageResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalServerError"
     delete:
       summary: 画像を削除（管理者用）
       tags:
