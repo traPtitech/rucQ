@@ -114,7 +114,7 @@ services:
         condition: service_healthy
 
   traq_ui:
-    image: ghcr.io/traptitech/traq-ui:3.27.1
+    image: ghcr.io/traptitech/traq-ui:3.27.3
     volumes:
       - type: volume
         source: traq_override
