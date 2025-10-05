@@ -316,6 +316,7 @@ func (s *Server) StreamRollCallReactions(e echo.Context, rollCallID api.RollCall
 	res := e.Response()
 
 	res.Header().Set(echo.HeaderContentType, "text/event-stream")
+	res.Flush()
 
 	sub := s.reactionPubSub.Subscribe(e.Request().Context(), maxReactionEventBuffer)
 
