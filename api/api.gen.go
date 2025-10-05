@@ -909,17 +909,6 @@ type AdminDeleteImageParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
-// AdminPutImageMultipartBody defines parameters for AdminPutImage.
-type AdminPutImageMultipartBody struct {
-	File *openapi_types.File `json:"file,omitempty"`
-}
-
-// AdminPutImageParams defines parameters for AdminPutImage.
-type AdminPutImageParams struct {
-	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
-	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
-}
-
 // AdminPutPaymentParams defines parameters for AdminPutPayment.
 type AdminPutPaymentParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -1135,9 +1124,6 @@ type AdminPostRollCallJSONRequestBody = RollCallRequest
 
 // AdminPostRoomGroupJSONRequestBody defines body for AdminPostRoomGroup for application/json ContentType.
 type AdminPostRoomGroupJSONRequestBody = RoomGroupRequest
-
-// AdminPutImageMultipartRequestBody defines body for AdminPutImage for multipart/form-data ContentType.
-type AdminPutImageMultipartRequestBody AdminPutImageMultipartBody
 
 // AdminPutPaymentJSONRequestBody defines body for AdminPutPayment for application/json ContentType.
 type AdminPutPaymentJSONRequestBody = PaymentRequest
@@ -2062,9 +2048,6 @@ type ServerInterface interface {
 	// 画像を削除（管理者用）
 	// (DELETE /api/admin/images/{imageId})
 	AdminDeleteImage(ctx echo.Context, imageId ImageId, params AdminDeleteImageParams) error
-	// 画像を更新（管理者用）
-	// (PUT /api/admin/images/{imageId})
-	AdminPutImage(ctx echo.Context, imageId ImageId, params AdminPutImageParams) error
 	// 支払い情報を更新（管理者用）
 	// (PUT /api/admin/payments/{paymentId})
 	AdminPutPayment(ctx echo.Context, paymentId PaymentId, params AdminPutPaymentParams) error
@@ -2664,42 +2647,6 @@ func (w *ServerInterfaceWrapper) AdminDeleteImage(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.AdminDeleteImage(ctx, imageId, params)
-	return err
-}
-
-// AdminPutImage converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminPutImage(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "imageId" -------------
-	var imageId ImageId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "imageId", ctx.Param("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter imageId: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminPutImageParams
-
-	headers := ctx.Request().Header
-	// ------------- Optional header parameter "X-Forwarded-User" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
-		var XForwardedUser XForwardedUser
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
-		}
-
-		params.XForwardedUser = &XForwardedUser
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminPutImage(ctx, imageId, params)
 	return err
 }
 
@@ -4000,7 +3947,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/admin/camps/:campId/roll-calls", wrapper.AdminPostRollCall)
 	router.POST(baseURL+"/api/admin/camps/:campId/room-groups", wrapper.AdminPostRoomGroup)
 	router.DELETE(baseURL+"/api/admin/images/:imageId", wrapper.AdminDeleteImage)
-	router.PUT(baseURL+"/api/admin/images/:imageId", wrapper.AdminPutImage)
 	router.PUT(baseURL+"/api/admin/payments/:paymentId", wrapper.AdminPutPayment)
 	router.DELETE(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminDeleteQuestionGroup)
 	router.PUT(baseURL+"/api/admin/question-groups/:questionGroupId", wrapper.AdminPutQuestionGroupMetadata)

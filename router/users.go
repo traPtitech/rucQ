@@ -10,7 +10,7 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/converter"
-	"github.com/traPtitech/rucQ/service"
+	"github.com/traPtitech/rucQ/service/traq"
 )
 
 func (s *Server) GetMe(e echo.Context, params api.GetMeParams) error {
@@ -50,7 +50,7 @@ func (s *Server) AdminGetUser(
 	targetUserID, err := s.traqService.GetCanonicalUserName(e.Request().Context(), userID)
 
 	if err != nil {
-		if errors.Is(err, service.ErrUserNotFound) {
+		if errors.Is(err, traq.ErrUserNotFound) {
 			return echo.ErrNotFound
 		}
 

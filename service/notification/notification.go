@@ -1,5 +1,5 @@
-//go:generate go tool mockgen -source=$GOFILE -destination=mockservice/$GOFILE -package=mockservice
-package service
+//go:generate go tool mockgen -source=$GOFILE -destination=mocknotification/notification.go -package=mocknotification
+package notification
 
 import (
 	"context"

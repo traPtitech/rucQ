@@ -1,4 +1,4 @@
-package service
+package notification
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository/mockrepository"
-	"github.com/traPtitech/rucQ/service/mockservice"
+	"github.com/traPtitech/rucQ/service/traq/mocktraq"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -34,7 +34,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		newContent := random.AlphaNumericString(t, 50)
@@ -70,7 +70,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		oldContent := random.AlphaNumericString(t, 40)
@@ -114,7 +114,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		newNumber := random.Float64(t)
@@ -155,7 +155,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		oldNumber := random.Float64(t)
@@ -209,7 +209,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		newOption := model.Option{Content: random.AlphaNumericString(t, 20)}
@@ -245,7 +245,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		oldOption := model.Option{Content: random.AlphaNumericString(t, 15)}
@@ -289,7 +289,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		optionA := random.AlphaNumericString(t, 15)
@@ -331,7 +331,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		oldOptionContent := random.AlphaNumericString(t, 15)
@@ -375,7 +375,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		newContent := random.AlphaNumericString(t, 30)
@@ -402,7 +402,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		newAnswer := model.Answer{
@@ -428,7 +428,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		newContent := random.AlphaNumericString(t, 30)
@@ -462,7 +462,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		newAnswer := model.Answer{
@@ -488,7 +488,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		newNumber := random.Float64(t)
@@ -522,7 +522,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		newAnswer := model.Answer{
@@ -548,7 +548,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		oldAnswer := &model.Answer{
@@ -582,7 +582,7 @@ func TestNotificationServiceImpl_SendAnswerChangeMessage(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		repo := mockrepository.NewMockRepository(ctrl)
-		traqService := mockservice.NewMockTraqService(ctrl)
+		traqService := mocktraq.NewMockTraqService(ctrl)
 		s := NewNotificationService(repo, traqService)
 
 		newContent := random.AlphaNumericString(t, 30)

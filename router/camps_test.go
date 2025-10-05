@@ -15,7 +15,7 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
-	"github.com/traPtitech/rucQ/service"
+	"github.com/traPtitech/rucQ/service/traq"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -743,7 +743,7 @@ func TestAdminAddCampParticipant(t *testing.T) {
 			Times(1)
 		h.traqService.EXPECT().
 			GetCanonicalUserName(gomock.Any(), targetUserID).
-			Return("", service.ErrUserNotFound).
+			Return("", traq.ErrUserNotFound).
 			Times(1)
 
 		req := api.AdminAddCampParticipantJSONRequestBody{

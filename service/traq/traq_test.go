@@ -1,4 +1,4 @@
-package service
+package traq
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 	}
 
 	composeStack, err := compose.NewDockerComposeWith(
-		compose.WithStackFiles("../compose.yaml"),
+		compose.WithStackFiles("../../compose.yaml"),
 	)
 
 	if err != nil {

@@ -12,14 +12,15 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/repository/mockrepository"
-	"github.com/traPtitech/rucQ/service/mockservice"
+	"github.com/traPtitech/rucQ/service/notification/mocknotification"
+	"github.com/traPtitech/rucQ/service/traq/mocktraq"
 )
 
 type testHandler struct {
 	expect              *httpexpect.Expect
 	repo                *mockrepository.MockRepository
-	notificationService *mockservice.MockNotificationService
-	traqService         *mockservice.MockTraqService
+	notificationService *mocknotification.MockNotificationService
+	traqService         *mocktraq.MockTraqService
 	// 基本的にはexpectを使うこと。
 	// SSEなど、httpexpectでテストしづらいものをテストするときにのみ使用する
 	e *echo.Echo
@@ -30,8 +31,8 @@ func setup(t *testing.T) *testHandler {
 
 	ctrl := gomock.NewController(t)
 	repo := mockrepository.NewMockRepository(ctrl)
-	traqService := mockservice.NewMockTraqService(ctrl)
-	notificationService := mockservice.NewMockNotificationService(ctrl)
+	traqService := mocktraq.NewMockTraqService(ctrl)
+	notificationService := mocknotification.NewMockNotificationService(ctrl)
 	server := NewServer(t.Context(), repo, notificationService, traqService, false)
 	e := echo.New()
 

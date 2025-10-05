@@ -1,4 +1,4 @@
-package service
+package scheduler
 
 import (
 	"context"
@@ -12,22 +12,22 @@ import (
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository/mockrepository"
-	"github.com/traPtitech/rucQ/service/mockservice"
+	"github.com/traPtitech/rucQ/service/traq/mocktraq"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
 type schedulerTestSetup struct {
 	scheduler *schedulerServiceImpl
 	mockRepo  *mockrepository.MockRepository
-	mockTraq  *mockservice.MockTraqService
+	mockTraq  *mocktraq.MockTraqService
 }
 
-func setupSchedulerTest(t *testing.T) *schedulerTestSetup {
+func setup(t *testing.T) *schedulerTestSetup {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
 	mockRepo := mockrepository.NewMockRepository(ctrl)
-	mockTraq := mockservice.NewMockTraqService(ctrl)
+	mockTraq := mocktraq.NewMockTraqService(ctrl)
 	scheduler := NewSchedulerService(mockRepo, mockTraq)
 
 	return &schedulerTestSetup{
@@ -43,7 +43,7 @@ func TestSchedulerServiceImpl_processReadyMessages(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
-		s := setupSchedulerTest(t)
+		s := setup(t)
 
 		messages := []model.Message{
 			{
@@ -79,7 +79,7 @@ func TestSchedulerServiceImpl_processReadyMessages(t *testing.T) {
 	t.Run("Send Message Error", func(t *testing.T) {
 		t.Parallel()
 
-		s := setupSchedulerTest(t)
+		s := setup(t)
 
 		messages := []model.Message{
 			{
@@ -108,7 +108,7 @@ func TestSchedulerServiceImpl_processReadyMessages(t *testing.T) {
 	t.Run("Get Messages Error", func(t *testing.T) {
 		t.Parallel()
 
-		setup := setupSchedulerTest(t)
+		setup := setup(t)
 
 		setup.mockRepo.MockMessageRepository.EXPECT().GetReadyToSendMessages(gomock.Any()).
 			Return(nil, errors.New("database error")).Times(1)
@@ -130,7 +130,7 @@ func TestSchedulerServiceImpl_Start(t *testing.T) {
 		t.Parallel()
 
 		synctest.Test(t, func(t *testing.T) {
-			s := setupSchedulerTest(t)
+			s := setup(t)
 
 			// processReadyMessagesが2回呼ばれることを期待（2回のtick）
 			s.mockRepo.MockMessageRepository.EXPECT().
@@ -160,7 +160,7 @@ func TestSchedulerServiceImpl_Start(t *testing.T) {
 		t.Parallel()
 
 		synctest.Test(t, func(t *testing.T) {
-			s := setupSchedulerTest(t)
+			s := setup(t)
 
 			// processReadyMessagesが呼ばれないことを期待（即座にキャンセル）
 			s.mockRepo.MockMessageRepository.EXPECT().
@@ -182,7 +182,7 @@ func TestSchedulerServiceImpl_Start(t *testing.T) {
 		t.Parallel()
 
 		synctest.Test(t, func(t *testing.T) {
-			s := setupSchedulerTest(t)
+			s := setup(t)
 
 			messages := []model.Message{
 				{

@@ -7,7 +7,8 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/repository"
-	"github.com/traPtitech/rucQ/service"
+	"github.com/traPtitech/rucQ/service/notification"
+	"github.com/traPtitech/rucQ/service/traq"
 )
 
 type reactionEvent struct {
@@ -17,8 +18,8 @@ type reactionEvent struct {
 
 type Server struct {
 	repo                repository.Repository
-	notificationService service.NotificationService
-	traqService         service.TraqService
+	notificationService notification.NotificationService
+	traqService         traq.TraqService
 	reactionPubSub      *genericpubsub.PubSub[reactionEvent]
 	isDev               bool
 }
@@ -28,8 +29,8 @@ const maxReactionEventBuffer = 100
 func NewServer(
 	ctx context.Context,
 	repo repository.Repository,
-	notificationService service.NotificationService,
-	traqService service.TraqService,
+	notificationService notification.NotificationService,
+	traqService traq.TraqService,
 	isDev bool,
 ) *Server {
 	return &Server{

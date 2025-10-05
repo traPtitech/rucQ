@@ -1,4 +1,4 @@
-package service
+package notification
 
 import (
 	"context"
@@ -8,16 +8,17 @@ import (
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
+	"github.com/traPtitech/rucQ/service/traq"
 )
 
 type notificationServiceImpl struct {
 	repo        repository.Repository
-	traqService TraqService
+	traqService traq.TraqService
 }
 
 func NewNotificationService(
 	repo repository.Repository,
-	traqService TraqService,
+	traqService traq.TraqService,
 ) *notificationServiceImpl {
 	return &notificationServiceImpl{
 		repo:        repo,
