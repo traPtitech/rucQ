@@ -14,7 +14,7 @@ import (
 	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
-	"github.com/traPtitech/rucQ/service"
+	"github.com/traPtitech/rucQ/service/traq"
 )
 
 func (s *Server) GetCamps(e echo.Context) error {
@@ -280,7 +280,7 @@ func (s *Server) AdminAddCampParticipant(
 	targetUserName, err := s.traqService.GetCanonicalUserName(e.Request().Context(), req.UserId)
 
 	if err != nil {
-		if errors.Is(err, service.ErrUserNotFound) {
+		if errors.Is(err, traq.ErrUserNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "User not found")
 		}
 

@@ -1,4 +1,4 @@
-package service
+package scheduler
 
 import (
 	"context"
@@ -12,14 +12,14 @@ import (
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository/mockrepository"
-	"github.com/traPtitech/rucQ/service/mockservice"
+	"github.com/traPtitech/rucQ/service/traq/mocktraq"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
 type schedulerTestSetup struct {
 	scheduler *schedulerServiceImpl
 	mockRepo  *mockrepository.MockRepository
-	mockTraq  *mockservice.MockTraqService
+	mockTraq  *mocktraq.MockTraqService
 }
 
 func setupSchedulerTest(t *testing.T) *schedulerTestSetup {
@@ -27,7 +27,7 @@ func setupSchedulerTest(t *testing.T) *schedulerTestSetup {
 
 	ctrl := gomock.NewController(t)
 	mockRepo := mockrepository.NewMockRepository(ctrl)
-	mockTraq := mockservice.NewMockTraqService(ctrl)
+	mockTraq := mocktraq.NewMockTraqService(ctrl)
 	scheduler := NewSchedulerService(mockRepo, mockTraq)
 
 	return &schedulerTestSetup{

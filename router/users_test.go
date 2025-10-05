@@ -8,7 +8,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/traPtitech/rucQ/model"
-	"github.com/traPtitech/rucQ/service"
+	"github.com/traPtitech/rucQ/service/traq"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -97,7 +97,7 @@ func TestServer_AdminGetUser(t *testing.T) {
 			Times(1)
 		h.traqService.EXPECT().
 			GetCanonicalUserName(gomock.Any(), targetUserID).
-			Return("", service.ErrUserNotFound).
+			Return("", traq.ErrUserNotFound).
 			Times(1)
 
 		h.expect.GET("/api/admin/users/{userId}", targetUserID).

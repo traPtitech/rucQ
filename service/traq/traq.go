@@ -1,5 +1,5 @@
-//go:generate go tool mockgen -source=$GOFILE -destination=mockservice/$GOFILE -package=mockservice
-package service
+//go:generate go tool mockgen -source=$GOFILE -destination=mocktraq/traq.go -package=mocktraq
+package traq
 
 import (
 	"context"

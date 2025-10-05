@@ -21,7 +21,9 @@ import (
 	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/repository/gormrepository"
 	"github.com/traPtitech/rucQ/router"
-	"github.com/traPtitech/rucQ/service"
+	"github.com/traPtitech/rucQ/service/notification"
+	"github.com/traPtitech/rucQ/service/scheduler"
+	"github.com/traPtitech/rucQ/service/traq"
 )
 
 func main() {
@@ -127,9 +129,9 @@ func main() {
 
 	traqBaseURL := cmp.Or(os.Getenv("TRAQ_API_BASE_URL"), "https://q.trap.jp/api/v3")
 	botAccessToken := os.Getenv("TRAQ_BOT_ACCESS_TOKEN")
-	traqService := service.NewTraqService(traqBaseURL, botAccessToken)
-	notificationService := service.NewNotificationService(repo, traqService)
-	schedulerService := service.NewSchedulerService(repo, traqService)
+	traqService := traq.NewTraqService(traqBaseURL, botAccessToken)
+	notificationService := notification.NewNotificationService(repo, traqService)
+	schedulerService := scheduler.NewSchedulerService(repo, traqService)
 
 	go schedulerService.Start(ctx)
 

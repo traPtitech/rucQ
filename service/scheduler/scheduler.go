@@ -1,5 +1,5 @@
-//go:generate go tool mockgen -source=$GOFILE -destination=mockservice/$GOFILE -package=mockservice
-package service
+//go:generate go tool mockgen -source=$GOFILE -destination=mockscheduler/scheduler.go -package=mockscheduler
+package scheduler
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
+	"github.com/traPtitech/rucQ/service/traq"
 )
 
 // SchedulerService はメッセージ送信スケジューリングを管理するサービスです
@@ -18,14 +19,14 @@ type SchedulerService interface {
 
 type schedulerServiceImpl struct {
 	repo        repository.Repository
-	traqService TraqService
+	traqService traq.TraqService
 	interval    time.Duration
 }
 
 // NewSchedulerService はSchedulerServiceの新しいインスタンスを作成します
 func NewSchedulerService(
 	repo repository.Repository,
-	traqService TraqService,
+	traqService traq.TraqService,
 ) *schedulerServiceImpl {
 	return &schedulerServiceImpl{
 		repo:        repo,
