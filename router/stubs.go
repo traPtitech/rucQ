@@ -19,7 +19,6 @@ func (s *Server) AdminDeleteImage(
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminDeleteImage not implemented")
 }
 
-
 // AdminPostImage 画像をアップロード（管理者用）
 func (s *Server) AdminPostImage(_ echo.Context, _ api.CampId, _ api.AdminPostImageParams) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "AdminPostImage not implemented")
