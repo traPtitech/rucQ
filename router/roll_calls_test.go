@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gorm.io/gorm"
 
@@ -1006,26 +1008,27 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 
 		defer cancel()
 
-		req := httptest.NewRequestWithContext(
+		req, err := http.NewRequestWithContext(
 			ctx,
 			http.MethodGet,
-			fmt.Sprintf("/api/roll-calls/%d/reactions/stream", rollCallID),
+			fmt.Sprintf("%s/api/roll-calls/%d/reactions/stream", h.testServerURL, rollCallID),
 			nil,
 		)
-		rec := httptest.NewRecorder()
 
-		// SSEハンドラを非同期で実行
-		go func() {
-			h.e.ServeHTTP(rec, req)
+		require.NoError(t, err)
+
+		res, err := http.DefaultClient.Do(req)
+
+		require.NoError(t, err)
+
+		defer func() {
+			require.NoError(t, res.Body.Close())
 		}()
 
-		// レスポンスヘッダーの確認
-		assert.Eventually(t, func() bool {
-			return rec.Header().Get(echo.HeaderContentType) == "text/event-stream"
-		}, 2*time.Second, 50*time.Millisecond, "content-type not text/event-stream", rec.Header().Get(echo.HeaderContentType))
+		assert.Equal(t, "text/event-stream", res.Header.Get(echo.HeaderContentType))
 
 		// イベントを読み取るためのスキャナ
-		scanner := bufio.NewScanner(rec.Body)
+		scanner := bufio.NewScanner(res.Body)
 
 		// 1. Create Reaction
 		originalContent := random.AlphaNumericString(t, 20)
@@ -1190,22 +1193,24 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 
 		defer cancel()
 
-		req := httptest.NewRequestWithContext(
+		req, err := http.NewRequestWithContext(
 			ctx,
 			http.MethodGet,
-			fmt.Sprintf("/api/roll-calls/%d/reactions/stream", rollCallID1),
+			fmt.Sprintf("%s/api/roll-calls/%d/reactions/stream", h.testServerURL, rollCallID1),
 			nil,
 		)
-		rec := httptest.NewRecorder()
 
-		go func() {
-			h.e.ServeHTTP(rec, req)
+		require.NoError(t, err)
+
+		res, err := http.DefaultClient.Do(req)
+
+		require.NoError(t, err)
+
+		defer func() {
+			require.NoError(t, res.Body.Close())
 		}()
 
-		// レスポンスヘッダーの確認
-		assert.Eventually(t, func() bool {
-			return rec.Header().Get(echo.HeaderContentType) == "text/event-stream"
-		}, 500*time.Millisecond, 10*time.Millisecond, "content-type not text/event-stream", rec.Header().Get(echo.HeaderContentType))
+		assert.Equal(t, "text/event-stream", res.Header.Get(echo.HeaderContentType))
 
 		// rollCallID2のイベントを発生させる
 		content := random.AlphaNumericString(t, 20)
@@ -1231,11 +1236,10 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 			Status(http.StatusCreated)
 
 		// ストリームにデータが流れてこないことを確認
-		// コンテキストがタイムアウトするまで待機
-		<-ctx.Done()
+		body, err := io.ReadAll(res.Body)
 
-		// レスポンスボディに何も書き込まれていないことを確認
-		body := rec.Body.String()
+		require.ErrorIs(t, err, context.DeadlineExceeded)
+
 		// SSEヘッダーのみでイベントデータは含まれていないことを確認
 		assert.Empty(t, body)
 	})
@@ -1256,11 +1260,13 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 
 		done := make(chan struct{})
 		go func() {
+			// ハンドラが終了したことを確認するためにServeHTTPとchannelを使用
 			h.e.ServeHTTP(rec, req)
 			close(done)
 		}()
 
-		// レスポンスヘッダーの確認
+		// ResponseRecorderだとハンドラがflushする前にヘッダーを取得してしまうことがあるため、Eventuallyで待機する
+		// cancel後にヘッダーを確認するという手もあるが、切断前に正しくヘッダーが設定されることを確認するためこうしている
 		assert.Eventually(t, func() bool {
 			return rec.Header().Get(echo.HeaderContentType) == "text/event-stream"
 		}, time.Second, 10*time.Millisecond, "content-type not text/event-stream", rec.Header().Get(echo.HeaderContentType))
@@ -1273,7 +1279,7 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 		case <-done:
 			// 正常に終了
 		case <-time.After(2 * time.Second):
-			t.Error("handler should finish when context is cancelled")
+			assert.Fail(t, "handler should finish when context is cancelled")
 		}
 	})
 
@@ -1286,48 +1292,42 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 
 		// 複数のクライアントを用意
 		const numClients = 3
-		reqs := make([]*http.Request, numClients)
-		recs := make([]*httptest.ResponseRecorder, numClients)
 		scanners := make([]*bufio.Scanner, numClients)
-		ctxs := make([]context.Context, numClients)
+		resBodies := make([]io.Closer, numClients)
 		cancels := make([]context.CancelFunc, numClients)
 
 		// 各クライアントのSSEストリーム接続を準備
 		for i := range numClients {
 			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
-			req := httptest.NewRequestWithContext(
+			req, err := http.NewRequestWithContext(
 				ctx,
 				http.MethodGet,
-				fmt.Sprintf("/api/roll-calls/%d/reactions/stream", rollCallID),
+				fmt.Sprintf("%s/api/roll-calls/%d/reactions/stream", h.testServerURL, rollCallID),
 				nil,
 			)
-			rec := httptest.NewRecorder()
 
-			reqs[i] = req
-			recs[i] = rec
-			scanners[i] = bufio.NewScanner(rec.Body)
-			ctxs[i] = ctx
+			require.NoError(t, err)
+
+			res, err := http.DefaultClient.Do(req)
+
+			require.NoError(t, err)
+			assert.Equal(t, "text/event-stream", res.Header.Get(echo.HeaderContentType))
+
+			scanners[i] = bufio.NewScanner(res.Body)
+			resBodies[i] = res.Body
 			cancels[i] = cancel
-
-			// 各ハンドラをゴルーチンで実行
-			go func(idx int) {
-				h.e.ServeHTTP(recs[idx], reqs[idx])
-			}(i)
 		}
 
 		// クリーンアップ
 		defer func() {
+			for _, body := range resBodies {
+				require.NoError(t, body.Close())
+			}
+
 			for _, cancel := range cancels {
 				cancel()
 			}
 		}()
-
-		// 全てのクライアントのレスポンスヘッダーを確認
-		for i := range numClients {
-			assert.Eventually(t, func() bool {
-				return recs[i].Header().Get("Content-Type") == "text/event-stream"
-			}, 2*time.Second, 50*time.Millisecond, fmt.Sprintf("client %d content-type not text/event-stream", i), recs[i].Header().Get("Content-Type"))
-		}
 
 		// リアクション作成イベントを発生させる
 		originalContent := random.AlphaNumericString(t, 20)
@@ -1368,36 +1368,38 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 				scanners[i].Scan,
 				2*time.Second,
 				50*time.Millisecond,
-				fmt.Sprintf("client %d should receive line", i),
+				"client %d should receive created event line 1",
+				i,
 			) {
 				line := scanners[i].Text()
-
 				if assert.True(
 					t,
 					strings.HasPrefix(line, eventStreamDataPrefix),
-					fmt.Sprintf("client %d line not start with 'data: '", i),
-					line,
+					"client %d line not start with 'data: '",
+					i,
 				) {
 					assert.JSONEq(
 						t,
 						expectedJSON,
 						strings.TrimPrefix(line, eventStreamDataPrefix),
-						fmt.Sprintf("client %d should receive correct JSON", i),
+						"client %d should receive correct created JSON",
+						i,
 					)
 				}
 			}
-
 			if assert.Eventually(
 				t,
 				scanners[i].Scan,
 				2*time.Second,
 				50*time.Millisecond,
-				fmt.Sprintf("client %d should receive line", i),
+				"client %d should receive created event line 2",
+				i,
 			) {
 				assert.Empty(
 					t,
 					scanners[i].Text(),
-					fmt.Sprintf("client %d second line should be empty", i),
+					"client %d second line should be empty",
+					i,
 				)
 			}
 		}
@@ -1451,21 +1453,23 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 				scanners[i].Scan,
 				2*time.Second,
 				50*time.Millisecond,
-				fmt.Sprintf("client %d should receive line", i),
+				"client %d should receive updated event line 1",
+				i,
 			) {
 				line := scanners[i].Text()
 
 				if assert.True(
 					t,
 					strings.HasPrefix(line, eventStreamDataPrefix),
-					fmt.Sprintf("client %d update line not start with 'data: '", i),
-					line,
+					"client %d update line not start with 'data: '",
+					i,
 				) {
 					assert.JSONEq(
 						t,
 						expectedUpdatedJSON,
 						strings.TrimPrefix(line, eventStreamDataPrefix),
-						fmt.Sprintf("client %d should receive correct update JSON", i),
+						"client %d should receive correct update JSON",
+						i,
 					)
 				}
 			}
@@ -1475,12 +1479,14 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 				scanners[i].Scan,
 				2*time.Second,
 				50*time.Millisecond,
-				fmt.Sprintf("client %d should receive line", i),
+				"client %d should receive updated event line 2",
+				i,
 			) {
 				assert.Empty(
 					t,
 					scanners[i].Text(),
-					fmt.Sprintf("client %d second line should be empty", i),
+					"client %d second update line should be empty",
+					i,
 				)
 			}
 		}

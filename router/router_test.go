@@ -23,7 +23,8 @@ type testHandler struct {
 	traqService         *mocktraq.MockTraqService
 	// 基本的にはexpectを使うこと。
 	// SSEなど、httpexpectでテストしづらいものをテストするときにのみ使用する
-	e *echo.Echo
+	e             *echo.Echo
+	testServerURL string
 }
 
 func setup(t *testing.T) *testHandler {
@@ -55,6 +56,7 @@ func setup(t *testing.T) *testHandler {
 		notificationService: notificationService,
 		traqService:         traqService,
 		e:                   e,
+		testServerURL:       httptestServer.URL,
 	}
 }
 
