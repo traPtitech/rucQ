@@ -320,25 +320,33 @@ func (s *Server) StreamRollCallReactions(e echo.Context, rollCallID api.RollCall
 
 	sub := s.reactionPubSub.Subscribe(e.Request().Context(), maxReactionEventBuffer)
 
-	for event := range sub {
-		if event.rollCallID != uint(rollCallID) {
-			continue
+	for {
+		select {
+		case <-e.Request().Context().Done():
+			return nil
+
+		case event, ok := <-sub:
+			if !ok {
+				return nil
+			}
+
+			if event.rollCallID != uint(rollCallID) {
+				continue
+			}
+
+			b, err := event.data.MarshalJSON()
+
+			if err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError).
+					SetInternal(fmt.Errorf("failed to marshal event data: %w", err))
+			}
+
+			if _, err := fmt.Fprintf(res, "data: %s\n\n", b); err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError).
+					SetInternal(fmt.Errorf("failed to write event data: %w", err))
+			}
+
+			res.Flush()
 		}
-
-		b, err := event.data.MarshalJSON()
-
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError).
-				SetInternal(fmt.Errorf("failed to marshal event data: %w", err))
-		}
-
-		if _, err := fmt.Fprintf(res, "data: %s\n\n", b); err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError).
-				SetInternal(fmt.Errorf("failed to write event data: %w", err))
-		}
-
-		res.Flush()
 	}
-
-	return nil
 }
