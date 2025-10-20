@@ -8,7 +8,7 @@
 ## 開発環境の立ち上げ
 
 ```sh
-docker compose watch
+docker compose up --build # またはdocker compose watch
 go run dev/create_bot.go >> .env # 初回のみ
 
 # 終了
