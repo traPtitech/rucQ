@@ -470,7 +470,6 @@ type OptionResponse struct {
 type PaymentRequest struct {
 	Amount     int    `json:"amount"`
 	AmountPaid int    `json:"amountPaid"`
-	CampId     int    `json:"campId"`
 	UserId     string `json:"userId"`
 }
 
