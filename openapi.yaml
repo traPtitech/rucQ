@@ -2290,15 +2290,12 @@ components:
       properties:
         userId:
           type: string
-        campId:
-          type: integer
         amount:
           type: integer
         amountPaid:
           type: integer
       required:
         - userId
-        - campId
         - amount
         - amountPaid
     PaymentResponse:
