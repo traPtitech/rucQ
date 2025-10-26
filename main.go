@@ -125,7 +125,10 @@ func main() {
 	// botがtraQからのイベントを受け取るエンドポイントを設定
 	e.POST("/api/traq-events", router.TraqEventHandler)
 
-	repo := gormrepository.NewGormRepository(db)
+	repo,err := gormrepository.NewGormRepository(db)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	traqBaseURL := cmp.Or(os.Getenv("TRAQ_API_BASE_URL"), "https://q.trap.jp/api/v3")
 	botAccessToken := os.Getenv("TRAQ_BOT_ACCESS_TOKEN")
