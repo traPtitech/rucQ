@@ -9,6 +9,7 @@ import (
 	"os"
 	"testing"
 	"time"
+	"log"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/require"
@@ -157,7 +158,13 @@ func setup(t *testing.T) *Repository {
 	err = migration.Migrate(db)
 	require.NoError(t, err)
 
-	return NewGormRepository(db)
+	repo,err := NewGormRepository(db)
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return repo
 }
 
 func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
