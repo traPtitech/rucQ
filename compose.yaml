@@ -96,7 +96,7 @@ services:
       - 80
 
   traq_server:
-    image: ghcr.io/traptitech/traq:3.25.1
+    image: ghcr.io/traptitech/traq:3.26.0
     environment:
       TRAQ_ALLOWSIGNUP: true
       TRAQ_MARIADB_HOST: mariadb
