@@ -9,7 +9,6 @@ import (
 	"os"
 	"testing"
 	"time"
-	"log"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/require"
@@ -19,7 +18,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
@@ -155,14 +153,9 @@ func setup(t *testing.T) *Repository {
 	})
 	require.NoError(t, err)
 
-	err = migration.Migrate(db)
-	require.NoError(t, err)
+	repo, err := NewGormRepository(db)
 
-	repo,err := NewGormRepository(db)
-	
-	if err != nil {
-		log.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	return repo
 }

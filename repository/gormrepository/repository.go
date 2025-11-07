@@ -1,8 +1,8 @@
 package gormrepository
 
 import (
-	"gorm.io/gorm"
 	"github.com/traPtitech/rucQ/migration"
+	"gorm.io/gorm"
 )
 
 type Repository struct {
