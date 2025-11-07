@@ -114,6 +114,17 @@ func (s *Server) AdminPutUser(
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
+	// ユーザーがtraQに存在するか確認
+	if _, err := s.traqService.GetCanonicalUserName(e.Request().Context(), targetUserID); err != nil {
+		if errors.Is(err, traq.ErrUserNotFound) {
+			return echo.ErrNotFound
+		}
+
+		return echo.ErrInternalServerError.SetInternal(
+			fmt.Errorf("failed to get canonical user name: %w", err),
+		)
+	}
+
 	targetUser, err := s.repo.GetOrCreateUser(e.Request().Context(), targetUserID)
 
 	if err != nil {
