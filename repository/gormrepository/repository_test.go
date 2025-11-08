@@ -18,7 +18,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
@@ -154,10 +153,11 @@ func setup(t *testing.T) *Repository {
 	})
 	require.NoError(t, err)
 
-	err = migration.Migrate(db)
+	repo, err := NewGormRepository(db)
+
 	require.NoError(t, err)
 
-	return NewGormRepository(db)
+	return repo
 }
 
 func mustCreateCamp(t *testing.T, r *Repository) model.Camp {
