@@ -1,8 +1,9 @@
 package gormrepository
 
 import (
-	"github.com/traPtitech/rucQ/migration"
 	"gorm.io/gorm"
+
+	"github.com/traPtitech/rucQ/migration"
 )
 
 type Repository struct {
@@ -12,6 +13,6 @@ type Repository struct {
 func NewGormRepository(db *gorm.DB) (*Repository, error) {
 	repo := &Repository{db: db}
 	err := migration.Migrate(db)
-	
+
 	return repo, err
 }

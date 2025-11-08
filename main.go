@@ -18,7 +18,6 @@ import (
 	"gorm.io/gorm/logger"
 
 	"github.com/traPtitech/rucQ/api"
-	"github.com/traPtitech/rucQ/migration"
 	"github.com/traPtitech/rucQ/repository/gormrepository"
 	"github.com/traPtitech/rucQ/router"
 	"github.com/traPtitech/rucQ/service/notification"
@@ -56,10 +55,6 @@ func main() {
 	})
 
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := migration.Migrate(db); err != nil {
 		log.Fatal(err)
 	}
 
@@ -125,7 +120,7 @@ func main() {
 	// botがtraQからのイベントを受け取るエンドポイントを設定
 	e.POST("/api/traq-events", router.TraqEventHandler)
 
-	repo,err := gormrepository.NewGormRepository(db)
+	repo, err := gormrepository.NewGormRepository(db)
 	if err != nil {
 		log.Fatal(err)
 	}
