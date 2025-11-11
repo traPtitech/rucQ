@@ -143,7 +143,6 @@ func (s *Server) AdminPutUser(
 			SetInternal(fmt.Errorf("failed to copy request to target user: %w", err))
 	}
 
-	// TODO: Not foundの場合のエラーハンドリングを追加
 	if err := s.repo.UpdateUser(e.Request().Context(), targetUser); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to update user: %w", err))
