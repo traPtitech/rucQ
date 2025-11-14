@@ -234,7 +234,7 @@ func TestServer_AdminPutUser(t *testing.T) {
 
 		res.Keys().ContainsOnly("id", "isStaff")
 		res.Value("id").String().IsEqual(targetUser.ID)
-		res.Value("isStaff").Boolean().IsEqual(true)
+		res.Value("isStaff").Boolean().IsTrue()
 	})
 
 	t.Run("Forbidden", func(t *testing.T) {
