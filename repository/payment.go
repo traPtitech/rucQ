@@ -15,4 +15,5 @@ type PaymentRepository interface {
 	GetPayments(ctx context.Context, campID uint) ([]model.Payment, error)
 	GetPaymentByUserID(ctx context.Context, campID uint, userID string) (*model.Payment, error)
 	UpdatePayment(ctx context.Context, paymentID uint, payment *model.Payment) error
+	GetPaymentByID(ctx context.Context, paymentID uint) (*model.Payment, error)
 }
