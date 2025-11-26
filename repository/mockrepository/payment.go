@@ -55,6 +55,21 @@ func (mr *MockPaymentRepositoryMockRecorder) CreatePayment(ctx, payment any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePayment", reflect.TypeOf((*MockPaymentRepository)(nil).CreatePayment), ctx, payment)
 }
 
+// GetPaymentByID mocks base method.
+func (m *MockPaymentRepository) GetPaymentByID(ctx context.Context, paymentID uint) (*model.Payment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPaymentByID", ctx, paymentID)
+	ret0, _ := ret[0].(*model.Payment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPaymentByID indicates an expected call of GetPaymentByID.
+func (mr *MockPaymentRepositoryMockRecorder) GetPaymentByID(ctx, paymentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaymentByID", reflect.TypeOf((*MockPaymentRepository)(nil).GetPaymentByID), ctx, paymentID)
+}
+
 // GetPaymentByUserID mocks base method.
 func (m *MockPaymentRepository) GetPaymentByUserID(ctx context.Context, campID uint, userID string) (*model.Payment, error) {
 	m.ctrl.T.Helper()

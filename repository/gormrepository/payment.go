@@ -74,3 +74,22 @@ func (r *Repository) UpdatePayment(
 
 	return nil
 }
+
+func (r *Repository) GetPaymentByID(
+	ctx context.Context,
+	paymentID uint,
+) (*model.Payment, error) {
+	payment, err := gorm.G[model.Payment](r.db).
+		Where("id = ?", paymentID).
+		First(ctx)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, repository.ErrPaymentNotFound
+		}
+
+		return nil, err
+	}
+
+	return &payment, nil
+}

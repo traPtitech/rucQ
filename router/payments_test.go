@@ -25,7 +25,6 @@ func TestAdminPostPayment(t *testing.T) {
 			Amount:     random.PositiveInt(t),
 			AmountPaid: random.PositiveInt(t),
 			UserId:     random.AlphaNumericString(t, 32),
-			CampId:     campID,
 		}
 		adminUserID := random.AlphaNumericString(t, 32)
 
@@ -167,7 +166,6 @@ func TestServer_AdminPutPayment(t *testing.T) {
 			Amount:     2000,
 			AmountPaid: 1500,
 			UserId:     random.AlphaNumericString(t, 32),
-			CampId:     campID,
 		}
 		adminUserID := random.AlphaNumericString(t, 32)
 
@@ -179,6 +177,16 @@ func TestServer_AdminPutPayment(t *testing.T) {
 		h.repo.MockPaymentRepository.EXPECT().
 			UpdatePayment(gomock.Any(), uint(paymentID), gomock.Any()).
 			Return(nil)
+
+		h.repo.MockPaymentRepository.EXPECT().
+			GetPaymentByID(gomock.Any(), uint(paymentID)).
+			Return(&model.Payment{
+				Model:      gorm.Model{ID: uint(paymentID)},
+				Amount:     req.Amount,
+				AmountPaid: req.AmountPaid,
+				UserID:     req.UserId,
+				CampID:     uint(campID),
+			}, nil)
 
 		res := h.expect.PUT("/api/admin/payments/{paymentId}", paymentID).
 			WithJSON(req).
@@ -199,12 +207,10 @@ func TestServer_AdminPutPayment(t *testing.T) {
 
 		h := setup(t)
 		paymentID := random.PositiveInt(t)
-		campID := random.PositiveInt(t)
 		req := api.AdminPutPaymentJSONRequestBody{
 			Amount:     2000,
 			AmountPaid: 1500,
 			UserId:     random.AlphaNumericString(t, 32),
-			CampId:     campID,
 		}
 		userID := random.AlphaNumericString(t, 32)
 
@@ -225,12 +231,10 @@ func TestServer_AdminPutPayment(t *testing.T) {
 
 		h := setup(t)
 		paymentID := random.PositiveInt(t)
-		campID := random.PositiveInt(t)
 		req := api.AdminPutPaymentJSONRequestBody{
 			Amount:     random.PositiveInt(t),
 			AmountPaid: random.PositiveInt(t),
 			UserId:     random.AlphaNumericString(t, 32),
-			CampId:     campID,
 		}
 		adminUserID := random.AlphaNumericString(t, 32)
 
