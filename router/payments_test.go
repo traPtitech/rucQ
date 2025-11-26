@@ -178,6 +178,16 @@ func TestServer_AdminPutPayment(t *testing.T) {
 			UpdatePayment(gomock.Any(), uint(paymentID), gomock.Any()).
 			Return(nil)
 
+		h.repo.MockPaymentRepository.EXPECT().
+			GetPaymentByID(gomock.Any(), uint(paymentID)).
+			Return(&model.Payment{
+				Model:      gorm.Model{ID: uint(paymentID)},
+				Amount:     req.Amount,
+				AmountPaid: req.AmountPaid,
+				UserID:     req.UserId,
+				CampID:     uint(campID),
+			}, nil)
+
 		res := h.expect.PUT("/api/admin/payments/{paymentId}", paymentID).
 			WithJSON(req).
 			WithHeader("X-Forwarded-User", adminUserID).

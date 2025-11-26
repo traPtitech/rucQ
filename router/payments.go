@@ -133,7 +133,6 @@ func (s *Server) AdminPutPayment(
 			SetInternal(fmt.Errorf("failed to update payment: %w", err))
 	}
 
-	// 更新後のPaymentオブジェクトにIDを設定してレスポンスを作成
 	updatedPayment, err := s.repo.GetPaymentByID(e.Request().Context(), uint(paymentID))
 	if err != nil {
 		if errors.Is(err, repository.ErrPaymentNotFound) {
