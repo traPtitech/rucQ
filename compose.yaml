@@ -46,7 +46,7 @@ services:
       retries: 10
 
   swagger:
-    image: swaggerapi/swagger-ui:v5.30.1
+    image: swaggerapi/swagger-ui:v5.30.3
     ports:
       - "${SWAGGER_PORT:-8081}:8080"
     environment:
