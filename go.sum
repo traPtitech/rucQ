@@ -577,8 +577,8 @@ github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD
 github.com/tailscale/depaware v0.0.0-20210622194025-720c4b409502/go.mod h1:p9lPsd+cx33L3H9nNoecRRxPssFKUwwI50I3pZ0yT+8=
 github.com/testcontainers/testcontainers-go v0.40.0 h1:pSdJYLOVgLE8YdUY2FHQ1Fxu+aMnb6JfVz1mxk7OeMU=
 github.com/testcontainers/testcontainers-go v0.40.0/go.mod h1:FSXV5KQtX2HAMlm7U3APNyLkkap35zNLxukw9oBi/MY=
-github.com/testcontainers/testcontainers-go/modules/compose v0.39.1 h1:/3kEZY3xH/ibgnUGAACmEcqVIqfXzqD1LdXnJqfsBrM=
-github.com/testcontainers/testcontainers-go/modules/compose v0.39.1/go.mod h1:qxH8QmljpneFWkGJ7RzjPOnoyRN760OZdq3bE0aG/bg=
+github.com/testcontainers/testcontainers-go/modules/compose v0.40.0 h1:Bj8W7GieY56sRbVJx1yLh0JVEtOQ8SQMhX+jRtzenLA=
+github.com/testcontainers/testcontainers-go/modules/compose v0.40.0/go.mod h1:fEEGqtsoH1KS+sUi1WG4+vH3fqdCyip1U9Hd8P3SRMA=
 github.com/theupdateframework/notary v0.7.0 h1:QyagRZ7wlSpjT5N2qQAh/pN+DVqgekv4DzbAiAiEL3c=
 github.com/theupdateframework/notary v0.7.0/go.mod h1:c9DRxcmhHmVLDay4/2fUYdISnHqbFDGRSlXPO0AhYWw=
 github.com/tilt-dev/fsnotify v1.4.8-0.20220602155310-fff9c274a375 h1:QB54BJwA6x8QU9nHY3xJSZR2kX9bgpZekRKGkLTmEXA=
