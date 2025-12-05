@@ -12,7 +12,7 @@ require (
 	github.com/sesopenko/genericpubsub v1.0.1
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
-	github.com/testcontainers/testcontainers-go/modules/compose v0.39.1
+	github.com/testcontainers/testcontainers-go/modules/compose v0.40.0
 	github.com/traPtitech/go-traq v0.0.0-20241109062858-3757c489f610
 	go.uber.org/mock v0.6.0
 	gorm.io/driver/mysql v1.6.0
