@@ -106,7 +106,7 @@ func (s *Server) AdminPutRoom(
 		if errors.Is(err, repository.ErrRoomNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Room not found")
 		}
-		
+
 		if errors.Is(err, repository.ErrUserAlreadyAssigned) {
       return echo.NewHTTPError(http.StatusBadRequest, "Some users are already assigned to another room in this camp")
     }
