@@ -119,7 +119,7 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 
 			// 1人でも見つかれば重複エラーとする
 			if count > 0 {
-				return errors.New("some users are already assigned to another room in this camp")
+				return repository.ErrUserAlreadyAssigned
 			}
 		}
 
