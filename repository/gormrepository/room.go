@@ -89,7 +89,8 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 
 		if err != nil {
 			// そもそも部屋が存在しない場合
-			if errors.Is(err, gorm.ErrRecordNotFound) || err.Error() == "sql: no rows in result set" {
+			if errors.Is(err, gorm.ErrRecordNotFound) ||
+				err.Error() == "sql: no rows in result set" {
 				return repository.ErrRoomNotFound
 			}
 			return err
