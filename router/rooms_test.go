@@ -671,11 +671,12 @@ func TestServer_AdminPutRoom(t *testing.T) {
 			WithHeader("X-Forwarded-User", username).
 			Expect().
 			Status(http.StatusBadRequest).
-			JSON().Object().
-			Value("message").String().IsEqual(
-				"Some users are already assigned to another room in this camp",
-			)
-		})
+			JSON().
+			Object().
+			Value("message").
+			String().
+			IsEqual("Some users are already assigned to another room in this camp")
+	})
 }
 
 func TestServer_AdminDeleteRoom(t *testing.T) {
