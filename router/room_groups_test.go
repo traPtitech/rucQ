@@ -279,6 +279,34 @@ func TestAdminPostRoomGroup(t *testing.T) {
 			Expect().
 			Status(http.StatusNotFound)
 	})
+
+	t.Run("UserAlreadyAssigned", func(t *testing.T) {
+		t.Parallel()
+		h := setup(t)
+		username := random.AlphaNumericString(t, 32)
+		campID := random.PositiveInt(t)
+
+		req := api.AdminPostRoomGroupJSONRequestBody{
+			Name: "Duplicate Group",
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil).Times(1)
+
+		h.repo.MockRoomGroupRepository.EXPECT().
+			CreateRoomGroup(gomock.Any(), gomock.Any()).
+			Return(repository.ErrUserAlreadyAssigned).Times(1)
+
+		h.expect.POST("/api/admin/camps/{campId}/room-groups", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusBadRequest).
+			JSON().Object().
+			Value("message").String().
+			IsEqual("Some users are already assigned to another room in this camp")
+	})
 }
 
 func TestAdminPutRoomGroup(t *testing.T) {

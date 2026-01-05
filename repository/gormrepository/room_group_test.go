@@ -61,6 +61,52 @@ func TestRepository_CreateRoomGroup(t *testing.T) {
 
 		assert.ErrorIs(t, err, repository.ErrCampNotFound)
 	})
+
+	t.Run("Failure - Duplicate users within the same request", func(t *testing.T) {
+		t.Parallel()
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 1つ目のリクエスト内に、同じユーザーを2つの部屋に入れてみる
+		rg := &model.RoomGroup{
+			CampID: camp.ID,
+			Rooms: []model.Room{
+				{Name: "Room A", Members: []model.User{user}},
+				{Name: "Room B", Members: []model.User{user}}, // 重複！
+			},
+		}
+
+		err := r.CreateRoomGroup(t.Context(), rg)
+		assert.ErrorIs(t, err, repository.ErrUserAlreadyAssigned)
+	})
+
+	t.Run("Failure - User already exists in another RoomGroup of same camp", func(t *testing.T) {
+		t.Parallel()
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		rgA := &model.RoomGroup{
+			Name:   "Existing Group",
+			CampID: camp.ID,
+			Rooms: []model.Room{
+				{Name: "Occupied Room", Members: []model.User{user}},
+			},
+		}
+		require.NoError(t, r.CreateRoomGroup(t.Context(), rgA))
+
+		rgB := &model.RoomGroup{
+			Name:   "New Group",
+			CampID: camp.ID,
+			Rooms: []model.Room{
+				{Name: "New Room", Members: []model.User{user}},
+			},
+		}
+
+		err := r.CreateRoomGroup(t.Context(), rgB)
+		assert.ErrorIs(t, err, repository.ErrUserAlreadyAssigned)
+	})
 }
 
 func TestRepository_UpdateRoomGroup(t *testing.T) {
