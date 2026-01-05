@@ -82,6 +82,7 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var campID uint
 		err := tx.WithContext(ctx).
+			Model(&model.Room{}).
 			Table("rooms").
 			Select("room_groups.camp_id").
 			Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
@@ -100,7 +101,7 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 		// 重複チェック
 		if len(room.Members) > 0 {
 			// 登録予定のメンバーIDのリストを作成
-			newUserIDs := make([]string, len(room.Members))
+			newUserIDs := make([]string, 0, len(room.Members))
 			for _, m := range room.Members {
 				newUserIDs = append(newUserIDs, m.ID)
 			}
