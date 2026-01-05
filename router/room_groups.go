@@ -71,6 +71,13 @@ func (s *Server) AdminPostRoomGroup(
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
 
+		if errors.Is(err, repository.ErrUserAlreadyAssigned) {
+			return echo.NewHTTPError(
+				http.StatusBadRequest,
+				"Some users are already assigned to another room in this camp",
+			)
+		}
+
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to create room group (campID: %d): %w", campID, err))
 	}
