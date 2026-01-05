@@ -81,11 +81,12 @@ func (r *Repository) CreateRoom(ctx context.Context, room *model.Room) error {
 func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Room) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var campID uint
-		err := tx.Table("rooms").
+		err := tx.WithContext(ctx).
+			Table("rooms").
 			Select("room_groups.camp_id").
 			Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
 			Where("rooms.id = ?", roomID).
-			Row().Scan(&campID)
+			First(&campID).Error
 
 		if err != nil {
 			// そもそも部屋が存在しない場合
@@ -99,14 +100,15 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 		// 重複チェック
 		if len(room.Members) > 0 {
 			// 登録予定のメンバーIDのリストを作成
-			var newUserIDs []string
+			newUserIDs := make([]string, len(room.Members))
 			for _, m := range room.Members {
 				newUserIDs = append(newUserIDs, m.ID)
 			}
 
 			var count int64
 			// 合宿全体の中で、自分以外の部屋に所属しているメンバーがいないか数える
-			err = tx.Table("room_members").
+			err = tx.WithContext(ctx).
+				Table("room_members").
 				Joins("JOIN rooms ON rooms.id = room_members.room_id").
 				Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
 				Where("room_groups.camp_id = ?", campID).       // 同じ合宿内
@@ -126,7 +128,7 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 
 		room.ID = roomID
 
-		rowsAffected, err := gorm.G[*model.Room](tx).Omit("Members").Updates(ctx, room)
+		_, err = gorm.G[*model.Room](tx).Omit("Members").Updates(ctx, room)
 
 		if err != nil {
 			if errors.Is(err, gorm.ErrForeignKeyViolated) {
@@ -134,10 +136,6 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 			}
 
 			return err
-		}
-
-		if rowsAffected == 0 {
-			return repository.ErrRoomNotFound
 		}
 
 		if err := tx.WithContext(ctx).
