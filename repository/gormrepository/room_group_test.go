@@ -61,6 +61,92 @@ func TestRepository_CreateRoomGroup(t *testing.T) {
 
 		assert.ErrorIs(t, err, repository.ErrCampNotFound)
 	})
+
+	t.Run("Failure - Duplicate users within the same request", func(t *testing.T) {
+		t.Parallel()
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		// 1つ目のリクエスト内に、同じユーザーを2つの部屋に入れてみる
+		rg := &model.RoomGroup{
+			CampID: camp.ID,
+			Rooms: []model.Room{
+				{Name: "Room A", Members: []model.User{user}},
+				{Name: "Room B", Members: []model.User{user}}, // 重複！
+			},
+		}
+
+		err := r.CreateRoomGroup(t.Context(), rg)
+		assert.ErrorIs(t, err, repository.ErrUserAlreadyAssigned)
+	})
+
+	t.Run("Failure - User already exists in another RoomGroup of same camp", func(t *testing.T) {
+		t.Parallel()
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+
+		rgA := &model.RoomGroup{
+			Name:   "Existing Group",
+			CampID: camp.ID,
+			Rooms: []model.Room{
+				{Name: "Occupied Room", Members: []model.User{user}},
+			},
+		}
+		require.NoError(t, r.CreateRoomGroup(t.Context(), rgA))
+
+		rgB := &model.RoomGroup{
+			Name:   "New Group",
+			CampID: camp.ID,
+			Rooms: []model.Room{
+				{Name: "New Room", Members: []model.User{user}},
+			},
+		}
+
+		err := r.CreateRoomGroup(t.Context(), rgB)
+		assert.ErrorIs(t, err, repository.ErrUserAlreadyAssigned)
+	})
+
+	t.Run("Success - User assigned in different camp", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+
+		//　合宿Aを作成し、ユーザーを所属させておく
+		campA := mustCreateCamp(t, r)
+		groupA := mustCreateRoomGroup(t, r, campA.ID)
+		user := mustCreateUser(t, r)
+		_ = mustCreateRoom(t, r, groupA.ID, []model.User{user})
+
+		//　別の合宿Bを作成
+		campB := mustCreateCamp(t, r)
+
+		// 合宿Aに所属済みのユーザーを、合宿Bの新しいRoomGroupに含める
+		newRoomGroup := &model.RoomGroup{
+			Name:   "Group in Camp B",
+			CampID: campB.ID,
+			Rooms: []model.Room{
+				{
+					Name: "Room in Camp B",
+					Members: []model.User{
+						user,
+					},
+				},
+			},
+		}
+
+		// 重複エラーにならず成功することを期待
+		err := r.CreateRoomGroup(t.Context(), newRoomGroup)
+
+		// 検証
+		assert.NoError(t, err)
+
+		// DBに保存された結果を検証
+		assert.NotZero(t, newRoomGroup.ID)
+		assert.Len(t, newRoomGroup.Rooms[0].Members, 1)
+		assert.Equal(t, user.ID, newRoomGroup.Rooms[0].Members[0].ID)
+	})
 }
 
 func TestRepository_UpdateRoomGroup(t *testing.T) {

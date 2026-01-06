@@ -80,9 +80,55 @@ func (r *Repository) CreateRoom(ctx context.Context, room *model.Room) error {
 
 func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Room) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
+		var campID uint
+		err := tx.WithContext(ctx).
+			Model(&model.Room{}).
+			Table("rooms").
+			Select("room_groups.camp_id").
+			Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
+			Where("rooms.id = ?", roomID).
+			First(&campID).Error
+
+		if err != nil {
+			// そもそも部屋が存在しない場合
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return repository.ErrRoomNotFound
+			}
+			return err
+		}
+
+		// 重複チェック
+		if len(room.Members) > 0 {
+			// 登録予定のメンバーIDのリストを作成
+			newUserIDs := make([]string, len(room.Members))
+			for i, m := range room.Members {
+				newUserIDs[i] = m.ID
+			}
+
+			var count int64
+			// 合宿全体の中で、自分以外の部屋に所属しているメンバーがいないか数える
+			err = tx.WithContext(ctx).
+				Table("room_members").
+				Joins("JOIN rooms ON rooms.id = room_members.room_id").
+				Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
+				Where("room_groups.camp_id = ?", campID).       // 同じ合宿内
+				Where("rooms.id <> ?", roomID).                 // 自分以外の部屋
+				Where("room_members.user_id IN ?", newUserIDs). // 登録予定の誰か
+				Count(&count).Error
+
+			if err != nil {
+				return err
+			}
+
+			// 1人でも見つかれば重複エラーとする
+			if count > 0 {
+				return repository.ErrUserAlreadyAssigned
+			}
+		}
+
 		room.ID = roomID
 
-		rowsAffected, err := gorm.G[*model.Room](tx).Omit("Members").Updates(ctx, room)
+		_, err = gorm.G[*model.Room](tx).Omit("Members").Updates(ctx, room)
 
 		if err != nil {
 			if errors.Is(err, gorm.ErrForeignKeyViolated) {
@@ -90,10 +136,6 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 			}
 
 			return err
-		}
-
-		if rowsAffected == 0 {
-			return repository.ErrRoomNotFound
 		}
 
 		if err := tx.WithContext(ctx).

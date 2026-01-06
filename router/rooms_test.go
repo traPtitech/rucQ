@@ -641,6 +641,42 @@ func TestServer_AdminPutRoom(t *testing.T) {
 			Expect().
 			Status(http.StatusInternalServerError)
 	})
+
+	t.Run("User Already Assigned", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		req := api.AdminPutRoomJSONRequestBody{
+			Name:        random.AlphaNumericString(t, 20),
+			RoomGroupId: random.PositiveInt(t),
+			MemberIds:   []string{random.AlphaNumericString(t, 32)},
+		}
+		username := random.AlphaNumericString(t, 32)
+		roomID := random.PositiveInt(t)
+
+		//管理者チェックのモック
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+
+		//リポジトリが ErrUserAlreadyAssigned を返すように設定
+		h.repo.MockRoomRepository.EXPECT().
+			UpdateRoom(gomock.Any(), uint(roomID), gomock.Any()).
+			Return(repository.ErrUserAlreadyAssigned).
+			Times(1)
+
+		h.expect.PUT("/api/admin/rooms/{roomId}", roomID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusBadRequest).
+			JSON().
+			Object().
+			Value("message").
+			String().
+			IsEqual("Some users are already assigned to another room in this camp")
+	})
 }
 
 func TestServer_AdminDeleteRoom(t *testing.T) {

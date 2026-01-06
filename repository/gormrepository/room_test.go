@@ -349,6 +349,67 @@ func TestRepository_UpdateRoom(t *testing.T) {
 
 		assert.ErrorIs(t, err, repository.ErrUserNotFound)
 	})
+
+	t.Run("Failure - User already assigned in same camp", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		user := mustCreateUser(t, r)
+
+		// 部屋1を作成し、ユーザーを所属させる
+		_ = mustCreateRoom(t, r, roomGroup.ID, []model.User{user})
+
+		// 部屋2を作成
+		room2 := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+
+		// 同じユーザーを部屋2にも追加しようとする
+		updatedRoom := &model.Room{
+			Name:        room2.Name,
+			RoomGroupID: roomGroup.ID,
+			Members:     []model.User{user},
+		}
+
+		err := r.UpdateRoom(t.Context(), room2.ID, updatedRoom)
+
+		assert.ErrorIs(t, err, repository.ErrUserAlreadyAssigned)
+	})
+
+	t.Run("Success - User assigned in different camp", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+
+		// 合宿A と 部屋1
+		campA := mustCreateCamp(t, r)
+		groupA := mustCreateRoomGroup(t, r, campA.ID)
+		user := mustCreateUser(t, r)
+		_ = mustCreateRoom(t, r, groupA.ID, []model.User{user})
+
+		// 合宿B と 部屋2 (空)
+		campB := mustCreateCamp(t, r)
+		groupB := mustCreateRoomGroup(t, r, campB.ID)
+		room2 := mustCreateRoom(t, r, groupB.ID, []model.User{})
+
+		// 合宿Aにいるユーザーを、合宿Bの部屋にも追加する
+		updatedRoom := &model.Room{
+			Name:        room2.Name,
+			RoomGroupID: groupB.ID,
+			Members:     []model.User{user},
+		}
+
+		err := r.UpdateRoom(t.Context(), room2.ID, updatedRoom)
+
+		// 合宿が異なるので、成功（NoError）を期待
+		assert.NoError(t, err)
+
+		// 実際に所属できているか確認
+		retrievedRoom, err := r.GetRoomByID(t.Context(), room2.ID)
+		require.NoError(t, err)
+		assert.Len(t, retrievedRoom.Members, 1)
+		assert.Equal(t, user.ID, retrievedRoom.Members[0].ID)
+	})
 }
 
 func TestRepository_DeleteRoom(t *testing.T) {

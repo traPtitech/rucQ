@@ -11,6 +11,9 @@ import (
 var (
 	ErrRoomNotFound            = errors.New("room not found")
 	ErrUserOrRoomGroupNotFound = errors.New("user or room group not found")
+	ErrUserAlreadyAssigned     = errors.New(
+		"some users are already assigned to another room in this camp",
+	)
 )
 
 type RoomRepository interface {
