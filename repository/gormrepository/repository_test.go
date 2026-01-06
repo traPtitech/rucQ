@@ -157,6 +157,16 @@ func setup(t *testing.T) *Repository {
 
 	require.NoError(t, err)
 
+	sqlDB, err := db.DB()
+
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		err := sqlDB.Close()
+
+		require.NoError(t, err)
+	})
+
 	return repo
 }
 
