@@ -91,8 +91,7 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 
 		if err != nil {
 			// そもそも部屋が存在しない場合
-			if errors.Is(err, gorm.ErrRecordNotFound) ||
-				err.Error() == "sql: no rows in result set" {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return repository.ErrRoomNotFound
 			}
 			return err
@@ -101,9 +100,9 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 		// 重複チェック
 		if len(room.Members) > 0 {
 			// 登録予定のメンバーIDのリストを作成
-			newUserIDs := make([]string, 0, len(room.Members))
-			for _, m := range room.Members {
-				newUserIDs = append(newUserIDs, m.ID)
+			newUserIDs := make([]string, len(room.Members))
+			for i, m := range room.Members {
+				newUserIDs[i] = m.ID
 			}
 
 			var count int64

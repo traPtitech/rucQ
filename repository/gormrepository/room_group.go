@@ -11,50 +11,48 @@ import (
 )
 
 func (r *Repository) CreateRoomGroup(ctx context.Context, roomGroup *model.RoomGroup) error {
-	return r.db.Transaction(func(tx *gorm.DB) error {
+	allMemberIDs := make([]string, 0)
+	memberMap := make(map[string]bool)
 
-		allMemberIDs := make([]string, 0)
-		memberMap := make(map[string]bool)
-
-		for _, room := range roomGroup.Rooms {
-			for _, m := range room.Members {
-				if memberMap[m.ID] {
-					// リクエスト内で同じ人が複数の部屋に書かれている場合
-					return repository.ErrUserAlreadyAssigned
-				}
-				memberMap[m.ID] = true
-				allMemberIDs = append(allMemberIDs, m.ID)
-			}
-		}
-
-		// 既存の部屋との重複チェック
-		if len(allMemberIDs) > 0 {
-			var count int64
-			err := tx.WithContext(ctx).
-				Table("room_members").
-				Joins("JOIN rooms ON rooms.id = room_members.room_id").
-				Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
-				Where("room_groups.camp_id = ?", roomGroup.CampID).
-				Where("room_members.user_id IN ?", allMemberIDs).
-				Count(&count).Error
-
-			if err != nil {
-				return err
-			}
-			if count > 0 {
+	for _, room := range roomGroup.Rooms {
+		for _, m := range room.Members {
+			if memberMap[m.ID] {
+				// リクエスト内で同じ人が複数の部屋に書かれている場合
 				return repository.ErrUserAlreadyAssigned
 			}
+			memberMap[m.ID] = true
+			allMemberIDs = append(allMemberIDs, m.ID)
 		}
+	}
 
-		// RoomGroup作成処理
-		if err := gorm.G[model.RoomGroup](r.db).Create(ctx, roomGroup); err != nil {
-			if errors.Is(err, gorm.ErrForeignKeyViolated) {
-				return repository.ErrCampNotFound
-			}
+	// 既存の部屋との重複チェック
+	if len(allMemberIDs) > 0 {
+		var count int64
+		err := r.db.WithContext(ctx).
+			Table("room_members").
+			Joins("JOIN rooms ON rooms.id = room_members.room_id").
+			Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
+			Where("room_groups.camp_id = ?", roomGroup.CampID).
+			Where("room_members.user_id IN ?", allMemberIDs).
+			Count(&count).Error
+
+		if err != nil {
 			return err
 		}
-		return nil
-	})
+		if count > 0 {
+			return repository.ErrUserAlreadyAssigned
+		}
+	}
+
+	// RoomGroup作成処理
+	if err := gorm.G[model.RoomGroup](r.db).Create(ctx, roomGroup); err != nil {
+		if errors.Is(err, gorm.ErrForeignKeyViolated) {
+			return repository.ErrCampNotFound
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (r *Repository) UpdateRoomGroup(
