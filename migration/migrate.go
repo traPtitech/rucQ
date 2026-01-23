@@ -23,5 +23,6 @@ func getAllMigrations() []*gormigrate.Migration {
 		v2(), // ゼロ値で上書きされてしまっていたcreated_atを修正
 		v3(), // messagesテーブルにsent_atカラムを追加
 		v4(), // roll_callsテーブルにcamp_idカラムを追加
+		v5(), // 同一displayIdのキャンプが存在しないことを確認
 	}
 }
