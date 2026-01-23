@@ -9,7 +9,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -27,7 +30,13 @@ import (
 
 func main() {
 	// TODO: graceful shutdownを実装する
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
 	e := echo.New()
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
@@ -134,5 +143,24 @@ func main() {
 	go schedulerService.Start(ctx)
 
 	api.RegisterHandlers(e, router.NewServer(ctx, repo, notificationService, traqService, isDev))
-	log.Fatal(e.Start("0.0.0.0:8080"))
+	srv := &http.Server{
+		Addr:    "0.0.0.0:8080",
+		Handler: e,
+	}
+
+	go func() {
+		if err := e.StartServer(srv); err != nil && errors.Is(err, http.ErrServerClosed) {
+			slog.Error("server error", slog.String("error", err.Error()))
+		}
+	}()
+
+	<-ctx.Done()
+	slog.Info("shutting down server...")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := e.Shutdown(shutdownCtx); err != nil {
+		slog.Error("server forced to shutdown", slog.String("error", err.Error()))
+	}
 }
