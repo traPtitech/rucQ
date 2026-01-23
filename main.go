@@ -29,7 +29,6 @@ import (
 )
 
 func main() {
-	// TODO: graceful shutdownを実装する
 	ctx, stop := signal.NotifyContext(
 		context.Background(),
 		syscall.SIGINT,
@@ -148,6 +147,8 @@ func main() {
 		Handler: e,
 	}
 
+	const shutdownTimeoutSeconds = 10
+
 	go func() {
 		if err := e.StartServer(srv); err != nil && errors.Is(err, http.ErrServerClosed) {
 			slog.Error("server error", slog.String("error", err.Error()))
@@ -157,7 +158,10 @@ func main() {
 	<-ctx.Done()
 	slog.Info("shutting down server...")
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(
+		context.Background(),
+		shutdownTimeoutSeconds*time.Second,
+	)
 	defer cancel()
 
 	if err := e.Shutdown(shutdownCtx); err != nil {
