@@ -29,19 +29,26 @@ var answerSchemaToModel = copier.TypeConverter{
 			}
 
 			dst.FreeTextContent = &freeTextAnswerRequest.Content
-		} else if freeNumberAnswerRequest, err := req.AsFreeNumberAnswerRequest(); err == nil && freeNumberAnswerRequest.Type == api.FreeNumberAnswerRequestTypeFreeNumber {
+		} else if freeNumberAnswerRequest, err := req.AsFreeNumberAnswerRequest(); err == nil &&
+			freeNumberAnswerRequest.Type == api.FreeNumberAnswerRequestTypeFreeNumber {
 			if err := copier.Copy(&dst, &freeNumberAnswerRequest); err != nil {
 				return nil, err
 			}
 
 			content := float64(freeNumberAnswerRequest.Content)
 			dst.FreeNumberContent = &content
-		} else if singleChoiceAnswerRequest, err := req.AsSingleChoiceAnswerRequest(); err == nil && singleChoiceAnswerRequest.Type == api.SingleChoiceAnswerRequestTypeSingle {
+		} else if singleChoiceAnswerRequest, err := req.AsSingleChoiceAnswerRequest(); err == nil &&
+			singleChoiceAnswerRequest.Type == api.SingleChoiceAnswerRequestTypeSingle {
 			if err := copier.Copy(&dst, &singleChoiceAnswerRequest); err != nil {
 				return nil, err
 			}
-
-			dst.SelectedOptions = []model.Option{{Model: gorm.Model{ID: uint(singleChoiceAnswerRequest.OptionId)}}}
+			dst.SelectedOptions = []model.Option{
+				{
+					Model: gorm.Model{
+						ID: uint(singleChoiceAnswerRequest.OptionId),
+					},
+				},
+			}
 		} else if multipleChoiceAnswerRequest, err := req.AsMultipleChoiceAnswerRequest(); err == nil && multipleChoiceAnswerRequest.Type == api.MultipleChoiceAnswerRequestTypeMultiple {
 			if err := copier.Copy(&dst, &multipleChoiceAnswerRequest); err != nil {
 				return nil, err
