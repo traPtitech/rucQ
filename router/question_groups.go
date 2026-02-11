@@ -104,7 +104,11 @@ func (s *Server) AdminPutQuestionGroupMetadata(
 			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
 
-	if err := s.repo.UpdateQuestionGroup(e.Request().Context(), uint(questionGroupID), questionGroup); err != nil {
+	if err := s.repo.UpdateQuestionGroup(
+		e.Request().Context(),
+		uint(questionGroupID),
+		questionGroup,
+	); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to update question group: %w", err))
 	}

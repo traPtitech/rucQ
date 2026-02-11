@@ -222,7 +222,11 @@ func (s *Server) PutReaction(
 			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
 
-	if err := s.repo.UpdateRollCallReaction(e.Request().Context(), uint(reactionID), &updateData); err != nil {
+	if err := s.repo.UpdateRollCallReaction(
+		e.Request().Context(),
+		uint(reactionID),
+		&updateData,
+	); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to update roll call reaction: %w", err))
 	}
