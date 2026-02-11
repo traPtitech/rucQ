@@ -152,7 +152,11 @@ func (s *notificationServiceImpl) SendAnswerChangeMessage(
 		}
 	}
 
-	if err := s.traqService.PostDirectMessage(ctx, newAnswer.UserID, messageBuilder.String()); err != nil {
+	if err := s.traqService.PostDirectMessage(
+		ctx,
+		newAnswer.UserID,
+		messageBuilder.String(),
+	); err != nil {
 		return err
 	}
 
