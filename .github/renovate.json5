@@ -1,0 +1,22 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":disableDependencyDashboard"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "GitHub Actions内でインストールするツールのバージョンを管理するためのmanager",
+      "managerFilePatterns": [
+        "^\\.github/workflows/.*\\.ya?ml$"
+      ],
+      "matchStrings": [
+        // 例：
+        // # renovate: datasource=github-releases depName=owner/repo
+        // version: 1.2.3
+        "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\n\\s*version:\\s*(?<currentValue>[^\\s]+)"
+      ]
+    }
+  ]
+}
