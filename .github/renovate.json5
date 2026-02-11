@@ -14,7 +14,7 @@
       "matchStrings": [
         // 例：
         // # renovate: datasource=github-releases depName=owner/repo
-        // version: 1.2.3
+        // version: v1.2.3
         "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\n\\s*version:\\s*(?<currentValue>[^\\s]+)"
       ]
     }
