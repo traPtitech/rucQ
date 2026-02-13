@@ -11,7 +11,7 @@ type RoomStatusRepository interface {
 	SetRoomStatus(
 		ctx context.Context,
 		roomID uint,
-		status *model.RoomStatus,
+		status model.RoomStatus,
 		operatorID string,
 	) error
 	GetRoomStatusLogs(ctx context.Context, roomID uint) ([]model.RoomStatusLog, error)

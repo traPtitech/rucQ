@@ -15,19 +15,20 @@ import (
 func (r *Repository) SetRoomStatus(
 	ctx context.Context,
 	roomID uint,
-	status *model.RoomStatus,
+	status model.RoomStatus,
 	operatorID string,
 ) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		status.RoomID = roomID
-		status.UpdatedAt = time.Now()
+		newStatus := status
+		newStatus.RoomID = roomID
+		newStatus.UpdatedAt = time.Now()
 
 		if err := tx.
 			Clauses(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "room_id"}},
 				DoUpdates: clause.AssignmentColumns([]string{"type", "topic", "updated_at"}),
 			}).
-			Create(status).Error; err != nil {
+			Create(&newStatus).Error; err != nil {
 			if errors.Is(err, gorm.ErrForeignKeyViolated) {
 				return repository.ErrRoomNotFound
 			}
@@ -36,8 +37,8 @@ func (r *Repository) SetRoomStatus(
 
 		log := model.RoomStatusLog{
 			RoomID:     roomID,
-			Type:       status.Type,
-			Topic:      status.Topic,
+			Type:       newStatus.Type,
+			Topic:      newStatus.Topic,
 			OperatorID: operatorID,
 		}
 

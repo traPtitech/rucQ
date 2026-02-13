@@ -14,6 +14,8 @@ import (
 func TestRepository_SetRoomStatus(t *testing.T) {
 	t.Parallel()
 
+	const roomStatusTopicMaxLength = 64
+
 	t.Run("作成", func(t *testing.T) {
 		t.Parallel()
 
@@ -24,9 +26,9 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 
 		operator := mustCreateUser(t, r)
 		operatorID := operator.ID
-		topic := random.AlphaNumericString(t, 64)
+		topic := random.AlphaNumericString(t, roomStatusTopicMaxLength)
 
-		status := &model.RoomStatus{
+		status := model.RoomStatus{
 			Type:  "active",
 			Topic: topic,
 		}
@@ -53,14 +55,14 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 
 		operator := mustCreateUser(t, r)
 		operatorID := operator.ID
-		initialTopic := random.AlphaNumericString(t, 64)
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		initialTopic := random.AlphaNumericString(t, roomStatusTopicMaxLength)
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "active",
 			Topic: initialTopic,
 		}, operatorID)
 
-		updatedTopic := random.AlphaNumericString(t, 64)
-		updatedStatus := &model.RoomStatus{
+		updatedTopic := random.AlphaNumericString(t, roomStatusTopicMaxLength)
+		updatedStatus := model.RoomStatus{
 			Type:  "inactive",
 			Topic: updatedTopic,
 		}
@@ -95,9 +97,9 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 
 		operator := mustCreateUser(t, r)
 		operatorID := operator.ID
-		japaneseTopic := strings.Repeat("あ", 64)
+		japaneseTopic := strings.Repeat("あ", roomStatusTopicMaxLength)
 
-		status := &model.RoomStatus{
+		status := model.RoomStatus{
 			Type:  "active",
 			Topic: japaneseTopic,
 		}
@@ -118,12 +120,31 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 
 		r := setup(t)
 
-		err := r.SetRoomStatus(t.Context(), uint(random.PositiveInt(t)), &model.RoomStatus{
+		err := r.SetRoomStatus(t.Context(), uint(random.PositiveInt(t)), model.RoomStatus{
 			Type:  "active",
-			Topic: random.AlphaNumericString(t, 64),
+			Topic: random.AlphaNumericString(t, roomStatusTopicMaxLength),
 		}, random.AlphaNumericString(t, 32))
 
 		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
+	})
+
+	t.Run("64文字を超えるとエラー", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+
+		operator := mustCreateUser(t, r)
+		operatorID := operator.ID
+
+		err := r.SetRoomStatus(t.Context(), room.ID, model.RoomStatus{
+			Type:  "active",
+			Topic: strings.Repeat("a", roomStatusTopicMaxLength+1),
+		}, operatorID)
+
+		assert.Error(t, err)
 	})
 }
 
@@ -155,12 +176,12 @@ func TestRepository_GetRoomStatusLogs(t *testing.T) {
 		operator := mustCreateUser(t, r)
 		operatorID := operator.ID
 
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "active",
 			Topic: random.AlphaNumericString(t, 64),
 		}, operatorID)
 
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "inactive",
 			Topic: random.AlphaNumericString(t, 64),
 		}, operatorID)

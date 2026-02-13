@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"unicode/utf8"
 
 	"github.com/labstack/echo/v4"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
 )
+
+const roomStatusTopicMaxLength = 64
 
 func (s *Server) PutRoomStatus(
 	e echo.Context,
@@ -22,6 +25,10 @@ func (s *Server) PutRoomStatus(
 
 	if err := e.Bind(&req); err != nil {
 		return err
+	}
+
+	if utf8.RuneCountInString(req.Topic) > roomStatusTopicMaxLength {
+		return echo.ErrBadRequest
 	}
 
 	campID, err := s.repo.GetRoomCampID(e.Request().Context(), uint(roomID))
@@ -65,7 +72,7 @@ func (s *Server) PutRoomStatus(
 	if err := s.repo.SetRoomStatus(
 		e.Request().Context(),
 		uint(roomID),
-		&status,
+		status,
 		*params.XForwardedUser,
 	); err != nil {
 		if errors.Is(err, repository.ErrRoomNotFound) {

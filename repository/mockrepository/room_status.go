@@ -57,7 +57,7 @@ func (mr *MockRoomStatusRepositoryMockRecorder) GetRoomStatusLogs(ctx, roomID an
 }
 
 // SetRoomStatus mocks base method.
-func (m *MockRoomStatusRepository) SetRoomStatus(ctx context.Context, roomID uint, status *model.RoomStatus, operatorID string) error {
+func (m *MockRoomStatusRepository) SetRoomStatus(ctx context.Context, roomID uint, status model.RoomStatus, operatorID string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetRoomStatus", ctx, roomID, status, operatorID)
 	ret0, _ := ret[0].(error)

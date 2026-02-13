@@ -275,13 +275,13 @@ func TestRepository_GetRoomGroupByID(t *testing.T) {
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 		operator := mustCreateUser(t, r)
 
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "active",
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		latestTopic := random.AlphaNumericString(t, 64)
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "inactive",
 			Topic: latestTopic,
 		}, operator.ID)
@@ -395,13 +395,13 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 		operator := mustCreateUser(t, r)
 
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "active",
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		latestTopic := random.AlphaNumericString(t, 64)
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "inactive",
 			Topic: latestTopic,
 		}, operator.ID)

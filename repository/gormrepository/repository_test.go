@@ -412,7 +412,7 @@ func mustSetRoomStatus(
 	t *testing.T,
 	r *Repository,
 	roomID uint,
-	status *model.RoomStatus,
+	status model.RoomStatus,
 	operatorID string,
 ) {
 	t.Helper()

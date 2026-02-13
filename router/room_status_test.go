@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -17,6 +18,8 @@ import (
 func TestServer_PutRoomStatus(t *testing.T) {
 	t.Parallel()
 
+	const roomStatusTopicMaxLength = 64
+
 	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
@@ -28,7 +31,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 
 		req := api.PutRoomStatusJSONRequestBody{
 			Type:  statusType,
-			Topic: random.AlphaNumericString(t, 64),
+			Topic: random.AlphaNumericString(t, roomStatusTopicMaxLength),
 		}
 
 		h.repo.MockRoomRepository.EXPECT().
@@ -44,16 +47,10 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			Return(&model.User{ID: userID}, nil).
 			Times(1)
 		h.repo.MockRoomStatusRepository.EXPECT().
-			SetRoomStatus(gomock.Any(), uint(roomID), gomock.Any(), userID).
-			DoAndReturn(func(_ any, _ uint, status *model.RoomStatus, _ string) error {
-				if status.Type != string(req.Type) {
-					t.Fatalf("unexpected status type: %s", status.Type)
-				}
-				if status.Topic != req.Topic {
-					t.Fatalf("unexpected status topic: %s", status.Topic)
-				}
-				return nil
-			}).
+			SetRoomStatus(gomock.Any(), uint(roomID), model.RoomStatus{
+				Type:  string(req.Type),
+				Topic: req.Topic,
+			}, userID).
 			Times(1)
 
 		h.expect.PUT("/api/rooms/{roomId}/status", roomID).
@@ -81,7 +78,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
 				Type:  statusType,
-				Topic: random.AlphaNumericString(t, 64),
+				Topic: random.AlphaNumericString(t, roomStatusTopicMaxLength),
 			}).
 			Expect().
 			Status(http.StatusNotFound).
@@ -111,7 +108,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
 				Type:  api.RoomStatusTypeInactive,
-				Topic: random.AlphaNumericString(t, 64),
+				Topic: random.AlphaNumericString(t, roomStatusTopicMaxLength),
 			}).
 			Expect().
 			Status(http.StatusForbidden).
@@ -141,13 +138,33 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
 				Type:  api.RoomStatusTypeInactive,
-				Topic: random.AlphaNumericString(t, 64),
+				Topic: random.AlphaNumericString(t, roomStatusTopicMaxLength),
 			}).
 			Expect().
 			Status(http.StatusNotFound).
 			JSON().
 			Object().
 			HasValue("message", "Not Found")
+	})
+
+	t.Run("64文字を超えるトピックはBad Request", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		roomID := api.RoomId(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		h.expect.PUT("/api/rooms/{roomId}/status", roomID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(api.PutRoomStatusJSONRequestBody{
+				Type:  api.RoomStatusTypeActive,
+				Topic: strings.Repeat("a", roomStatusTopicMaxLength+1),
+			}).
+			Expect().
+			Status(http.StatusBadRequest).
+			JSON().
+			Object().
+			HasValue("message", "Bad Request")
 	})
 }
 
@@ -208,6 +225,6 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 			HasValue("type", statusType).
 			HasValue("topic", topic).
 			HasValue("operatorId", operatorID).
-			HasValue("updatedAt", updatedAt.Format(time.RFC3339))
+			HasValue("updatedAt", updatedAt.Format(time.RFC3339Nano))
 	})
 }

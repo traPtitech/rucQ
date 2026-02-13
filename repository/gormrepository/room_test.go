@@ -78,13 +78,13 @@ func TestRepository_GetRoomByUserID(t *testing.T) {
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{user})
 		operator := mustCreateUser(t, r)
 
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "active",
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		latestTopic := random.AlphaNumericString(t, 64)
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "inactive",
 			Topic: latestTopic,
 		}, operator.ID)
@@ -123,13 +123,13 @@ func TestRepository_GetRoomByID(t *testing.T) {
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 		operator := mustCreateUser(t, r)
 
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "active",
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		latestTopic := random.AlphaNumericString(t, 64)
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "inactive",
 			Topic: latestTopic,
 		}, operator.ID)
@@ -156,13 +156,13 @@ func TestRepository_GetRooms(t *testing.T) {
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 		operator := mustCreateUser(t, r)
 
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "active",
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		latestTopic := random.AlphaNumericString(t, 64)
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "inactive",
 			Topic: latestTopic,
 		}, operator.ID)
@@ -364,7 +364,7 @@ func TestRepository_UpdateRoom(t *testing.T) {
 		operator := mustCreateUser(t, r)
 
 		latestTopic := random.AlphaNumericString(t, 64)
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "active",
 			Topic: latestTopic,
 		}, operator.ID)
@@ -596,12 +596,12 @@ func TestRepository_DeleteRoom(t *testing.T) {
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 		operator := mustCreateUser(t, r)
 
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "active",
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
-		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
 			Type:  "inactive",
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
@@ -611,7 +611,7 @@ func TestRepository_DeleteRoom(t *testing.T) {
 
 		var statusCount int64
 		err = r.db.WithContext(t.Context()).
-			Model(&model.RoomStatus{}).
+			Model(model.RoomStatus{}).
 			Where("room_id = ?", room.ID).
 			Count(&statusCount).Error
 		assert.NoError(t, err)
