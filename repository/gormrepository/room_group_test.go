@@ -266,7 +266,7 @@ func TestRepository_GetRoomGroupByID(t *testing.T) {
 		}
 	})
 
-	t.Run("StatusLatest", func(t *testing.T) {
+	t.Run("最新のステータスが含まれる", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -386,7 +386,7 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 		}
 	})
 
-	t.Run("StatusLatest", func(t *testing.T) {
+	t.Run("最新のステータスが含まれる", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)

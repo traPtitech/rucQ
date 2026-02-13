@@ -14,7 +14,7 @@ import (
 func TestRepository_GetRoomCampID(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -27,7 +27,7 @@ func TestRepository_GetRoomCampID(t *testing.T) {
 		assert.Equal(t, camp.ID, campID)
 	})
 
-	t.Run("RoomNotFound", func(t *testing.T) {
+	t.Run("部屋が存在しない", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -68,7 +68,7 @@ func TestRepository_GetRoomByUserID(t *testing.T) {
 		}
 	})
 
-	t.Run("StatusLatest", func(t *testing.T) {
+	t.Run("最新のステータスが含まれる", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -91,12 +91,10 @@ func TestRepository_GetRoomByUserID(t *testing.T) {
 
 		retrievedRoom, err := r.GetRoomByUserID(t.Context(), camp.ID, user.ID)
 		assert.NoError(t, err)
-		if assert.NotNil(t, retrievedRoom) {
-			assert.NotNil(t, retrievedRoom.Status)
-			if retrievedRoom.Status != nil {
-				assert.Equal(t, "inactive", retrievedRoom.Status.Type)
-				assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
-			}
+
+		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status) {
+			assert.Equal(t, "inactive", retrievedRoom.Status.Type)
+			assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
 		}
 	})
 
@@ -116,7 +114,7 @@ func TestRepository_GetRoomByUserID(t *testing.T) {
 func TestRepository_GetRoomByID(t *testing.T) {
 	t.Parallel()
 
-	t.Run("StatusLatest", func(t *testing.T) {
+	t.Run("最新のステータスが含まれる", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -138,12 +136,10 @@ func TestRepository_GetRoomByID(t *testing.T) {
 
 		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 		assert.NoError(t, err)
-		if assert.NotNil(t, retrievedRoom) {
-			assert.NotNil(t, retrievedRoom.Status)
-			if retrievedRoom.Status != nil {
-				assert.Equal(t, "inactive", retrievedRoom.Status.Type)
-				assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
-			}
+
+		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status) {
+			assert.Equal(t, "inactive", retrievedRoom.Status.Type)
+			assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
 		}
 	})
 }
@@ -151,7 +147,7 @@ func TestRepository_GetRoomByID(t *testing.T) {
 func TestRepository_GetRooms(t *testing.T) {
 	t.Parallel()
 
-	t.Run("StatusLatest", func(t *testing.T) {
+	t.Run("最新のステータスが含まれる", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -174,20 +170,9 @@ func TestRepository_GetRooms(t *testing.T) {
 		rooms, err := r.GetRooms()
 		assert.NoError(t, err)
 
-		var retrieved *model.Room
-		for i := range rooms {
-			if rooms[i].ID == room.ID {
-				retrieved = &rooms[i]
-				break
-			}
-		}
-
-		if assert.NotNil(t, retrieved) {
-			assert.NotNil(t, retrieved.Status)
-			if retrieved.Status != nil {
-				assert.Equal(t, "inactive", retrieved.Status.Type)
-				assert.Equal(t, latestTopic, retrieved.Status.Topic)
-			}
+		if assert.Len(t, rooms, 1) && assert.NotNil(t, rooms[0].Status) {
+			assert.Equal(t, "inactive", rooms[0].Status.Type)
+			assert.Equal(t, latestTopic, rooms[0].Status.Topic)
 		}
 	})
 }
@@ -369,7 +354,7 @@ func TestRepository_UpdateRoom(t *testing.T) {
 		}
 	})
 
-	t.Run("StatusNotOverwritten", func(t *testing.T) {
+	t.Run("ステータスは上書きされない", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -395,12 +380,10 @@ func TestRepository_UpdateRoom(t *testing.T) {
 
 		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 		assert.NoError(t, err)
-		if assert.NotNil(t, retrievedRoom) {
-			assert.NotNil(t, retrievedRoom.Status)
-			if retrievedRoom.Status != nil {
-				assert.Equal(t, "active", retrievedRoom.Status.Type)
-				assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
-			}
+
+		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status) {
+			assert.Equal(t, "active", retrievedRoom.Status.Type)
+			assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
 		}
 	})
 
@@ -604,7 +587,7 @@ func TestRepository_DeleteRoom(t *testing.T) {
 		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
 	})
 
-	t.Run("RemoveStatusAndLogs", func(t *testing.T) {
+	t.Run("ステータスも削除される", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)

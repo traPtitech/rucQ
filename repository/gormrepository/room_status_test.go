@@ -14,7 +14,7 @@ import (
 func TestRepository_SetRoomStatus(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Create", func(t *testing.T) {
+	t.Run("作成", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -36,16 +36,14 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 
 		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 		assert.NoError(t, err)
-		if assert.NotNil(t, retrievedRoom) {
-			assert.NotNil(t, retrievedRoom.Status)
-			if retrievedRoom.Status != nil {
-				assert.Equal(t, status.Type, retrievedRoom.Status.Type)
-				assert.Equal(t, status.Topic, retrievedRoom.Status.Topic)
-			}
+
+		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status) {
+			assert.Equal(t, status.Type, retrievedRoom.Status.Type)
+			assert.Equal(t, status.Topic, retrievedRoom.Status.Topic)
 		}
 	})
 
-	t.Run("Update", func(t *testing.T) {
+	t.Run("更新", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -72,24 +70,22 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 
 		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 		assert.NoError(t, err)
-		if assert.NotNil(t, retrievedRoom) {
-			assert.NotNil(t, retrievedRoom.Status)
-			if retrievedRoom.Status != nil {
-				assert.Equal(t, updatedStatus.Type, retrievedRoom.Status.Type)
-				assert.Equal(t, updatedStatus.Topic, retrievedRoom.Status.Topic)
-			}
+
+		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status) {
+			assert.Equal(t, updatedStatus.Type, retrievedRoom.Status.Type)
+			assert.Equal(t, updatedStatus.Topic, retrievedRoom.Status.Topic)
 		}
 
 		logs, err := r.GetRoomStatusLogs(t.Context(), room.ID)
 		assert.NoError(t, err)
-		assert.Len(t, logs, 2)
-		if len(logs) >= 2 {
+
+		if assert.Len(t, logs, 2) {
 			assert.Equal(t, "inactive", logs[0].Type)
 			assert.Equal(t, "active", logs[1].Type)
 		}
 	})
 
-	t.Run("JapaneseTopic64", func(t *testing.T) {
+	t.Run("マルチバイト文字でも64文字までは保存できる", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -111,15 +107,13 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 
 		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 		assert.NoError(t, err)
-		if assert.NotNil(t, retrievedRoom) {
-			assert.NotNil(t, retrievedRoom.Status)
-			if retrievedRoom.Status != nil {
-				assert.Equal(t, status.Topic, retrievedRoom.Status.Topic)
-			}
+
+		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status) {
+			assert.Equal(t, status.Topic, retrievedRoom.Status.Topic)
 		}
 	})
 
-	t.Run("RoomNotFound", func(t *testing.T) {
+	t.Run("部屋が存在しない", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -136,7 +130,7 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 func TestRepository_GetRoomStatusLogs(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Empty", func(t *testing.T) {
+	t.Run("空のログ", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -150,7 +144,7 @@ func TestRepository_GetRoomStatusLogs(t *testing.T) {
 		assert.Empty(t, logs)
 	})
 
-	t.Run("Multiple", func(t *testing.T) {
+	t.Run("複数の要素を含むログ", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -173,8 +167,8 @@ func TestRepository_GetRoomStatusLogs(t *testing.T) {
 
 		logs, err := r.GetRoomStatusLogs(t.Context(), room.ID)
 		assert.NoError(t, err)
-		assert.Len(t, logs, 2)
-		if len(logs) >= 2 {
+
+		if assert.Len(t, logs, 2) {
 			assert.Equal(t, "inactive", logs[0].Type)
 			assert.Equal(t, "active", logs[1].Type)
 		}

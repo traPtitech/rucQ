@@ -17,7 +17,7 @@ import (
 func TestServer_PutRoomStatus(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
@@ -27,7 +27,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 
 		req := api.PutRoomStatusJSONRequestBody{
 			Type:  api.RoomStatusTypeActive,
-			Topic: "In meeting",
+			Topic: random.AlphaNumericString(t, 64),
 		}
 
 		h.repo.MockRoomRepository.EXPECT().
@@ -62,7 +62,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			Status(http.StatusNoContent)
 	})
 
-	t.Run("Not Found - Room does not exist", func(t *testing.T) {
+	t.Run("部屋が存在しない", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
@@ -78,7 +78,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
 				Type:  api.RoomStatusTypeActive,
-				Topic: "Unavailable",
+				Topic: random.AlphaNumericString(t, 64),
 			}).
 			Expect().
 			Status(http.StatusNotFound).
@@ -87,7 +87,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			HasValue("message", "Not Found")
 	})
 
-	t.Run("Forbidden - User is not a participant", func(t *testing.T) {
+	t.Run("ユーザーが合宿の参加者ではない", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
@@ -108,7 +108,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
 				Type:  api.RoomStatusTypeInactive,
-				Topic: "Out",
+				Topic: random.AlphaNumericString(t, 64),
 			}).
 			Expect().
 			Status(http.StatusForbidden).
@@ -117,7 +117,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			HasValue("message", "Forbidden")
 	})
 
-	t.Run("Not Found - Camp does not exist", func(t *testing.T) {
+	t.Run("合宿が存在しない", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
@@ -138,7 +138,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
 				Type:  api.RoomStatusTypeInactive,
-				Topic: "Out",
+				Topic: random.AlphaNumericString(t, 64),
 			}).
 			Expect().
 			Status(http.StatusNotFound).
@@ -151,7 +151,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 func TestServer_GetRoomStatusLogs(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success - Empty", func(t *testing.T) {
+	t.Run("空のログ", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
@@ -170,18 +170,19 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 			IsEmpty()
 	})
 
-	t.Run("Success - With Logs", func(t *testing.T) {
+	t.Run("複数の要素を含むログ", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
 		roomID := api.RoomId(random.PositiveInt(t))
 		operatorID := random.AlphaNumericString(t, 32)
 		now := time.Now().UTC().Truncate(time.Second)
+		topic := random.AlphaNumericString(t, 64)
 
 		logs := []model.RoomStatusLog{
 			{
 				Type:       "active",
-				Topic:      "Session",
+				Topic:      topic,
 				OperatorID: operatorID,
 				Model:      gorm.Model{UpdatedAt: now},
 			},
@@ -201,7 +202,7 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 		res.Length().IsEqual(1)
 		res.Value(0).Object().
 			HasValue("type", "active").
-			HasValue("topic", "Session").
+			HasValue("topic", topic).
 			HasValue("operatorId", operatorID).
 			HasValue("updatedAt", now.Format(time.RFC3339))
 	})
