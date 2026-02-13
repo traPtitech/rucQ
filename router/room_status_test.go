@@ -24,9 +24,10 @@ func TestServer_PutRoomStatus(t *testing.T) {
 		roomID := api.RoomId(random.PositiveInt(t))
 		campID := uint(random.PositiveInt(t))
 		userID := random.AlphaNumericString(t, 32)
+		statusType := random.SelectFrom(t, api.RoomStatusTypeActive, api.RoomStatusTypeInactive)
 
 		req := api.PutRoomStatusJSONRequestBody{
-			Type:  api.RoomStatusTypeActive,
+			Type:  statusType,
 			Topic: random.AlphaNumericString(t, 64),
 		}
 
@@ -74,10 +75,12 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			Return(uint(0), repository.ErrRoomNotFound).
 			Times(1)
 
+		statusType := random.SelectFrom(t, api.RoomStatusTypeActive, api.RoomStatusTypeInactive)
+
 		h.expect.PUT("/api/rooms/{roomId}/status", roomID).
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
-				Type:  api.RoomStatusTypeActive,
+				Type:  statusType,
 				Topic: random.AlphaNumericString(t, 64),
 			}).
 			Expect().
@@ -178,10 +181,11 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 		operatorID := random.AlphaNumericString(t, 32)
 		updatedAt := random.Time(t)
 		topic := random.AlphaNumericString(t, 64)
+		statusType := random.SelectFrom(t, "active", "inactive")
 
 		logs := []model.RoomStatusLog{
 			{
-				Type:       "active",
+				Type:       statusType,
 				Topic:      topic,
 				OperatorID: operatorID,
 				Model:      gorm.Model{UpdatedAt: updatedAt},
@@ -201,7 +205,7 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 
 		res.Length().IsEqual(1)
 		res.Value(0).Object().
-			HasValue("type", "active").
+			HasValue("type", statusType).
 			HasValue("topic", topic).
 			HasValue("operatorId", operatorID).
 			HasValue("updatedAt", updatedAt.Format(time.RFC3339))
