@@ -176,7 +176,7 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 		h := setup(t)
 		roomID := api.RoomId(random.PositiveInt(t))
 		operatorID := random.AlphaNumericString(t, 32)
-		now := time.Now().UTC().Truncate(time.Second)
+		updatedAt := random.Time(t)
 		topic := random.AlphaNumericString(t, 64)
 
 		logs := []model.RoomStatusLog{
@@ -184,7 +184,7 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 				Type:       "active",
 				Topic:      topic,
 				OperatorID: operatorID,
-				Model:      gorm.Model{UpdatedAt: now},
+				Model:      gorm.Model{UpdatedAt: updatedAt},
 			},
 		}
 
@@ -204,6 +204,6 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 			HasValue("type", "active").
 			HasValue("topic", topic).
 			HasValue("operatorId", operatorID).
-			HasValue("updatedAt", now.Format(time.RFC3339))
+			HasValue("updatedAt", updatedAt.Format(time.RFC3339))
 	})
 }
