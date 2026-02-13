@@ -190,6 +190,25 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 			IsEmpty()
 	})
 
+	t.Run("部屋が存在しない", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		roomID := api.RoomId(random.PositiveInt(t))
+
+		h.repo.MockRoomStatusRepository.EXPECT().
+			GetRoomStatusLogs(gomock.Any(), uint(roomID)).
+			Return(nil, repository.ErrRoomNotFound).
+			Times(1)
+
+		h.expect.GET("/api/rooms/{roomId}/status-logs", roomID).
+			Expect().
+			Status(http.StatusNotFound).
+			JSON().
+			Object().
+			HasValue("message", "Not Found")
+	})
+
 	t.Run("複数の要素を含むログ", func(t *testing.T) {
 		t.Parallel()
 

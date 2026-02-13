@@ -91,6 +91,9 @@ func (s *Server) GetRoomStatusLogs(
 ) error {
 	logs, err := s.repo.GetRoomStatusLogs(e.Request().Context(), uint(roomID))
 	if err != nil {
+		if errors.Is(err, repository.ErrRoomNotFound) {
+			return echo.ErrNotFound
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to get room status logs: %w", err))
 	}

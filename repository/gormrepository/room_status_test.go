@@ -194,4 +194,14 @@ func TestRepository_GetRoomStatusLogs(t *testing.T) {
 			assert.Equal(t, "active", logs[1].Type)
 		}
 	})
+
+	t.Run("部屋が存在しない", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+
+		logs, err := r.GetRoomStatusLogs(t.Context(), uint(random.PositiveInt(t)))
+		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
+		assert.Nil(t, logs)
+	})
 }

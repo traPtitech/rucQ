@@ -68,6 +68,13 @@ func (r *Repository) GetRoomStatusLogs(
 	ctx context.Context,
 	roomID uint,
 ) ([]model.RoomStatusLog, error) {
+	if _, err := gorm.G[model.Room](r.db).Where("id = ?", roomID).Take(ctx); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, repository.ErrRoomNotFound
+		}
+		return nil, err
+	}
+
 	logs, err := gorm.G[model.RoomStatusLog](r.db).
 		Where("room_id = ?", roomID).
 		Order("updated_at DESC").
