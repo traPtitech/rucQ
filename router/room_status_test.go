@@ -38,6 +38,10 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			IsCampParticipant(gomock.Any(), campID, userID).
 			Return(true, nil).
 			Times(1)
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&model.User{ID: userID}, nil).
+			Times(1)
 		h.repo.MockRoomStatusRepository.EXPECT().
 			SetRoomStatus(gomock.Any(), uint(roomID), gomock.Any(), userID).
 			DoAndReturn(func(_ any, _ uint, status *model.RoomStatus, _ string) error {
@@ -83,7 +87,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			HasValue("message", "Not Found")
 	})
 
-	t.Run("Not Found - User is not a participant", func(t *testing.T) {
+	t.Run("Forbidden - User is not a participant", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
@@ -107,10 +111,10 @@ func TestServer_PutRoomStatus(t *testing.T) {
 				Topic: "Out",
 			}).
 			Expect().
-			Status(http.StatusNotFound).
+			Status(http.StatusForbidden).
 			JSON().
 			Object().
-			HasValue("message", "Not Found")
+			HasValue("message", "Forbidden")
 	})
 
 	t.Run("Not Found - Camp does not exist", func(t *testing.T) {
@@ -127,7 +131,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			Times(1)
 		h.repo.MockCampRepository.EXPECT().
 			IsCampParticipant(gomock.Any(), campID, userID).
-			Return(false, model.ErrNotFound).
+			Return(false, repository.ErrCampNotFound).
 			Times(1)
 
 		h.expect.PUT("/api/rooms/{roomId}/status", roomID).
@@ -152,24 +156,13 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 
 		h := setup(t)
 		roomID := api.RoomId(random.PositiveInt(t))
-		campID := uint(random.PositiveInt(t))
-		userID := random.AlphaNumericString(t, 32)
 
-		h.repo.MockRoomRepository.EXPECT().
-			GetRoomCampID(gomock.Any(), uint(roomID)).
-			Return(campID, nil).
-			Times(1)
-		h.repo.MockCampRepository.EXPECT().
-			IsCampParticipant(gomock.Any(), campID, userID).
-			Return(true, nil).
-			Times(1)
 		h.repo.MockRoomStatusRepository.EXPECT().
 			GetRoomStatusLogs(gomock.Any(), uint(roomID)).
 			Return([]model.RoomStatusLog{}, nil).
 			Times(1)
 
 		h.expect.GET("/api/rooms/{roomId}/status-logs", roomID).
-			WithHeader("X-Forwarded-User", userID).
 			Expect().
 			Status(http.StatusOK).
 			JSON().
@@ -182,8 +175,6 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 
 		h := setup(t)
 		roomID := api.RoomId(random.PositiveInt(t))
-		campID := uint(random.PositiveInt(t))
-		userID := random.AlphaNumericString(t, 32)
 		operatorID := random.AlphaNumericString(t, 32)
 		now := time.Now().UTC().Truncate(time.Second)
 
@@ -196,21 +187,12 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 			},
 		}
 
-		h.repo.MockRoomRepository.EXPECT().
-			GetRoomCampID(gomock.Any(), uint(roomID)).
-			Return(campID, nil).
-			Times(1)
-		h.repo.MockCampRepository.EXPECT().
-			IsCampParticipant(gomock.Any(), campID, userID).
-			Return(true, nil).
-			Times(1)
 		h.repo.MockRoomStatusRepository.EXPECT().
 			GetRoomStatusLogs(gomock.Any(), uint(roomID)).
 			Return(logs, nil).
 			Times(1)
 
 		res := h.expect.GET("/api/rooms/{roomId}/status-logs", roomID).
-			WithHeader("X-Forwarded-User", userID).
 			Expect().
 			Status(http.StatusOK).
 			JSON().
@@ -222,78 +204,5 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 			HasValue("topic", "Session").
 			HasValue("operatorId", operatorID).
 			HasValue("updatedAt", now.Format(time.RFC3339))
-	})
-
-	t.Run("Not Found - Room does not exist", func(t *testing.T) {
-		t.Parallel()
-
-		h := setup(t)
-		roomID := api.RoomId(random.PositiveInt(t))
-		userID := random.AlphaNumericString(t, 32)
-
-		h.repo.MockRoomRepository.EXPECT().
-			GetRoomCampID(gomock.Any(), uint(roomID)).
-			Return(uint(0), repository.ErrRoomNotFound).
-			Times(1)
-
-		h.expect.GET("/api/rooms/{roomId}/status-logs", roomID).
-			WithHeader("X-Forwarded-User", userID).
-			Expect().
-			Status(http.StatusNotFound).
-			JSON().
-			Object().
-			HasValue("message", "Not Found")
-	})
-
-	t.Run("Not Found - User is not a participant", func(t *testing.T) {
-		t.Parallel()
-
-		h := setup(t)
-		roomID := api.RoomId(random.PositiveInt(t))
-		campID := uint(random.PositiveInt(t))
-		userID := random.AlphaNumericString(t, 32)
-
-		h.repo.MockRoomRepository.EXPECT().
-			GetRoomCampID(gomock.Any(), uint(roomID)).
-			Return(campID, nil).
-			Times(1)
-		h.repo.MockCampRepository.EXPECT().
-			IsCampParticipant(gomock.Any(), campID, userID).
-			Return(false, nil).
-			Times(1)
-
-		h.expect.GET("/api/rooms/{roomId}/status-logs", roomID).
-			WithHeader("X-Forwarded-User", userID).
-			Expect().
-			Status(http.StatusNotFound).
-			JSON().
-			Object().
-			HasValue("message", "Not Found")
-	})
-
-	t.Run("Not Found - Camp does not exist", func(t *testing.T) {
-		t.Parallel()
-
-		h := setup(t)
-		roomID := api.RoomId(random.PositiveInt(t))
-		campID := uint(random.PositiveInt(t))
-		userID := random.AlphaNumericString(t, 32)
-
-		h.repo.MockRoomRepository.EXPECT().
-			GetRoomCampID(gomock.Any(), uint(roomID)).
-			Return(campID, nil).
-			Times(1)
-		h.repo.MockCampRepository.EXPECT().
-			IsCampParticipant(gomock.Any(), campID, userID).
-			Return(false, model.ErrNotFound).
-			Times(1)
-
-		h.expect.GET("/api/rooms/{roomId}/status-logs", roomID).
-			WithHeader("X-Forwarded-User", userID).
-			Expect().
-			Status(http.StatusNotFound).
-			JSON().
-			Object().
-			HasValue("message", "Not Found")
 	})
 }

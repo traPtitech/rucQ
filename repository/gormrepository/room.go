@@ -65,14 +65,18 @@ func (r *Repository) GetRoomByUserID(
 }
 
 func (r *Repository) GetRoomCampID(ctx context.Context, roomID uint) (uint, error) {
-	var campID uint
+	type campResult struct {
+		CampID uint `gorm:"column:camp_id"`
+	}
+
+	var result campResult
 
 	err := r.db.WithContext(ctx).
 		Table("rooms").
 		Select("room_groups.camp_id").
 		Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
 		Where("rooms.id = ?", roomID).
-		First(&campID).Error
+		Take(&result).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -82,7 +86,7 @@ func (r *Repository) GetRoomCampID(ctx context.Context, roomID uint) (uint, erro
 		return 0, err
 	}
 
-	return campID, nil
+	return result.CampID, nil
 }
 
 func (r *Repository) CreateRoom(ctx context.Context, room *model.Room) error {
@@ -178,17 +182,31 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 }
 
 func (r *Repository) DeleteRoom(ctx context.Context, roomID uint) error {
-	rowsAffected, err := gorm.G[model.Room](r.db).
-		Where("id = ?", roomID).
-		Delete(ctx)
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		rowsAffected, err := gorm.G[model.Room](tx).
+			Where("id = ?", roomID).
+			Delete(ctx)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	if rowsAffected == 0 {
-		return repository.ErrRoomNotFound
-	}
+		if rowsAffected == 0 {
+			return repository.ErrRoomNotFound
+		}
 
-	return nil
+		if _, err := gorm.G[*model.RoomStatusLog](tx).
+			Where("room_id = ?", roomID).
+			Delete(ctx); err != nil {
+			return err
+		}
+
+		if _, err := gorm.G[*model.RoomStatus](tx).
+			Where("room_id = ?", roomID).
+			Delete(ctx); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

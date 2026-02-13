@@ -1132,6 +1132,8 @@ paths:
           $ref: "#/components/responses/NoContent"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1144,7 +1146,6 @@ paths:
       operationId: getRoomStatusLogs
       parameters:
         - $ref: "#/components/parameters/RoomId"
-        - $ref: "#/components/parameters/X-Forwarded-User"
       responses:
         "200":
           description: OK

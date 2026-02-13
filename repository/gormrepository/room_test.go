@@ -11,6 +11,31 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
+func TestRepository_GetRoomCampID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+
+		campID, err := r.GetRoomCampID(t.Context(), room.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, camp.ID, campID)
+	})
+
+	t.Run("RoomNotFound", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		_, err := r.GetRoomCampID(t.Context(), uint(random.PositiveInt(t)))
+		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
+	})
+}
+
 func TestRepository_GetRoomByUserID(t *testing.T) {
 	t.Parallel()
 
@@ -43,6 +68,38 @@ func TestRepository_GetRoomByUserID(t *testing.T) {
 		}
 	})
 
+	t.Run("StatusLatest", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		user := mustCreateUser(t, r)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{user})
+		operator := mustCreateUser(t, r)
+
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "active",
+			Topic: random.AlphaNumericString(t, 64),
+		}, operator.ID)
+
+		latestTopic := random.AlphaNumericString(t, 64)
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "inactive",
+			Topic: latestTopic,
+		}, operator.ID)
+
+		retrievedRoom, err := r.GetRoomByUserID(t.Context(), camp.ID, user.ID)
+		assert.NoError(t, err)
+		if assert.NotNil(t, retrievedRoom) {
+			assert.NotNil(t, retrievedRoom.Status)
+			if retrievedRoom.Status != nil {
+				assert.Equal(t, "inactive", retrievedRoom.Status.Type)
+				assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
+			}
+		}
+	})
+
 	t.Run("NotFound", func(t *testing.T) {
 		t.Parallel()
 
@@ -53,6 +110,85 @@ func TestRepository_GetRoomByUserID(t *testing.T) {
 		_, err := r.GetRoomByUserID(t.Context(), camp.ID, user.ID)
 
 		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
+	})
+}
+
+func TestRepository_GetRoomByID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("StatusLatest", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+		operator := mustCreateUser(t, r)
+
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "active",
+			Topic: random.AlphaNumericString(t, 64),
+		}, operator.ID)
+
+		latestTopic := random.AlphaNumericString(t, 64)
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "inactive",
+			Topic: latestTopic,
+		}, operator.ID)
+
+		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
+		assert.NoError(t, err)
+		if assert.NotNil(t, retrievedRoom) {
+			assert.NotNil(t, retrievedRoom.Status)
+			if retrievedRoom.Status != nil {
+				assert.Equal(t, "inactive", retrievedRoom.Status.Type)
+				assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
+			}
+		}
+	})
+}
+
+func TestRepository_GetRooms(t *testing.T) {
+	t.Parallel()
+
+	t.Run("StatusLatest", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+		operator := mustCreateUser(t, r)
+
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "active",
+			Topic: random.AlphaNumericString(t, 64),
+		}, operator.ID)
+
+		latestTopic := random.AlphaNumericString(t, 64)
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "inactive",
+			Topic: latestTopic,
+		}, operator.ID)
+
+		rooms, err := r.GetRooms()
+		assert.NoError(t, err)
+
+		var retrieved *model.Room
+		for i := range rooms {
+			if rooms[i].ID == room.ID {
+				retrieved = &rooms[i]
+				break
+			}
+		}
+
+		if assert.NotNil(t, retrieved) {
+			assert.NotNil(t, retrieved.Status)
+			if retrieved.Status != nil {
+				assert.Equal(t, "inactive", retrieved.Status.Type)
+				assert.Equal(t, latestTopic, retrieved.Status.Topic)
+			}
+		}
 	})
 }
 
@@ -230,6 +366,41 @@ func TestRepository_UpdateRoom(t *testing.T) {
 
 			assert.Contains(t, memberIDs, user1.ID)
 			assert.Contains(t, memberIDs, user2.ID)
+		}
+	})
+
+	t.Run("StatusNotOverwritten", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+		operator := mustCreateUser(t, r)
+
+		latestTopic := random.AlphaNumericString(t, 64)
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "active",
+			Topic: latestTopic,
+		}, operator.ID)
+
+		updatedRoom := &model.Room{
+			Name:        random.AlphaNumericString(t, 20),
+			RoomGroupID: roomGroup.ID,
+			Members:     []model.User{},
+		}
+
+		err := r.UpdateRoom(t.Context(), room.ID, updatedRoom)
+		assert.NoError(t, err)
+
+		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
+		assert.NoError(t, err)
+		if assert.NotNil(t, retrievedRoom) {
+			assert.NotNil(t, retrievedRoom.Status)
+			if retrievedRoom.Status != nil {
+				assert.Equal(t, "active", retrievedRoom.Status.Type)
+				assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
+			}
 		}
 	})
 
@@ -431,6 +602,45 @@ func TestRepository_DeleteRoom(t *testing.T) {
 		// 削除されているかを確認
 		_, err = r.GetRoomByID(t.Context(), room.ID)
 		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
+	})
+
+	t.Run("RemoveStatusAndLogs", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+		operator := mustCreateUser(t, r)
+
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "active",
+			Topic: random.AlphaNumericString(t, 64),
+		}, operator.ID)
+
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "inactive",
+			Topic: random.AlphaNumericString(t, 64),
+		}, operator.ID)
+
+		err := r.DeleteRoom(t.Context(), room.ID)
+		assert.NoError(t, err)
+
+		var statusCount int64
+		err = r.db.WithContext(t.Context()).
+			Model(&model.RoomStatus{}).
+			Where("room_id = ?", room.ID).
+			Count(&statusCount).Error
+		assert.NoError(t, err)
+		assert.Zero(t, statusCount)
+
+		var logCount int64
+		err = r.db.WithContext(t.Context()).
+			Model(&model.RoomStatusLog{}).
+			Where("room_id = ?", room.ID).
+			Count(&logCount).Error
+		assert.NoError(t, err)
+		assert.Zero(t, logCount)
 	})
 
 	t.Run("NotFound", func(t *testing.T) {

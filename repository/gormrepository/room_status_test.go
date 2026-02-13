@@ -1,11 +1,10 @@
 package gormrepository
 
 import (
+	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
@@ -15,7 +14,7 @@ import (
 func TestRepository_SetRoomStatus(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("Create", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -23,46 +22,101 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 
-		operatorID := random.AlphaNumericString(t, 32)
+		operator := mustCreateUser(t, r)
+		operatorID := operator.ID
+		topic := random.AlphaNumericString(t, 64)
 
 		status := &model.RoomStatus{
 			Type:  "active",
-			Topic: "Session",
+			Topic: topic,
 		}
 
-		if !assert.NoError(t, r.SetRoomStatus(t.Context(), room.ID, status, operatorID)) {
-			return
-		}
+		err := r.SetRoomStatus(t.Context(), room.ID, status, operatorID)
+		assert.NoError(t, err)
 
 		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
-		require.NoError(t, err)
-		assert.NotNil(t, retrievedRoom.Status)
-		assert.Equal(t, status.Type, retrievedRoom.Status.Type)
-		assert.Equal(t, status.Topic, retrievedRoom.Status.Topic)
+		assert.NoError(t, err)
+		if assert.NotNil(t, retrievedRoom) {
+			assert.NotNil(t, retrievedRoom.Status)
+			if retrievedRoom.Status != nil {
+				assert.Equal(t, status.Type, retrievedRoom.Status.Type)
+				assert.Equal(t, status.Topic, retrievedRoom.Status.Topic)
+			}
+		}
+	})
 
+	t.Run("Update", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+
+		operator := mustCreateUser(t, r)
+		operatorID := operator.ID
+		initialTopic := random.AlphaNumericString(t, 64)
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "active",
+			Topic: initialTopic,
+		}, operatorID)
+
+		updatedTopic := random.AlphaNumericString(t, 64)
 		updatedStatus := &model.RoomStatus{
 			Type:  "inactive",
-			Topic: "Break",
+			Topic: updatedTopic,
 		}
 
-		time.Sleep(10 * time.Millisecond)
-		if !assert.NoError(t, r.SetRoomStatus(t.Context(), room.ID, updatedStatus, operatorID)) {
-			return
-		}
+		err := r.SetRoomStatus(t.Context(), room.ID, updatedStatus, operatorID)
+		assert.NoError(t, err)
 
-		retrievedRoom, err = r.GetRoomByID(t.Context(), room.ID)
-		require.NoError(t, err)
-		assert.NotNil(t, retrievedRoom.Status)
-		assert.Equal(t, updatedStatus.Type, retrievedRoom.Status.Type)
-		assert.Equal(t, updatedStatus.Topic, retrievedRoom.Status.Topic)
+		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
+		assert.NoError(t, err)
+		if assert.NotNil(t, retrievedRoom) {
+			assert.NotNil(t, retrievedRoom.Status)
+			if retrievedRoom.Status != nil {
+				assert.Equal(t, updatedStatus.Type, retrievedRoom.Status.Type)
+				assert.Equal(t, updatedStatus.Topic, retrievedRoom.Status.Topic)
+			}
+		}
 
 		logs, err := r.GetRoomStatusLogs(t.Context(), room.ID)
-		if !assert.NoError(t, err) {
-			return
-		}
+		assert.NoError(t, err)
 		assert.Len(t, logs, 2)
-		assert.Equal(t, "active", logs[0].Type)
-		assert.Equal(t, "inactive", logs[1].Type)
+		if len(logs) >= 2 {
+			assert.Equal(t, "active", logs[0].Type)
+			assert.Equal(t, "inactive", logs[1].Type)
+		}
+	})
+
+	t.Run("JapaneseTopic64", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+
+		operator := mustCreateUser(t, r)
+		operatorID := operator.ID
+		japaneseTopic := strings.Repeat("あ", 64)
+
+		status := &model.RoomStatus{
+			Type:  "active",
+			Topic: japaneseTopic,
+		}
+
+		err := r.SetRoomStatus(t.Context(), room.ID, status, operatorID)
+		assert.NoError(t, err)
+
+		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
+		assert.NoError(t, err)
+		if assert.NotNil(t, retrievedRoom) {
+			assert.NotNil(t, retrievedRoom.Status)
+			if retrievedRoom.Status != nil {
+				assert.Equal(t, status.Topic, retrievedRoom.Status.Topic)
+			}
+		}
 	})
 
 	t.Run("RoomNotFound", func(t *testing.T) {
@@ -72,7 +126,7 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 
 		err := r.SetRoomStatus(t.Context(), uint(random.PositiveInt(t)), &model.RoomStatus{
 			Type:  "active",
-			Topic: "Session",
+			Topic: random.AlphaNumericString(t, 64),
 		}, random.AlphaNumericString(t, 32))
 
 		assert.ErrorIs(t, err, repository.ErrRoomNotFound)
@@ -92,9 +146,37 @@ func TestRepository_GetRoomStatusLogs(t *testing.T) {
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 
 		logs, err := r.GetRoomStatusLogs(t.Context(), room.ID)
-		if !assert.NoError(t, err) {
-			return
-		}
+		assert.NoError(t, err)
 		assert.Empty(t, logs)
+	})
+
+	t.Run("Multiple", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+		operator := mustCreateUser(t, r)
+		operatorID := operator.ID
+
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "active",
+			Topic: random.AlphaNumericString(t, 64),
+		}, operatorID)
+
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "inactive",
+			Topic: random.AlphaNumericString(t, 64),
+		}, operatorID)
+
+		logs, err := r.GetRoomStatusLogs(t.Context(), room.ID)
+		assert.NoError(t, err)
+		assert.Len(t, logs, 2)
+		if len(logs) >= 2 {
+			assert.Equal(t, "active", logs[0].Type)
+			assert.Equal(t, "inactive", logs[1].Type)
+		}
 	})
 }

@@ -407,3 +407,16 @@ func mustCreateRoom(
 
 	return room
 }
+
+func mustSetRoomStatus(
+	t *testing.T,
+	r *Repository,
+	roomID uint,
+	status *model.RoomStatus,
+	operatorID string,
+) {
+	t.Helper()
+
+	err := r.SetRoomStatus(t.Context(), roomID, status, operatorID)
+	require.NoError(t, err)
+}

@@ -19,20 +19,18 @@ func (r *Repository) SetRoomStatus(
 	operatorID string,
 ) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.First(&model.Room{}, roomID).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return repository.ErrRoomNotFound
-			}
-			return err
-		}
-
 		status.RoomID = roomID
 		status.UpdatedAt = time.Now()
 
-		if err := tx.Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "room_id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"type", "topic", "updated_at"}),
-		}).Create(status).Error; err != nil {
+		if err := tx.
+			Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "room_id"}},
+				DoUpdates: clause.AssignmentColumns([]string{"type", "topic", "updated_at"}),
+			}).
+			Create(status).Error; err != nil {
+			if errors.Is(err, gorm.ErrForeignKeyViolated) {
+				return repository.ErrRoomNotFound
+			}
 			return err
 		}
 
@@ -43,7 +41,10 @@ func (r *Repository) SetRoomStatus(
 			OperatorID: operatorID,
 		}
 
-		if err := tx.Create(&log).Error; err != nil {
+		if err := gorm.G[model.RoomStatusLog](tx).Create(ctx, &log); err != nil {
+			if errors.Is(err, gorm.ErrForeignKeyViolated) {
+				return repository.ErrRoomNotFound
+			}
 			return err
 		}
 
