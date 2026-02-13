@@ -8,6 +8,11 @@ import (
 )
 
 type RoomStatusRepository interface {
-	SetRoomStatus(ctx context.Context, roomID uint, status *model.RoomStatus, operatorID string) error
+	SetRoomStatus(
+		ctx context.Context,
+		roomID uint,
+		status *model.RoomStatus,
+		operatorID string,
+	) error
 	GetRoomStatusLogs(ctx context.Context, roomID uint) ([]model.RoomStatusLog, error)
 }
