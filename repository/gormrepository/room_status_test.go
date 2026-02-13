@@ -88,8 +88,9 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 		if assert.Len(t, logs, 2) &&
 			assert.NotNil(t, logs[0].Type) &&
 			assert.NotNil(t, logs[1].Type) {
-			assert.Equal(t, statusTypeOld, *logs[0].Type)
-			assert.Equal(t, statusTypeNew, *logs[1].Type)
+			// 新しい順で返ってくる
+			assert.Equal(t, statusTypeNew, *logs[0].Type)
+			assert.Equal(t, statusTypeOld, *logs[1].Type)
 		}
 	})
 
@@ -233,7 +234,7 @@ func TestRepository_GetRoomStatusLogs(t *testing.T) {
 		if assert.Len(t, logs, 2) &&
 			assert.NotNil(t, logs[0].Type) &&
 			assert.NotNil(t, logs[1].Type) {
-			// 新しい順で返ってくることを確認
+			// 新しい順で返ってくる
 			assert.Equal(t, statusTypeNew, *logs[0].Type)
 			assert.Equal(t, statusTypeOld, *logs[1].Type)
 		}
