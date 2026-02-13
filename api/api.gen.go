@@ -715,13 +715,13 @@ type RoomResponse struct {
 	Id      int            `json:"id"`
 	Members []UserResponse `json:"members"`
 	Name    string         `json:"name"`
-	Status  *RoomStatus    `json:"status,omitempty"`
+	Status  RoomStatus     `json:"status"`
 }
 
 // RoomStatus defines model for RoomStatus.
 type RoomStatus struct {
-	Topic string         `json:"topic"`
-	Type  RoomStatusType `json:"type"`
+	Topic string          `json:"topic"`
+	Type  *RoomStatusType `json:"type"`
 }
 
 // RoomStatusType defines model for RoomStatus.Type.
@@ -729,10 +729,10 @@ type RoomStatusType string
 
 // RoomStatusLog defines model for RoomStatusLog.
 type RoomStatusLog struct {
-	OperatorId string            `json:"operatorId"`
-	Topic      string            `json:"topic"`
-	Type       RoomStatusLogType `json:"type"`
-	UpdatedAt  time.Time         `json:"updatedAt"`
+	OperatorId string             `json:"operatorId"`
+	Topic      string             `json:"topic"`
+	Type       *RoomStatusLogType `json:"type"`
+	UpdatedAt  time.Time          `json:"updatedAt"`
 }
 
 // RoomStatusLogType defines model for RoomStatusLog.Type.

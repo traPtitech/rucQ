@@ -2412,6 +2412,7 @@ components:
           enum:
             - active
             - inactive
+          nullable: true
         topic:
           type: string
           maxLength: 64
@@ -2426,6 +2427,7 @@ components:
           enum:
             - active
             - inactive
+          nullable: true
         topic:
           type: string
           maxLength: 64
@@ -2456,6 +2458,7 @@ components:
         - id
         - name
         - members
+        - status
     ImageResponse:
       type: object
       properties:

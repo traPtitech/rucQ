@@ -77,23 +77,25 @@ func TestRepository_GetRoomByUserID(t *testing.T) {
 		user := mustCreateUser(t, r)
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{user})
 		operator := mustCreateUser(t, r)
+		statusTypeOld := random.SelectFrom(t, "active", "inactive")
+		statusTypeNew := random.SelectFrom(t, "active", "inactive")
 
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "active",
+			Type:  &statusTypeOld,
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		latestTopic := random.AlphaNumericString(t, 64)
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "inactive",
+			Type:  &statusTypeNew,
 			Topic: latestTopic,
 		}, operator.ID)
 
 		retrievedRoom, err := r.GetRoomByUserID(t.Context(), camp.ID, user.ID)
 		assert.NoError(t, err)
 
-		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status) {
-			assert.Equal(t, "inactive", retrievedRoom.Status.Type)
+		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status.Type) {
+			assert.Equal(t, statusTypeNew, *retrievedRoom.Status.Type)
 			assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
 		}
 	})
@@ -122,23 +124,25 @@ func TestRepository_GetRoomByID(t *testing.T) {
 		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 		operator := mustCreateUser(t, r)
+		statusTypeOld := random.SelectFrom(t, "active", "inactive")
+		statusTypeNew := random.SelectFrom(t, "active", "inactive")
 
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "active",
+			Type:  &statusTypeOld,
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		latestTopic := random.AlphaNumericString(t, 64)
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "inactive",
+			Type:  &statusTypeNew,
 			Topic: latestTopic,
 		}, operator.ID)
 
 		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 		assert.NoError(t, err)
 
-		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status) {
-			assert.Equal(t, "inactive", retrievedRoom.Status.Type)
+		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status.Type) {
+			assert.Equal(t, statusTypeNew, *retrievedRoom.Status.Type)
 			assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
 		}
 	})
@@ -155,23 +159,25 @@ func TestRepository_GetRooms(t *testing.T) {
 		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 		operator := mustCreateUser(t, r)
+		statusTypeOld := random.SelectFrom(t, "active", "inactive")
+		statusTypeNew := random.SelectFrom(t, "active", "inactive")
 
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "active",
+			Type:  &statusTypeOld,
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		latestTopic := random.AlphaNumericString(t, 64)
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "inactive",
+			Type:  &statusTypeNew,
 			Topic: latestTopic,
 		}, operator.ID)
 
 		rooms, err := r.GetRooms()
 		assert.NoError(t, err)
 
-		if assert.Len(t, rooms, 1) && assert.NotNil(t, rooms[0].Status) {
-			assert.Equal(t, "inactive", rooms[0].Status.Type)
+		if assert.Len(t, rooms, 1) && assert.NotNil(t, rooms[0].Status.Type) {
+			assert.Equal(t, "inactive", *rooms[0].Status.Type)
 			assert.Equal(t, latestTopic, rooms[0].Status.Topic)
 		}
 	})
@@ -220,6 +226,9 @@ func TestRepository_CreateRoom(t *testing.T) {
 			assert.Contains(t, memberIDs, user1.ID)
 			assert.Contains(t, memberIDs, user2.ID)
 		}
+
+		assert.Equal(t, "", retrievedRoom.Status.Topic)
+		assert.Nil(t, retrievedRoom.Status.Type)
 	})
 
 	t.Run("Success without members", func(t *testing.T) {
@@ -247,6 +256,8 @@ func TestRepository_CreateRoom(t *testing.T) {
 		assert.Equal(t, room.Name, retrievedRoom.Name)
 		assert.Equal(t, roomGroup.ID, retrievedRoom.RoomGroupID)
 		assert.Empty(t, retrievedRoom.Members)
+		assert.Equal(t, "", retrievedRoom.Status.Topic)
+		assert.Nil(t, retrievedRoom.Status.Type)
 	})
 
 	t.Run("Non-existent RoomGroup", func(t *testing.T) {
@@ -364,8 +375,10 @@ func TestRepository_UpdateRoom(t *testing.T) {
 		operator := mustCreateUser(t, r)
 
 		latestTopic := random.AlphaNumericString(t, 64)
+		statusType := random.SelectFrom(t, "active", "inactive")
+
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "active",
+			Type:  &statusType,
 			Topic: latestTopic,
 		}, operator.ID)
 
@@ -381,8 +394,8 @@ func TestRepository_UpdateRoom(t *testing.T) {
 		retrievedRoom, err := r.GetRoomByID(t.Context(), room.ID)
 		assert.NoError(t, err)
 
-		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status) {
-			assert.Equal(t, "active", retrievedRoom.Status.Type)
+		if assert.NotNil(t, retrievedRoom) && assert.NotNil(t, retrievedRoom.Status.Type) {
+			assert.Equal(t, statusType, *retrievedRoom.Status.Type)
 			assert.Equal(t, latestTopic, retrievedRoom.Status.Topic)
 		}
 	})
@@ -595,14 +608,16 @@ func TestRepository_DeleteRoom(t *testing.T) {
 		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 		operator := mustCreateUser(t, r)
+		statusType1 := random.SelectFrom(t, "active", "inactive")
+		statusType2 := random.SelectFrom(t, "active", "inactive")
 
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "active",
+			Type:  &statusType1,
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "inactive",
+			Type:  &statusType2,
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 

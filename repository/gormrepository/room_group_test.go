@@ -274,15 +274,17 @@ func TestRepository_GetRoomGroupByID(t *testing.T) {
 		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 		operator := mustCreateUser(t, r)
+		statusTypeOld := random.SelectFrom(t, "active", "inactive")
+		statusTypeNew := random.SelectFrom(t, "active", "inactive")
 
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "active",
+			Type:  &statusTypeOld,
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		latestTopic := random.AlphaNumericString(t, 64)
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "inactive",
+			Type:  &statusTypeNew,
 			Topic: latestTopic,
 		}, operator.ID)
 
@@ -291,8 +293,8 @@ func TestRepository_GetRoomGroupByID(t *testing.T) {
 
 		if assert.NotNil(t, retrievedRoomGroup) &&
 			assert.Len(t, retrievedRoomGroup.Rooms, 1) &&
-			assert.NotNil(t, retrievedRoomGroup.Rooms[0].Status) {
-			assert.Equal(t, "inactive", retrievedRoomGroup.Rooms[0].Status.Type)
+			assert.NotNil(t, retrievedRoomGroup.Rooms[0].Status.Type) {
+			assert.Equal(t, statusTypeNew, *retrievedRoomGroup.Rooms[0].Status.Type)
 			assert.Equal(t, latestTopic, retrievedRoomGroup.Rooms[0].Status.Topic)
 		}
 	})
@@ -353,36 +355,34 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 		if assert.Len(t, roomGroups, 2) {
 			assert.Equal(t, roomGroup1.ID, roomGroups[0].ID)
 			assert.Equal(t, roomGroup1.Name, roomGroups[0].Name)
-
-			if assert.Len(t, roomGroups[0].Rooms, 1) {
-				assert.Equal(t, room1.ID, roomGroups[0].Rooms[0].ID)
-				assert.Equal(t, room1.Name, roomGroups[0].Rooms[0].Name)
-				assert.Equal(t, room1.RoomGroupID, roomGroups[0].Rooms[0].RoomGroupID)
-
-				if assert.Len(t, roomGroups[0].Rooms[0].Members, 2) {
-					expectedUserIDs := []string{user1.ID, user2.ID}
-					actualUserIDs := []string{
-						roomGroups[0].Rooms[0].Members[0].ID,
-						roomGroups[0].Rooms[0].Members[1].ID,
-					}
-
-					assert.ElementsMatch(t, expectedUserIDs, actualUserIDs)
-				}
-			}
-
 			assert.Equal(t, roomGroup2.ID, roomGroups[1].ID)
 			assert.Equal(t, roomGroup2.Name, roomGroups[1].Name)
+		}
 
-			if assert.Len(t, roomGroups[1].Rooms, 1) {
-				assert.Equal(t, room2.ID, roomGroups[1].Rooms[0].ID)
-				assert.Equal(t, room2.Name, roomGroups[1].Rooms[0].Name)
-				assert.Equal(t, room2.RoomGroupID, roomGroups[1].Rooms[0].RoomGroupID)
+		if assert.Len(t, roomGroups, 2) &&
+			assert.Len(t, roomGroups[0].Rooms, 1) &&
+			assert.Len(t, roomGroups[0].Rooms[0].Members, 2) {
+			assert.Equal(t, room1.ID, roomGroups[0].Rooms[0].ID)
+			assert.Equal(t, room1.Name, roomGroups[0].Rooms[0].Name)
+			assert.Equal(t, room1.RoomGroupID, roomGroups[0].Rooms[0].RoomGroupID)
 
-				if assert.Len(t, roomGroups[1].Rooms[0].Members, 1) {
-					assert.Equal(t, user1.ID, roomGroups[1].Rooms[0].Members[0].ID)
-					assert.Equal(t, user1.IsStaff, roomGroups[1].Rooms[0].Members[0].IsStaff)
-				}
+			expectedUserIDs := []string{user1.ID, user2.ID}
+			actualUserIDs := []string{
+				roomGroups[0].Rooms[0].Members[0].ID,
+				roomGroups[0].Rooms[0].Members[1].ID,
 			}
+
+			assert.ElementsMatch(t, expectedUserIDs, actualUserIDs)
+		}
+
+		if assert.Len(t, roomGroups, 2) &&
+			assert.Len(t, roomGroups[1].Rooms, 1) &&
+			assert.Len(t, roomGroups[1].Rooms[0].Members, 1) {
+			assert.Equal(t, room2.ID, roomGroups[1].Rooms[0].ID)
+			assert.Equal(t, room2.Name, roomGroups[1].Rooms[0].Name)
+			assert.Equal(t, room2.RoomGroupID, roomGroups[1].Rooms[0].RoomGroupID)
+			assert.Equal(t, user1.ID, roomGroups[1].Rooms[0].Members[0].ID)
+			assert.Equal(t, user1.IsStaff, roomGroups[1].Rooms[0].Members[0].IsStaff)
 		}
 	})
 
@@ -394,15 +394,17 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
 		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
 		operator := mustCreateUser(t, r)
+		statusTypeOld := random.SelectFrom(t, "active", "inactive")
+		statusTypeNew := random.SelectFrom(t, "active", "inactive")
 
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "active",
+			Type:  &statusTypeOld,
 			Topic: random.AlphaNumericString(t, 64),
 		}, operator.ID)
 
 		latestTopic := random.AlphaNumericString(t, 64)
 		mustSetRoomStatus(t, r, room.ID, model.RoomStatus{
-			Type:  "inactive",
+			Type:  &statusTypeNew,
 			Topic: latestTopic,
 		}, operator.ID)
 
@@ -412,8 +414,8 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 
 		if assert.Len(t, roomGroups, 1) &&
 			assert.Len(t, roomGroups[0].Rooms, 1) &&
-			assert.NotNil(t, roomGroups[0].Rooms[0].Status) {
-			assert.Equal(t, "inactive", roomGroups[0].Rooms[0].Status.Type)
+			assert.NotNil(t, roomGroups[0].Rooms[0].Status.Type) {
+			assert.Equal(t, statusTypeNew, *roomGroups[0].Rooms[0].Status.Type)
 			assert.Equal(t, latestTopic, roomGroups[0].Rooms[0].Status.Topic)
 		}
 	})

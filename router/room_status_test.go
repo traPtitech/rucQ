@@ -28,9 +28,10 @@ func TestServer_PutRoomStatus(t *testing.T) {
 		campID := uint(random.PositiveInt(t))
 		userID := random.AlphaNumericString(t, 32)
 		statusType := random.SelectFrom(t, api.RoomStatusTypeActive, api.RoomStatusTypeInactive)
+		statusTypeStr := string(statusType)
 
 		req := api.PutRoomStatusJSONRequestBody{
-			Type:  statusType,
+			Type:  &statusType,
 			Topic: random.AlphaNumericString(t, roomStatusTopicMaxLength),
 		}
 
@@ -48,7 +49,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			Times(1)
 		h.repo.MockRoomStatusRepository.EXPECT().
 			SetRoomStatus(gomock.Any(), uint(roomID), model.RoomStatus{
-				Type:  string(req.Type),
+				Type:  &statusTypeStr,
 				Topic: req.Topic,
 			}, userID).
 			Times(1)
@@ -77,7 +78,7 @@ func TestServer_PutRoomStatus(t *testing.T) {
 		h.expect.PUT("/api/rooms/{roomId}/status", roomID).
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
-				Type:  statusType,
+				Type:  &statusType,
 				Topic: random.AlphaNumericString(t, roomStatusTopicMaxLength),
 			}).
 			Expect().
@@ -104,10 +105,12 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			Return(false, nil).
 			Times(1)
 
+		statusType := random.SelectFrom(t, api.RoomStatusTypeActive, api.RoomStatusTypeInactive)
+
 		h.expect.PUT("/api/rooms/{roomId}/status", roomID).
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
-				Type:  api.RoomStatusTypeInactive,
+				Type:  &statusType,
 				Topic: random.AlphaNumericString(t, roomStatusTopicMaxLength),
 			}).
 			Expect().
@@ -134,10 +137,12 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			Return(false, repository.ErrCampNotFound).
 			Times(1)
 
+		statusType := random.SelectFrom(t, api.RoomStatusTypeActive, api.RoomStatusTypeInactive)
+
 		h.expect.PUT("/api/rooms/{roomId}/status", roomID).
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
-				Type:  api.RoomStatusTypeInactive,
+				Type:  &statusType,
 				Topic: random.AlphaNumericString(t, roomStatusTopicMaxLength),
 			}).
 			Expect().
@@ -153,11 +158,12 @@ func TestServer_PutRoomStatus(t *testing.T) {
 		h := setup(t)
 		roomID := api.RoomId(random.PositiveInt(t))
 		userID := random.AlphaNumericString(t, 32)
+		statusType := random.SelectFrom(t, api.RoomStatusTypeActive, api.RoomStatusTypeInactive)
 
 		h.expect.PUT("/api/rooms/{roomId}/status", roomID).
 			WithHeader("X-Forwarded-User", userID).
 			WithJSON(api.PutRoomStatusJSONRequestBody{
-				Type:  api.RoomStatusTypeActive,
+				Type:  &statusType,
 				Topic: strings.Repeat("a", roomStatusTopicMaxLength+1),
 			}).
 			Expect().
@@ -165,6 +171,44 @@ func TestServer_PutRoomStatus(t *testing.T) {
 			JSON().
 			Object().
 			HasValue("message", "Bad Request")
+	})
+
+	t.Run("typeがnullのリクエストを正常に受け付ける", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		roomID := api.RoomId(random.PositiveInt(t))
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		topic := random.AlphaNumericString(t, roomStatusTopicMaxLength)
+
+		h.repo.MockRoomRepository.EXPECT().
+			GetRoomCampID(gomock.Any(), uint(roomID)).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
+			Times(1)
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&model.User{ID: userID}, nil).
+			Times(1)
+		h.repo.MockRoomStatusRepository.EXPECT().
+			SetRoomStatus(gomock.Any(), uint(roomID), model.RoomStatus{
+				Type:  nil,
+				Topic: topic,
+			}, userID).
+			Times(1)
+
+		h.expect.PUT("/api/rooms/{roomId}/status", roomID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(api.PutRoomStatusJSONRequestBody{
+				Type:  nil,
+				Topic: topic,
+			}).
+			Expect().
+			Status(http.StatusNoContent)
 	})
 }
 
@@ -221,7 +265,7 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 
 		logs := []model.RoomStatusLog{
 			{
-				Type:       statusType,
+				Type:       &statusType,
 				Topic:      topic,
 				OperatorID: operatorID,
 				Model:      gorm.Model{UpdatedAt: updatedAt},
@@ -243,6 +287,43 @@ func TestServer_GetRoomStatusLogs(t *testing.T) {
 		res.Value(0).Object().
 			HasValue("type", statusType).
 			HasValue("topic", topic).
+			HasValue("operatorId", operatorID).
+			HasValue("updatedAt", updatedAt.Format(time.RFC3339Nano))
+	})
+
+	t.Run("typeがnullのログが返る", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		roomID := api.RoomId(random.PositiveInt(t))
+		operatorID := random.AlphaNumericString(t, 32)
+		updatedAt := random.Time(t)
+		topic := random.AlphaNumericString(t, 64)
+
+		logs := []model.RoomStatusLog{
+			{
+				Type:       nil,
+				Topic:      topic,
+				OperatorID: operatorID,
+				Model:      gorm.Model{UpdatedAt: updatedAt},
+			},
+		}
+
+		h.repo.MockRoomStatusRepository.EXPECT().
+			GetRoomStatusLogs(gomock.Any(), uint(roomID)).
+			Return(logs, nil).
+			Times(1)
+
+		res := h.expect.GET("/api/rooms/{roomId}/status-logs", roomID).
+			Expect().
+			Status(http.StatusOK).
+			JSON().
+			Array()
+
+		res.Length().IsEqual(1)
+		resObject := res.Value(0).Object()
+		resObject.Value("type").IsNull()
+		resObject.HasValue("topic", topic).
 			HasValue("operatorId", operatorID).
 			HasValue("updatedAt", updatedAt.Format(time.RFC3339Nano))
 	})
