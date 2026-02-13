@@ -13,7 +13,7 @@ import (
 func (r *Repository) GetRooms() ([]model.Room, error) {
 	var rooms []model.Room
 
-	if err := r.db.Preload("Members").Find(&rooms).Error; err != nil {
+	if err := r.db.Preload("Members").Preload("Status").Find(&rooms).Error; err != nil {
 		return nil, err
 	}
 
@@ -23,6 +23,7 @@ func (r *Repository) GetRooms() ([]model.Room, error) {
 func (r *Repository) GetRoomByID(ctx context.Context, roomID uint) (*model.Room, error) {
 	room, err := gorm.G[model.Room](r.db).
 		Preload("Members", nil).
+		Preload("Status", nil).
 		Where("id = ?", roomID).
 		First(ctx)
 
@@ -51,6 +52,7 @@ func (r *Repository) GetRoomByUserID(
 		Where("room_members.user_id = ?", userID).
 		Where("room_groups.camp_id = ?", campID).
 		Preload("Members").
+		Preload("Status").
 		First(&room).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, repository.ErrRoomNotFound
@@ -60,6 +62,27 @@ func (r *Repository) GetRoomByUserID(
 	}
 
 	return &room, nil
+}
+
+func (r *Repository) GetRoomCampID(ctx context.Context, roomID uint) (uint, error) {
+	var campID uint
+
+	err := r.db.WithContext(ctx).
+		Table("rooms").
+		Select("room_groups.camp_id").
+		Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
+		Where("rooms.id = ?", roomID).
+		First(&campID).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, repository.ErrRoomNotFound
+		}
+
+		return 0, err
+	}
+
+	return campID, nil
 }
 
 func (r *Repository) CreateRoom(ctx context.Context, room *model.Room) error {
