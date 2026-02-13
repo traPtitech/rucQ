@@ -44,7 +44,18 @@ func (r *Repository) SetRoomStatus(
 
 		if err := gorm.G[model.RoomStatusLog](tx).Create(ctx, &log); err != nil {
 			if errors.Is(err, gorm.ErrForeignKeyViolated) {
-				return repository.ErrRoomNotFound
+				if _, err := gorm.G[model.Room](
+					tx,
+				).Where("id = ?", log.RoomID).
+					Take(ctx); err != nil {
+					if errors.Is(err, gorm.ErrRecordNotFound) {
+						return repository.ErrRoomNotFound
+					}
+
+					return err
+				}
+
+				return err
 			}
 			return err
 		}
