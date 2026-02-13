@@ -1141,6 +1141,9 @@ paths:
   /api/rooms/{roomId}/status-logs:
     get:
       summary: 部屋のステータス履歴を取得
+      description: |
+        現在のステータスを含む、これまでのステータス変更履歴を取得します。
+        未設定の場合は空配列が返されます。順番は`updatedAt`の降順です。
       tags:
         - Rooms
       operationId: getRoomStatusLogs

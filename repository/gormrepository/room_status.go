@@ -58,7 +58,7 @@ func (r *Repository) GetRoomStatusLogs(
 ) ([]model.RoomStatusLog, error) {
 	logs, err := gorm.G[model.RoomStatusLog](r.db).
 		Where("room_id = ?", roomID).
-		Order("updated_at ASC").
+		Order("updated_at DESC").
 		Find(ctx)
 
 	if err != nil {

@@ -84,8 +84,8 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, logs, 2)
 		if len(logs) >= 2 {
-			assert.Equal(t, "active", logs[0].Type)
-			assert.Equal(t, "inactive", logs[1].Type)
+			assert.Equal(t, "inactive", logs[0].Type)
+			assert.Equal(t, "active", logs[1].Type)
 		}
 	})
 
@@ -175,8 +175,8 @@ func TestRepository_GetRoomStatusLogs(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, logs, 2)
 		if len(logs) >= 2 {
-			assert.Equal(t, "active", logs[0].Type)
-			assert.Equal(t, "inactive", logs[1].Type)
+			assert.Equal(t, "inactive", logs[0].Type)
+			assert.Equal(t, "active", logs[1].Type)
 		}
 	})
 }
