@@ -177,7 +177,7 @@ func TestRepository_GetRooms(t *testing.T) {
 		assert.NoError(t, err)
 
 		if assert.Len(t, rooms, 1) && assert.NotNil(t, rooms[0].Status.Type) {
-			assert.Equal(t, "inactive", *rooms[0].Status.Type)
+			assert.Equal(t, statusTypeNew, *rooms[0].Status.Type)
 			assert.Equal(t, latestTopic, rooms[0].Status.Topic)
 		}
 	})
