@@ -266,6 +266,37 @@ func TestRepository_GetRoomGroupByID(t *testing.T) {
 		}
 	})
 
+	t.Run("StatusLatest", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+		operator := mustCreateUser(t, r)
+
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "active",
+			Topic: random.AlphaNumericString(t, 64),
+		}, operator.ID)
+
+		latestTopic := random.AlphaNumericString(t, 64)
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "inactive",
+			Topic: latestTopic,
+		}, operator.ID)
+
+		retrievedRoomGroup, err := r.GetRoomGroupByID(t.Context(), roomGroup.ID)
+		assert.NoError(t, err)
+
+		if assert.NotNil(t, retrievedRoomGroup) &&
+			assert.Len(t, retrievedRoomGroup.Rooms, 1) &&
+			assert.NotNil(t, retrievedRoomGroup.Rooms[0].Status) {
+			assert.Equal(t, "inactive", retrievedRoomGroup.Rooms[0].Status.Type)
+			assert.Equal(t, latestTopic, retrievedRoomGroup.Rooms[0].Status.Topic)
+		}
+	})
+
 	t.Run("Not Found", func(t *testing.T) {
 		t.Parallel()
 
@@ -352,6 +383,38 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 					assert.Equal(t, user1.IsStaff, roomGroups[1].Rooms[0].Members[0].IsStaff)
 				}
 			}
+		}
+	})
+
+	t.Run("StatusLatest", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+		operator := mustCreateUser(t, r)
+
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "active",
+			Topic: random.AlphaNumericString(t, 64),
+		}, operator.ID)
+
+		latestTopic := random.AlphaNumericString(t, 64)
+		mustSetRoomStatus(t, r, room.ID, &model.RoomStatus{
+			Type:  "inactive",
+			Topic: latestTopic,
+		}, operator.ID)
+
+		roomGroups, err := r.GetRoomGroups(t.Context(), camp.ID)
+
+		assert.NoError(t, err)
+
+		if assert.Len(t, roomGroups, 1) &&
+			assert.Len(t, roomGroups[0].Rooms, 1) &&
+			assert.NotNil(t, roomGroups[0].Rooms[0].Status) {
+			assert.Equal(t, "inactive", roomGroups[0].Rooms[0].Status.Type)
+			assert.Equal(t, latestTopic, roomGroups[0].Rooms[0].Status.Topic)
 		}
 	})
 
