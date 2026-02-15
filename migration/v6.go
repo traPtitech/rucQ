@@ -12,6 +12,7 @@ type v6Activity struct {
 	gorm.Model
 	Type        string  `gorm:"size:50;not null;index"`
 	CampID      uint    `gorm:"not null"`
+	Camp        *v6Camp `gorm:"foreignKey:CampID;references:ID;constraint:OnDelete:CASCADE"`
 	UserID      *string `gorm:"size:32"`
 	User        *v6User `gorm:"foreignKey:UserID;references:ID"`
 	ReferenceID uint    `gorm:"not null"`
@@ -27,6 +28,14 @@ type v6User struct {
 
 func (v6User) TableName() string {
 	return "users"
+}
+
+type v6Camp struct {
+	ID uint `gorm:"primaryKey"`
+}
+
+func (v6Camp) TableName() string {
+	return "camps"
 }
 
 // room_membersテーブルのJOIN用
