@@ -13,10 +13,10 @@ import (
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
-func TestGetActivities(t *testing.T) {
+func TestServer_GetActivities(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
@@ -29,11 +29,17 @@ func TestGetActivities(t *testing.T) {
 			Return(user, nil).
 			Times(1)
 
+		roomCreatedID := uint(random.PositiveInt(t))
 		roomCreatedTime := random.Time(t)
+		paymentCreatedID := uint(random.PositiveInt(t))
 		paymentCreatedTime := random.Time(t)
+		paymentAmountID := uint(random.PositiveInt(t))
 		paymentAmountTime := random.Time(t)
+		paymentPaidID := uint(random.PositiveInt(t))
 		paymentPaidTime := random.Time(t)
+		rollCallCreatedID := uint(random.PositiveInt(t))
 		rollCallTime := random.Time(t)
+		questionCreatedID := uint(random.PositiveInt(t))
 		questionTime := random.Time(t)
 		createdAmount := random.PositiveInt(t)
 		amountChanged := random.PositiveInt(t)
@@ -45,12 +51,12 @@ func TestGetActivities(t *testing.T) {
 
 		activities := []activityservice.ActivityResponse{
 			{
-				ID:   1,
+				ID:   roomCreatedID,
 				Type: model.ActivityTypeRoomCreated,
 				Time: roomCreatedTime,
 			},
 			{
-				ID:   2,
+				ID:   paymentCreatedID,
 				Type: model.ActivityTypePaymentCreated,
 				Time: paymentCreatedTime,
 				PaymentCreated: &activityservice.PaymentCreatedDetail{
@@ -58,7 +64,7 @@ func TestGetActivities(t *testing.T) {
 				},
 			},
 			{
-				ID:   3,
+				ID:   paymentAmountID,
 				Type: model.ActivityTypePaymentAmountChanged,
 				Time: paymentAmountTime,
 				PaymentAmountChanged: &activityservice.PaymentChangedDetail{
@@ -66,7 +72,7 @@ func TestGetActivities(t *testing.T) {
 				},
 			},
 			{
-				ID:   4,
+				ID:   paymentPaidID,
 				Type: model.ActivityTypePaymentPaidChanged,
 				Time: paymentPaidTime,
 				PaymentPaidChanged: &activityservice.PaymentChangedDetail{
@@ -74,7 +80,7 @@ func TestGetActivities(t *testing.T) {
 				},
 			},
 			{
-				ID:   5,
+				ID:   rollCallCreatedID,
 				Type: model.ActivityTypeRollCallCreated,
 				Time: rollCallTime,
 				RollCallCreated: &activityservice.RollCallCreatedDetail{
@@ -85,7 +91,7 @@ func TestGetActivities(t *testing.T) {
 				},
 			},
 			{
-				ID:   6,
+				ID:   questionCreatedID,
 				Type: model.ActivityTypeQuestionCreated,
 				Time: questionTime,
 				QuestionCreated: &activityservice.QuestionCreatedDetail{
@@ -113,34 +119,34 @@ func TestGetActivities(t *testing.T) {
 
 		// Check first activity (RoomCreated)
 		act1 := res.Value(0).Object()
-		act1.Value("id").Number().IsEqual(1)
+		act1.Value("id").Number().IsEqual(roomCreatedID)
 		act1.Value("type").String().IsEqual("room_created")
 		act1.Value("time").String().IsEqual(roomCreatedTime.Format(time.RFC3339Nano))
 
 		// Check second activity (PaymentCreated)
 		act2 := res.Value(1).Object()
-		act2.Value("id").Number().IsEqual(2)
+		act2.Value("id").Number().IsEqual(paymentCreatedID)
 		act2.Value("type").String().IsEqual("payment_created")
 		act2.Value("time").String().IsEqual(paymentCreatedTime.Format(time.RFC3339Nano))
 		act2.Value("amount").Number().IsEqual(createdAmount)
 
 		// Check third activity (PaymentAmountChanged)
 		act3 := res.Value(2).Object()
-		act3.Value("id").Number().IsEqual(3)
+		act3.Value("id").Number().IsEqual(paymentAmountID)
 		act3.Value("type").String().IsEqual("payment_amount_changed")
 		act3.Value("time").String().IsEqual(paymentAmountTime.Format(time.RFC3339Nano))
 		act3.Value("amount").Number().IsEqual(amountChanged)
 
 		// Check fourth activity (PaymentPaidChanged)
 		act4 := res.Value(3).Object()
-		act4.Value("id").Number().IsEqual(4)
+		act4.Value("id").Number().IsEqual(paymentPaidID)
 		act4.Value("type").String().IsEqual("payment_paid_changed")
 		act4.Value("time").String().IsEqual(paymentPaidTime.Format(time.RFC3339Nano))
 		act4.Value("amount").Number().IsEqual(amountPaid)
 
 		// Check fifth activity (RollCallCreated)
 		act5 := res.Value(4).Object()
-		act5.Value("id").Number().IsEqual(5)
+		act5.Value("id").Number().IsEqual(rollCallCreatedID)
 		act5.Value("type").String().IsEqual("roll_call_created")
 		act5.Value("time").String().IsEqual(rollCallTime.Format(time.RFC3339Nano))
 		act5.Value("rollcallId").Number().IsEqual(int(rollCallID))
@@ -150,7 +156,7 @@ func TestGetActivities(t *testing.T) {
 
 		// Check sixth activity (QuestionCreated)
 		act6 := res.Value(5).Object()
-		act6.Value("id").Number().IsEqual(6)
+		act6.Value("id").Number().IsEqual(questionCreatedID)
 		act6.Value("type").String().IsEqual("question_created")
 		act6.Value("time").String().IsEqual(questionTime.Format(time.RFC3339Nano))
 		act6.Value("questionGroupId").Number().IsEqual(int(questionGroupID))
@@ -159,7 +165,7 @@ func TestGetActivities(t *testing.T) {
 		act6.Value("needsResponse").Boolean().IsTrue()
 	})
 
-	t.Run("InternalServerError (activity service error)", func(t *testing.T) {
+	t.Run("activityServiceでエラーが起こった場合", func(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
