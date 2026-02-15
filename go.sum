@@ -597,8 +597,6 @@ github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea h1:SXhTLE6pb6eld/
 github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea/go.mod h1:WPnis/6cRcDZSUvVmezrxJPkiO87ThFYsoUiMwWNDJk=
 github.com/tonistiigi/vt100 v0.0.0-20240514184818-90bafcd6abab h1:H6aJ0yKQ0gF49Qb2z5hI1UHxSQt4JMyxebFR15KnApw=
 github.com/tonistiigi/vt100 v0.0.0-20240514184818-90bafcd6abab/go.mod h1:ulncasL3N9uLrVann0m+CDlJKWsIAP34MPcOJF6VRvc=
-github.com/traPtitech/go-traq v0.0.0-20241109062858-3757c489f610 h1:sJ9jeyNEskoaomBAF59wt8Acs6wCjld3hw6pgzl3WlA=
-github.com/traPtitech/go-traq v0.0.0-20241109062858-3757c489f610/go.mod h1:7yJs1m/ddCG39XF78GA8FrXqyc4fNPfHp8BSLjMVMY8=
 github.com/traPtitech/go-traq v0.0.0-20251201015624-285ca186fc5e h1:CPWnxqmdaYKFIw/OtXQeucdkmqgB+3HTNQw2Tu1IImQ=
 github.com/traPtitech/go-traq v0.0.0-20251201015624-285ca186fc5e/go.mod h1:D7NRbLYlvMey05bV+3Yqea6+Onj0ACmMgLuvP7+far8=
 github.com/ugorji/go/codec v1.2.11 h1:BMaWp1Bb6fHwEtbplGBGJ498wD+LKlNSl25MjdZY4dU=
