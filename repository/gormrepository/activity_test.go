@@ -14,7 +14,7 @@ import (
 func TestCreateActivity(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -45,7 +45,7 @@ func TestCreateActivity(t *testing.T) {
 func TestGetActivitiesByCampID(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success - OrderByCreatedAtDesc", func(t *testing.T) {
+	t.Run("CreatedAtの降順になっている", func(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
@@ -80,9 +80,11 @@ func TestGetActivitiesByCampID(t *testing.T) {
 
 		activities, err := r.GetActivitiesByCampID(t.Context(), camp1.ID)
 
-		require.NoError(t, err)
-		require.Len(t, activities, 2)
-		assert.Equal(t, activityNew.ID, activities[0].ID)
-		assert.Equal(t, activityOld.ID, activities[1].ID)
+		assert.NoError(t, err)
+
+		if assert.Len(t, activities, 2) {
+			assert.Equal(t, activityNew.ID, activities[0].ID)
+			assert.Equal(t, activityOld.ID, activities[1].ID)
+		}
 	})
 }
