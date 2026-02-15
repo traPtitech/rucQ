@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	"github.com/traPtitech/rucQ/model"
@@ -28,18 +29,60 @@ func TestGetActivities(t *testing.T) {
 			Return(user, nil).
 			Times(1)
 
+		roomCreatedTime := random.Time(t)
+		paymentAmountTime := random.Time(t)
+		paymentPaidTime := random.Time(t)
+		rollCallTime := random.Time(t)
+		questionTime := random.Time(t)
+		amountChanged := random.PositiveInt(t)
+		amountPaid := random.PositiveInt(t)
+		rollCallID := uint(random.PositiveInt(t))
+		rollCallName := random.AlphaNumericString(t, 20)
+		questionGroupID := uint(random.PositiveInt(t))
+		questionGroupName := random.AlphaNumericString(t, 20)
+
 		activities := []activityservice.ActivityResponse{
 			{
 				ID:   1,
 				Type: model.ActivityTypeRoomCreated,
-				Time: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+				Time: roomCreatedTime,
 			},
 			{
 				ID:   2,
 				Type: model.ActivityTypePaymentAmountChanged,
-				Time: time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC),
+				Time: paymentAmountTime,
 				PaymentAmountChanged: &activityservice.PaymentChangedDetail{
-					Amount: 1000,
+					Amount: amountChanged,
+				},
+			},
+			{
+				ID:   3,
+				Type: model.ActivityTypePaymentPaidChanged,
+				Time: paymentPaidTime,
+				PaymentPaidChanged: &activityservice.PaymentChangedDetail{
+					Amount: amountPaid,
+				},
+			},
+			{
+				ID:   4,
+				Type: model.ActivityTypeRollCallCreated,
+				Time: rollCallTime,
+				RollCallCreated: &activityservice.RollCallCreatedDetail{
+					RollCallID: rollCallID,
+					Name:       rollCallName,
+					IsSubject:  true,
+					Answered:   true,
+				},
+			},
+			{
+				ID:   5,
+				Type: model.ActivityTypeQuestionCreated,
+				Time: questionTime,
+				QuestionCreated: &activityservice.QuestionCreatedDetail{
+					QuestionGroupID: questionGroupID,
+					Name:            questionGroupName,
+					Due:             questionTime,
+					NeedsResponse:   true,
 				},
 			},
 		}
@@ -56,20 +99,47 @@ func TestGetActivities(t *testing.T) {
 			JSON().
 			Array()
 
-		res.Length().IsEqual(2)
+		res.Length().IsEqual(5)
 
 		// Check first activity (RoomCreated)
 		act1 := res.Value(0).Object()
 		act1.Value("id").Number().IsEqual(1)
 		act1.Value("type").String().IsEqual("room_created")
-		act1.Value("time").String().IsEqual("2023-01-01T00:00:00Z")
+		act1.Value("time").String().IsEqual(roomCreatedTime.Format(time.RFC3339Nano))
 
 		// Check second activity (PaymentAmountChanged)
 		act2 := res.Value(1).Object()
 		act2.Value("id").Number().IsEqual(2)
 		act2.Value("type").String().IsEqual("payment_amount_changed")
-		act2.Value("time").String().IsEqual("2023-01-02T00:00:00Z")
-		act2.Value("amount").Number().IsEqual(1000)
+		act2.Value("time").String().IsEqual(paymentAmountTime.Format(time.RFC3339Nano))
+		act2.Value("amount").Number().IsEqual(amountChanged)
+
+		// Check third activity (PaymentPaidChanged)
+		act3 := res.Value(2).Object()
+		act3.Value("id").Number().IsEqual(3)
+		act3.Value("type").String().IsEqual("payment_paid_changed")
+		act3.Value("time").String().IsEqual(paymentPaidTime.Format(time.RFC3339Nano))
+		act3.Value("amount").Number().IsEqual(amountPaid)
+
+		// Check fourth activity (RollCallCreated)
+		act4 := res.Value(3).Object()
+		act4.Value("id").Number().IsEqual(4)
+		act4.Value("type").String().IsEqual("roll_call_created")
+		act4.Value("time").String().IsEqual(rollCallTime.Format(time.RFC3339Nano))
+		act4.Value("rollcallId").Number().IsEqual(int(rollCallID))
+		act4.Value("name").String().IsEqual(rollCallName)
+		act4.Value("isSubject").Boolean().IsTrue()
+		act4.Value("answered").Boolean().IsTrue()
+
+		// Check fifth activity (QuestionCreated)
+		act5 := res.Value(4).Object()
+		act5.Value("id").Number().IsEqual(5)
+		act5.Value("type").String().IsEqual("question_created")
+		act5.Value("time").String().IsEqual(questionTime.Format(time.RFC3339Nano))
+		act5.Value("questionGroupId").Number().IsEqual(int(questionGroupID))
+		act5.Value("name").String().IsEqual(questionGroupName)
+		act5.Value("due").String().IsEqual(questionTime.Format(time.RFC3339Nano))
+		act5.Value("needsResponse").Boolean().IsTrue()
 	})
 
 	t.Run("Unauthorized (missing header)", func(t *testing.T) {
@@ -81,5 +151,29 @@ func TestGetActivities(t *testing.T) {
 		h.expect.GET("/api/camps/{campId}/activities", campID).
 			Expect().
 			Status(http.StatusBadRequest)
+	})
+
+	t.Run("InternalServerError (activity service error)", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		user := &model.User{ID: userID}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(user, nil).
+			Times(1)
+
+		h.activityService.EXPECT().
+			GetActivities(gomock.Any(), campID, userID).
+			Return(nil, assert.AnError).
+			Times(1)
+
+		h.expect.GET("/api/camps/{campId}/activities", campID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusInternalServerError)
 	})
 }
