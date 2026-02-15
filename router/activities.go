@@ -35,7 +35,7 @@ func (s *Server) GetActivities(
 			SetInternal(fmt.Errorf("failed to get activities: %w", err))
 	}
 
-	response, err := converter.ConvertActivityResponses(activities)
+	response, err := converter.Convert[[]api.ActivityResponse](activities)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to convert activities to response: %w", err))
