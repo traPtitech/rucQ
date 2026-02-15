@@ -42,10 +42,10 @@ type PaymentChangedDetail struct {
 }
 
 type RollCallCreatedDetail struct {
-	RollCallID    uint
-	Name          string
-	IsSubject     bool
-	Answered      bool
+	RollCallID uint
+	Name       string
+	IsSubject  bool
+	Answered   bool
 }
 
 type QuestionCreatedDetail struct {

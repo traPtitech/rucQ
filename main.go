@@ -135,6 +135,9 @@ func main() {
 
 	go schedulerService.Start(ctx)
 
-	api.RegisterHandlers(e, router.NewServer(ctx, repo, activityService, notificationService, traqService, isDev))
+	api.RegisterHandlers(
+		e,
+		router.NewServer(ctx, repo, activityService, notificationService, traqService, isDev),
+	)
 	log.Fatal(e.Start("0.0.0.0:8080"))
 }

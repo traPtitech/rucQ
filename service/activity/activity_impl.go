@@ -216,10 +216,10 @@ func (s *activityServiceImpl) GetActivities(
 				Type: a.Type,
 				Time: a.CreatedAt,
 				RollCallCreated: &RollCallCreatedDetail{
-					RollCallID:    rc.ID,
-					Name:          rc.Name,
-					IsSubject:     isSubject,
-					Answered:      answered,
+					RollCallID: rc.ID,
+					Name:       rc.Name,
+					IsSubject:  isSubject,
+					Answered:   answered,
 				},
 			})
 

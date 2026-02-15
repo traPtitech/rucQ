@@ -11,32 +11,14 @@ import (
 
 type v6Activity struct {
 	gorm.Model
-	Type        string  `gorm:"size:50;not null;index"`
-	CampID      uint    `gorm:"not null"`
+	Type        string `gorm:"size:50;not null;index"`
+	CampID      uint   `gorm:"not null"`
 	UserID      *string
 	ReferenceID uint `gorm:"not null"`
 }
 
 func (v6Activity) TableName() string {
 	return "activities"
-}
-
-type v6Room struct {
-	ID        uint `gorm:"primaryKey"`
-	CreatedAt time.Time
-}
-
-func (v6Room) TableName() string {
-	return "rooms"
-}
-
-type v6RoomGroup struct {
-	ID     uint `gorm:"primaryKey"`
-	CampID uint
-}
-
-func (v6RoomGroup) TableName() string {
-	return "room_groups"
 }
 
 // room_membersテーブルのJOIN用

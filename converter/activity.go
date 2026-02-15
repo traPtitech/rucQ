@@ -60,13 +60,13 @@ func ConvertActivityResponse(src activityservice.ActivityResponse) (api.Activity
 		}
 
 		err := dst.FromRollCallCreatedActivity(api.RollCallCreatedActivity{
-			Id:            int(src.ID),
-			Type:          api.RollCallCreated,
-			Time:          src.Time,
-			RollcallId:    int(src.RollCallCreated.RollCallID),
-			Name:          src.RollCallCreated.Name,
-			IsSubject:     src.RollCallCreated.IsSubject,
-			Answered:      src.RollCallCreated.Answered,
+			Id:         int(src.ID),
+			Type:       api.RollCallCreated,
+			Time:       src.Time,
+			RollcallId: int(src.RollCallCreated.RollCallID),
+			Name:       src.RollCallCreated.Name,
+			IsSubject:  src.RollCallCreated.IsSubject,
+			Answered:   src.RollCallCreated.Answered,
 		})
 		if err != nil {
 			return dst, err
@@ -98,7 +98,9 @@ func ConvertActivityResponse(src activityservice.ActivityResponse) (api.Activity
 }
 
 // ConvertActivityResponses は複数のActivityResponseを変換する。
-func ConvertActivityResponses(src []activityservice.ActivityResponse) ([]api.ActivityResponse, error) {
+func ConvertActivityResponses(
+	src []activityservice.ActivityResponse,
+) ([]api.ActivityResponse, error) {
 	dst := make([]api.ActivityResponse, 0, len(src))
 
 	for _, s := range src {

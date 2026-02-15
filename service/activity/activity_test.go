@@ -231,8 +231,14 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 
 		paymentAmountID := uint(random.PositiveInt(t))
 		paymentPaidID := uint(random.PositiveInt(t))
-		paymentAmount := &model.Payment{Model: gorm.Model{ID: paymentAmountID}, Amount: random.PositiveInt(t)}
-		paymentPaid := &model.Payment{Model: gorm.Model{ID: paymentPaidID}, Amount: random.PositiveInt(t)}
+		paymentAmount := &model.Payment{
+			Model:  gorm.Model{ID: paymentAmountID},
+			Amount: random.PositiveInt(t),
+		}
+		paymentPaid := &model.Payment{
+			Model:  gorm.Model{ID: paymentPaidID},
+			Amount: random.PositiveInt(t),
+		}
 
 		rollCallID := uint(random.PositiveInt(t))
 		rollCallName := random.AlphaNumericString(t, 20)

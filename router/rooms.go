@@ -69,7 +69,11 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 		return e.JSON(http.StatusCreated, res)
 	}
 
-	_ = s.activityService.RecordRoomCreatedWithCampID(e.Request().Context(), *updatedRoom, roomGroup.CampID)
+	_ = s.activityService.RecordRoomCreatedWithCampID(
+		e.Request().Context(),
+		*updatedRoom,
+		roomGroup.CampID,
+	)
 
 	return e.JSON(http.StatusCreated, res)
 }
