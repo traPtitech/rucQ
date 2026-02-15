@@ -169,11 +169,18 @@ func (r *Repository) GetAnswers(
 func (r *Repository) UpdateAnswer(ctx context.Context, answerID uint, answer *model.Answer) error {
 	answer.ID = answerID
 
-	if _, err := gorm.G[*model.Answer](r.db).Omit("SelectedOptions").Where("id = ?", answerID).Updates(ctx, answer); err != nil {
+	if _, err := gorm.G[*model.Answer](
+		r.db,
+	).Omit("SelectedOptions").
+		Where("id = ?", answerID).
+		Updates(ctx, answer); err != nil {
 		return err
 	}
 
-	if err := r.db.WithContext(ctx).Model(answer).Association("SelectedOptions").Replace(answer.SelectedOptions); err != nil {
+	if err := r.db.WithContext(ctx).
+		Model(answer).
+		Association("SelectedOptions").
+		Replace(answer.SelectedOptions); err != nil {
 		return err
 	}
 

@@ -41,7 +41,9 @@ var answerSchemaToModel = copier.TypeConverter{
 				return nil, err
 			}
 
-			dst.SelectedOptions = []model.Option{{Model: gorm.Model{ID: uint(singleChoiceAnswerRequest.OptionId)}}}
+			dst.SelectedOptions = []model.Option{
+				{Model: gorm.Model{ID: uint(singleChoiceAnswerRequest.OptionId)}},
+			}
 		} else if multipleChoiceAnswerRequest, err := req.AsMultipleChoiceAnswerRequest(); err == nil && multipleChoiceAnswerRequest.Type == api.MultipleChoiceAnswerRequestTypeMultiple {
 			if err := copier.Copy(&dst, &multipleChoiceAnswerRequest); err != nil {
 				return nil, err

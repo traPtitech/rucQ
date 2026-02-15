@@ -306,7 +306,11 @@ func (s *Server) AdminAddCampParticipant(
 			SetInternal(fmt.Errorf("failed to get camp: %w", err))
 	}
 
-	if err := s.repo.AddCampParticipant(e.Request().Context(), uint(campID), targetUser); err != nil {
+	if err := s.repo.AddCampParticipant(
+		e.Request().Context(),
+		uint(campID),
+		targetUser,
+	); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
@@ -367,7 +371,11 @@ func (s *Server) AdminRemoveCampParticipant(
 			SetInternal(fmt.Errorf("failed to get camp: %w", err))
 	}
 
-	if err := s.repo.RemoveCampParticipant(e.Request().Context(), uint(campID), targetUser); err != nil {
+	if err := s.repo.RemoveCampParticipant(
+		e.Request().Context(),
+		uint(campID),
+		targetUser,
+	); err != nil {
 		switch {
 		case errors.Is(err, repository.ErrCampNotFound):
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
