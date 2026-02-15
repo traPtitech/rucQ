@@ -92,7 +92,7 @@ func v6() *gormigrate.Migration {
 
 			// 既存データからアクティビティを生成
 
-			// 1. Room → room_revealed
+			// 1. Room → room_created
 			//    RoomGroup経由でCampIDを取得
 			var roomsWithCamp []v6RoomWithCampID
 			if err := db.WithContext(ctx).

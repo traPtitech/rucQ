@@ -29,7 +29,7 @@ type ActivityResponse struct {
 	Time time.Time
 
 	// type ごとの付加情報（該当するもののみ非nil）
-	RoomCreated          *RoomRevealedDetail
+	RoomCreated          *RoomCreatedDetail
 	PaymentCreated       *PaymentCreatedDetail
 	PaymentAmountChanged *PaymentChangedDetail
 	PaymentPaidChanged   *PaymentChangedDetail
@@ -37,7 +37,7 @@ type ActivityResponse struct {
 	QuestionCreated      *QuestionCreatedDetail
 }
 
-type RoomRevealedDetail struct{}
+type RoomCreatedDetail struct{}
 
 type PaymentCreatedDetail struct {
 	Amount int

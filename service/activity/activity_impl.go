@@ -121,7 +121,7 @@ func (s *activityServiceImpl) GetActivities(
 		return []ActivityResponse{}, nil
 	}
 
-	// ユーザーの部屋を取得（room_revealed のフィルタリング用）
+	// ユーザーの部屋を取得（room_created のフィルタリング用）
 	userRoom, err := s.repo.GetRoomByUserID(ctx, campID, userID)
 	if err != nil && !errors.Is(err, repository.ErrRoomNotFound) {
 		return nil, err
@@ -177,7 +177,7 @@ func (s *activityServiceImpl) GetActivities(
 				ID:          a.ID,
 				Type:        a.Type,
 				Time:        a.CreatedAt,
-				RoomCreated: &RoomRevealedDetail{},
+				RoomCreated: &RoomCreatedDetail{},
 			})
 
 		case model.ActivityTypePaymentCreated,
