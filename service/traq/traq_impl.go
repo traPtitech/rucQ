@@ -31,7 +31,7 @@ func (s *traqServiceImpl) GetCanonicalUserName(
 	userID string,
 ) (string, error) {
 	authCtx := context.WithValue(ctx, traq.ContextAccessToken, s.accessToken)
-	users, _, err := s.client.UserApi.GetUsers(authCtx).Name(userID).Execute()
+	users, _, err := s.client.UserAPI.GetUsers(authCtx).Name(userID).Execute()
 
 	if err != nil {
 		return "", err
@@ -51,7 +51,7 @@ func (s *traqServiceImpl) PostDirectMessage(
 ) error {
 	authCtx := context.WithValue(ctx, traq.ContextAccessToken, s.accessToken)
 
-	users, _, err := s.client.UserApi.GetUsers(authCtx).Name(userID).Execute()
+	users, _, err := s.client.UserAPI.GetUsers(authCtx).Name(userID).Execute()
 
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (s *traqServiceImpl) PostDirectMessage(
 	postMessageRequest := *traq.NewPostMessageRequest(content)
 	postMessageRequest.SetEmbed(true)
 
-	req := s.client.MessageApi.PostDirectMessage(authCtx, userUUID).
+	req := s.client.MessageAPI.PostDirectMessage(authCtx, userUUID).
 		PostMessageRequest(postMessageRequest)
 
 	_, _, err = req.Execute()

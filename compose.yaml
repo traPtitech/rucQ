@@ -57,7 +57,7 @@ services:
         target: /openapi/
 
   adminer:
-    image: adminer:5.4.1
+    image: adminer:5.4.2
     ports:
       - "${ADMINER_PORT:-8082}:8080"
     environment:
