@@ -122,6 +122,37 @@ func TestActivityServiceImpl_RecordActivities(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
+	t.Run("RecordPaymentCreated", func(t *testing.T) {
+		t.Parallel()
+
+		s := setup(t)
+		ctx := t.Context()
+		userID := random.AlphaNumericString(t, 32)
+		campID := uint(random.PositiveInt(t))
+		paymentID := uint(random.PositiveInt(t))
+		payment := model.Payment{
+			Model:  gorm.Model{ID: paymentID},
+			UserID: userID,
+			CampID: campID,
+		}
+
+		s.repo.MockActivityRepository.EXPECT().
+			CreateActivity(ctx, gomock.AssignableToTypeOf(&model.Activity{})).
+			DoAndReturn(func(_ context.Context, activity *model.Activity) error {
+				assert.Equal(t, model.ActivityTypePaymentCreated, activity.Type)
+				assert.Equal(t, campID, activity.CampID)
+				assert.Equal(t, paymentID, activity.ReferenceID)
+				if assert.NotNil(t, activity.UserID) {
+					assert.Equal(t, userID, *activity.UserID)
+				}
+				return nil
+			})
+
+		err := s.service.RecordPaymentCreated(ctx, payment)
+
+		assert.NoError(t, err)
+	})
+
 	t.Run("RecordPaymentPaidChanged", func(t *testing.T) {
 		t.Parallel()
 
@@ -220,6 +251,7 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 		userID := random.AlphaNumericString(t, 32)
 
 		baseTime := random.Time(t)
+		timePaymentCreated := baseTime.Add(6 * time.Minute)
 		timePaymentAmount := baseTime.Add(5 * time.Minute)
 		timeRollCall := baseTime.Add(4 * time.Minute)
 		timeRoom := baseTime.Add(3 * time.Minute)
@@ -231,6 +263,11 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 
 		paymentAmountID := uint(random.PositiveInt(t))
 		paymentPaidID := uint(random.PositiveInt(t))
+		paymentCreatedID := uint(random.PositiveInt(t))
+		paymentCreated := &model.Payment{
+			Model:  gorm.Model{ID: paymentCreatedID},
+			Amount: random.PositiveInt(t),
+		}
 		paymentAmount := &model.Payment{
 			Model:  gorm.Model{ID: paymentAmountID},
 			Amount: random.PositiveInt(t),
@@ -285,20 +322,27 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 				ReferenceID: roomID,
 			},
 			{
-				Model:       gorm.Model{ID: 3, CreatedAt: timePaymentAmount},
+				Model:       gorm.Model{ID: 3, CreatedAt: timePaymentCreated},
+				Type:        model.ActivityTypePaymentCreated,
+				CampID:      campID,
+				ReferenceID: paymentCreatedID,
+				UserID:      &userID,
+			},
+			{
+				Model:       gorm.Model{ID: 4, CreatedAt: timePaymentAmount},
 				Type:        model.ActivityTypePaymentAmountChanged,
 				CampID:      campID,
 				ReferenceID: paymentAmountID,
 				UserID:      &userID,
 			},
 			{
-				Model:       gorm.Model{ID: 4, CreatedAt: timeRollCall},
+				Model:       gorm.Model{ID: 5, CreatedAt: timeRollCall},
 				Type:        model.ActivityTypeRollCallCreated,
 				CampID:      campID,
 				ReferenceID: rollCallID,
 			},
 			{
-				Model:       gorm.Model{ID: 5, CreatedAt: timePaymentPaid},
+				Model:       gorm.Model{ID: 6, CreatedAt: timePaymentPaid},
 				Type:        model.ActivityTypePaymentPaidChanged,
 				CampID:      campID,
 				ReferenceID: paymentPaidID,
@@ -333,6 +377,10 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 			})
 
 		s.repo.MockPaymentRepository.EXPECT().
+			GetPaymentByID(ctx, paymentCreatedID).
+			Return(paymentCreated, nil)
+
+		s.repo.MockPaymentRepository.EXPECT().
 			GetPaymentByID(ctx, paymentAmountID).
 			Return(paymentAmount, nil)
 
@@ -343,40 +391,46 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 		responses, err := s.service.GetActivities(ctx, campID, userID)
 
 		require.NoError(t, err)
-		require.Len(t, responses, 5)
+		require.Len(t, responses, 6)
 
-		assert.Equal(t, model.ActivityTypePaymentAmountChanged, responses[0].Type)
-		assert.Equal(t, timePaymentAmount, responses[0].Time)
-		if assert.NotNil(t, responses[0].PaymentAmountChanged) {
-			assert.Equal(t, paymentAmount.Amount, responses[0].PaymentAmountChanged.Amount)
+		assert.Equal(t, model.ActivityTypePaymentCreated, responses[0].Type)
+		assert.Equal(t, timePaymentCreated, responses[0].Time)
+		if assert.NotNil(t, responses[0].PaymentCreated) {
+			assert.Equal(t, paymentCreated.Amount, responses[0].PaymentCreated.Amount)
 		}
 
-		assert.Equal(t, model.ActivityTypeRollCallCreated, responses[1].Type)
-		assert.Equal(t, timeRollCall, responses[1].Time)
-		if assert.NotNil(t, responses[1].RollCallCreated) {
-			assert.Equal(t, rollCallID, responses[1].RollCallCreated.RollCallID)
-			assert.Equal(t, rollCallName, responses[1].RollCallCreated.Name)
-			assert.True(t, responses[1].RollCallCreated.IsSubject)
-			assert.True(t, responses[1].RollCallCreated.Answered)
+		assert.Equal(t, model.ActivityTypePaymentAmountChanged, responses[1].Type)
+		assert.Equal(t, timePaymentAmount, responses[1].Time)
+		if assert.NotNil(t, responses[1].PaymentAmountChanged) {
+			assert.Equal(t, paymentAmount.Amount, responses[1].PaymentAmountChanged.Amount)
 		}
 
-		assert.Equal(t, model.ActivityTypeRoomCreated, responses[2].Type)
-		assert.Equal(t, timeRoom, responses[2].Time)
-		assert.NotNil(t, responses[2].RoomCreated)
-
-		assert.Equal(t, model.ActivityTypePaymentPaidChanged, responses[3].Type)
-		assert.Equal(t, timePaymentPaid, responses[3].Time)
-		if assert.NotNil(t, responses[3].PaymentPaidChanged) {
-			assert.Equal(t, paymentPaid.Amount, responses[3].PaymentPaidChanged.Amount)
+		assert.Equal(t, model.ActivityTypeRollCallCreated, responses[2].Type)
+		assert.Equal(t, timeRollCall, responses[2].Time)
+		if assert.NotNil(t, responses[2].RollCallCreated) {
+			assert.Equal(t, rollCallID, responses[2].RollCallCreated.RollCallID)
+			assert.Equal(t, rollCallName, responses[2].RollCallCreated.Name)
+			assert.True(t, responses[2].RollCallCreated.IsSubject)
+			assert.True(t, responses[2].RollCallCreated.Answered)
 		}
 
-		assert.Equal(t, model.ActivityTypeQuestionCreated, responses[4].Type)
-		assert.Equal(t, timeQuestion, responses[4].Time)
-		if assert.NotNil(t, responses[4].QuestionCreated) {
-			assert.Equal(t, questionGroupID, responses[4].QuestionCreated.QuestionGroupID)
-			assert.Equal(t, questionGroupName, responses[4].QuestionCreated.Name)
-			assert.Equal(t, timeQuestion, responses[4].QuestionCreated.Due)
-			assert.True(t, responses[4].QuestionCreated.NeedsResponse)
+		assert.Equal(t, model.ActivityTypeRoomCreated, responses[3].Type)
+		assert.Equal(t, timeRoom, responses[3].Time)
+		assert.NotNil(t, responses[3].RoomCreated)
+
+		assert.Equal(t, model.ActivityTypePaymentPaidChanged, responses[4].Type)
+		assert.Equal(t, timePaymentPaid, responses[4].Time)
+		if assert.NotNil(t, responses[4].PaymentPaidChanged) {
+			assert.Equal(t, paymentPaid.Amount, responses[4].PaymentPaidChanged.Amount)
+		}
+
+		assert.Equal(t, model.ActivityTypeQuestionCreated, responses[5].Type)
+		assert.Equal(t, timeQuestion, responses[5].Time)
+		if assert.NotNil(t, responses[5].QuestionCreated) {
+			assert.Equal(t, questionGroupID, responses[5].QuestionCreated.QuestionGroupID)
+			assert.Equal(t, questionGroupName, responses[5].QuestionCreated.Name)
+			assert.Equal(t, timeQuestion, responses[5].QuestionCreated.Due)
+			assert.True(t, responses[5].QuestionCreated.NeedsResponse)
 		}
 	})
 

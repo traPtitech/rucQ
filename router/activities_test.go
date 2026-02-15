@@ -30,10 +30,12 @@ func TestGetActivities(t *testing.T) {
 			Times(1)
 
 		roomCreatedTime := random.Time(t)
+		paymentCreatedTime := random.Time(t)
 		paymentAmountTime := random.Time(t)
 		paymentPaidTime := random.Time(t)
 		rollCallTime := random.Time(t)
 		questionTime := random.Time(t)
+		createdAmount := random.PositiveInt(t)
 		amountChanged := random.PositiveInt(t)
 		amountPaid := random.PositiveInt(t)
 		rollCallID := uint(random.PositiveInt(t))
@@ -49,6 +51,14 @@ func TestGetActivities(t *testing.T) {
 			},
 			{
 				ID:   2,
+				Type: model.ActivityTypePaymentCreated,
+				Time: paymentCreatedTime,
+				PaymentCreated: &activityservice.PaymentCreatedDetail{
+					Amount: createdAmount,
+				},
+			},
+			{
+				ID:   3,
 				Type: model.ActivityTypePaymentAmountChanged,
 				Time: paymentAmountTime,
 				PaymentAmountChanged: &activityservice.PaymentChangedDetail{
@@ -56,7 +66,7 @@ func TestGetActivities(t *testing.T) {
 				},
 			},
 			{
-				ID:   3,
+				ID:   4,
 				Type: model.ActivityTypePaymentPaidChanged,
 				Time: paymentPaidTime,
 				PaymentPaidChanged: &activityservice.PaymentChangedDetail{
@@ -64,7 +74,7 @@ func TestGetActivities(t *testing.T) {
 				},
 			},
 			{
-				ID:   4,
+				ID:   5,
 				Type: model.ActivityTypeRollCallCreated,
 				Time: rollCallTime,
 				RollCallCreated: &activityservice.RollCallCreatedDetail{
@@ -75,7 +85,7 @@ func TestGetActivities(t *testing.T) {
 				},
 			},
 			{
-				ID:   5,
+				ID:   6,
 				Type: model.ActivityTypeQuestionCreated,
 				Time: questionTime,
 				QuestionCreated: &activityservice.QuestionCreatedDetail{
@@ -99,7 +109,7 @@ func TestGetActivities(t *testing.T) {
 			JSON().
 			Array()
 
-		res.Length().IsEqual(5)
+		res.Length().IsEqual(6)
 
 		// Check first activity (RoomCreated)
 		act1 := res.Value(0).Object()
@@ -107,39 +117,46 @@ func TestGetActivities(t *testing.T) {
 		act1.Value("type").String().IsEqual("room_created")
 		act1.Value("time").String().IsEqual(roomCreatedTime.Format(time.RFC3339Nano))
 
-		// Check second activity (PaymentAmountChanged)
+		// Check second activity (PaymentCreated)
 		act2 := res.Value(1).Object()
 		act2.Value("id").Number().IsEqual(2)
-		act2.Value("type").String().IsEqual("payment_amount_changed")
-		act2.Value("time").String().IsEqual(paymentAmountTime.Format(time.RFC3339Nano))
-		act2.Value("amount").Number().IsEqual(amountChanged)
+		act2.Value("type").String().IsEqual("payment_created")
+		act2.Value("time").String().IsEqual(paymentCreatedTime.Format(time.RFC3339Nano))
+		act2.Value("amount").Number().IsEqual(createdAmount)
 
-		// Check third activity (PaymentPaidChanged)
+		// Check third activity (PaymentAmountChanged)
 		act3 := res.Value(2).Object()
 		act3.Value("id").Number().IsEqual(3)
-		act3.Value("type").String().IsEqual("payment_paid_changed")
-		act3.Value("time").String().IsEqual(paymentPaidTime.Format(time.RFC3339Nano))
-		act3.Value("amount").Number().IsEqual(amountPaid)
+		act3.Value("type").String().IsEqual("payment_amount_changed")
+		act3.Value("time").String().IsEqual(paymentAmountTime.Format(time.RFC3339Nano))
+		act3.Value("amount").Number().IsEqual(amountChanged)
 
-		// Check fourth activity (RollCallCreated)
+		// Check fourth activity (PaymentPaidChanged)
 		act4 := res.Value(3).Object()
 		act4.Value("id").Number().IsEqual(4)
-		act4.Value("type").String().IsEqual("roll_call_created")
-		act4.Value("time").String().IsEqual(rollCallTime.Format(time.RFC3339Nano))
-		act4.Value("rollcallId").Number().IsEqual(int(rollCallID))
-		act4.Value("name").String().IsEqual(rollCallName)
-		act4.Value("isSubject").Boolean().IsTrue()
-		act4.Value("answered").Boolean().IsTrue()
+		act4.Value("type").String().IsEqual("payment_paid_changed")
+		act4.Value("time").String().IsEqual(paymentPaidTime.Format(time.RFC3339Nano))
+		act4.Value("amount").Number().IsEqual(amountPaid)
 
-		// Check fifth activity (QuestionCreated)
+		// Check fifth activity (RollCallCreated)
 		act5 := res.Value(4).Object()
 		act5.Value("id").Number().IsEqual(5)
-		act5.Value("type").String().IsEqual("question_created")
-		act5.Value("time").String().IsEqual(questionTime.Format(time.RFC3339Nano))
-		act5.Value("questionGroupId").Number().IsEqual(int(questionGroupID))
-		act5.Value("name").String().IsEqual(questionGroupName)
-		act5.Value("due").String().IsEqual(questionTime.Format(time.RFC3339Nano))
-		act5.Value("needsResponse").Boolean().IsTrue()
+		act5.Value("type").String().IsEqual("roll_call_created")
+		act5.Value("time").String().IsEqual(rollCallTime.Format(time.RFC3339Nano))
+		act5.Value("rollcallId").Number().IsEqual(int(rollCallID))
+		act5.Value("name").String().IsEqual(rollCallName)
+		act5.Value("isSubject").Boolean().IsTrue()
+		act5.Value("answered").Boolean().IsTrue()
+
+		// Check sixth activity (QuestionCreated)
+		act6 := res.Value(5).Object()
+		act6.Value("id").Number().IsEqual(6)
+		act6.Value("type").String().IsEqual("question_created")
+		act6.Value("time").String().IsEqual(questionTime.Format(time.RFC3339Nano))
+		act6.Value("questionGroupId").Number().IsEqual(int(questionGroupID))
+		act6.Value("name").String().IsEqual(questionGroupName)
+		act6.Value("due").String().IsEqual(questionTime.Format(time.RFC3339Nano))
+		act6.Value("needsResponse").Boolean().IsTrue()
 	})
 
 	t.Run("Unauthorized (missing header)", func(t *testing.T) {

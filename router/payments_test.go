@@ -34,6 +34,10 @@ func TestAdminPostPayment(t *testing.T) {
 				IsStaff: true,
 			}, nil)
 		h.repo.MockPaymentRepository.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(nil)
+		h.activityService.EXPECT().
+			RecordPaymentCreated(gomock.Any(), gomock.Any()).
+			Return(nil).
+			Times(1)
 
 		res := h.expect.POST("/api/admin/camps/{campId}/payments", campID).
 			WithJSON(req).

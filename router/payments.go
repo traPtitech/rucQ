@@ -84,6 +84,8 @@ func (s *Server) AdminPostPayment(
 			SetInternal(fmt.Errorf("failed to create payment: %w", err))
 	}
 
+	_ = s.activityService.RecordPaymentCreated(e.Request().Context(), payment)
+
 	res, err := converter.Convert[api.PaymentResponse](payment)
 
 	if err != nil {

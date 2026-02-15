@@ -32,6 +32,21 @@ var activityResponseToSchema = copier.TypeConverter{
 				return nil, err
 			}
 
+		case model.ActivityTypePaymentCreated:
+			if activity.PaymentCreated == nil {
+				return nil, errors.New("PaymentCreated detail is nil")
+			}
+
+			err := dst.FromPaymentCreatedActivity(api.PaymentCreatedActivity{
+				Id:     int(activity.ID),
+				Type:   api.PaymentCreated,
+				Time:   activity.Time,
+				Amount: activity.PaymentCreated.Amount,
+			})
+			if err != nil {
+				return nil, err
+			}
+
 		case model.ActivityTypePaymentAmountChanged:
 			if activity.PaymentAmountChanged == nil {
 				return nil, errors.New("PaymentAmountChanged detail is nil")

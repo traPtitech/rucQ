@@ -44,6 +44,19 @@ func (s *activityServiceImpl) RecordRoomCreatedWithCampID(
 	return s.repo.CreateActivity(ctx, activity)
 }
 
+func (s *activityServiceImpl) RecordPaymentCreated(
+	ctx context.Context,
+	payment model.Payment,
+) error {
+	activity := &model.Activity{
+		Type:        model.ActivityTypePaymentCreated,
+		CampID:      payment.CampID,
+		UserID:      &payment.UserID,
+		ReferenceID: payment.ID,
+	}
+	return s.repo.CreateActivity(ctx, activity)
+}
+
 func (s *activityServiceImpl) RecordPaymentAmountChanged(
 	ctx context.Context,
 	payment model.Payment,
@@ -167,7 +180,9 @@ func (s *activityServiceImpl) GetActivities(
 				RoomCreated: &RoomRevealedDetail{},
 			})
 
-		case model.ActivityTypePaymentAmountChanged, model.ActivityTypePaymentPaidChanged:
+		case model.ActivityTypePaymentCreated,
+			model.ActivityTypePaymentAmountChanged,
+			model.ActivityTypePaymentPaidChanged:
 			if a.UserID == nil || *a.UserID != userID {
 				continue
 			}
@@ -180,17 +195,20 @@ func (s *activityServiceImpl) GetActivities(
 				return nil, err
 			}
 
-			detail := &PaymentChangedDetail{Amount: payment.Amount}
-
 			resp := ActivityResponse{
 				ID:   a.ID,
 				Type: a.Type,
 				Time: a.CreatedAt,
 			}
 
-			if a.Type == model.ActivityTypePaymentAmountChanged {
+			switch a.Type {
+			case model.ActivityTypePaymentCreated:
+				resp.PaymentCreated = &PaymentCreatedDetail{Amount: payment.Amount}
+			case model.ActivityTypePaymentAmountChanged:
+				detail := &PaymentChangedDetail{Amount: payment.Amount}
 				resp.PaymentAmountChanged = detail
-			} else {
+			default:
+				detail := &PaymentChangedDetail{Amount: payment.Amount}
 				resp.PaymentPaidChanged = detail
 			}
 

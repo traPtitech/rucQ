@@ -71,6 +71,20 @@ func (mr *MockActivityServiceMockRecorder) RecordPaymentAmountChanged(ctx, payme
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordPaymentAmountChanged", reflect.TypeOf((*MockActivityService)(nil).RecordPaymentAmountChanged), ctx, payment)
 }
 
+// RecordPaymentCreated mocks base method.
+func (m *MockActivityService) RecordPaymentCreated(ctx context.Context, payment model.Payment) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RecordPaymentCreated", ctx, payment)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RecordPaymentCreated indicates an expected call of RecordPaymentCreated.
+func (mr *MockActivityServiceMockRecorder) RecordPaymentCreated(ctx, payment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordPaymentCreated", reflect.TypeOf((*MockActivityService)(nil).RecordPaymentCreated), ctx, payment)
+}
+
 // RecordPaymentPaidChanged mocks base method.
 func (m *MockActivityService) RecordPaymentPaidChanged(ctx context.Context, payment model.Payment) error {
 	m.ctrl.T.Helper()

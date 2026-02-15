@@ -2520,6 +2520,7 @@ components:
     ActivityResponse:
       oneOf:
         - $ref: "#/components/schemas/RoomCreatedActivity"
+        - $ref: "#/components/schemas/PaymentCreatedActivity"
         - $ref: "#/components/schemas/PaymentAmountChangedActivity"
         - $ref: "#/components/schemas/PaymentPaidChangedActivity"
         - $ref: "#/components/schemas/RollCallCreatedActivity"
@@ -2541,6 +2542,26 @@ components:
         - id
         - type
         - time
+    PaymentCreatedActivity:
+      type: object
+      description: 支払い情報が作成されたアクティビティ
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+            - payment_created
+        time:
+          type: string
+          format: date-time
+        amount:
+          type: integer
+      required:
+        - id
+        - type
+        - time
+        - amount
     PaymentAmountChangedActivity:
       type: object
       description: ユーザーが支払うべき金額が変更されたアクティビティ

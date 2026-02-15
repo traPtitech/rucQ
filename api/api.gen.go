@@ -124,6 +124,11 @@ const (
 	PaymentAmountChanged PaymentAmountChangedActivityType = "payment_amount_changed"
 )
 
+// Defines values for PaymentCreatedActivityType.
+const (
+	PaymentCreated PaymentCreatedActivityType = "payment_created"
+)
+
 // Defines values for PaymentPaidChangedActivityType.
 const (
 	PaymentPaidChanged PaymentPaidChangedActivityType = "payment_paid_changed"
@@ -507,6 +512,17 @@ type PaymentAmountChangedActivity struct {
 // PaymentAmountChangedActivityType defines model for PaymentAmountChangedActivity.Type.
 type PaymentAmountChangedActivityType string
 
+// PaymentCreatedActivity 支払い情報が作成されたアクティビティ
+type PaymentCreatedActivity struct {
+	Amount int                        `json:"amount"`
+	Id     int                        `json:"id"`
+	Time   time.Time                  `json:"time"`
+	Type   PaymentCreatedActivityType `json:"type"`
+}
+
+// PaymentCreatedActivityType defines model for PaymentCreatedActivity.Type.
+type PaymentCreatedActivityType string
+
 // PaymentPaidChangedActivity 合宿係がユーザーの支払い済み金額を変更したアクティビティ
 type PaymentPaidChangedActivity struct {
 	Amount int                            `json:"amount"`
@@ -632,7 +648,7 @@ type QuestionCreatedActivity struct {
 	Id   int       `json:"id"`
 	Name string    `json:"name"`
 
-	// NeedsResponse 必須だがまだ回答されていない質問がある場合true
+	// NeedsResponse 必須だがまだ回答していない質問がある場合true
 	NeedsResponse   bool                        `json:"needsResponse"`
 	QuestionGroupId int                         `json:"questionGroupId"`
 	Time            time.Time                   `json:"time"`
@@ -1286,6 +1302,32 @@ func (t *ActivityResponse) FromRoomCreatedActivity(v RoomCreatedActivity) error 
 
 // MergeRoomCreatedActivity performs a merge with any union data inside the ActivityResponse, using the provided RoomCreatedActivity
 func (t *ActivityResponse) MergeRoomCreatedActivity(v RoomCreatedActivity) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPaymentCreatedActivity returns the union data inside the ActivityResponse as a PaymentCreatedActivity
+func (t ActivityResponse) AsPaymentCreatedActivity() (PaymentCreatedActivity, error) {
+	var body PaymentCreatedActivity
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPaymentCreatedActivity overwrites any union data inside the ActivityResponse as the provided PaymentCreatedActivity
+func (t *ActivityResponse) FromPaymentCreatedActivity(v PaymentCreatedActivity) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePaymentCreatedActivity performs a merge with any union data inside the ActivityResponse, using the provided PaymentCreatedActivity
+func (t *ActivityResponse) MergePaymentCreatedActivity(v PaymentCreatedActivity) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err

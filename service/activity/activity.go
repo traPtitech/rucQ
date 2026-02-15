@@ -15,6 +15,7 @@ type ActivityService interface {
 	// 各イベント発生時にルーターから呼ばれる
 	RecordRoomCreated(ctx context.Context, room model.Room) error
 	RecordRoomCreatedWithCampID(ctx context.Context, room model.Room, campID uint) error
+	RecordPaymentCreated(ctx context.Context, payment model.Payment) error
 	RecordPaymentAmountChanged(ctx context.Context, payment model.Payment) error
 	RecordPaymentPaidChanged(ctx context.Context, payment model.Payment) error
 	RecordRollCallCreated(ctx context.Context, rollCall model.RollCall) error
@@ -29,6 +30,7 @@ type ActivityResponse struct {
 
 	// type ごとの付加情報（該当するもののみ非nil）
 	RoomCreated          *RoomRevealedDetail
+	PaymentCreated       *PaymentCreatedDetail
 	PaymentAmountChanged *PaymentChangedDetail
 	PaymentPaidChanged   *PaymentChangedDetail
 	RollCallCreated      *RollCallCreatedDetail
@@ -36,6 +38,10 @@ type ActivityResponse struct {
 }
 
 type RoomRevealedDetail struct{}
+
+type PaymentCreatedDetail struct {
+	Amount int
+}
 
 type PaymentChangedDetail struct {
 	Amount int

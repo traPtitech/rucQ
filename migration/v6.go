@@ -32,6 +32,7 @@ type v6Payment struct {
 	ID        uint `gorm:"primaryKey"`
 	UserID    string
 	CampID    uint
+	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
@@ -94,7 +95,7 @@ func v6() *gormigrate.Migration {
 				}
 			}
 
-			// 2. Payment → payment_amount_changed + payment_paid_changed
+			// 2. Payment → payment_created + payment_amount_changed + payment_paid_changed
 			var payments []v6Payment
 			if err := db.Find(&payments).Error; err != nil {
 				return err
@@ -102,6 +103,17 @@ func v6() *gormigrate.Migration {
 
 			for _, p := range payments {
 				userID := p.UserID
+
+				createdActivity := v6Activity{
+					Model:       gorm.Model{CreatedAt: p.CreatedAt},
+					Type:        "payment_created",
+					CampID:      p.CampID,
+					UserID:      &userID,
+					ReferenceID: p.ID,
+				}
+				if err := db.Create(&createdActivity).Error; err != nil {
+					return err
+				}
 
 				amountActivity := v6Activity{
 					Model:       gorm.Model{CreatedAt: p.UpdatedAt},
