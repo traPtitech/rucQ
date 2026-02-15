@@ -142,6 +142,15 @@ func (s *Server) AdminPutPayment(
 			SetInternal(fmt.Errorf("failed to get payment: %w", err))
 	}
 
+	// Amount/AmountPaid が変更された場合にアクティビティを記録
+	if payment.Amount != 0 {
+		_ = s.activityService.RecordPaymentAmountChanged(e.Request().Context(), *updatedPayment)
+	}
+
+	if payment.AmountPaid != 0 {
+		_ = s.activityService.RecordPaymentPaidChanged(e.Request().Context(), *updatedPayment)
+	}
+
 	res, err := converter.Convert[api.PaymentResponse](updatedPayment)
 
 	if err != nil {

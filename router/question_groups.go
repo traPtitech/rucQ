@@ -72,6 +72,8 @@ func (s *Server) AdminPostQuestionGroup(
 			SetInternal(fmt.Errorf("failed to convert response body: %w", err))
 	}
 
+	_ = s.activityService.RecordQuestionCreated(e.Request().Context(), questionGroup)
+
 	return e.JSON(http.StatusCreated, res)
 }
 

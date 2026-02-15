@@ -235,6 +235,10 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), username).
 			Return(&model.User{IsStaff: true}, nil)
 		h.repo.MockQuestionGroupRepository.EXPECT().CreateQuestionGroup(gomock.Any()).Return(nil)
+		h.activityService.EXPECT().
+			RecordQuestionCreated(gomock.Any(), gomock.Any()).
+			Return(nil).
+			Times(1)
 
 		res := h.expect.POST("/api/admin/camps/1/question-groups").
 			WithJSON(req).

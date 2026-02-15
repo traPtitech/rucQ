@@ -62,6 +62,15 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 			SetInternal(fmt.Errorf("failed to convert model to response (roomId: %d): %w", updatedRoom.ID, err))
 	}
 
+	// RoomGroup経由でCampIDを取得してアクティビティを記録
+	roomGroup, err := s.repo.GetRoomGroupByID(e.Request().Context(), updatedRoom.RoomGroupID)
+	if err != nil {
+		// アクティビティの記録失敗はレスポンスに影響させない
+		return e.JSON(http.StatusCreated, res)
+	}
+
+	_ = s.activityService.RecordRoomCreatedWithCampID(e.Request().Context(), *updatedRoom, roomGroup.CampID)
+
 	return e.JSON(http.StatusCreated, res)
 }
 

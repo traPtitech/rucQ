@@ -3,6 +3,7 @@ package mockrepository
 import "go.uber.org/mock/gomock"
 
 type MockRepository struct {
+	*MockActivityRepository
 	*MockAnswerRepository
 	*MockCampRepository
 	*MockEventRepository
@@ -20,6 +21,7 @@ type MockRepository struct {
 
 func NewMockRepository(ctrl *gomock.Controller) *MockRepository {
 	return &MockRepository{
+		MockActivityRepository:         NewMockActivityRepository(ctrl),
 		MockAnswerRepository:           NewMockAnswerRepository(ctrl),
 		MockCampRepository:             NewMockCampRepository(ctrl),
 		MockEventRepository:            NewMockEventRepository(ctrl),

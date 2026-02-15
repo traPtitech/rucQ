@@ -1,6 +1,7 @@
 package repository
 
 type Repository interface {
+	ActivityRepository
 	AnswerRepository
 	CampRepository
 	EventRepository

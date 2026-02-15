@@ -178,6 +178,16 @@ func TestServer_AdminPutPayment(t *testing.T) {
 			UpdatePayment(gomock.Any(), uint(paymentID), gomock.Any()).
 			Return(nil)
 
+		h.activityService.EXPECT().
+			RecordPaymentAmountChanged(gomock.Any(), gomock.Any()).
+			Return(nil).
+			Times(1)
+
+		h.activityService.EXPECT().
+			RecordPaymentPaidChanged(gomock.Any(), gomock.Any()).
+			Return(nil).
+			Times(1)
+
 		h.repo.MockPaymentRepository.EXPECT().
 			GetPaymentByID(gomock.Any(), uint(paymentID)).
 			Return(&model.Payment{

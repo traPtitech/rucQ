@@ -90,6 +90,8 @@ func (s *Server) AdminPostRollCall(
 			SetInternal(fmt.Errorf("failed to convert roll call: %w", err))
 	}
 
+	_ = s.activityService.RecordRollCallCreated(e.Request().Context(), rollCall)
+
 	return e.JSON(http.StatusCreated, res)
 }
 

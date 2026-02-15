@@ -66,6 +66,14 @@ func TestServer_AdminPostRoom(t *testing.T) {
 				},
 			}, nil).
 			Times(1)
+		h.repo.MockRoomGroupRepository.EXPECT().
+			GetRoomGroupByID(gomock.Any(), uint(req.RoomGroupId)).
+			Return(&model.RoomGroup{Model: gorm.Model{ID: uint(req.RoomGroupId)}, CampID: 1}, nil).
+			Times(1)
+		h.activityService.EXPECT().
+			RecordRoomCreatedWithCampID(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(nil).
+			Times(1)
 
 		res := h.expect.POST("/api/admin/rooms").
 			WithJSON(req).
@@ -126,6 +134,14 @@ func TestServer_AdminPostRoom(t *testing.T) {
 				RoomGroupID: uint(req.RoomGroupId),
 				Members:     []model.User{},
 			}, nil).
+			Times(1)
+		h.repo.MockRoomGroupRepository.EXPECT().
+			GetRoomGroupByID(gomock.Any(), uint(req.RoomGroupId)).
+			Return(&model.RoomGroup{Model: gorm.Model{ID: uint(req.RoomGroupId)}, CampID: 1}, nil).
+			Times(1)
+		h.activityService.EXPECT().
+			RecordRoomCreatedWithCampID(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(nil).
 			Times(1)
 
 		res := h.expect.POST("/api/admin/rooms").
