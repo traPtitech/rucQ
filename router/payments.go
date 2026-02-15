@@ -129,11 +129,19 @@ func (s *Server) AdminPutPayment(
 			SetInternal(fmt.Errorf("failed to convert request to model: %w", err))
 	}
 
-	if err := s.repo.UpdatePayment(e.Request().Context(), uint(paymentID), &payment); err != nil {
+	beforePayment, err := s.repo.GetPaymentByID(e.Request().Context(), uint(paymentID))
+
+	if err != nil {
 		if errors.Is(err, repository.ErrPaymentNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Payment not found")
+			return echo.ErrNotFound
 		}
 
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get payment: %w", err))
+	}
+
+	if err := s.repo.UpdatePayment(e.Request().Context(), uint(paymentID), &payment); err != nil {
+		// もしErrPaymentNotFoundがここで返ってきた場合、それは異常なので500エラーとする
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to update payment: %w", err))
 	}
@@ -148,7 +156,7 @@ func (s *Server) AdminPutPayment(
 	}
 
 	// Amount/AmountPaid が変更された場合にアクティビティを記録
-	if payment.Amount != 0 {
+	if updatedPayment.Amount != beforePayment.Amount {
 		if err := s.activityService.RecordPaymentAmountChanged(
 			e.Request().Context(),
 			*updatedPayment,
@@ -158,7 +166,7 @@ func (s *Server) AdminPutPayment(
 		}
 	}
 
-	if payment.AmountPaid != 0 {
+	if updatedPayment.AmountPaid != beforePayment.AmountPaid {
 		if err := s.activityService.RecordPaymentPaidChanged(
 			e.Request().Context(),
 			*updatedPayment,
