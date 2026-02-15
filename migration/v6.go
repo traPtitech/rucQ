@@ -107,12 +107,14 @@ func v6() *gormigrate.Migration {
 			}
 
 			// 2. Payment → payment_created + payment_paid_changed
-			if err := gorm.G[v6Payment](db).FindInBatches(ctx, activityBatchSize, func(data []v6Payment, _ int) error {
+			if err := gorm.G[v6Payment](
+				db,
+			).FindInBatches(ctx, activityBatchSize, func(data []v6Payment, _ int) error {
 				if len(data) == 0 {
 					return nil
 				}
 
-				activities := make([]v6Activity, 0, len(data)*2)
+				activities := make([]v6Activity, 0, len(data)*2) //nolint:mnd
 				for _, p := range data {
 					userID := p.UserID
 					activities = append(activities, v6Activity{
@@ -143,7 +145,9 @@ func v6() *gormigrate.Migration {
 			}
 
 			// 3. RollCall → roll_call_created
-			if err := gorm.G[v6RollCall](db).FindInBatches(ctx, activityBatchSize, func(data []v6RollCall, _ int) error {
+			if err := gorm.G[v6RollCall](
+				db,
+			).FindInBatches(ctx, activityBatchSize, func(data []v6RollCall, _ int) error {
 				if len(data) == 0 {
 					return nil
 				}
@@ -182,7 +186,9 @@ func v6() *gormigrate.Migration {
 						})
 					}
 
-					return gorm.G[v6Activity](db).CreateInBatches(ctx, &activities, activityBatchSize)
+					return gorm.G[v6Activity](
+						db,
+					).CreateInBatches(ctx, &activities, activityBatchSize)
 				},
 			); err != nil {
 				return err
