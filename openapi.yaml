@@ -2631,7 +2631,7 @@ components:
           type: string
           format: date-time
         needsResponse:
-          description: 必須だがまだ回答されていない質問がある場合true
+          description: 必須だがまだ回答していない質問がある場合true
           type: boolean
       required:
         - id
