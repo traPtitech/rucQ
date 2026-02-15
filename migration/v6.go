@@ -10,14 +10,23 @@ import (
 
 type v6Activity struct {
 	gorm.Model
-	Type        string `gorm:"size:50;not null;index"`
-	CampID      uint   `gorm:"not null"`
-	UserID      *string
-	ReferenceID uint `gorm:"not null"`
+	Type        string  `gorm:"size:50;not null;index"`
+	CampID      uint    `gorm:"not null"`
+	UserID      *string `gorm:"size:32"`
+	User        *v6User `gorm:"foreignKey:UserID;references:ID"`
+	ReferenceID uint    `gorm:"not null"`
 }
 
 func (v6Activity) TableName() string {
 	return "activities"
+}
+
+type v6User struct {
+	ID string `gorm:"primaryKey;size:32"`
+}
+
+func (v6User) TableName() string {
+	return "users"
 }
 
 // room_membersテーブルのJOIN用
