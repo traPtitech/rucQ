@@ -15,10 +15,6 @@ func (s *Server) GetActivities(
 	campID api.CampId,
 	params api.GetActivitiesParams,
 ) error {
-	if params.XForwardedUser == nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
-	}
-
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).

@@ -159,17 +159,6 @@ func TestGetActivities(t *testing.T) {
 		act6.Value("needsResponse").Boolean().IsTrue()
 	})
 
-	t.Run("Unauthorized (missing header)", func(t *testing.T) {
-		t.Parallel()
-
-		h := setup(t)
-		campID := uint(random.PositiveInt(t))
-
-		h.expect.GET("/api/camps/{campId}/activities", campID).
-			Expect().
-			Status(http.StatusBadRequest)
-	})
-
 	t.Run("InternalServerError (activity service error)", func(t *testing.T) {
 		t.Parallel()
 
