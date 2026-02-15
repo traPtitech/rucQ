@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 	"time"
@@ -366,6 +367,46 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			Value("content").
 			String().
 			IsEqual(multipleChoiceQuestion.Options[2].Content)
+	})
+
+	t.Run("Activity service error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+
+		freeTextQuestion := api.FreeTextQuestionRequest{
+			Title:      random.AlphaNumericString(t, 30),
+			Type:       api.FreeTextQuestionRequestTypeFreeText,
+			IsPublic:   random.Bool(t),
+			IsOpen:     random.Bool(t),
+			IsRequired: random.PtrOrNil(t, random.Bool(t)),
+		}
+
+		var freeTextReq api.PostQuestionRequest
+		err := freeTextReq.FromFreeTextQuestionRequest(freeTextQuestion)
+		require.NoError(t, err)
+
+		req := api.AdminPostQuestionGroupJSONRequestBody{
+			Name:      random.AlphaNumericString(t, 20),
+			Due:       types.Date{Time: random.Time(t)},
+			Questions: []api.PostQuestionRequest{freeTextReq},
+		}
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil)
+		h.repo.MockQuestionGroupRepository.EXPECT().CreateQuestionGroup(gomock.Any()).Return(nil)
+		h.activityService.EXPECT().
+			RecordQuestionCreated(gomock.Any(), gomock.Any()).
+			Return(errors.New("activity error")).
+			Times(1)
+
+		h.expect.POST("/api/admin/camps/1/question-groups").
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
 	})
 }
 

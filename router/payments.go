@@ -84,7 +84,10 @@ func (s *Server) AdminPostPayment(
 			SetInternal(fmt.Errorf("failed to create payment: %w", err))
 	}
 
-	_ = s.activityService.RecordPaymentCreated(e.Request().Context(), payment)
+	if err := s.activityService.RecordPaymentCreated(e.Request().Context(), payment); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to record payment created activity: %w", err))
+	}
 
 	res, err := converter.Convert[api.PaymentResponse](payment)
 
@@ -146,11 +149,23 @@ func (s *Server) AdminPutPayment(
 
 	// Amount/AmountPaid が変更された場合にアクティビティを記録
 	if payment.Amount != 0 {
-		_ = s.activityService.RecordPaymentAmountChanged(e.Request().Context(), *updatedPayment)
+		if err := s.activityService.RecordPaymentAmountChanged(
+			e.Request().Context(),
+			*updatedPayment,
+		); err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError).
+				SetInternal(fmt.Errorf("failed to record payment amount changed activity: %w", err))
+		}
 	}
 
 	if payment.AmountPaid != 0 {
-		_ = s.activityService.RecordPaymentPaidChanged(e.Request().Context(), *updatedPayment)
+		if err := s.activityService.RecordPaymentPaidChanged(
+			e.Request().Context(),
+			*updatedPayment,
+		); err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError).
+				SetInternal(fmt.Errorf("failed to record payment paid changed activity: %w", err))
+		}
 	}
 
 	res, err := converter.Convert[api.PaymentResponse](updatedPayment)

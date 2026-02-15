@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -50,6 +51,35 @@ func TestAdminPostPayment(t *testing.T) {
 		res.Value("amountPaid").Number().IsEqual(req.AmountPaid)
 		res.Value("userId").String().IsEqual(req.UserId)
 		res.Value("campId").Number().IsEqual(campID)
+	})
+
+	t.Run("Activity service error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := random.PositiveInt(t)
+		req := api.AdminPostPaymentJSONRequestBody{
+			Amount:     random.PositiveInt(t),
+			AmountPaid: random.PositiveInt(t),
+			UserId:     random.AlphaNumericString(t, 32),
+		}
+		adminUserID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(&model.User{
+				IsStaff: true,
+			}, nil)
+		h.repo.MockPaymentRepository.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(nil)
+		h.activityService.EXPECT().
+			RecordPaymentCreated(gomock.Any(), gomock.Any()).
+			Return(errors.New("activity error")).
+			Times(1)
+
+		h.expect.POST("/api/admin/camps/{campId}/payments", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().Status(http.StatusInternalServerError)
 	})
 }
 
@@ -214,6 +244,49 @@ func TestServer_AdminPutPayment(t *testing.T) {
 		res.Value("amountPaid").Number().IsEqual(req.AmountPaid)
 		res.Value("userId").String().IsEqual(req.UserId)
 		res.Value("campId").Number().IsEqual(campID)
+	})
+
+	t.Run("Activity service error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		paymentID := random.PositiveInt(t)
+		campID := random.PositiveInt(t)
+		req := api.AdminPutPaymentJSONRequestBody{
+			Amount:     2000,
+			AmountPaid: 0,
+			UserId:     random.AlphaNumericString(t, 32),
+		}
+		adminUserID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(&model.User{
+				IsStaff: true,
+			}, nil)
+		h.repo.MockPaymentRepository.EXPECT().
+			UpdatePayment(gomock.Any(), uint(paymentID), gomock.Any()).
+			Return(nil)
+
+		h.activityService.EXPECT().
+			RecordPaymentAmountChanged(gomock.Any(), gomock.Any()).
+			Return(errors.New("activity error")).
+			Times(1)
+
+		h.repo.MockPaymentRepository.EXPECT().
+			GetPaymentByID(gomock.Any(), uint(paymentID)).
+			Return(&model.Payment{
+				Model:      gorm.Model{ID: uint(paymentID)},
+				Amount:     req.Amount,
+				AmountPaid: req.AmountPaid,
+				UserID:     req.UserId,
+				CampID:     uint(campID),
+			}, nil)
+
+		h.expect.PUT("/api/admin/payments/{paymentId}", paymentID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Forbidden", func(t *testing.T) {

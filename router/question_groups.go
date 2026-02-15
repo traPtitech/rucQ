@@ -72,7 +72,13 @@ func (s *Server) AdminPostQuestionGroup(
 			SetInternal(fmt.Errorf("failed to convert response body: %w", err))
 	}
 
-	_ = s.activityService.RecordQuestionCreated(e.Request().Context(), questionGroup)
+	if err := s.activityService.RecordQuestionCreated(
+		e.Request().Context(),
+		questionGroup,
+	); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to record question created activity: %w", err))
+	}
 
 	return e.JSON(http.StatusCreated, res)
 }
