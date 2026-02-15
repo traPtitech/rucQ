@@ -86,110 +86,97 @@ func v6() *gormigrate.Migration {
 				return err
 			}
 
-			if len(roomsWithCamp) > 0 {
-				activities := make([]v6Activity, 0, len(roomsWithCamp))
-				for _, r := range roomsWithCamp {
-					activities = append(activities, v6Activity{
-						Model:       gorm.Model{CreatedAt: r.CreatedAt},
-						Type:        "room_created",
-						CampID:      r.CampID,
-						ReferenceID: r.RoomID,
-					})
-				}
-
-				if err := gorm.G[v6Activity](db).CreateInBatches(
-					ctx,
-					&activities,
-					activityBatchSize,
-				); err != nil {
-					return err
-				}
-			}
-
 			// 2. Payment → payment_created + payment_paid_changed
-			if err := gorm.G[v6Payment](
-				db,
-			).FindInBatches(ctx, activityBatchSize, func(data []v6Payment, _ int) error {
-				if len(data) == 0 {
-					return nil
-				}
-
-				activities := make([]v6Activity, 0, len(data)*2) //nolint:mnd
-				for _, p := range data {
-					userID := p.UserID
-					activities = append(activities, v6Activity{
-						Model:       gorm.Model{CreatedAt: p.CreatedAt},
-						Type:        "payment_created",
-						CampID:      p.CampID,
-						UserID:      &userID,
-						ReferenceID: p.ID,
-					})
-					if !p.UpdatedAt.Equal(p.CreatedAt) {
-						activities = append(activities, v6Activity{
-							Model:       gorm.Model{CreatedAt: p.UpdatedAt},
-							Type:        "payment_paid_changed",
-							CampID:      p.CampID,
-							UserID:      &userID,
-							ReferenceID: p.ID,
-						})
-					}
-				}
-
-				if len(activities) == 0 {
-					return nil
-				}
-
-				return gorm.G[v6Activity](db).CreateInBatches(ctx, &activities, activityBatchSize)
-			}); err != nil {
+			payments, err := gorm.G[v6Payment](db).Find(ctx)
+			if err != nil {
 				return err
 			}
 
 			// 3. RollCall → roll_call_created
-			if err := gorm.G[v6RollCall](
-				db,
-			).FindInBatches(ctx, activityBatchSize, func(data []v6RollCall, _ int) error {
-				if len(data) == 0 {
-					return nil
-				}
-
-				activities := make([]v6Activity, 0, len(data))
-				for _, rc := range data {
-					activities = append(activities, v6Activity{
-						Model:       gorm.Model{CreatedAt: rc.CreatedAt},
-						Type:        "roll_call_created",
-						CampID:      rc.CampID,
-						ReferenceID: rc.ID,
-					})
-				}
-
-				return gorm.G[v6Activity](db).CreateInBatches(ctx, &activities, activityBatchSize)
-			}); err != nil {
+			rollCalls, err := gorm.G[v6RollCall](db).Find(ctx)
+			if err != nil {
 				return err
 			}
 
 			// 4. QuestionGroup → question_created
-			if err := gorm.G[v6QuestionGroup](db).FindInBatches(
+			questionGroups, err := gorm.G[v6QuestionGroup](db).Find(ctx)
+			if err != nil {
+				return err
+			}
+
+			updatedPaymentsCount := 0
+			for _, p := range payments {
+				if !p.UpdatedAt.Equal(p.CreatedAt) {
+					updatedPaymentsCount++
+				}
+			}
+
+			activitiesCapacity := len(
+				roomsWithCamp,
+			) + len(
+				rollCalls,
+			) + len(
+				questionGroups,
+			) + len(
+				payments,
+			) + updatedPaymentsCount
+			activities := make([]v6Activity, 0, activitiesCapacity)
+
+			for _, r := range roomsWithCamp {
+				activities = append(activities, v6Activity{
+					Model:       gorm.Model{CreatedAt: r.CreatedAt},
+					Type:        "room_created",
+					CampID:      r.CampID,
+					ReferenceID: r.RoomID,
+				})
+			}
+
+			for _, p := range payments {
+				userID := p.UserID
+				activities = append(activities, v6Activity{
+					Model:       gorm.Model{CreatedAt: p.CreatedAt},
+					Type:        "payment_created",
+					CampID:      p.CampID,
+					UserID:      &userID,
+					ReferenceID: p.ID,
+				})
+				if !p.UpdatedAt.Equal(p.CreatedAt) {
+					activities = append(activities, v6Activity{
+						Model:       gorm.Model{CreatedAt: p.UpdatedAt},
+						Type:        "payment_paid_changed",
+						CampID:      p.CampID,
+						UserID:      &userID,
+						ReferenceID: p.ID,
+					})
+				}
+			}
+
+			for _, rc := range rollCalls {
+				activities = append(activities, v6Activity{
+					Model:       gorm.Model{CreatedAt: rc.CreatedAt},
+					Type:        "roll_call_created",
+					CampID:      rc.CampID,
+					ReferenceID: rc.ID,
+				})
+			}
+
+			for _, qg := range questionGroups {
+				activities = append(activities, v6Activity{
+					Model:       gorm.Model{CreatedAt: qg.CreatedAt},
+					Type:        "question_created",
+					CampID:      qg.CampID,
+					ReferenceID: qg.ID,
+				})
+			}
+
+			if len(activities) == 0 {
+				return nil
+			}
+
+			if err := gorm.G[v6Activity](db).CreateInBatches(
 				ctx,
+				&activities,
 				activityBatchSize,
-				func(data []v6QuestionGroup, _ int) error {
-					if len(data) == 0 {
-						return nil
-					}
-
-					activities := make([]v6Activity, 0, len(data))
-					for _, qg := range data {
-						activities = append(activities, v6Activity{
-							Model:       gorm.Model{CreatedAt: qg.CreatedAt},
-							Type:        "question_created",
-							CampID:      qg.CampID,
-							ReferenceID: qg.ID,
-						})
-					}
-
-					return gorm.G[v6Activity](
-						db,
-					).CreateInBatches(ctx, &activities, activityBatchSize)
-				},
 			); err != nil {
 				return err
 			}
