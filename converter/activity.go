@@ -66,7 +66,7 @@ func ConvertActivityResponse(src activityservice.ActivityResponse) (api.Activity
 			RollcallId:    int(src.RollCallCreated.RollCallID),
 			Name:          src.RollCallCreated.Name,
 			IsSubject:     src.RollCallCreated.IsSubject,
-			NeedsResponse: src.RollCallCreated.NeedsResponse,
+			Answered:      src.RollCallCreated.Answered,
 		})
 		if err != nil {
 			return dst, err

@@ -206,11 +206,10 @@ func (s *activityServiceImpl) GetActivities(
 				return u.ID == userID
 			})
 
-			// needsResponse: 対象者なのに未回答
 			hasReaction := slices.ContainsFunc(rc.Reactions, func(r model.RollCallReaction) bool {
 				return r.UserID == userID
 			})
-			needsResponse := isSubject && !hasReaction
+			answered := hasReaction
 
 			result = append(result, ActivityResponse{
 				ID:   a.ID,
@@ -220,7 +219,7 @@ func (s *activityServiceImpl) GetActivities(
 					RollCallID:    rc.ID,
 					Name:          rc.Name,
 					IsSubject:     isSubject,
-					NeedsResponse: needsResponse,
+					Answered:      answered,
 				},
 			})
 

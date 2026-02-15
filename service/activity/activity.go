@@ -45,7 +45,7 @@ type RollCallCreatedDetail struct {
 	RollCallID    uint
 	Name          string
 	IsSubject     bool
-	NeedsResponse bool
+	Answered      bool
 }
 
 type QuestionCreatedDetail struct {

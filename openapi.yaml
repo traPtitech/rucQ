@@ -2600,7 +2600,7 @@ components:
           type: string
         isSubject:
           type: boolean
-        needsResponse:
+        answered:
           type: boolean
       required:
         - id
@@ -2609,7 +2609,7 @@ components:
         - rollcallId
         - name
         - isSubject
-        - needsResponse
+        - answered
     QuestionCreatedActivity:
       type: object
       description: 質問グループが作成されたアクティビティ

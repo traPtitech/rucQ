@@ -677,13 +677,13 @@ type QuestionResponseBase struct {
 
 // RollCallCreatedActivity 点呼が作成されたアクティビティ
 type RollCallCreatedActivity struct {
-	Id            int                         `json:"id"`
-	IsSubject     bool                        `json:"isSubject"`
-	Name          string                      `json:"name"`
-	NeedsResponse bool                        `json:"needsResponse"`
-	RollcallId    int                         `json:"rollcallId"`
-	Time          time.Time                   `json:"time"`
-	Type          RollCallCreatedActivityType `json:"type"`
+	Answered   bool                        `json:"answered"`
+	Id         int                         `json:"id"`
+	IsSubject  bool                        `json:"isSubject"`
+	Name       string                      `json:"name"`
+	RollcallId int                         `json:"rollcallId"`
+	Time       time.Time                   `json:"time"`
+	Type       RollCallCreatedActivityType `json:"type"`
 }
 
 // RollCallCreatedActivityType defines model for RollCallCreatedActivity.Type.
