@@ -23,7 +23,7 @@ func getAllMigrations() []*gormigrate.Migration {
 		v2(), // ゼロ値で上書きされてしまっていたcreated_atを修正
 		v3(), // messagesテーブルにsent_atカラムを追加
 		v4(), // roll_callsテーブルにcamp_idカラムを追加
-		// v5 は別ブランチで作成済み
+		v5(), // room_statuses, room_status_logsテーブルを追加
 		v6(), // activitiesテーブルを追加
 	}
 }

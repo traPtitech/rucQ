@@ -16,6 +16,7 @@ type Repository interface {
 	RollCallReactionRepository
 	RoomGroupRepository
 	RoomRepository
+	RoomStatusRepository
 	UserRepository
 	Transaction(ctx context.Context, fn func(tx Repository) error) error
 }

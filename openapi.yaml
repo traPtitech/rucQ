@@ -1112,6 +1112,57 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+  /api/rooms/{roomId}/status:
+    put:
+      summary: 部屋のステータスを設定・更新
+      tags:
+        - Rooms
+      operationId: putRoomStatus
+      parameters:
+        - $ref: "#/components/parameters/RoomId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomStatus"
+      responses:
+        "204":
+          $ref: "#/components/responses/NoContent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /api/rooms/{roomId}/status-logs:
+    get:
+      summary: 部屋のステータス履歴を取得
+      description: |
+        現在のステータスを含む、これまでのステータス変更履歴を取得します。
+        未設定の場合は空配列が返されます。順番は`updatedAt`の降順です。
+      tags:
+        - Rooms
+      operationId: getRoomStatusLogs
+      parameters:
+        - $ref: "#/components/parameters/RoomId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RoomStatusLog"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/camps/{campId}/activities:
     get:
       summary: アクティビティの一覧を取得
@@ -2375,6 +2426,43 @@ components:
         - name
         - roomGroupId
         - memberIds
+    RoomStatus:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - active
+            - inactive
+          nullable: true
+        topic:
+          type: string
+          maxLength: 64
+      required:
+        - type
+        - topic
+    RoomStatusLog:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - active
+            - inactive
+          nullable: true
+        topic:
+          type: string
+          maxLength: 64
+        operatorId:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - type
+        - topic
+        - operatorId
+        - updatedAt
     RoomResponse:
       type: object
       properties:
@@ -2386,10 +2474,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/UserResponse"
+        status:
+          $ref: "#/components/schemas/RoomStatus"
       required:
         - id
         - name
         - members
+        - status
     ImageResponse:
       type: object
       properties:

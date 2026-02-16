@@ -184,6 +184,18 @@ const (
 	RoomCreated RoomCreatedActivityType = "room_created"
 )
 
+// Defines values for RoomStatusType.
+const (
+	RoomStatusTypeActive   RoomStatusType = "active"
+	RoomStatusTypeInactive RoomStatusType = "inactive"
+)
+
+// Defines values for RoomStatusLogType.
+const (
+	RoomStatusLogTypeActive   RoomStatusLogType = "active"
+	RoomStatusLogTypeInactive RoomStatusLogType = "inactive"
+)
+
 // Defines values for SingleChoiceAnswerRequestType.
 const (
 	SingleChoiceAnswerRequestTypeSingle SingleChoiceAnswerRequestType = "single"
@@ -811,7 +823,28 @@ type RoomResponse struct {
 	Id      int            `json:"id"`
 	Members []UserResponse `json:"members"`
 	Name    string         `json:"name"`
+	Status  RoomStatus     `json:"status"`
 }
+
+// RoomStatus defines model for RoomStatus.
+type RoomStatus struct {
+	Topic string          `json:"topic"`
+	Type  *RoomStatusType `json:"type"`
+}
+
+// RoomStatusType defines model for RoomStatus.Type.
+type RoomStatusType string
+
+// RoomStatusLog defines model for RoomStatusLog.
+type RoomStatusLog struct {
+	OperatorId string             `json:"operatorId"`
+	Topic      string             `json:"topic"`
+	Type       *RoomStatusLogType `json:"type"`
+	UpdatedAt  time.Time          `json:"updatedAt"`
+}
+
+// RoomStatusLogType defines model for RoomStatusLog.Type.
+type RoomStatusLogType string
 
 // SingleChoiceAnswerRequest defines model for SingleChoiceAnswerRequest.
 type SingleChoiceAnswerRequest struct {
@@ -1211,6 +1244,12 @@ type PostRollCallReactionParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// PutRoomStatusParams defines parameters for PutRoomStatus.
+type PutRoomStatusParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // AdminPutAnswerJSONRequestBody defines body for AdminPutAnswer for application/json ContentType.
 type AdminPutAnswerJSONRequestBody = AnswerRequest
 
@@ -1285,6 +1324,9 @@ type PutReactionJSONRequestBody = RollCallReactionRequest
 
 // PostRollCallReactionJSONRequestBody defines body for PostRollCallReaction for application/json ContentType.
 type PostRollCallReactionJSONRequestBody = RollCallReactionRequest
+
+// PutRoomStatusJSONRequestBody defines body for PutRoomStatus for application/json ContentType.
+type PutRoomStatusJSONRequestBody = RoomStatus
 
 // AsRoomCreatedActivity returns the union data inside the ActivityResponse as a RoomCreatedActivity
 func (t ActivityResponse) AsRoomCreatedActivity() (RoomCreatedActivity, error) {
@@ -2453,6 +2495,12 @@ type ServerInterface interface {
 	// 新たに作成されたリアクションをストリームで取得
 	// (GET /api/roll-calls/{rollCallId}/reactions/stream)
 	StreamRollCallReactions(ctx echo.Context, rollCallId RollCallId) error
+	// 部屋のステータスを設定・更新
+	// (PUT /api/rooms/{roomId}/status)
+	PutRoomStatus(ctx echo.Context, roomId RoomId, params PutRoomStatusParams) error
+	// 部屋のステータス履歴を取得
+	// (GET /api/rooms/{roomId}/status-logs)
+	GetRoomStatusLogs(ctx echo.Context, roomId RoomId) error
 	// 合宿係の一覧を取得
 	// (GET /api/staffs)
 	GetStaffs(ctx echo.Context) error
@@ -4215,6 +4263,58 @@ func (w *ServerInterfaceWrapper) StreamRollCallReactions(ctx echo.Context) error
 	return err
 }
 
+// PutRoomStatus converts echo context to params.
+func (w *ServerInterfaceWrapper) PutRoomStatus(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "roomId" -------------
+	var roomId RoomId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "roomId", ctx.Param("roomId"), &roomId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter roomId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PutRoomStatusParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PutRoomStatus(ctx, roomId, params)
+	return err
+}
+
+// GetRoomStatusLogs converts echo context to params.
+func (w *ServerInterfaceWrapper) GetRoomStatusLogs(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "roomId" -------------
+	var roomId RoomId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "roomId", ctx.Param("roomId"), &roomId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter roomId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetRoomStatusLogs(ctx, roomId)
+	return err
+}
+
 // GetStaffs converts echo context to params.
 func (w *ServerInterfaceWrapper) GetStaffs(ctx echo.Context) error {
 	var err error
@@ -4307,6 +4407,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/roll-calls/:rollCallId/reactions", wrapper.GetRollCallReactions)
 	router.POST(baseURL+"/api/roll-calls/:rollCallId/reactions", wrapper.PostRollCallReaction)
 	router.GET(baseURL+"/api/roll-calls/:rollCallId/reactions/stream", wrapper.StreamRollCallReactions)
+	router.PUT(baseURL+"/api/rooms/:roomId/status", wrapper.PutRoomStatus)
+	router.GET(baseURL+"/api/rooms/:roomId/status-logs", wrapper.GetRoomStatusLogs)
 	router.GET(baseURL+"/api/staffs", wrapper.GetStaffs)
 
 }
