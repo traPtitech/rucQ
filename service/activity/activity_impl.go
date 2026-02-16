@@ -188,10 +188,9 @@ func (s *activityServiceImpl) GetActivities(
 			}
 
 			payment, err := s.repo.GetPaymentByID(ctx, a.ReferenceID)
+
+			// Paymentを削除するAPIは存在しないため、ここではErrPaymentNotFoundでもエラーにする
 			if err != nil {
-				if errors.Is(err, repository.ErrPaymentNotFound) {
-					continue
-				}
 				return nil, err
 			}
 
