@@ -248,13 +248,9 @@ func (s *activityServiceImpl) GetActivities(
 			}
 
 			// IsRequired な質問で未回答のものがあるか
-			needsResponse := false
-			for _, q := range qg.Questions {
-				if q.IsRequired && !answeredQuestionIDs[q.ID] {
-					needsResponse = true
-					break
-				}
-			}
+			needsResponse := slices.ContainsFunc(qg.Questions, func(q model.Question) bool {
+				return q.IsRequired && !answeredQuestionIDs[q.ID]
+			})
 
 			result = append(result, ActivityResponse{
 				ID:   a.ID,
