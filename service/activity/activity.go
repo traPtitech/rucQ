@@ -9,10 +9,7 @@ import (
 )
 
 type ActivityService interface {
-	// ユーザーに関連するアクティビティを取得し、付加情報を組み立てて返す
 	GetActivities(ctx context.Context, campID uint, userID string) ([]ActivityResponse, error)
-
-	// 各イベント発生時にルーターから呼ばれる
 	RecordRoomCreated(ctx context.Context, room model.Room) error
 	RecordRoomCreatedWithCampID(ctx context.Context, room model.Room, campID uint) error
 	RecordPaymentCreated(ctx context.Context, payment model.Payment) error
@@ -22,13 +19,13 @@ type ActivityService interface {
 	RecordQuestionCreated(ctx context.Context, questionGroup model.QuestionGroup) error
 }
 
-// ActivityResponse はサービス層の応答型
 type ActivityResponse struct {
 	ID   uint
 	Type model.ActivityType
 	Time time.Time
 
-	// type ごとの付加情報（該当するもののみ非nil）
+	// typeごとの付加情報（該当するもののみ非nil）
+
 	RoomCreated          *RoomCreatedDetail
 	PaymentCreated       *PaymentCreatedDetail
 	PaymentAmountChanged *PaymentChangedDetail
