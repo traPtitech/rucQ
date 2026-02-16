@@ -36,6 +36,45 @@ func TestCreateCamp(t *testing.T) {
 
 		assert.NoError(t, err)
 	})
+
+	t.Run("Duplicate DisplayID", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		dateStart := random.Time(t)
+		dateEnd := dateStart.Add(time.Duration(random.PositiveInt(t)))
+		displayID := random.AlphaNumericString(t, 10)
+
+		// 1つ目のキャンプを作成
+		camp1 := model.Camp{
+			DisplayID:          displayID,
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          dateStart,
+			DateEnd:            dateEnd,
+		}
+		err := r.CreateCamp(&camp1)
+		require.NoError(t, err)
+
+		// 同じDisplayIDで2つ目のキャンプを作成
+		camp2 := model.Camp{
+			DisplayID:          displayID, // 同じDisplayID
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          random.Time(t),
+			DateEnd:            random.Time(t),
+		}
+		err = r.CreateCamp(&camp2)
+
+		// ErrAlreadyExistsが返ることを確認
+		assert.ErrorIs(t, err, model.ErrAlreadyExists)
+	})
 }
 
 func TestGetCamps(t *testing.T) {
