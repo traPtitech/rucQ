@@ -15,7 +15,7 @@ const (
 
 type Activity struct {
 	gorm.Model
-	Type        ActivityType `gorm:"size:50;not null;index"`
+	Type        ActivityType `gorm:"size:50;not null;"`
 	CampID      uint         `gorm:"not null"`
 	Camp        *Camp        `gorm:"foreignKey:CampID;references:ID;constraint:OnDelete:CASCADE"`
 	UserID      *string      `gorm:"size:32"` // payment_* のみ使用

@@ -10,7 +10,7 @@ import (
 
 type v6Activity struct {
 	gorm.Model
-	Type        string  `gorm:"size:50;not null;index"`
+	Type        string  `gorm:"size:50;not null;"`
 	CampID      uint    `gorm:"not null"`
 	Camp        *v6Camp `gorm:"foreignKey:CampID;references:ID;constraint:OnDelete:CASCADE"`
 	UserID      *string `gorm:"size:32"`
