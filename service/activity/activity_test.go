@@ -35,10 +35,10 @@ func setup(t *testing.T) *activityTestSetup {
 	}
 }
 
-func TestActivityServiceImpl_RecordActivities(t *testing.T) {
+func TestActivityServiceImpl_RecordRoomCreated(t *testing.T) {
 	t.Parallel()
 
-	t.Run("RecordRoomCreated", func(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		s := setup(t)
@@ -69,8 +69,12 @@ func TestActivityServiceImpl_RecordActivities(t *testing.T) {
 
 		assert.NoError(t, err)
 	})
+}
 
-	t.Run("RecordPaymentAmountChanged", func(t *testing.T) {
+func TestActivityServiceImpl_RecordPaymentAmountChanged(t *testing.T) {
+	t.Parallel()
+
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		s := setup(t)
@@ -100,8 +104,12 @@ func TestActivityServiceImpl_RecordActivities(t *testing.T) {
 
 		assert.NoError(t, err)
 	})
+}
 
-	t.Run("RecordPaymentCreated", func(t *testing.T) {
+func TestActivityServiceImpl_RecordPaymentCreated(t *testing.T) {
+	t.Parallel()
+
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		s := setup(t)
@@ -131,8 +139,12 @@ func TestActivityServiceImpl_RecordActivities(t *testing.T) {
 
 		assert.NoError(t, err)
 	})
+}
 
-	t.Run("RecordPaymentPaidChanged", func(t *testing.T) {
+func TestActivityServiceImpl_RecordPaymentPaidChanged(t *testing.T) {
+	t.Parallel()
+
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		s := setup(t)
@@ -162,8 +174,12 @@ func TestActivityServiceImpl_RecordActivities(t *testing.T) {
 
 		assert.NoError(t, err)
 	})
+}
 
-	t.Run("RecordRollCallCreated", func(t *testing.T) {
+func TestActivityServiceImpl_RecordRollCallCreated(t *testing.T) {
+	t.Parallel()
+
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		s := setup(t)
@@ -189,8 +205,12 @@ func TestActivityServiceImpl_RecordActivities(t *testing.T) {
 
 		assert.NoError(t, err)
 	})
+}
 
-	t.Run("RecordQuestionCreated", func(t *testing.T) {
+func TestActivityServiceImpl_RecordQuestionCreated(t *testing.T) {
+	t.Parallel()
+
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		s := setup(t)
@@ -221,7 +241,7 @@ func TestActivityServiceImpl_RecordActivities(t *testing.T) {
 func TestActivityServiceImpl_GetActivities(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Success", func(t *testing.T) {
+	t.Run("成功", func(t *testing.T) {
 		t.Parallel()
 
 		s := setup(t)
