@@ -13,7 +13,7 @@ import (
 func (r *Repository) GetRooms() ([]model.Room, error) {
 	var rooms []model.Room
 
-	if err := r.db.Preload("Members").Find(&rooms).Error; err != nil {
+	if err := r.db.Preload("Members").Preload("Status").Find(&rooms).Error; err != nil {
 		return nil, err
 	}
 
@@ -23,6 +23,7 @@ func (r *Repository) GetRooms() ([]model.Room, error) {
 func (r *Repository) GetRoomByID(ctx context.Context, roomID uint) (*model.Room, error) {
 	room, err := gorm.G[model.Room](r.db).
 		Preload("Members", nil).
+		Preload("Status", nil).
 		Where("id = ?", roomID).
 		First(ctx)
 
@@ -51,6 +52,7 @@ func (r *Repository) GetRoomByUserID(
 		Where("room_members.user_id = ?", userID).
 		Where("room_groups.camp_id = ?", campID).
 		Preload("Members").
+		Preload("Status").
 		First(&room).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, repository.ErrRoomNotFound
@@ -60,6 +62,31 @@ func (r *Repository) GetRoomByUserID(
 	}
 
 	return &room, nil
+}
+
+func (r *Repository) GetRoomCampID(ctx context.Context, roomID uint) (uint, error) {
+	type campResult struct {
+		CampID uint `gorm:"column:camp_id"`
+	}
+
+	var result campResult
+
+	err := r.db.WithContext(ctx).
+		Table("rooms").
+		Select("room_groups.camp_id").
+		Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
+		Where("rooms.id = ?", roomID).
+		Take(&result).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, repository.ErrRoomNotFound
+		}
+
+		return 0, err
+	}
+
+	return result.CampID, nil
 }
 
 func (r *Repository) CreateRoom(ctx context.Context, room *model.Room) error {
@@ -155,17 +182,31 @@ func (r *Repository) UpdateRoom(ctx context.Context, roomID uint, room *model.Ro
 }
 
 func (r *Repository) DeleteRoom(ctx context.Context, roomID uint) error {
-	rowsAffected, err := gorm.G[model.Room](r.db).
-		Where("id = ?", roomID).
-		Delete(ctx)
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		rowsAffected, err := gorm.G[model.Room](tx).
+			Where("id = ?", roomID).
+			Delete(ctx)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 
-	if rowsAffected == 0 {
-		return repository.ErrRoomNotFound
-	}
+		if rowsAffected == 0 {
+			return repository.ErrRoomNotFound
+		}
 
-	return nil
+		if _, err := gorm.G[*model.RoomStatusLog](tx).
+			Where("room_id = ?", roomID).
+			Delete(ctx); err != nil {
+			return err
+		}
+
+		if _, err := gorm.G[*model.RoomStatus](tx).
+			Where("room_id = ?", roomID).
+			Delete(ctx); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

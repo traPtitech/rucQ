@@ -73,10 +73,13 @@ func TestServer_AdminPostRoom(t *testing.T) {
 			Expect().
 			Status(http.StatusCreated).JSON().Object()
 
-		res.Keys().ContainsOnly("id", "name", "members")
+		res.Keys().ContainsOnly("id", "name", "members", "status")
 		res.Value("id").Number().IsEqual(roomID)
 		res.Value("name").String().IsEqual(req.Name)
 		res.Value("members").Array().Length().IsEqual(len(req.MemberIds))
+		res.Value("status").Object().
+			HasValue("topic", "").
+			Value("type").IsNull()
 
 		member1 := res.Value("members").Array().Value(0).Object()
 
@@ -134,10 +137,13 @@ func TestServer_AdminPostRoom(t *testing.T) {
 			Expect().
 			Status(http.StatusCreated).JSON().Object()
 
-		res.Keys().ContainsAll("id", "name", "members")
+		res.Keys().ContainsAll("id", "name", "members", "status")
 		res.Value("id").Number().IsEqual(roomID)
 		res.Value("name").String().IsEqual(req.Name)
 		res.Value("members").Array().Length().IsEqual(0)
+		res.Value("status").Object().
+			HasValue("topic", "").
+			Value("type").IsNull()
 	})
 
 	t.Run("Forbidden - User is not staff", func(t *testing.T) {
@@ -330,10 +336,13 @@ func TestServer_AdminPutRoom(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
-		res.Keys().ContainsOnly("id", "name", "members")
+		res.Keys().ContainsOnly("id", "name", "members", "status")
 		res.Value("id").Number().IsEqual(roomID)
 		res.Value("name").String().IsEqual(req.Name)
 		res.Value("members").Array().Length().IsEqual(len(req.MemberIds))
+		res.Value("status").Object().
+			HasValue("topic", "").
+			Value("type").IsNull()
 
 		member1 := res.Value("members").Array().Value(0).Object()
 		member1.Keys().ContainsOnly("id", "isStaff")
@@ -394,10 +403,13 @@ func TestServer_AdminPutRoom(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
-		res.Keys().ContainsAll("id", "name", "members")
+		res.Keys().ContainsAll("id", "name", "members", "status")
 		res.Value("id").Number().IsEqual(roomID)
 		res.Value("name").String().IsEqual(req.Name)
 		res.Value("members").Array().Length().IsEqual(0)
+		res.Value("status").Object().
+			HasValue("topic", "").
+			Value("type").IsNull()
 	})
 
 	t.Run("Success - Change RoomGroup", func(t *testing.T) {
@@ -455,10 +467,13 @@ func TestServer_AdminPutRoom(t *testing.T) {
 			Expect().
 			Status(http.StatusOK).JSON().Object()
 
-		res.Keys().ContainsAll("id", "name", "members")
+		res.Keys().ContainsAll("id", "name", "members", "status")
 		res.Value("id").Number().IsEqual(roomID)
 		res.Value("name").String().IsEqual(req.Name)
 		res.Value("members").Array().Length().IsEqual(len(req.MemberIds))
+		res.Value("status").Object().
+			HasValue("topic", "").
+			Value("type").IsNull()
 
 		member := res.Value("members").Array().Value(0).Object()
 		member.Keys().ContainsOnly("id", "isStaff")

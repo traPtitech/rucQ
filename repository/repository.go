@@ -13,5 +13,6 @@ type Repository interface {
 	RollCallReactionRepository
 	RoomGroupRepository
 	RoomRepository
+	RoomStatusRepository
 	UserRepository
 }

@@ -15,6 +15,7 @@ type MockRepository struct {
 	*MockRollCallReactionRepository
 	*MockRoomRepository
 	*MockRoomGroupRepository
+	*MockRoomStatusRepository
 	*MockUserRepository
 }
 
@@ -32,6 +33,7 @@ func NewMockRepository(ctrl *gomock.Controller) *MockRepository {
 		MockRollCallReactionRepository: NewMockRollCallReactionRepository(ctrl),
 		MockRoomRepository:             NewMockRoomRepository(ctrl),
 		MockRoomGroupRepository:        NewMockRoomGroupRepository(ctrl),
+		MockRoomStatusRepository:       NewMockRoomStatusRepository(ctrl),
 		MockUserRepository:             NewMockUserRepository(ctrl),
 	}
 }
