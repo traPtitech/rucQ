@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/jinzhu/copier"
+	"github.com/oapi-codegen/runtime/types"
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
@@ -86,7 +87,7 @@ var activityResponseToSchema = copier.TypeConverter{
 				Id:         int(activity.ID),
 				Type:       api.RollCallCreated,
 				Time:       activity.Time,
-				RollcallId: int(activity.RollCallCreated.RollCallID),
+				RollCallId: int(activity.RollCallCreated.RollCallID),
 				Name:       activity.RollCallCreated.Name,
 				IsSubject:  activity.RollCallCreated.IsSubject,
 				Answered:   activity.RollCallCreated.Answered,
@@ -106,7 +107,7 @@ var activityResponseToSchema = copier.TypeConverter{
 				Time:            activity.Time,
 				QuestionGroupId: int(activity.QuestionCreated.QuestionGroupID),
 				Name:            activity.QuestionCreated.Name,
-				Due:             activity.QuestionCreated.Due,
+				Due:             types.Date{Time: activity.QuestionCreated.Due},
 				NeedsResponse:   activity.QuestionCreated.NeedsResponse,
 			})
 			if err != nil {

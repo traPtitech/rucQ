@@ -2615,7 +2615,7 @@ components:
         time:
           type: string
           format: date-time
-        rollcallId:
+        rollCallId:
           type: integer
         name:
           type: string
@@ -2627,7 +2627,7 @@ components:
         - id
         - type
         - time
-        - rollcallId
+        - rollCallId
         - name
         - isSubject
         - answered
@@ -2650,7 +2650,7 @@ components:
           type: string
         due:
           type: string
-          format: date-time
+          format: date
         needsResponse:
           description: 必須だがまだ回答していない質問がある場合true
           type: boolean

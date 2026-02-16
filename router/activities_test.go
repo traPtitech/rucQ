@@ -149,7 +149,7 @@ func TestServer_GetActivities(t *testing.T) {
 		act5.Value("id").Number().IsEqual(rollCallCreatedID)
 		act5.Value("type").String().IsEqual("roll_call_created")
 		act5.Value("time").String().IsEqual(rollCallTime.Format(time.RFC3339Nano))
-		act5.Value("rollcallId").Number().IsEqual(int(rollCallID))
+		act5.Value("rollCallId").Number().IsEqual(int(rollCallID))
 		act5.Value("name").String().IsEqual(rollCallName)
 		act5.Value("isSubject").Boolean().IsTrue()
 		act5.Value("answered").Boolean().IsTrue()
@@ -161,7 +161,7 @@ func TestServer_GetActivities(t *testing.T) {
 		act6.Value("time").String().IsEqual(questionTime.Format(time.RFC3339Nano))
 		act6.Value("questionGroupId").Number().IsEqual(int(questionGroupID))
 		act6.Value("name").String().IsEqual(questionGroupName)
-		act6.Value("due").String().IsEqual(questionTime.Format(time.RFC3339Nano))
+		act6.Value("due").String().IsEqual(questionTime.Format("2006-01-02"))
 		act6.Value("needsResponse").Boolean().IsTrue()
 	})
 

@@ -644,9 +644,9 @@ type PutSingleChoiceQuestionRequestType string
 
 // QuestionCreatedActivity 質問グループが作成されたアクティビティ
 type QuestionCreatedActivity struct {
-	Due  time.Time `json:"due"`
-	Id   int       `json:"id"`
-	Name string    `json:"name"`
+	Due  openapi_types.Date `json:"due"`
+	Id   int                `json:"id"`
+	Name string             `json:"name"`
 
 	// NeedsResponse 必須だがまだ回答していない質問がある場合true
 	NeedsResponse   bool                        `json:"needsResponse"`
@@ -697,7 +697,7 @@ type RollCallCreatedActivity struct {
 	Id         int                         `json:"id"`
 	IsSubject  bool                        `json:"isSubject"`
 	Name       string                      `json:"name"`
-	RollcallId int                         `json:"rollcallId"`
+	RollCallId int                         `json:"rollCallId"`
 	Time       time.Time                   `json:"time"`
 	Type       RollCallCreatedActivityType `json:"type"`
 }
