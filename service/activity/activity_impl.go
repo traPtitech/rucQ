@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"slices"
-	"sort"
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
@@ -98,6 +97,10 @@ func (s *activityServiceImpl) RecordQuestionCreated(
 	return s.repo.CreateActivity(ctx, activity)
 }
 
+// 部屋はユーザーごとに1つ、Paymentの変更は支払い金額の設定と入金確認で最低2回は
+// 発生するため、たまに返金処理などが起こることも考慮して5件以内には収まると想定
+const estimatedUserSpecificActivitiesCount = 5
+
 func (s *activityServiceImpl) GetActivities(
 	ctx context.Context,
 	campID uint,
@@ -155,7 +158,13 @@ func (s *activityServiceImpl) GetActivities(
 		answeredQuestionIDs[a.QuestionID] = true
 	}
 
-	var result []ActivityResponse
+	// 点呼など全体に影響するActivityとユーザー固有のActivityを合わせて要素数を見積もる
+	estimatedActivitiesCount := len(
+		rollCalls,
+	) + len(
+		questionGroups,
+	) + estimatedUserSpecificActivitiesCount
+	result := make([]ActivityResponse, 0, estimatedActivitiesCount)
 
 	for _, a := range activities {
 		switch a.Type {
@@ -260,11 +269,6 @@ func (s *activityServiceImpl) GetActivities(
 			})
 		}
 	}
-
-	// CreatedAt降順でソート（repositoryで既にソートされているが念のため）
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].Time.After(result[j].Time)
-	})
 
 	return result, nil
 }

@@ -309,18 +309,6 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 
 		activities := []model.Activity{
 			{
-				Model:       gorm.Model{ID: 1, CreatedAt: timeQuestion},
-				Type:        model.ActivityTypeQuestionCreated,
-				CampID:      campID,
-				ReferenceID: questionGroupID,
-			},
-			{
-				Model:       gorm.Model{ID: 2, CreatedAt: timeRoom},
-				Type:        model.ActivityTypeRoomCreated,
-				CampID:      campID,
-				ReferenceID: roomID,
-			},
-			{
 				Model:       gorm.Model{ID: 3, CreatedAt: timePaymentCreated},
 				Type:        model.ActivityTypePaymentCreated,
 				CampID:      campID,
@@ -341,11 +329,23 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 				ReferenceID: rollCallID,
 			},
 			{
+				Model:       gorm.Model{ID: 2, CreatedAt: timeRoom},
+				Type:        model.ActivityTypeRoomCreated,
+				CampID:      campID,
+				ReferenceID: roomID,
+			},
+			{
 				Model:       gorm.Model{ID: 6, CreatedAt: timePaymentPaid},
 				Type:        model.ActivityTypePaymentPaidChanged,
 				CampID:      campID,
 				ReferenceID: paymentPaidID,
 				UserID:      &userID,
+			},
+			{
+				Model:       gorm.Model{ID: 1, CreatedAt: timeQuestion},
+				Type:        model.ActivityTypeQuestionCreated,
+				CampID:      campID,
+				ReferenceID: questionGroupID,
 			},
 		}
 
