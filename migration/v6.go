@@ -47,13 +47,11 @@ type v6RoomWithCampID struct {
 }
 
 type v6Payment struct {
-	ID         uint `gorm:"primaryKey"`
+	gorm.Model
 	Amount     int
 	AmountPaid int
 	UserID     string
 	CampID     uint
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
 }
 
 func (v6Payment) TableName() string {
@@ -61,9 +59,8 @@ func (v6Payment) TableName() string {
 }
 
 type v6RollCall struct {
-	ID        uint `gorm:"primaryKey"`
-	CampID    uint
-	CreatedAt time.Time
+	gorm.Model
+	CampID uint
 }
 
 func (v6RollCall) TableName() string {
@@ -71,9 +68,8 @@ func (v6RollCall) TableName() string {
 }
 
 type v6QuestionGroup struct {
-	ID        uint `gorm:"primaryKey"`
-	CampID    uint
-	CreatedAt time.Time
+	gorm.Model
+	CampID uint
 }
 
 func (v6QuestionGroup) TableName() string {
@@ -102,7 +98,6 @@ func v6() *gormigrate.Migration {
 				Table("rooms").
 				Select("rooms.id AS room_id, room_groups.camp_id AS camp_id, rooms.created_at").
 				Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
-				Where("rooms.deleted_at IS NULL").
 				Scan(&roomsWithCamp).Error; err != nil {
 				return err
 			}
