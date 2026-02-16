@@ -98,6 +98,8 @@ func v6() *gormigrate.Migration {
 				Table("rooms").
 				Select("rooms.id AS room_id, room_groups.camp_id AS camp_id, rooms.created_at").
 				Joins("JOIN room_groups ON room_groups.id = rooms.room_group_id").
+				Where("rooms.deleted_at IS NULL").
+				Where("room_groups.deleted_at IS NULL").
 				Scan(&roomsWithCamp).Error; err != nil {
 				return err
 			}
