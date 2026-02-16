@@ -22,23 +22,14 @@ func (s *activityServiceImpl) RecordRoomCreated(
 	ctx context.Context,
 	room model.Room,
 ) error {
-	activity := &model.Activity{
-		Type:        model.ActivityTypeRoomCreated,
-		CampID:      room.RoomGroupID, // RoomGroup経由でCampIDを取得する必要がある
-		ReferenceID: room.ID,
+	roomGroup, err := s.repo.GetRoomGroupByID(ctx, room.RoomGroupID)
+	if err != nil {
+		return err
 	}
-	return s.repo.CreateActivity(ctx, activity)
-}
 
-// RecordRoomCreatedWithCampID はCampIDが既知の場合に使う
-func (s *activityServiceImpl) RecordRoomCreatedWithCampID(
-	ctx context.Context,
-	room model.Room,
-	campID uint,
-) error {
 	activity := &model.Activity{
 		Type:        model.ActivityTypeRoomCreated,
-		CampID:      campID,
+		CampID:      roomGroup.CampID,
 		ReferenceID: room.ID,
 	}
 	return s.repo.CreateActivity(ctx, activity)

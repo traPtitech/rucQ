@@ -45,36 +45,15 @@ func TestActivityServiceImpl_RecordActivities(t *testing.T) {
 		ctx := t.Context()
 		roomID := uint(random.PositiveInt(t))
 		roomGroupID := uint(random.PositiveInt(t))
+		campID := uint(random.PositiveInt(t))
 		room := model.Room{
 			Model:       gorm.Model{ID: roomID},
 			RoomGroupID: roomGroupID,
 		}
 
-		s.repo.MockActivityRepository.EXPECT().
-			CreateActivity(ctx, gomock.AssignableToTypeOf(&model.Activity{})).
-			DoAndReturn(func(_ context.Context, activity *model.Activity) error {
-				assert.Equal(t, model.ActivityTypeRoomCreated, activity.Type)
-				assert.Equal(t, roomGroupID, activity.CampID)
-				assert.Equal(t, roomID, activity.ReferenceID)
-				assert.Nil(t, activity.UserID)
-				return nil
-			})
-
-		err := s.service.RecordRoomCreated(ctx, room)
-
-		assert.NoError(t, err)
-	})
-
-	t.Run("RecordRoomCreatedWithCampID", func(t *testing.T) {
-		t.Parallel()
-
-		s := setup(t)
-		ctx := t.Context()
-		roomID := uint(random.PositiveInt(t))
-		campID := uint(random.PositiveInt(t))
-		room := model.Room{
-			Model: gorm.Model{ID: roomID},
-		}
+		s.repo.MockRoomGroupRepository.EXPECT().
+			GetRoomGroupByID(ctx, roomGroupID).
+			Return(&model.RoomGroup{Model: gorm.Model{ID: roomGroupID}, CampID: campID}, nil)
 
 		s.repo.MockActivityRepository.EXPECT().
 			CreateActivity(ctx, gomock.AssignableToTypeOf(&model.Activity{})).
@@ -86,7 +65,7 @@ func TestActivityServiceImpl_RecordActivities(t *testing.T) {
 				return nil
 			})
 
-		err := s.service.RecordRoomCreatedWithCampID(ctx, room, campID)
+		err := s.service.RecordRoomCreated(ctx, room)
 
 		assert.NoError(t, err)
 	})

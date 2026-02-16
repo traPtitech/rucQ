@@ -140,17 +140,3 @@ func (mr *MockActivityServiceMockRecorder) RecordRoomCreated(ctx, room any) *gom
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRoomCreated", reflect.TypeOf((*MockActivityService)(nil).RecordRoomCreated), ctx, room)
 }
-
-// RecordRoomCreatedWithCampID mocks base method.
-func (m *MockActivityService) RecordRoomCreatedWithCampID(ctx context.Context, room model.Room, campID uint) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordRoomCreatedWithCampID", ctx, room, campID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RecordRoomCreatedWithCampID indicates an expected call of RecordRoomCreatedWithCampID.
-func (mr *MockActivityServiceMockRecorder) RecordRoomCreatedWithCampID(ctx, room, campID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRoomCreatedWithCampID", reflect.TypeOf((*MockActivityService)(nil).RecordRoomCreatedWithCampID), ctx, room, campID)
-}

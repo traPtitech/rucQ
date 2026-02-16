@@ -11,7 +11,6 @@ import (
 type ActivityService interface {
 	GetActivities(ctx context.Context, campID uint, userID string) ([]ActivityResponse, error)
 	RecordRoomCreated(ctx context.Context, room model.Room) error
-	RecordRoomCreatedWithCampID(ctx context.Context, room model.Room, campID uint) error
 	RecordPaymentCreated(ctx context.Context, payment model.Payment) error
 	RecordPaymentAmountChanged(ctx context.Context, payment model.Payment) error
 	RecordPaymentPaidChanged(ctx context.Context, payment model.Payment) error
