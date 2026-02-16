@@ -43,6 +43,7 @@ func (s *activityServiceImpl) RecordPaymentCreated(
 		CampID:      payment.CampID,
 		UserID:      &payment.UserID,
 		ReferenceID: payment.ID,
+		Amount:      &payment.Amount,
 	}
 	return s.repo.CreateActivity(ctx, activity)
 }
@@ -56,6 +57,7 @@ func (s *activityServiceImpl) RecordPaymentAmountChanged(
 		CampID:      payment.CampID,
 		UserID:      &payment.UserID,
 		ReferenceID: payment.ID,
+		Amount:      &payment.Amount,
 	}
 	return s.repo.CreateActivity(ctx, activity)
 }
@@ -69,6 +71,7 @@ func (s *activityServiceImpl) RecordPaymentPaidChanged(
 		CampID:      payment.CampID,
 		UserID:      &payment.UserID,
 		ReferenceID: payment.ID,
+		Amount:      &payment.AmountPaid,
 	}
 	return s.repo.CreateActivity(ctx, activity)
 }
@@ -187,11 +190,8 @@ func (s *activityServiceImpl) GetActivities(
 				continue
 			}
 
-			payment, err := s.repo.GetPaymentByID(ctx, a.ReferenceID)
-
-			// Paymentを削除するAPIは存在しないため、ここではErrPaymentNotFoundでもエラーにする
-			if err != nil {
-				return nil, err
+			if a.Amount == nil {
+				continue
 			}
 
 			resp := ActivityResponse{
@@ -202,13 +202,11 @@ func (s *activityServiceImpl) GetActivities(
 
 			switch a.Type {
 			case model.ActivityTypePaymentCreated:
-				resp.PaymentCreated = &PaymentCreatedDetail{Amount: payment.Amount}
+				resp.PaymentCreated = &PaymentCreatedDetail{Amount: *a.Amount}
 			case model.ActivityTypePaymentAmountChanged:
-				detail := &PaymentChangedDetail{Amount: payment.Amount}
-				resp.PaymentAmountChanged = detail
+				resp.PaymentAmountChanged = &PaymentChangedDetail{Amount: *a.Amount}
 			default:
-				detail := &PaymentChangedDetail{Amount: payment.Amount}
-				resp.PaymentPaidChanged = detail
+				resp.PaymentPaidChanged = &PaymentChangedDetail{Amount: *a.Amount}
 			}
 
 			result = append(result, resp)

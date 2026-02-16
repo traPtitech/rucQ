@@ -16,6 +16,7 @@ type v6Activity struct {
 	UserID      *string `gorm:"size:32"`
 	User        *v6User `gorm:"foreignKey:UserID;references:ID"`
 	ReferenceID uint    `gorm:"not null"`
+	Amount      *int
 }
 
 func (v6Activity) TableName() string {
@@ -46,11 +47,13 @@ type v6RoomWithCampID struct {
 }
 
 type v6Payment struct {
-	ID        uint `gorm:"primaryKey"`
-	UserID    string
-	CampID    uint
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID         uint `gorm:"primaryKey"`
+	Amount     int
+	AmountPaid int
+	UserID     string
+	CampID     uint
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 func (v6Payment) TableName() string {
@@ -151,12 +154,15 @@ func v6() *gormigrate.Migration {
 
 			for _, p := range payments {
 				userID := p.UserID
+				amount := p.Amount
+				amountPaid := p.AmountPaid
 				activities = append(activities, v6Activity{
 					Model:       gorm.Model{CreatedAt: p.CreatedAt},
 					Type:        "payment_created",
 					CampID:      p.CampID,
 					UserID:      &userID,
 					ReferenceID: p.ID,
+					Amount:      &amount,
 				})
 				if !p.UpdatedAt.Equal(p.CreatedAt) {
 					// 何が更新されたか正確には分からないが、大抵の場合支払済み金額が
@@ -167,6 +173,7 @@ func v6() *gormigrate.Migration {
 						CampID:      p.CampID,
 						UserID:      &userID,
 						ReferenceID: p.ID,
+						Amount:      &amountPaid,
 					})
 				}
 			}

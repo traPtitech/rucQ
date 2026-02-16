@@ -21,4 +21,5 @@ type Activity struct {
 	UserID      *string      `gorm:"size:32"` // payment_* のみ使用
 	User        *User        `gorm:"foreignKey:UserID;references:ID"`
 	ReferenceID uint         `gorm:"not null"` // RoomID / PaymentID / RollCallID / QuestionGroupID
+	Amount      *int         // payment_* のみ使用
 }

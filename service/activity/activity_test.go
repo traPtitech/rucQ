@@ -82,8 +82,10 @@ func TestActivityServiceImpl_RecordPaymentAmountChanged(t *testing.T) {
 		userID := random.AlphaNumericString(t, 32)
 		campID := uint(random.PositiveInt(t))
 		paymentID := uint(random.PositiveInt(t))
+		amount := random.PositiveInt(t)
 		payment := model.Payment{
 			Model:  gorm.Model{ID: paymentID},
+			Amount: amount,
 			UserID: userID,
 			CampID: campID,
 		}
@@ -96,6 +98,9 @@ func TestActivityServiceImpl_RecordPaymentAmountChanged(t *testing.T) {
 				assert.Equal(t, paymentID, activity.ReferenceID)
 				if assert.NotNil(t, activity.UserID) {
 					assert.Equal(t, userID, *activity.UserID)
+				}
+				if assert.NotNil(t, activity.Amount) {
+					assert.Equal(t, amount, *activity.Amount)
 				}
 				return nil
 			})
@@ -117,8 +122,10 @@ func TestActivityServiceImpl_RecordPaymentCreated(t *testing.T) {
 		userID := random.AlphaNumericString(t, 32)
 		campID := uint(random.PositiveInt(t))
 		paymentID := uint(random.PositiveInt(t))
+		amount := random.PositiveInt(t)
 		payment := model.Payment{
 			Model:  gorm.Model{ID: paymentID},
+			Amount: amount,
 			UserID: userID,
 			CampID: campID,
 		}
@@ -131,6 +138,9 @@ func TestActivityServiceImpl_RecordPaymentCreated(t *testing.T) {
 				assert.Equal(t, paymentID, activity.ReferenceID)
 				if assert.NotNil(t, activity.UserID) {
 					assert.Equal(t, userID, *activity.UserID)
+				}
+				if assert.NotNil(t, activity.Amount) {
+					assert.Equal(t, amount, *activity.Amount)
 				}
 				return nil
 			})
@@ -152,10 +162,14 @@ func TestActivityServiceImpl_RecordPaymentPaidChanged(t *testing.T) {
 		userID := random.AlphaNumericString(t, 32)
 		campID := uint(random.PositiveInt(t))
 		paymentID := uint(random.PositiveInt(t))
+		amount := random.PositiveInt(t)
+		amountPaid := random.PositiveInt(t)
 		payment := model.Payment{
-			Model:  gorm.Model{ID: paymentID},
-			UserID: userID,
-			CampID: campID,
+			Model:      gorm.Model{ID: paymentID},
+			Amount:     amount,
+			AmountPaid: amountPaid,
+			UserID:     userID,
+			CampID:     campID,
 		}
 
 		s.repo.MockActivityRepository.EXPECT().
@@ -166,6 +180,9 @@ func TestActivityServiceImpl_RecordPaymentPaidChanged(t *testing.T) {
 				assert.Equal(t, paymentID, activity.ReferenceID)
 				if assert.NotNil(t, activity.UserID) {
 					assert.Equal(t, userID, *activity.UserID)
+				}
+				if assert.NotNil(t, activity.Amount) {
+					assert.Equal(t, amountPaid, *activity.Amount)
 				}
 				return nil
 			})
@@ -263,18 +280,9 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 		paymentAmountID := uint(random.PositiveInt(t))
 		paymentPaidID := uint(random.PositiveInt(t))
 		paymentCreatedID := uint(random.PositiveInt(t))
-		paymentCreated := &model.Payment{
-			Model:  gorm.Model{ID: paymentCreatedID},
-			Amount: random.PositiveInt(t),
-		}
-		paymentAmount := &model.Payment{
-			Model:  gorm.Model{ID: paymentAmountID},
-			Amount: random.PositiveInt(t),
-		}
-		paymentPaid := &model.Payment{
-			Model:  gorm.Model{ID: paymentPaidID},
-			Amount: random.PositiveInt(t),
-		}
+		amountCreated := random.PositiveInt(t)
+		amountChanged := random.PositiveInt(t)
+		amountPaid := random.PositiveInt(t)
 
 		rollCallID := uint(random.PositiveInt(t))
 		rollCallName := random.AlphaNumericString(t, 20)
@@ -314,6 +322,7 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 				CampID:      campID,
 				ReferenceID: paymentCreatedID,
 				UserID:      &userID,
+				Amount:      &amountCreated,
 			},
 			{
 				Model:       gorm.Model{ID: 4, CreatedAt: timePaymentAmount},
@@ -321,6 +330,7 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 				CampID:      campID,
 				ReferenceID: paymentAmountID,
 				UserID:      &userID,
+				Amount:      &amountChanged,
 			},
 			{
 				Model:       gorm.Model{ID: 5, CreatedAt: timeRollCall},
@@ -340,6 +350,7 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 				CampID:      campID,
 				ReferenceID: paymentPaidID,
 				UserID:      &userID,
+				Amount:      &amountPaid,
 			},
 			{
 				Model:       gorm.Model{ID: 1, CreatedAt: timeQuestion},
@@ -375,18 +386,6 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 				return answers, nil
 			})
 
-		s.repo.MockPaymentRepository.EXPECT().
-			GetPaymentByID(ctx, paymentCreatedID).
-			Return(paymentCreated, nil)
-
-		s.repo.MockPaymentRepository.EXPECT().
-			GetPaymentByID(ctx, paymentAmountID).
-			Return(paymentAmount, nil)
-
-		s.repo.MockPaymentRepository.EXPECT().
-			GetPaymentByID(ctx, paymentPaidID).
-			Return(paymentPaid, nil)
-
 		responses, err := s.service.GetActivities(ctx, campID, userID)
 
 		require.NoError(t, err)
@@ -395,13 +394,13 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 		assert.Equal(t, model.ActivityTypePaymentCreated, responses[0].Type)
 		assert.Equal(t, timePaymentCreated, responses[0].Time)
 		if assert.NotNil(t, responses[0].PaymentCreated) {
-			assert.Equal(t, paymentCreated.Amount, responses[0].PaymentCreated.Amount)
+			assert.Equal(t, amountCreated, responses[0].PaymentCreated.Amount)
 		}
 
 		assert.Equal(t, model.ActivityTypePaymentAmountChanged, responses[1].Type)
 		assert.Equal(t, timePaymentAmount, responses[1].Time)
 		if assert.NotNil(t, responses[1].PaymentAmountChanged) {
-			assert.Equal(t, paymentAmount.Amount, responses[1].PaymentAmountChanged.Amount)
+			assert.Equal(t, amountChanged, responses[1].PaymentAmountChanged.Amount)
 		}
 
 		assert.Equal(t, model.ActivityTypeRollCallCreated, responses[2].Type)
@@ -420,7 +419,7 @@ func TestActivityServiceImpl_GetActivities(t *testing.T) {
 		assert.Equal(t, model.ActivityTypePaymentPaidChanged, responses[4].Type)
 		assert.Equal(t, timePaymentPaid, responses[4].Time)
 		if assert.NotNil(t, responses[4].PaymentPaidChanged) {
-			assert.Equal(t, paymentPaid.Amount, responses[4].PaymentPaidChanged.Amount)
+			assert.Equal(t, amountPaid, responses[4].PaymentPaidChanged.Amount)
 		}
 
 		assert.Equal(t, model.ActivityTypeQuestionCreated, responses[5].Type)
