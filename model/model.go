@@ -27,5 +27,6 @@ func GetAllModels() []any {
 		&Message{},
 		&RollCall{},
 		&RollCallReaction{},
+		&Activity{},
 	}
 }

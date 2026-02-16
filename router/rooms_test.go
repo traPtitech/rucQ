@@ -66,6 +66,10 @@ func TestServer_AdminPostRoom(t *testing.T) {
 				},
 			}, nil).
 			Times(1)
+		h.activityService.EXPECT().
+			RecordRoomCreated(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(nil).
+			Times(1)
 
 		res := h.expect.POST("/api/admin/rooms").
 			WithJSON(req).
@@ -130,6 +134,10 @@ func TestServer_AdminPostRoom(t *testing.T) {
 				Members:     []model.User{},
 			}, nil).
 			Times(1)
+		h.activityService.EXPECT().
+			RecordRoomCreated(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(nil).
+			Times(1)
 
 		res := h.expect.POST("/api/admin/rooms").
 			WithJSON(req).
@@ -144,6 +152,59 @@ func TestServer_AdminPostRoom(t *testing.T) {
 		res.Value("status").Object().
 			HasValue("topic", "").
 			Value("type").IsNull()
+	})
+
+	t.Run("Activity service error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		memberID := random.AlphaNumericString(t, 32)
+		req := api.AdminPostRoomJSONRequestBody{
+			Name:        random.AlphaNumericString(t, 20),
+			RoomGroupId: random.PositiveInt(t),
+			MemberIds:   []string{memberID},
+		}
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+
+		roomID := uint(random.PositiveInt(t))
+
+		h.repo.MockRoomRepository.EXPECT().
+			CreateRoom(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(_ any, room *model.Room) error {
+				room.ID = roomID
+				return nil
+			}).Times(1)
+		h.repo.MockRoomRepository.EXPECT().
+			GetRoomByID(gomock.Any(), roomID).
+			Return(&model.Room{
+				Model: gorm.Model{
+					ID: roomID,
+				},
+				Name:        req.Name,
+				RoomGroupID: uint(req.RoomGroupId),
+				Members: []model.User{
+					{
+						ID:      memberID,
+						IsStaff: false,
+					},
+				},
+			}, nil).
+			Times(1)
+		h.activityService.EXPECT().
+			RecordRoomCreated(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(errors.New("activity error")).
+			Times(1)
+
+		h.expect.POST("/api/admin/rooms").
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Forbidden - User is not staff", func(t *testing.T) {

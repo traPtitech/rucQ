@@ -38,21 +38,31 @@ func (s *Server) AdminPostRoom(e echo.Context, params api.AdminPostRoomParams) e
 			SetInternal(fmt.Errorf("failed to convert request to model: %w", err))
 	}
 
-	if err := s.repo.CreateRoom(e.Request().Context(), &roomModel); err != nil {
+	ctx := e.Request().Context()
+
+	var updatedRoom *model.Room
+
+	if err := s.repo.Transaction(ctx, func(tx repository.Repository) error {
+		if err := tx.CreateRoom(ctx, &roomModel); err != nil {
+			return fmt.Errorf("failed to create room: %w", err)
+		}
+
+		// MemberのisStaffなどを正しく返すために取得
+		var err error
+		updatedRoom, err = tx.GetRoomByID(ctx, roomModel.ID)
+
+		if err != nil {
+			return fmt.Errorf("failed to get room by ID: %w", err)
+		}
+
+		return s.activityService.RecordRoomCreated(ctx, tx, *updatedRoom)
+	}); err != nil {
 		if errors.Is(err, repository.ErrUserOrRoomGroupNotFound) {
 			return echo.NewHTTPError(http.StatusBadRequest, "Invalid user or room group ID")
 		}
 
 		return echo.NewHTTPError(http.StatusInternalServerError).
-			SetInternal(fmt.Errorf("failed to create room: %w", err))
-	}
-
-	// MemberのisStaffなどを正しく返すために取得
-	updatedRoom, err := s.repo.GetRoomByID(e.Request().Context(), roomModel.ID)
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError).
-			SetInternal(fmt.Errorf("failed to get room by ID: %w", err))
+			SetInternal(err)
 	}
 
 	res, err := converter.Convert[api.RoomResponse](updatedRoom)

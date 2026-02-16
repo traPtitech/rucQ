@@ -12,6 +12,7 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/repository/mockrepository"
+	"github.com/traPtitech/rucQ/service/activity/mockactivity"
 	"github.com/traPtitech/rucQ/service/notification/mocknotification"
 	"github.com/traPtitech/rucQ/service/traq/mocktraq"
 )
@@ -19,6 +20,7 @@ import (
 type testHandler struct {
 	expect              *httpexpect.Expect
 	repo                *mockrepository.MockRepository
+	activityService     *mockactivity.MockActivityService
 	notificationService *mocknotification.MockNotificationService
 	traqService         *mocktraq.MockTraqService
 	// 基本的にはexpectを使うこと。
@@ -34,7 +36,8 @@ func setup(t *testing.T) *testHandler {
 	repo := mockrepository.NewMockRepository(ctrl)
 	traqService := mocktraq.NewMockTraqService(ctrl)
 	notificationService := mocknotification.NewMockNotificationService(ctrl)
-	server := NewServer(t.Context(), repo, notificationService, traqService, false)
+	activityService := mockactivity.NewMockActivityService(ctrl)
+	server := NewServer(t.Context(), repo, activityService, notificationService, traqService, false)
 	e := echo.New()
 
 	api.RegisterHandlers(e, server)
@@ -53,6 +56,7 @@ func setup(t *testing.T) *testHandler {
 	return &testHandler{
 		expect:              expect,
 		repo:                repo,
+		activityService:     activityService,
 		notificationService: notificationService,
 		traqService:         traqService,
 		e:                   e,

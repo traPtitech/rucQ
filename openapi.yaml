@@ -1162,6 +1162,28 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
+
+  /api/camps/{campId}/activities:
+    get:
+      summary: アクティビティの一覧を取得
+      tags:
+        - Activities
+      operationId: getActivities
+      parameters:
+        - $ref: "#/components/parameters/CampId"
+        - $ref: "#/components/parameters/X-Forwarded-User"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
   /api/camps/{campId}/images:
     get:
       summary: 画像の一覧を取得
@@ -2586,6 +2608,152 @@ components:
         - $ref: "#/components/schemas/RollCallReactionUpdatedEvent"
         - $ref: "#/components/schemas/RollCallReactionDeletedEvent"
 
+    ActivityResponse:
+      oneOf:
+        - $ref: "#/components/schemas/RoomCreatedActivity"
+        - $ref: "#/components/schemas/PaymentCreatedActivity"
+        - $ref: "#/components/schemas/PaymentAmountChangedActivity"
+        - $ref: "#/components/schemas/PaymentPaidChangedActivity"
+        - $ref: "#/components/schemas/RollCallCreatedActivity"
+        - $ref: "#/components/schemas/QuestionCreatedActivity"
+    RoomCreatedActivity:
+      type: object
+      description: ユーザーが所属する部屋が作成されたアクティビティ
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+            - room_created
+        time:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - time
+    PaymentCreatedActivity:
+      type: object
+      description: 支払い情報が作成されたアクティビティ
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+            - payment_created
+        time:
+          type: string
+          format: date-time
+        amount:
+          type: integer
+      required:
+        - id
+        - type
+        - time
+        - amount
+    PaymentAmountChangedActivity:
+      type: object
+      description: ユーザーが支払うべき金額が変更されたアクティビティ
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+            - payment_amount_changed
+        time:
+          type: string
+          format: date-time
+        amount:
+          type: integer
+      required:
+        - id
+        - type
+        - time
+        - amount
+    PaymentPaidChangedActivity:
+      type: object
+      description: 合宿係がユーザーの支払い済み金額を変更したアクティビティ
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+            - payment_paid_changed
+        time:
+          type: string
+          format: date-time
+        amount:
+          type: integer
+      required:
+        - id
+        - type
+        - time
+        - amount
+    RollCallCreatedActivity:
+      type: object
+      description: 点呼が作成されたアクティビティ
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+            - roll_call_created
+        time:
+          type: string
+          format: date-time
+        rollCallId:
+          type: integer
+        name:
+          type: string
+        isSubject:
+          type: boolean
+        answered:
+          type: boolean
+      required:
+        - id
+        - type
+        - time
+        - rollCallId
+        - name
+        - isSubject
+        - answered
+    QuestionCreatedActivity:
+      type: object
+      description: 質問グループが作成されたアクティビティ
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum:
+            - question_created
+        time:
+          type: string
+          format: date-time
+        questionGroupId:
+          type: integer
+        name:
+          type: string
+        due:
+          type: string
+          format: date
+        needsResponse:
+          description: 必須だがまだ回答していない質問がある場合true
+          type: boolean
+      required:
+        - id
+        - type
+        - time
+        - questionGroupId
+        - name
+        - due
+        - needsResponse
+
 tags:
   - name: Camps
     description: 合宿に関する操作
@@ -2603,3 +2771,5 @@ tags:
     description: 画像に関する操作
   - name: RollCalls
     description: 点呼に関する操作
+  - name: Activities
+    description: アクティビティに関する操作
