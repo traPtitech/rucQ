@@ -168,7 +168,7 @@ func TestServer_AdminPostRollCall(t *testing.T) {
 				rc.ID = uint(random.PositiveInt(t))
 			}).Times(1)
 		h.activityService.EXPECT().
-			RecordRollCallCreated(gomock.Any(), gomock.Any()).
+			RecordRollCallCreated(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -219,7 +219,7 @@ func TestServer_AdminPostRollCall(t *testing.T) {
 				rc.ID = uint(random.PositiveInt(t))
 			}).Times(1)
 		h.activityService.EXPECT().
-			RecordRollCallCreated(gomock.Any(), gomock.Any()).
+			RecordRollCallCreated(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("activity error")).
 			Times(1)
 

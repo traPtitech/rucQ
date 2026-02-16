@@ -237,7 +237,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			Return(&model.User{IsStaff: true}, nil)
 		h.repo.MockQuestionGroupRepository.EXPECT().CreateQuestionGroup(gomock.Any()).Return(nil)
 		h.activityService.EXPECT().
-			RecordQuestionCreated(gomock.Any(), gomock.Any()).
+			RecordQuestionCreated(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -398,7 +398,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			Return(&model.User{IsStaff: true}, nil)
 		h.repo.MockQuestionGroupRepository.EXPECT().CreateQuestionGroup(gomock.Any()).Return(nil)
 		h.activityService.EXPECT().
-			RecordQuestionCreated(gomock.Any(), gomock.Any()).
+			RecordQuestionCreated(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("activity error")).
 			Times(1)
 

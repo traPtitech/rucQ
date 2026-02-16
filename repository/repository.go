@@ -1,5 +1,7 @@
 package repository
 
+import "context"
+
 type Repository interface {
 	ActivityRepository
 	AnswerRepository
@@ -15,4 +17,5 @@ type Repository interface {
 	RoomGroupRepository
 	RoomRepository
 	UserRepository
+	Transaction(ctx context.Context, fn func(tx Repository) error) error
 }

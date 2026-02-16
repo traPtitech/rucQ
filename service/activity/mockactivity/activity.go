@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	model "github.com/traPtitech/rucQ/model"
+	repository "github.com/traPtitech/rucQ/repository"
 	activity "github.com/traPtitech/rucQ/service/activity"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -58,85 +59,85 @@ func (mr *MockActivityServiceMockRecorder) GetActivities(ctx, campID, userID any
 }
 
 // RecordPaymentAmountChanged mocks base method.
-func (m *MockActivityService) RecordPaymentAmountChanged(ctx context.Context, payment model.Payment) error {
+func (m *MockActivityService) RecordPaymentAmountChanged(ctx context.Context, repo repository.Repository, payment model.Payment) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordPaymentAmountChanged", ctx, payment)
+	ret := m.ctrl.Call(m, "RecordPaymentAmountChanged", ctx, repo, payment)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RecordPaymentAmountChanged indicates an expected call of RecordPaymentAmountChanged.
-func (mr *MockActivityServiceMockRecorder) RecordPaymentAmountChanged(ctx, payment any) *gomock.Call {
+func (mr *MockActivityServiceMockRecorder) RecordPaymentAmountChanged(ctx, repo, payment any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordPaymentAmountChanged", reflect.TypeOf((*MockActivityService)(nil).RecordPaymentAmountChanged), ctx, payment)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordPaymentAmountChanged", reflect.TypeOf((*MockActivityService)(nil).RecordPaymentAmountChanged), ctx, repo, payment)
 }
 
 // RecordPaymentCreated mocks base method.
-func (m *MockActivityService) RecordPaymentCreated(ctx context.Context, payment model.Payment) error {
+func (m *MockActivityService) RecordPaymentCreated(ctx context.Context, repo repository.Repository, payment model.Payment) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordPaymentCreated", ctx, payment)
+	ret := m.ctrl.Call(m, "RecordPaymentCreated", ctx, repo, payment)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RecordPaymentCreated indicates an expected call of RecordPaymentCreated.
-func (mr *MockActivityServiceMockRecorder) RecordPaymentCreated(ctx, payment any) *gomock.Call {
+func (mr *MockActivityServiceMockRecorder) RecordPaymentCreated(ctx, repo, payment any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordPaymentCreated", reflect.TypeOf((*MockActivityService)(nil).RecordPaymentCreated), ctx, payment)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordPaymentCreated", reflect.TypeOf((*MockActivityService)(nil).RecordPaymentCreated), ctx, repo, payment)
 }
 
 // RecordPaymentPaidChanged mocks base method.
-func (m *MockActivityService) RecordPaymentPaidChanged(ctx context.Context, payment model.Payment) error {
+func (m *MockActivityService) RecordPaymentPaidChanged(ctx context.Context, repo repository.Repository, payment model.Payment) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordPaymentPaidChanged", ctx, payment)
+	ret := m.ctrl.Call(m, "RecordPaymentPaidChanged", ctx, repo, payment)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RecordPaymentPaidChanged indicates an expected call of RecordPaymentPaidChanged.
-func (mr *MockActivityServiceMockRecorder) RecordPaymentPaidChanged(ctx, payment any) *gomock.Call {
+func (mr *MockActivityServiceMockRecorder) RecordPaymentPaidChanged(ctx, repo, payment any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordPaymentPaidChanged", reflect.TypeOf((*MockActivityService)(nil).RecordPaymentPaidChanged), ctx, payment)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordPaymentPaidChanged", reflect.TypeOf((*MockActivityService)(nil).RecordPaymentPaidChanged), ctx, repo, payment)
 }
 
 // RecordQuestionCreated mocks base method.
-func (m *MockActivityService) RecordQuestionCreated(ctx context.Context, questionGroup model.QuestionGroup) error {
+func (m *MockActivityService) RecordQuestionCreated(ctx context.Context, repo repository.Repository, questionGroup model.QuestionGroup) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordQuestionCreated", ctx, questionGroup)
+	ret := m.ctrl.Call(m, "RecordQuestionCreated", ctx, repo, questionGroup)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RecordQuestionCreated indicates an expected call of RecordQuestionCreated.
-func (mr *MockActivityServiceMockRecorder) RecordQuestionCreated(ctx, questionGroup any) *gomock.Call {
+func (mr *MockActivityServiceMockRecorder) RecordQuestionCreated(ctx, repo, questionGroup any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordQuestionCreated", reflect.TypeOf((*MockActivityService)(nil).RecordQuestionCreated), ctx, questionGroup)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordQuestionCreated", reflect.TypeOf((*MockActivityService)(nil).RecordQuestionCreated), ctx, repo, questionGroup)
 }
 
 // RecordRollCallCreated mocks base method.
-func (m *MockActivityService) RecordRollCallCreated(ctx context.Context, rollCall model.RollCall) error {
+func (m *MockActivityService) RecordRollCallCreated(ctx context.Context, repo repository.Repository, rollCall model.RollCall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordRollCallCreated", ctx, rollCall)
+	ret := m.ctrl.Call(m, "RecordRollCallCreated", ctx, repo, rollCall)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RecordRollCallCreated indicates an expected call of RecordRollCallCreated.
-func (mr *MockActivityServiceMockRecorder) RecordRollCallCreated(ctx, rollCall any) *gomock.Call {
+func (mr *MockActivityServiceMockRecorder) RecordRollCallCreated(ctx, repo, rollCall any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRollCallCreated", reflect.TypeOf((*MockActivityService)(nil).RecordRollCallCreated), ctx, rollCall)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRollCallCreated", reflect.TypeOf((*MockActivityService)(nil).RecordRollCallCreated), ctx, repo, rollCall)
 }
 
 // RecordRoomCreated mocks base method.
-func (m *MockActivityService) RecordRoomCreated(ctx context.Context, room model.Room) error {
+func (m *MockActivityService) RecordRoomCreated(ctx context.Context, repo repository.Repository, room model.Room) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RecordRoomCreated", ctx, room)
+	ret := m.ctrl.Call(m, "RecordRoomCreated", ctx, repo, room)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RecordRoomCreated indicates an expected call of RecordRoomCreated.
-func (mr *MockActivityServiceMockRecorder) RecordRoomCreated(ctx, room any) *gomock.Call {
+func (mr *MockActivityServiceMockRecorder) RecordRoomCreated(ctx, repo, room any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRoomCreated", reflect.TypeOf((*MockActivityService)(nil).RecordRoomCreated), ctx, room)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRoomCreated", reflect.TypeOf((*MockActivityService)(nil).RecordRoomCreated), ctx, repo, room)
 }

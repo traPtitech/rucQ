@@ -70,7 +70,15 @@ func (s *Server) AdminPostRollCall(
 
 	rollCall.CampID = uint(campID)
 
-	if err := s.repo.CreateRollCall(e.Request().Context(), &rollCall); err != nil {
+	ctx := e.Request().Context()
+
+	if err := s.repo.Transaction(ctx, func(tx repository.Repository) error {
+		if err := tx.CreateRollCall(ctx, &rollCall); err != nil {
+			return err
+		}
+
+		return s.activityService.RecordRollCallCreated(ctx, tx, rollCall)
+	}); err != nil {
 		if errors.Is(err, repository.ErrCampNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
 		}
@@ -88,11 +96,6 @@ func (s *Server) AdminPostRollCall(
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to convert roll call: %w", err))
-	}
-
-	if err := s.activityService.RecordRollCallCreated(e.Request().Context(), rollCall); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError).
-			SetInternal(fmt.Errorf("failed to record roll call created activity: %w", err))
 	}
 
 	return e.JSON(http.StatusCreated, res)

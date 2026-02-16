@@ -6,16 +6,45 @@ import (
 	"time"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 type ActivityService interface {
-	GetActivities(ctx context.Context, campID uint, userID string) ([]ActivityResponse, error)
-	RecordRoomCreated(ctx context.Context, room model.Room) error
-	RecordPaymentCreated(ctx context.Context, payment model.Payment) error
-	RecordPaymentAmountChanged(ctx context.Context, payment model.Payment) error
-	RecordPaymentPaidChanged(ctx context.Context, payment model.Payment) error
-	RecordRollCallCreated(ctx context.Context, rollCall model.RollCall) error
-	RecordQuestionCreated(ctx context.Context, questionGroup model.QuestionGroup) error
+	GetActivities(
+		ctx context.Context,
+		campID uint,
+		userID string,
+	) ([]ActivityResponse, error)
+	RecordRoomCreated(
+		ctx context.Context,
+		repo repository.Repository,
+		room model.Room,
+	) error
+	RecordPaymentCreated(
+		ctx context.Context,
+		repo repository.Repository,
+		payment model.Payment,
+	) error
+	RecordPaymentAmountChanged(
+		ctx context.Context,
+		repo repository.Repository,
+		payment model.Payment,
+	) error
+	RecordPaymentPaidChanged(
+		ctx context.Context,
+		repo repository.Repository,
+		payment model.Payment,
+	) error
+	RecordRollCallCreated(
+		ctx context.Context,
+		repo repository.Repository,
+		rollCall model.RollCall,
+	) error
+	RecordQuestionCreated(
+		ctx context.Context,
+		repo repository.Repository,
+		questionGroup model.QuestionGroup,
+	) error
 }
 
 type ActivityResponse struct {

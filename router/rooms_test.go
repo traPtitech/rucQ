@@ -67,7 +67,7 @@ func TestServer_AdminPostRoom(t *testing.T) {
 			}, nil).
 			Times(1)
 		h.activityService.EXPECT().
-			RecordRoomCreated(gomock.Any(), gomock.Any()).
+			RecordRoomCreated(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -132,7 +132,7 @@ func TestServer_AdminPostRoom(t *testing.T) {
 			}, nil).
 			Times(1)
 		h.activityService.EXPECT().
-			RecordRoomCreated(gomock.Any(), gomock.Any()).
+			RecordRoomCreated(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -190,7 +190,7 @@ func TestServer_AdminPostRoom(t *testing.T) {
 			}, nil).
 			Times(1)
 		h.activityService.EXPECT().
-			RecordRoomCreated(gomock.Any(), gomock.Any()).
+			RecordRoomCreated(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("activity error")).
 			Times(1)
 

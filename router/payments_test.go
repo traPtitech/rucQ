@@ -36,7 +36,7 @@ func TestAdminPostPayment(t *testing.T) {
 			}, nil)
 		h.repo.MockPaymentRepository.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(nil)
 		h.activityService.EXPECT().
-			RecordPaymentCreated(gomock.Any(), gomock.Any()).
+			RecordPaymentCreated(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -72,7 +72,7 @@ func TestAdminPostPayment(t *testing.T) {
 			}, nil)
 		h.repo.MockPaymentRepository.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(nil)
 		h.activityService.EXPECT().
-			RecordPaymentCreated(gomock.Any(), gomock.Any()).
+			RecordPaymentCreated(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("activity error")).
 			Times(1)
 
@@ -235,12 +235,12 @@ func TestServer_AdminPutPayment(t *testing.T) {
 		)
 
 		h.activityService.EXPECT().
-			RecordPaymentAmountChanged(gomock.Any(), gomock.Any()).
+			RecordPaymentAmountChanged(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
 		h.activityService.EXPECT().
-			RecordPaymentPaidChanged(gomock.Any(), gomock.Any()).
+			RecordPaymentPaidChanged(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -361,7 +361,7 @@ func TestServer_AdminPutPayment(t *testing.T) {
 		)
 
 		h.activityService.EXPECT().
-			RecordPaymentAmountChanged(gomock.Any(), gomock.Any()).
+			RecordPaymentAmountChanged(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -424,7 +424,7 @@ func TestServer_AdminPutPayment(t *testing.T) {
 		)
 
 		h.activityService.EXPECT().
-			RecordPaymentPaidChanged(gomock.Any(), gomock.Any()).
+			RecordPaymentPaidChanged(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(1)
 
@@ -487,7 +487,7 @@ func TestServer_AdminPutPayment(t *testing.T) {
 		)
 
 		h.activityService.EXPECT().
-			RecordPaymentAmountChanged(gomock.Any(), gomock.Any()).
+			RecordPaymentAmountChanged(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("activity error")).
 			Times(1)
 
@@ -542,7 +542,7 @@ func TestServer_AdminPutPayment(t *testing.T) {
 		)
 
 		h.activityService.EXPECT().
-			RecordPaymentPaidChanged(gomock.Any(), gomock.Any()).
+			RecordPaymentPaidChanged(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(errors.New("activity error")).
 			Times(1)
 

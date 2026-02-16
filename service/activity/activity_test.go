@@ -65,7 +65,7 @@ func TestActivityServiceImpl_RecordRoomCreated(t *testing.T) {
 				return nil
 			})
 
-		err := s.service.RecordRoomCreated(ctx, room)
+		err := s.service.RecordRoomCreated(ctx, s.repo, room)
 
 		assert.NoError(t, err)
 	})
@@ -105,7 +105,7 @@ func TestActivityServiceImpl_RecordPaymentAmountChanged(t *testing.T) {
 				return nil
 			})
 
-		err := s.service.RecordPaymentAmountChanged(ctx, payment)
+		err := s.service.RecordPaymentAmountChanged(ctx, s.repo, payment)
 
 		assert.NoError(t, err)
 	})
@@ -145,7 +145,7 @@ func TestActivityServiceImpl_RecordPaymentCreated(t *testing.T) {
 				return nil
 			})
 
-		err := s.service.RecordPaymentCreated(ctx, payment)
+		err := s.service.RecordPaymentCreated(ctx, s.repo, payment)
 
 		assert.NoError(t, err)
 	})
@@ -187,7 +187,7 @@ func TestActivityServiceImpl_RecordPaymentPaidChanged(t *testing.T) {
 				return nil
 			})
 
-		err := s.service.RecordPaymentPaidChanged(ctx, payment)
+		err := s.service.RecordPaymentPaidChanged(ctx, s.repo, payment)
 
 		assert.NoError(t, err)
 	})
@@ -218,7 +218,7 @@ func TestActivityServiceImpl_RecordRollCallCreated(t *testing.T) {
 				return nil
 			})
 
-		err := s.service.RecordRollCallCreated(ctx, rollCall)
+		err := s.service.RecordRollCallCreated(ctx, s.repo, rollCall)
 
 		assert.NoError(t, err)
 	})
@@ -249,7 +249,7 @@ func TestActivityServiceImpl_RecordQuestionCreated(t *testing.T) {
 				return nil
 			})
 
-		err := s.service.RecordQuestionCreated(ctx, questionGroup)
+		err := s.service.RecordQuestionCreated(ctx, s.repo, questionGroup)
 
 		assert.NoError(t, err)
 	})

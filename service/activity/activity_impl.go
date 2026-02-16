@@ -19,9 +19,10 @@ func NewActivityService(repo repository.Repository) *activityServiceImpl {
 
 func (s *activityServiceImpl) RecordRoomCreated(
 	ctx context.Context,
+	repo repository.Repository,
 	room model.Room,
 ) error {
-	roomGroup, err := s.repo.GetRoomGroupByID(ctx, room.RoomGroupID)
+	roomGroup, err := repo.GetRoomGroupByID(ctx, room.RoomGroupID)
 	if err != nil {
 		return err
 	}
@@ -31,11 +32,12 @@ func (s *activityServiceImpl) RecordRoomCreated(
 		CampID:      roomGroup.CampID,
 		ReferenceID: room.ID,
 	}
-	return s.repo.CreateActivity(ctx, activity)
+	return repo.CreateActivity(ctx, activity)
 }
 
 func (s *activityServiceImpl) RecordPaymentCreated(
 	ctx context.Context,
+	repo repository.Repository,
 	payment model.Payment,
 ) error {
 	activity := &model.Activity{
@@ -45,11 +47,12 @@ func (s *activityServiceImpl) RecordPaymentCreated(
 		ReferenceID: payment.ID,
 		Amount:      &payment.Amount,
 	}
-	return s.repo.CreateActivity(ctx, activity)
+	return repo.CreateActivity(ctx, activity)
 }
 
 func (s *activityServiceImpl) RecordPaymentAmountChanged(
 	ctx context.Context,
+	repo repository.Repository,
 	payment model.Payment,
 ) error {
 	activity := &model.Activity{
@@ -59,11 +62,12 @@ func (s *activityServiceImpl) RecordPaymentAmountChanged(
 		ReferenceID: payment.ID,
 		Amount:      &payment.Amount,
 	}
-	return s.repo.CreateActivity(ctx, activity)
+	return repo.CreateActivity(ctx, activity)
 }
 
 func (s *activityServiceImpl) RecordPaymentPaidChanged(
 	ctx context.Context,
+	repo repository.Repository,
 	payment model.Payment,
 ) error {
 	activity := &model.Activity{
@@ -73,11 +77,12 @@ func (s *activityServiceImpl) RecordPaymentPaidChanged(
 		ReferenceID: payment.ID,
 		Amount:      &payment.AmountPaid,
 	}
-	return s.repo.CreateActivity(ctx, activity)
+	return repo.CreateActivity(ctx, activity)
 }
 
 func (s *activityServiceImpl) RecordRollCallCreated(
 	ctx context.Context,
+	repo repository.Repository,
 	rollCall model.RollCall,
 ) error {
 	activity := &model.Activity{
@@ -85,11 +90,12 @@ func (s *activityServiceImpl) RecordRollCallCreated(
 		CampID:      rollCall.CampID,
 		ReferenceID: rollCall.ID,
 	}
-	return s.repo.CreateActivity(ctx, activity)
+	return repo.CreateActivity(ctx, activity)
 }
 
 func (s *activityServiceImpl) RecordQuestionCreated(
 	ctx context.Context,
+	repo repository.Repository,
 	questionGroup model.QuestionGroup,
 ) error {
 	activity := &model.Activity{
@@ -97,7 +103,7 @@ func (s *activityServiceImpl) RecordQuestionCreated(
 		CampID:      questionGroup.CampID,
 		ReferenceID: questionGroup.ID,
 	}
-	return s.repo.CreateActivity(ctx, activity)
+	return repo.CreateActivity(ctx, activity)
 }
 
 // 部屋はユーザーごとに1つ、Paymentの変更は支払い金額の設定と入金確認で最低2回は
