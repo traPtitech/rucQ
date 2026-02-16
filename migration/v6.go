@@ -159,6 +159,8 @@ func v6() *gormigrate.Migration {
 					ReferenceID: p.ID,
 				})
 				if !p.UpdatedAt.Equal(p.CreatedAt) {
+					// 何が更新されたか正確には分からないが、大抵の場合支払済み金額が
+					// 更新されるのでpayment_paid_changedとする
 					activities = append(activities, v6Activity{
 						Model:       gorm.Model{CreatedAt: p.UpdatedAt},
 						Type:        "payment_paid_changed",
