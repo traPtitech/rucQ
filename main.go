@@ -155,7 +155,7 @@ func main() {
 	const shutdownTimeoutSeconds = 10
 
 	go func() {
-		if err := e.StartServer(srv); err != nil && errors.Is(err, http.ErrServerClosed) {
+		if err := e.StartServer(srv); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("server error", slog.String("error", err.Error()))
 		}
 	}()
