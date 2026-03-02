@@ -42,12 +42,9 @@ var answerSchemaToModel = copier.TypeConverter{
 			if err := copier.Copy(&dst, &singleChoiceAnswerRequest); err != nil {
 				return nil, err
 			}
+
 			dst.SelectedOptions = []model.Option{
-				{
-					Model: gorm.Model{
-						ID: uint(singleChoiceAnswerRequest.OptionId),
-					},
-				},
+				{Model: gorm.Model{ID: uint(singleChoiceAnswerRequest.OptionId)}},
 			}
 		} else if multipleChoiceAnswerRequest, err := req.AsMultipleChoiceAnswerRequest(); err == nil && multipleChoiceAnswerRequest.Type == api.MultipleChoiceAnswerRequestTypeMultiple {
 			if err := copier.Copy(&dst, &multipleChoiceAnswerRequest); err != nil {

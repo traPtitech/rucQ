@@ -23,6 +23,7 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/repository/gormrepository"
 	"github.com/traPtitech/rucQ/router"
+	activityservice "github.com/traPtitech/rucQ/service/activity"
 	"github.com/traPtitech/rucQ/service/notification"
 	"github.com/traPtitech/rucQ/service/scheduler"
 	"github.com/traPtitech/rucQ/service/traq"
@@ -137,11 +138,15 @@ func main() {
 	botAccessToken := os.Getenv("TRAQ_BOT_ACCESS_TOKEN")
 	traqService := traq.NewTraqService(traqBaseURL, botAccessToken)
 	notificationService := notification.NewNotificationService(repo, traqService)
+	activityService := activityservice.NewActivityService(repo)
 	schedulerService := scheduler.NewSchedulerService(repo, traqService)
 
 	go schedulerService.Start(ctx)
 
-	api.RegisterHandlers(e, router.NewServer(ctx, repo, notificationService, traqService, isDev))
+	api.RegisterHandlers(
+		e,
+		router.NewServer(ctx, repo, activityService, notificationService, traqService, isDev),
+	)
 	srv := &http.Server{
 		Addr:    "0.0.0.0:8080",
 		Handler: e,

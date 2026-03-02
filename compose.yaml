@@ -57,7 +57,7 @@ services:
         target: /openapi/
 
   adminer:
-    image: adminer:5.4.1
+    image: adminer:5.4.2
     ports:
       - "${ADMINER_PORT:-8082}:8080"
     environment:
@@ -86,7 +86,7 @@ services:
       - traq_ui
 
   rucq_ui:
-    image: ghcr.io/traptitech/rucq-ui:1.1.6
+    image: ghcr.io/traptitech/rucq-ui:1.2.2
     expose:
       - 80
 
@@ -96,7 +96,7 @@ services:
       - 80
 
   traq_server:
-    image: ghcr.io/traptitech/traq:3.27.1
+    image: ghcr.io/traptitech/traq:3.27.4
     environment:
       TRAQ_ALLOWSIGNUP: true
       TRAQ_MARIADB_HOST: mariadb

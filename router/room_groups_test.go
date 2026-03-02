@@ -65,10 +65,13 @@ func TestServer_GetRoomGroups(t *testing.T) {
 		firstGroup.Value("rooms").Array().Length().IsEqual(1)
 
 		room := firstGroup.Value("rooms").Array().Value(0).Object()
-		room.Keys().ContainsAll("id", "name", "members")
+		room.Keys().ContainsAll("id", "name", "members", "status")
 		room.Value("id").Number().IsEqual(roomGroups[0].Rooms[0].ID)
 		room.Value("name").String().IsEqual(roomGroups[0].Rooms[0].Name)
 		room.Value("members").Array().Length().IsEqual(1)
+		room.Value("status").Object().
+			HasValue("topic", "").
+			Value("type").IsNull()
 
 		member := room.Value("members").Array().Value(0).Object()
 		member.Keys().ContainsAll("id", "isStaff")

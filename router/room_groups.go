@@ -119,7 +119,11 @@ func (s *Server) AdminPutRoomGroup(
 			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
 
-	if err := s.repo.UpdateRoomGroup(e.Request().Context(), uint(roomGroupID), &roomGroup); err != nil {
+	if err := s.repo.UpdateRoomGroup(
+		e.Request().Context(),
+		uint(roomGroupID),
+		&roomGroup,
+	); err != nil {
 		if errors.Is(err, repository.ErrRoomGroupNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Room group not found")
 		}

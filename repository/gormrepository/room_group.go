@@ -81,6 +81,7 @@ func (r *Repository) GetRoomGroupByID(
 ) (*model.RoomGroup, error) {
 	roomGroup, err := gorm.G[model.RoomGroup](r.db).
 		Preload("Rooms", nil).
+		Preload("Rooms.Status", nil).
 		Where("id = ?", roomGroupID).
 		First(ctx)
 
@@ -98,6 +99,7 @@ func (r *Repository) GetRoomGroupByID(
 func (r *Repository) GetRoomGroups(ctx context.Context, campID uint) ([]model.RoomGroup, error) {
 	roomGroups, err := gorm.G[model.RoomGroup](r.db).
 		Preload("Rooms.Members", nil).
+		Preload("Rooms.Status", nil).
 		Where("camp_id = ?", campID).
 		Find(ctx)
 

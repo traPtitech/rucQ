@@ -62,7 +62,9 @@ func TestMain(m *testing.M) {
 		).
 		WaitForService(
 			"traq_server",
-			wait.ForHTTP("/api/v3/version").WithPort("3000/tcp").WithStartupTimeout(120*time.Second),
+			wait.ForHTTP("/api/v3/version").
+				WithPort("3000/tcp").
+				WithStartupTimeout(120*time.Second),
 		).
 		Up(
 			ctx,

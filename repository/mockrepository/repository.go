@@ -1,8 +1,15 @@
 package mockrepository
 
-import "go.uber.org/mock/gomock"
+import (
+	"context"
+
+	"go.uber.org/mock/gomock"
+
+	"github.com/traPtitech/rucQ/repository"
+)
 
 type MockRepository struct {
+	*MockActivityRepository
 	*MockAnswerRepository
 	*MockCampRepository
 	*MockEventRepository
@@ -15,11 +22,13 @@ type MockRepository struct {
 	*MockRollCallReactionRepository
 	*MockRoomRepository
 	*MockRoomGroupRepository
+	*MockRoomStatusRepository
 	*MockUserRepository
 }
 
 func NewMockRepository(ctrl *gomock.Controller) *MockRepository {
 	return &MockRepository{
+		MockActivityRepository:         NewMockActivityRepository(ctrl),
 		MockAnswerRepository:           NewMockAnswerRepository(ctrl),
 		MockCampRepository:             NewMockCampRepository(ctrl),
 		MockEventRepository:            NewMockEventRepository(ctrl),
@@ -32,6 +41,14 @@ func NewMockRepository(ctrl *gomock.Controller) *MockRepository {
 		MockRollCallReactionRepository: NewMockRollCallReactionRepository(ctrl),
 		MockRoomRepository:             NewMockRoomRepository(ctrl),
 		MockRoomGroupRepository:        NewMockRoomGroupRepository(ctrl),
+		MockRoomStatusRepository:       NewMockRoomStatusRepository(ctrl),
 		MockUserRepository:             NewMockUserRepository(ctrl),
 	}
+}
+
+func (m *MockRepository) Transaction(
+	_ context.Context,
+	fn func(tx repository.Repository) error,
+) error {
+	return fn(m)
 }
