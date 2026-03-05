@@ -25,6 +25,6 @@ func getAllMigrations() []*gormigrate.Migration {
 		v4(), // roll_callsテーブルにcamp_idカラムを追加
 		v5(), // room_statuses, room_status_logsテーブルを追加
 		v6(), // activitiesテーブルを追加
-		v7(), // 同一displayIdのキャンプが存在しないことを確認
+		v7(), // camps.display_idにユニークインデックスを追加
 	}
 }
