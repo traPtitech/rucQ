@@ -8,7 +8,7 @@ import (
 
 type Camp struct {
 	gorm.Model
-	DisplayID          string
+	DisplayID          string `gorm:"uniqueIndex"`
 	Name               string
 	Guidebook          string
 	IsDraft            bool

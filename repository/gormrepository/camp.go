@@ -13,10 +13,14 @@ import (
 
 func (r *Repository) CreateCamp(camp *model.Camp) error {
 	if err := r.db.Create(camp).Error; err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return repository.ErrCampAlreadyExists
+		}
+
 		var mysqlErr *mysql.MySQLError
 
 		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
-			return model.ErrAlreadyExists
+			return repository.ErrCampAlreadyExists
 		}
 
 		return err
@@ -65,6 +69,16 @@ func (r *Repository) UpdateCamp(ctx context.Context, campID uint, camp *model.Ca
 		Updates(ctx, camp)
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return repository.ErrCampAlreadyExists
+		}
+
+		var mysqlErr *mysql.MySQLError
+
+		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
+			return repository.ErrCampAlreadyExists
+		}
+
 		return err
 	}
 
