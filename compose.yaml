@@ -86,7 +86,7 @@ services:
       - traq_ui
 
   rucq_ui:
-    image: ghcr.io/traptitech/rucq-ui:1.2.2
+    image: ghcr.io/traptitech/rucq-ui:1.2.5
     expose:
       - 80
 
@@ -114,7 +114,7 @@ services:
         condition: service_healthy
 
   traq_ui:
-    image: ghcr.io/traptitech/traq-ui:3.31.2
+    image: ghcr.io/traptitech/traq-ui:3.31.3
     volumes:
       - type: volume
         source: traq_override
