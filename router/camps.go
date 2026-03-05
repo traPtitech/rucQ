@@ -120,7 +120,10 @@ func (s *Server) AdminPutCamp(
 		}
 
 		if errors.Is(err, repository.ErrCampAlreadyExists) {
-			return echo.NewHTTPError(http.StatusConflict, "Camp with this display ID already exists")
+			return echo.NewHTTPError(
+				http.StatusConflict,
+				"Camp with this display ID already exists",
+			)
 		}
 
 		return echo.NewHTTPError(http.StatusInternalServerError).

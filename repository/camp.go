@@ -10,7 +10,7 @@ import (
 
 var (
 	ErrCampNotFound        = errors.New("camp not found")
-	ErrCampAlreadyExists     = errors.New("camp with this display ID already exists")
+	ErrCampAlreadyExists   = errors.New("camp with this display ID already exists")
 	ErrParticipantNotFound = errors.New("participant not found")
 )
 
