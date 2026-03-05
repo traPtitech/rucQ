@@ -109,6 +109,41 @@ func TestAdminPostCamp(t *testing.T) {
 		res.Value("dateStart").String().IsEqual(req.DateStart.Format(time.DateOnly))
 		res.Value("dateEnd").String().IsEqual(req.DateEnd.Format(time.DateOnly))
 	})
+
+	t.Run("DisplayID Conflict", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		dateStart := random.Time(t)
+		dateEnd := dateStart.Add(time.Duration(random.PositiveInt(t)))
+		req := api.AdminPostCampJSONRequestBody{
+			DisplayId:          random.AlphaNumericString(t, 10),
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          types.Date{Time: dateStart},
+			DateEnd:            types.Date{Time: dateEnd},
+		}
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil)
+		h.repo.MockCampRepository.EXPECT().
+			CreateCamp(gomock.Any()).
+			Return(repository.ErrCampAlreadyExists)
+
+		h.expect.POST("/api/admin/camps").
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusConflict).
+			JSON().
+			Object().
+			HasValue("message", "Camp already exists")
+	})
 }
 
 func TestAdminPutCamp(t *testing.T) {
@@ -305,6 +340,42 @@ func TestAdminPutCamp(t *testing.T) {
 			JSON().
 			Object().
 			HasValue("message", "Camp not found")
+	})
+
+	t.Run("DisplayID Conflict", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := api.CampId(random.PositiveInt(t))
+		dateStart := random.Time(t)
+		dateEnd := dateStart.Add(time.Duration(random.PositiveInt(t)))
+		req := api.AdminPutCampJSONRequestBody{
+			DisplayId:          random.AlphaNumericString(t, 10),
+			Name:               random.AlphaNumericString(t, 20),
+			Guidebook:          random.AlphaNumericString(t, 100),
+			IsDraft:            random.Bool(t),
+			IsPaymentOpen:      random.Bool(t),
+			IsRegistrationOpen: random.Bool(t),
+			DateStart:          types.Date{Time: dateStart},
+			DateEnd:            types.Date{Time: dateEnd},
+		}
+		username := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil)
+		h.repo.MockCampRepository.EXPECT().
+			UpdateCamp(gomock.Any(), uint(campID), gomock.Any()).
+			Return(repository.ErrCampAlreadyExists)
+
+		h.expect.PUT("/api/admin/camps/{campId}", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusConflict).
+			JSON().
+			Object().
+			HasValue("message", "Camp with this display ID already exists")
 	})
 }
 

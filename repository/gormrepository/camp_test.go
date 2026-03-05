@@ -72,8 +72,8 @@ func TestCreateCamp(t *testing.T) {
 		}
 		err = r.CreateCamp(&camp2)
 
-		// ErrAlreadyExistsが返ることを確認
-		assert.ErrorIs(t, err, model.ErrAlreadyExists)
+		// ErrCampAlreadyExistsが返ることを確認
+		assert.ErrorIs(t, err, repository.ErrCampAlreadyExists)
 	})
 }
 
@@ -241,27 +241,13 @@ func TestUpdateCamp(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
-		dateStart := random.Time(t)
-		dateEnd := dateStart.Add(time.Duration(random.PositiveInt(t)))
-		displayID := random.AlphaNumericString(t, 10)
+		// 2つのキャンプを作成
+		camp1 := mustCreateCamp(t, r)
+		camp2 := mustCreateCamp(t, r)
 
-		// 1つ目のキャンプを作成
-		camp1 := model.Camp{
-			DisplayID:          displayID,
-			Name:               random.AlphaNumericString(t, 20),
-			Guidebook:          random.AlphaNumericString(t, 100),
-			IsDraft:            random.Bool(t),
-			IsPaymentOpen:      random.Bool(t),
-			IsRegistrationOpen: random.Bool(t),
-			DateStart:          dateStart,
-			DateEnd:            dateEnd,
-		}
-		err := r.CreateCamp(&camp1)
-		require.NoError(t, err)
-
-		// 同じDisplayIDで2つ目のキャンプを作成
-		camp2 := model.Camp{
-			DisplayID:          displayID, // 同じDisplayID
+		// camp2のDisplayIDをcamp1と同じものに更新しようとする
+		updatedCamp := model.Camp{
+			DisplayID:          camp1.DisplayID, // camp1と同じDisplayID
 			Name:               random.AlphaNumericString(t, 20),
 			Guidebook:          random.AlphaNumericString(t, 100),
 			IsDraft:            random.Bool(t),
@@ -270,10 +256,11 @@ func TestUpdateCamp(t *testing.T) {
 			DateStart:          random.Time(t),
 			DateEnd:            random.Time(t),
 		}
-		err = r.CreateCamp(&camp2)
 
-		// ErrAlreadyExistsが返ることを確認
-		assert.ErrorIs(t, err, model.ErrAlreadyExists)
+		err := r.UpdateCamp(t.Context(), camp2.ID, &updatedCamp)
+
+		// ErrCampAlreadyExistsが返ることを確認
+		assert.ErrorIs(t, err, repository.ErrCampAlreadyExists)
 	})
 }
 
