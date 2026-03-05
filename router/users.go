@@ -115,7 +115,10 @@ func (s *Server) AdminPutUser(
 	}
 
 	// ユーザーがtraQに存在するか確認
-	if _, err := s.traqService.GetCanonicalUserName(e.Request().Context(), targetUserID); err != nil {
+	if _, err := s.traqService.GetCanonicalUserName(
+		e.Request().Context(),
+		targetUserID,
+	); err != nil {
 		if errors.Is(err, traq.ErrUserNotFound) {
 			return echo.ErrNotFound
 		}

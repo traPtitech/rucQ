@@ -79,9 +79,17 @@ func (s *Server) AdminPostPayment(
 
 	payment.CampID = uint(campID)
 
-	if err := s.repo.CreatePayment(e.Request().Context(), &payment); err != nil {
+	ctx := e.Request().Context()
+
+	if err := s.repo.Transaction(ctx, func(tx repository.Repository) error {
+		if err := tx.CreatePayment(ctx, &payment); err != nil {
+			return fmt.Errorf("failed to create payment: %w", err)
+		}
+
+		return s.activityService.RecordPaymentCreated(ctx, tx, payment)
+	}); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
-			SetInternal(fmt.Errorf("failed to create payment: %w", err))
+			SetInternal(err)
 	}
 
 	res, err := converter.Convert[api.PaymentResponse](payment)
@@ -124,22 +132,58 @@ func (s *Server) AdminPutPayment(
 			SetInternal(fmt.Errorf("failed to convert request to model: %w", err))
 	}
 
-	if err := s.repo.UpdatePayment(e.Request().Context(), uint(paymentID), &payment); err != nil {
-		if errors.Is(err, repository.ErrPaymentNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Payment not found")
-		}
+	beforePayment, err := s.repo.GetPaymentByID(e.Request().Context(), uint(paymentID))
 
-		return echo.NewHTTPError(http.StatusInternalServerError).
-			SetInternal(fmt.Errorf("failed to update payment: %w", err))
-	}
-
-	updatedPayment, err := s.repo.GetPaymentByID(e.Request().Context(), uint(paymentID))
 	if err != nil {
 		if errors.Is(err, repository.ErrPaymentNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Payment not found")
+			return echo.ErrNotFound
 		}
+
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to get payment: %w", err))
+	}
+
+	ctx := e.Request().Context()
+
+	var updatedPayment *model.Payment
+
+	if err := s.repo.Transaction(ctx, func(tx repository.Repository) error {
+		if err := tx.UpdatePayment(ctx, uint(paymentID), &payment); err != nil {
+			// もしErrPaymentNotFoundがここで返ってきた場合、それは異常なので500エラーとする
+			return fmt.Errorf("failed to update payment: %w", err)
+		}
+
+		var err error
+		updatedPayment, err = tx.GetPaymentByID(ctx, uint(paymentID))
+		if err != nil {
+			return fmt.Errorf("failed to get payment: %w", err)
+		}
+
+		// Amount/AmountPaid が変更された場合にアクティビティを記録
+		if updatedPayment.Amount != beforePayment.Amount {
+			if err := s.activityService.RecordPaymentAmountChanged(
+				ctx,
+				tx,
+				*updatedPayment,
+			); err != nil {
+				return err
+			}
+		}
+
+		if updatedPayment.AmountPaid != beforePayment.AmountPaid {
+			if err := s.activityService.RecordPaymentPaidChanged(
+				ctx,
+				tx,
+				*updatedPayment,
+			); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(err)
 	}
 
 	res, err := converter.Convert[api.PaymentResponse](updatedPayment)

@@ -167,6 +167,10 @@ func TestServer_AdminPostRollCall(t *testing.T) {
 				rc := rollCall.(*model.RollCall)
 				rc.ID = uint(random.PositiveInt(t))
 			}).Times(1)
+		h.activityService.EXPECT().
+			RecordRollCallCreated(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(nil).
+			Times(1)
 
 		res := h.expect.POST("/api/admin/camps/{campId}/roll-calls", campID).
 			WithHeader("X-Forwarded-User", userID).
@@ -181,6 +185,49 @@ func TestServer_AdminPostRollCall(t *testing.T) {
 		res.Value("description").String().IsEqual(requestBody.Description)
 		res.Value("options").Array().IsEqual(requestBody.Options)
 		res.Value("subjects").Array().IsEqual(requestBody.Subjects)
+	})
+
+	t.Run("Activity service error", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		user := model.User{
+			ID:      userID,
+			IsStaff: true,
+		}
+
+		requestBody := api.RollCallRequest{
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.AlphaNumericString(t, 100),
+			Options: []string{
+				random.AlphaNumericString(t, 5),
+				random.AlphaNumericString(t, 5),
+			},
+			Subjects: []string{
+				random.AlphaNumericString(t, 32),
+			},
+		}
+
+		h.repo.MockUserRepository.EXPECT().GetOrCreateUser(gomock.Any(), userID).Return(&user, nil)
+		h.repo.MockRollCallRepository.EXPECT().
+			CreateRollCall(gomock.Any(), gomock.Any()).
+			Return(nil).
+			Do(func(_, rollCall any) {
+				rc := rollCall.(*model.RollCall)
+				rc.ID = uint(random.PositiveInt(t))
+			}).Times(1)
+		h.activityService.EXPECT().
+			RecordRollCallCreated(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(errors.New("activity error")).
+			Times(1)
+
+		h.expect.POST("/api/admin/camps/{campId}/roll-calls", campID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(requestBody).
+			Expect().
+			Status(http.StatusInternalServerError)
 	})
 
 	t.Run("Missing X-Forwarded-User header", func(t *testing.T) {

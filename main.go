@@ -9,7 +9,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -20,14 +23,20 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/repository/gormrepository"
 	"github.com/traPtitech/rucQ/router"
+	activityservice "github.com/traPtitech/rucQ/service/activity"
 	"github.com/traPtitech/rucQ/service/notification"
 	"github.com/traPtitech/rucQ/service/scheduler"
 	"github.com/traPtitech/rucQ/service/traq"
 )
 
 func main() {
-	// TODO: graceful shutdownを実装する
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
 	e := echo.New()
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
@@ -129,10 +138,38 @@ func main() {
 	botAccessToken := os.Getenv("TRAQ_BOT_ACCESS_TOKEN")
 	traqService := traq.NewTraqService(traqBaseURL, botAccessToken)
 	notificationService := notification.NewNotificationService(repo, traqService)
+	activityService := activityservice.NewActivityService(repo)
 	schedulerService := scheduler.NewSchedulerService(repo, traqService)
 
 	go schedulerService.Start(ctx)
 
-	api.RegisterHandlers(e, router.NewServer(ctx, repo, notificationService, traqService, isDev))
-	log.Fatal(e.Start("0.0.0.0:8080"))
+	api.RegisterHandlers(
+		e,
+		router.NewServer(ctx, repo, activityService, notificationService, traqService, isDev),
+	)
+	srv := &http.Server{
+		Addr:    "0.0.0.0:8080",
+		Handler: e,
+	}
+
+	const shutdownTimeoutSeconds = 10
+
+	go func() {
+		if err := e.StartServer(srv); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("server error", slog.String("error", err.Error()))
+		}
+	}()
+
+	<-ctx.Done()
+	slog.Info("shutting down server...")
+
+	shutdownCtx, cancel := context.WithTimeout(
+		context.Background(),
+		shutdownTimeoutSeconds*time.Second,
+	)
+	defer cancel()
+
+	if err := e.Shutdown(shutdownCtx); err != nil {
+		slog.Error("server forced to shutdown", slog.String("error", err.Error()))
+	}
 }

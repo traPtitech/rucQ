@@ -113,9 +113,12 @@ func TestServer_GetDashboard(t *testing.T) {
 
 		roomRes := res.Value("room").Object()
 
-		roomRes.Keys().ContainsOnly("id", "name", "members")
+		roomRes.Keys().ContainsOnly("id", "name", "members", "status")
 		roomRes.Value("id").Number().IsEqual(room.ID)
 		roomRes.Value("name").String().IsEqual(room.Name)
+		roomRes.Value("status").Object().
+			HasValue("topic", "").
+			Value("type").IsNull()
 
 		members := roomRes.Value("members").Array()
 
@@ -225,9 +228,12 @@ func TestServer_GetDashboard(t *testing.T) {
 
 		roomRes := res.Value("room").Object()
 
-		roomRes.Keys().ContainsOnly("id", "name", "members")
+		roomRes.Keys().ContainsOnly("id", "name", "members", "status")
 		roomRes.Value("id").Number().IsEqual(room.ID)
 		roomRes.Value("name").String().IsEqual(room.Name)
+		roomRes.Value("status").Object().
+			HasValue("topic", "").
+			Value("type").IsNull()
 
 		members := roomRes.Value("members").Array()
 		members.Length().IsEqual(1)

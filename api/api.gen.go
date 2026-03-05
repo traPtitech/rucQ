@@ -119,6 +119,21 @@ const (
 	OfficialEventResponseTypeOfficial OfficialEventResponseType = "official"
 )
 
+// Defines values for PaymentAmountChangedActivityType.
+const (
+	PaymentAmountChanged PaymentAmountChangedActivityType = "payment_amount_changed"
+)
+
+// Defines values for PaymentCreatedActivityType.
+const (
+	PaymentCreated PaymentCreatedActivityType = "payment_created"
+)
+
+// Defines values for PaymentPaidChangedActivityType.
+const (
+	PaymentPaidChanged PaymentPaidChangedActivityType = "payment_paid_changed"
+)
+
 // Defines values for PostMultipleChoiceQuestionRequestType.
 const (
 	PostMultipleChoiceQuestionRequestTypeMultiple PostMultipleChoiceQuestionRequestType = "multiple"
@@ -139,6 +154,16 @@ const (
 	PutSingleChoiceQuestionRequestTypeSingle PutSingleChoiceQuestionRequestType = "single"
 )
 
+// Defines values for QuestionCreatedActivityType.
+const (
+	QuestionCreated QuestionCreatedActivityType = "question_created"
+)
+
+// Defines values for RollCallCreatedActivityType.
+const (
+	RollCallCreated RollCallCreatedActivityType = "roll_call_created"
+)
+
 // Defines values for RollCallReactionCreatedEventType.
 const (
 	Created RollCallReactionCreatedEventType = "created"
@@ -152,6 +177,23 @@ const (
 // Defines values for RollCallReactionUpdatedEventType.
 const (
 	Updated RollCallReactionUpdatedEventType = "updated"
+)
+
+// Defines values for RoomCreatedActivityType.
+const (
+	RoomCreated RoomCreatedActivityType = "room_created"
+)
+
+// Defines values for RoomStatusType.
+const (
+	RoomStatusTypeActive   RoomStatusType = "active"
+	RoomStatusTypeInactive RoomStatusType = "inactive"
+)
+
+// Defines values for RoomStatusLogType.
+const (
+	RoomStatusLogTypeActive   RoomStatusLogType = "active"
+	RoomStatusLogTypeInactive RoomStatusLogType = "inactive"
 )
 
 // Defines values for SingleChoiceAnswerRequestType.
@@ -168,6 +210,11 @@ const (
 const (
 	Single SingleChoiceQuestionResponseType = "single"
 )
+
+// ActivityResponse defines model for ActivityResponse.
+type ActivityResponse struct {
+	union json.RawMessage
+}
 
 // AnswerRequest defines model for AnswerRequest.
 type AnswerRequest struct {
@@ -466,6 +513,39 @@ type OptionResponse struct {
 	Id      int    `json:"id"`
 }
 
+// PaymentAmountChangedActivity ユーザーが支払うべき金額が変更されたアクティビティ
+type PaymentAmountChangedActivity struct {
+	Amount int                              `json:"amount"`
+	Id     int                              `json:"id"`
+	Time   time.Time                        `json:"time"`
+	Type   PaymentAmountChangedActivityType `json:"type"`
+}
+
+// PaymentAmountChangedActivityType defines model for PaymentAmountChangedActivity.Type.
+type PaymentAmountChangedActivityType string
+
+// PaymentCreatedActivity 支払い情報が作成されたアクティビティ
+type PaymentCreatedActivity struct {
+	Amount int                        `json:"amount"`
+	Id     int                        `json:"id"`
+	Time   time.Time                  `json:"time"`
+	Type   PaymentCreatedActivityType `json:"type"`
+}
+
+// PaymentCreatedActivityType defines model for PaymentCreatedActivity.Type.
+type PaymentCreatedActivityType string
+
+// PaymentPaidChangedActivity 合宿係がユーザーの支払い済み金額を変更したアクティビティ
+type PaymentPaidChangedActivity struct {
+	Amount int                            `json:"amount"`
+	Id     int                            `json:"id"`
+	Time   time.Time                      `json:"time"`
+	Type   PaymentPaidChangedActivityType `json:"type"`
+}
+
+// PaymentPaidChangedActivityType defines model for PaymentPaidChangedActivity.Type.
+type PaymentPaidChangedActivityType string
+
 // PaymentRequest defines model for PaymentRequest.
 type PaymentRequest struct {
 	Amount     int    `json:"amount"`
@@ -574,6 +654,22 @@ type PutSingleChoiceQuestionRequest struct {
 // PutSingleChoiceQuestionRequestType defines model for PutSingleChoiceQuestionRequest.Type.
 type PutSingleChoiceQuestionRequestType string
 
+// QuestionCreatedActivity 質問グループが作成されたアクティビティ
+type QuestionCreatedActivity struct {
+	Due  openapi_types.Date `json:"due"`
+	Id   int                `json:"id"`
+	Name string             `json:"name"`
+
+	// NeedsResponse 必須だがまだ回答していない質問がある場合true
+	NeedsResponse   bool                        `json:"needsResponse"`
+	QuestionGroupId int                         `json:"questionGroupId"`
+	Time            time.Time                   `json:"time"`
+	Type            QuestionCreatedActivityType `json:"type"`
+}
+
+// QuestionCreatedActivityType defines model for QuestionCreatedActivity.Type.
+type QuestionCreatedActivityType string
+
 // QuestionGroupResponse defines model for QuestionGroupResponse.
 type QuestionGroupResponse struct {
 	Description *string            `json:"description,omitempty"`
@@ -606,6 +702,20 @@ type QuestionResponseBase struct {
 	IsRequired  bool    `json:"isRequired"`
 	Title       string  `json:"title"`
 }
+
+// RollCallCreatedActivity 点呼が作成されたアクティビティ
+type RollCallCreatedActivity struct {
+	Answered   bool                        `json:"answered"`
+	Id         int                         `json:"id"`
+	IsSubject  bool                        `json:"isSubject"`
+	Name       string                      `json:"name"`
+	RollCallId int                         `json:"rollCallId"`
+	Time       time.Time                   `json:"time"`
+	Type       RollCallCreatedActivityType `json:"type"`
+}
+
+// RollCallCreatedActivityType defines model for RollCallCreatedActivity.Type.
+type RollCallCreatedActivityType string
 
 // RollCallReactionCreatedEvent defines model for RollCallReactionCreatedEvent.
 type RollCallReactionCreatedEvent struct {
@@ -679,6 +789,16 @@ type RollCallResponse struct {
 	Subjects    []string `json:"subjects"`
 }
 
+// RoomCreatedActivity ユーザーが所属する部屋が作成されたアクティビティ
+type RoomCreatedActivity struct {
+	Id   int                     `json:"id"`
+	Time time.Time               `json:"time"`
+	Type RoomCreatedActivityType `json:"type"`
+}
+
+// RoomCreatedActivityType defines model for RoomCreatedActivity.Type.
+type RoomCreatedActivityType string
+
 // RoomGroupRequest defines model for RoomGroupRequest.
 type RoomGroupRequest struct {
 	Name string `json:"name"`
@@ -703,7 +823,28 @@ type RoomResponse struct {
 	Id      int            `json:"id"`
 	Members []UserResponse `json:"members"`
 	Name    string         `json:"name"`
+	Status  RoomStatus     `json:"status"`
 }
+
+// RoomStatus defines model for RoomStatus.
+type RoomStatus struct {
+	Topic string          `json:"topic"`
+	Type  *RoomStatusType `json:"type"`
+}
+
+// RoomStatusType defines model for RoomStatus.Type.
+type RoomStatusType string
+
+// RoomStatusLog defines model for RoomStatusLog.
+type RoomStatusLog struct {
+	OperatorId string             `json:"operatorId"`
+	Topic      string             `json:"topic"`
+	Type       *RoomStatusLogType `json:"type"`
+	UpdatedAt  time.Time          `json:"updatedAt"`
+}
+
+// RoomStatusLogType defines model for RoomStatusLog.Type.
+type RoomStatusLogType string
 
 // SingleChoiceAnswerRequest defines model for SingleChoiceAnswerRequest.
 type SingleChoiceAnswerRequest struct {
@@ -1022,6 +1163,12 @@ type PutAnswerParams struct {
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
 
+// GetActivitiesParams defines parameters for GetActivities.
+type GetActivitiesParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
 // PostEventParams defines parameters for PostEvent.
 type PostEventParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
@@ -1093,6 +1240,12 @@ type PutReactionParams struct {
 
 // PostRollCallReactionParams defines parameters for PostRollCallReaction.
 type PostRollCallReactionParams struct {
+	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
+	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
+}
+
+// PutRoomStatusParams defines parameters for PutRoomStatus.
+type PutRoomStatusParams struct {
 	// XForwardedUser ログインしているユーザーのtraQ ID（NeoShowcaseが自動で付与）
 	XForwardedUser *XForwardedUser `json:"X-Forwarded-User,omitempty"`
 }
@@ -1171,6 +1324,175 @@ type PutReactionJSONRequestBody = RollCallReactionRequest
 
 // PostRollCallReactionJSONRequestBody defines body for PostRollCallReaction for application/json ContentType.
 type PostRollCallReactionJSONRequestBody = RollCallReactionRequest
+
+// PutRoomStatusJSONRequestBody defines body for PutRoomStatus for application/json ContentType.
+type PutRoomStatusJSONRequestBody = RoomStatus
+
+// AsRoomCreatedActivity returns the union data inside the ActivityResponse as a RoomCreatedActivity
+func (t ActivityResponse) AsRoomCreatedActivity() (RoomCreatedActivity, error) {
+	var body RoomCreatedActivity
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRoomCreatedActivity overwrites any union data inside the ActivityResponse as the provided RoomCreatedActivity
+func (t *ActivityResponse) FromRoomCreatedActivity(v RoomCreatedActivity) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRoomCreatedActivity performs a merge with any union data inside the ActivityResponse, using the provided RoomCreatedActivity
+func (t *ActivityResponse) MergeRoomCreatedActivity(v RoomCreatedActivity) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPaymentCreatedActivity returns the union data inside the ActivityResponse as a PaymentCreatedActivity
+func (t ActivityResponse) AsPaymentCreatedActivity() (PaymentCreatedActivity, error) {
+	var body PaymentCreatedActivity
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPaymentCreatedActivity overwrites any union data inside the ActivityResponse as the provided PaymentCreatedActivity
+func (t *ActivityResponse) FromPaymentCreatedActivity(v PaymentCreatedActivity) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePaymentCreatedActivity performs a merge with any union data inside the ActivityResponse, using the provided PaymentCreatedActivity
+func (t *ActivityResponse) MergePaymentCreatedActivity(v PaymentCreatedActivity) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPaymentAmountChangedActivity returns the union data inside the ActivityResponse as a PaymentAmountChangedActivity
+func (t ActivityResponse) AsPaymentAmountChangedActivity() (PaymentAmountChangedActivity, error) {
+	var body PaymentAmountChangedActivity
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPaymentAmountChangedActivity overwrites any union data inside the ActivityResponse as the provided PaymentAmountChangedActivity
+func (t *ActivityResponse) FromPaymentAmountChangedActivity(v PaymentAmountChangedActivity) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePaymentAmountChangedActivity performs a merge with any union data inside the ActivityResponse, using the provided PaymentAmountChangedActivity
+func (t *ActivityResponse) MergePaymentAmountChangedActivity(v PaymentAmountChangedActivity) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPaymentPaidChangedActivity returns the union data inside the ActivityResponse as a PaymentPaidChangedActivity
+func (t ActivityResponse) AsPaymentPaidChangedActivity() (PaymentPaidChangedActivity, error) {
+	var body PaymentPaidChangedActivity
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPaymentPaidChangedActivity overwrites any union data inside the ActivityResponse as the provided PaymentPaidChangedActivity
+func (t *ActivityResponse) FromPaymentPaidChangedActivity(v PaymentPaidChangedActivity) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePaymentPaidChangedActivity performs a merge with any union data inside the ActivityResponse, using the provided PaymentPaidChangedActivity
+func (t *ActivityResponse) MergePaymentPaidChangedActivity(v PaymentPaidChangedActivity) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsRollCallCreatedActivity returns the union data inside the ActivityResponse as a RollCallCreatedActivity
+func (t ActivityResponse) AsRollCallCreatedActivity() (RollCallCreatedActivity, error) {
+	var body RollCallCreatedActivity
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromRollCallCreatedActivity overwrites any union data inside the ActivityResponse as the provided RollCallCreatedActivity
+func (t *ActivityResponse) FromRollCallCreatedActivity(v RollCallCreatedActivity) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeRollCallCreatedActivity performs a merge with any union data inside the ActivityResponse, using the provided RollCallCreatedActivity
+func (t *ActivityResponse) MergeRollCallCreatedActivity(v RollCallCreatedActivity) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsQuestionCreatedActivity returns the union data inside the ActivityResponse as a QuestionCreatedActivity
+func (t ActivityResponse) AsQuestionCreatedActivity() (QuestionCreatedActivity, error) {
+	var body QuestionCreatedActivity
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromQuestionCreatedActivity overwrites any union data inside the ActivityResponse as the provided QuestionCreatedActivity
+func (t *ActivityResponse) FromQuestionCreatedActivity(v QuestionCreatedActivity) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeQuestionCreatedActivity performs a merge with any union data inside the ActivityResponse, using the provided QuestionCreatedActivity
+func (t *ActivityResponse) MergeQuestionCreatedActivity(v QuestionCreatedActivity) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ActivityResponse) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ActivityResponse) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // AsFreeTextAnswerRequest returns the union data inside the AnswerRequest as a FreeTextAnswerRequest
 func (t AnswerRequest) AsFreeTextAnswerRequest() (FreeTextAnswerRequest, error) {
@@ -2104,6 +2426,9 @@ type ServerInterface interface {
 	// 合宿の一覧を取得
 	// (GET /api/camps)
 	GetCamps(ctx echo.Context) error
+	// アクティビティの一覧を取得
+	// (GET /api/camps/{campId}/activities)
+	GetActivities(ctx echo.Context, campId CampId, params GetActivitiesParams) error
 	// イベントの一覧を取得
 	// (GET /api/camps/{campId}/events)
 	GetEvents(ctx echo.Context, campId CampId) error
@@ -2170,6 +2495,12 @@ type ServerInterface interface {
 	// 新たに作成されたリアクションをストリームで取得
 	// (GET /api/roll-calls/{rollCallId}/reactions/stream)
 	StreamRollCallReactions(ctx echo.Context, rollCallId RollCallId) error
+	// 部屋のステータスを設定・更新
+	// (PUT /api/rooms/{roomId}/status)
+	PutRoomStatus(ctx echo.Context, roomId RoomId, params PutRoomStatusParams) error
+	// 部屋のステータス履歴を取得
+	// (GET /api/rooms/{roomId}/status-logs)
+	GetRoomStatusLogs(ctx echo.Context, roomId RoomId) error
 	// 合宿係の一覧を取得
 	// (GET /api/staffs)
 	GetStaffs(ctx echo.Context) error
@@ -3311,6 +3642,42 @@ func (w *ServerInterfaceWrapper) GetCamps(ctx echo.Context) error {
 	return err
 }
 
+// GetActivities converts echo context to params.
+func (w *ServerInterfaceWrapper) GetActivities(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "campId" -------------
+	var campId CampId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "campId", ctx.Param("campId"), &campId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter campId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetActivitiesParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetActivities(ctx, campId, params)
+	return err
+}
+
 // GetEvents converts echo context to params.
 func (w *ServerInterfaceWrapper) GetEvents(ctx echo.Context) error {
 	var err error
@@ -3896,6 +4263,58 @@ func (w *ServerInterfaceWrapper) StreamRollCallReactions(ctx echo.Context) error
 	return err
 }
 
+// PutRoomStatus converts echo context to params.
+func (w *ServerInterfaceWrapper) PutRoomStatus(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "roomId" -------------
+	var roomId RoomId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "roomId", ctx.Param("roomId"), &roomId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter roomId: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params PutRoomStatusParams
+
+	headers := ctx.Request().Header
+	// ------------- Optional header parameter "X-Forwarded-User" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Forwarded-User")]; found {
+		var XForwardedUser XForwardedUser
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for X-Forwarded-User, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Forwarded-User", valueList[0], &XForwardedUser, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter X-Forwarded-User: %s", err))
+		}
+
+		params.XForwardedUser = &XForwardedUser
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PutRoomStatus(ctx, roomId, params)
+	return err
+}
+
+// GetRoomStatusLogs converts echo context to params.
+func (w *ServerInterfaceWrapper) GetRoomStatusLogs(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "roomId" -------------
+	var roomId RoomId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "roomId", ctx.Param("roomId"), &roomId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter roomId: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetRoomStatusLogs(ctx, roomId)
+	return err
+}
+
 // GetStaffs converts echo context to params.
 func (w *ServerInterfaceWrapper) GetStaffs(ctx echo.Context) error {
 	var err error
@@ -3965,6 +4384,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/api/admin/users/:userId/messages", wrapper.AdminPostMessage)
 	router.PUT(baseURL+"/api/answers/:answerId", wrapper.PutAnswer)
 	router.GET(baseURL+"/api/camps", wrapper.GetCamps)
+	router.GET(baseURL+"/api/camps/:campId/activities", wrapper.GetActivities)
 	router.GET(baseURL+"/api/camps/:campId/events", wrapper.GetEvents)
 	router.POST(baseURL+"/api/camps/:campId/events", wrapper.PostEvent)
 	router.GET(baseURL+"/api/camps/:campId/images", wrapper.GetImages)
@@ -3987,6 +4407,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/api/roll-calls/:rollCallId/reactions", wrapper.GetRollCallReactions)
 	router.POST(baseURL+"/api/roll-calls/:rollCallId/reactions", wrapper.PostRollCallReaction)
 	router.GET(baseURL+"/api/roll-calls/:rollCallId/reactions/stream", wrapper.StreamRollCallReactions)
+	router.PUT(baseURL+"/api/rooms/:roomId/status", wrapper.PutRoomStatus)
+	router.GET(baseURL+"/api/rooms/:roomId/status-logs", wrapper.GetRoomStatusLogs)
 	router.GET(baseURL+"/api/staffs", wrapper.GetStaffs)
 
 }

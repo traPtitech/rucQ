@@ -9,6 +9,7 @@ import (
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (s *Server) GetQuestionGroups(e echo.Context, campID api.CampId) error {
@@ -60,9 +61,17 @@ func (s *Server) AdminPostQuestionGroup(
 
 	questionGroup.CampID = uint(campID)
 
-	if err := s.repo.CreateQuestionGroup(&questionGroup); err != nil {
+	ctx := e.Request().Context()
+
+	if err := s.repo.Transaction(ctx, func(tx repository.Repository) error {
+		if err := tx.CreateQuestionGroup(&questionGroup); err != nil {
+			return fmt.Errorf("failed to create question group: %w", err)
+		}
+
+		return s.activityService.RecordQuestionCreated(ctx, tx, questionGroup)
+	}); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
-			SetInternal(fmt.Errorf("failed to create question group: %w", err))
+			SetInternal(err)
 	}
 
 	res, err := converter.Convert[api.QuestionGroupResponse](questionGroup)
@@ -104,7 +113,11 @@ func (s *Server) AdminPutQuestionGroupMetadata(
 			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
 
-	if err := s.repo.UpdateQuestionGroup(e.Request().Context(), uint(questionGroupID), questionGroup); err != nil {
+	if err := s.repo.UpdateQuestionGroup(
+		e.Request().Context(),
+		uint(questionGroupID),
+		questionGroup,
+	); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to update question group: %w", err))
 	}

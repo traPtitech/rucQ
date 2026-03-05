@@ -134,7 +134,11 @@ func (s *Server) AdminPutQuestion(
 
 	requestQuestion.ID = uint(questionID)
 
-	if err := s.repo.UpdateQuestion(e.Request().Context(), uint(questionID), &requestQuestion); err != nil {
+	if err := s.repo.UpdateQuestion(
+		e.Request().Context(),
+		uint(questionID),
+		&requestQuestion,
+	); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
 		}

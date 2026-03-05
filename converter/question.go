@@ -95,12 +95,16 @@ var putQuestionSchemaToModel = copier.TypeConverter{
 				return nil, err
 			}
 		} else if singleChoiceQuestionRequest, err := req.AsPutSingleChoiceQuestionRequest(); err == nil &&
-			singleChoiceQuestionRequest.Type == api.PutSingleChoiceQuestionRequestType(api.SingleChoiceAnswerResponseTypeSingle) {
+			singleChoiceQuestionRequest.Type == api.PutSingleChoiceQuestionRequestType(
+				api.SingleChoiceAnswerResponseTypeSingle,
+			) {
 			if err := copier.Copy(&dst, &singleChoiceQuestionRequest); err != nil {
 				return nil, err
 			}
 		} else if multipleChoiceQuestionRequest, err := req.AsPutMultipleChoiceQuestionRequest(); err == nil &&
-			multipleChoiceQuestionRequest.Type == api.PutMultipleChoiceQuestionRequestType(api.MultipleChoiceAnswerRequestTypeMultiple) {
+			multipleChoiceQuestionRequest.Type == api.PutMultipleChoiceQuestionRequestType(
+				api.MultipleChoiceAnswerRequestTypeMultiple,
+			) {
 			if err := copier.Copy(&dst, &multipleChoiceQuestionRequest); err != nil {
 				return nil, err
 			}
