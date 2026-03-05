@@ -14,13 +14,13 @@ import (
 func (r *Repository) CreateCamp(camp *model.Camp) error {
 	if err := r.db.Create(camp).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return model.ErrAlreadyExists
+			return model.ErrCampAlreadyExists
 		}
 
 		var mysqlErr *mysql.MySQLError
 
 		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
-			return model.ErrAlreadyExists
+			return model.ErrCampAlreadyExists
 		}
 
 		return err
