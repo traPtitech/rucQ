@@ -5,9 +5,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func v5() *gormigrate.Migration {
+func v6() *gormigrate.Migration {
 	return &gormigrate.Migration{
-		ID: "5",
+		ID: "6",
 		Migrate: func(db *gorm.DB) error {
 			return db.Exec(
 				"ALTER TABLE camps ADD UNIQUE INDEX idx_camps_display_id (display_id)",
