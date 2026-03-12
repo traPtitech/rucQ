@@ -63,7 +63,7 @@ func (s *Server) AdminPostCamp(e echo.Context, params api.AdminPostCampParams) e
 	}
 
 	if err := s.repo.CreateCamp(&campModel); err != nil {
-		if errors.Is(err, model.ErrAlreadyExists) {
+		if errors.Is(err, repository.ErrCampAlreadyExists) {
 			return echo.NewHTTPError(http.StatusConflict, "Camp already exists")
 		}
 
@@ -117,6 +117,13 @@ func (s *Server) AdminPutCamp(
 	if err := s.repo.UpdateCamp(e.Request().Context(), uint(campID), &newCamp); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
+
+		if errors.Is(err, repository.ErrCampAlreadyExists) {
+			return echo.NewHTTPError(
+				http.StatusConflict,
+				"Camp with this display ID already exists",
+			)
 		}
 
 		return echo.NewHTTPError(http.StatusInternalServerError).
