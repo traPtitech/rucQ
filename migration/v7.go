@@ -17,7 +17,9 @@ func v7() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "7",
 		Migrate: func(db *gorm.DB) error {
-			return db.Migrator().CreateIndex(&v7Camp{}, "DisplayID")
+			if !db.Migrator().HasIndex(&v7Camp{}, "idx_camps_display_id") {
+       			return db.Migrator().CreateIndex(&v7Camp{}, "DisplayID")
+    		}
 		},
 		Rollback: func(db *gorm.DB) error {
 			return db.Migrator().DropIndex(&v7Camp{}, "idx_camps_display_id")
