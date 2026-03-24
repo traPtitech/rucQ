@@ -6,6 +6,15 @@ on:
     - cron: 0 18 24 * *
 
   workflow_dispatch:
+    inputs:
+      debug:
+        description: Enable debug logging
+        type: boolean
+        default: false
+      dry_run:
+        description: Run in dry-run mode
+        type: boolean
+        default: true
 
 jobs:
   renovate:
@@ -26,3 +35,6 @@ jobs:
         with:
           configurationFile: .github/renovate-bot.json5
           token: ${{ steps.generate-token.outputs.token }}
+        env:
+          LOG_LEVEL: ${{ inputs.debug && 'debug' || 'info' }}
+          RENOVATE_DRY_RUN: ${{ inputs.dry_run }}
