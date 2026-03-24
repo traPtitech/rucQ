@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
 	github.com/testcontainers/testcontainers-go/modules/compose v0.40.0
-	github.com/traPtitech/go-traq v0.0.0-20251201015624-285ca186fc5e
+	github.com/traPtitech/go-traq v0.0.0-20260305130843-fd44d800c38e
 	go.uber.org/mock v0.6.0
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.1
