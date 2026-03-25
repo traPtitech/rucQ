@@ -604,6 +604,8 @@ github.com/tonistiigi/vt100 v0.0.0-20240514184818-90bafcd6abab h1:H6aJ0yKQ0gF49Q
 github.com/tonistiigi/vt100 v0.0.0-20240514184818-90bafcd6abab/go.mod h1:ulncasL3N9uLrVann0m+CDlJKWsIAP34MPcOJF6VRvc=
 github.com/traPtitech/go-traq v0.0.0-20251201015624-285ca186fc5e h1:CPWnxqmdaYKFIw/OtXQeucdkmqgB+3HTNQw2Tu1IImQ=
 github.com/traPtitech/go-traq v0.0.0-20251201015624-285ca186fc5e/go.mod h1:D7NRbLYlvMey05bV+3Yqea6+Onj0ACmMgLuvP7+far8=
+github.com/traPtitech/go-traq v0.0.0-20260305130843-fd44d800c38e h1:hJA3hZ2ARjV5+nAWq4aOSmEHadd6+PJsmYYpacMKqCs=
+github.com/traPtitech/go-traq v0.0.0-20260305130843-fd44d800c38e/go.mod h1:D7NRbLYlvMey05bV+3Yqea6+Onj0ACmMgLuvP7+far8=
 github.com/ugorji/go/codec v1.2.11 h1:BMaWp1Bb6fHwEtbplGBGJ498wD+LKlNSl25MjdZY4dU=
 github.com/ugorji/go/codec v1.2.11/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
 github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6KllzawFIhcdPw=
