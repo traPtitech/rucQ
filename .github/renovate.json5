@@ -3,7 +3,8 @@
   "extends": [
     "config:recommended",
     ":disableDependencyDashboard",
-    ":disableRateLimiting"
+    ":disableRateLimiting",
+    "schedule:monthly"
   ],
   "customManagers": [
     {

@@ -1,9 +1,15 @@
 name: Renovate
 
 on:
+  push:
+    branches:
+      # Renovateに自動でrebaseさせるため
+      - main
+
   schedule:
-    # 毎月25日の日本時間午前3時に実行
-    - cron: 0 18 24 * *
+    # RenovateがPRを作成できるのは1日の午前0時から4時までなので（schedule:monthly）、
+    # 毎月1日の午前2時に実行する
+    - cron: "0 2 1 * *"
 
   workflow_dispatch:
     inputs:
@@ -15,6 +21,10 @@ on:
         description: Run in dry-run mode
         type: boolean
         default: true
+
+concurrency:
+  group: renovate
+  cancel-in-progress: true
 
 jobs:
   renovate:
