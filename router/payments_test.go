@@ -34,6 +34,9 @@ func TestAdminPostPayment(t *testing.T) {
 			Return(&model.User{
 				IsStaff: true,
 			}, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(&model.Camp{}, nil)
 		h.repo.MockPaymentRepository.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(nil)
 		h.activityService.EXPECT().
 			RecordPaymentCreated(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -70,6 +73,9 @@ func TestAdminPostPayment(t *testing.T) {
 			Return(&model.User{
 				IsStaff: true,
 			}, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(&model.Camp{}, nil)
 		h.repo.MockPaymentRepository.EXPECT().CreatePayment(gomock.Any(), gomock.Any()).Return(nil)
 		h.activityService.EXPECT().
 			RecordPaymentCreated(gomock.Any(), gomock.Any(), gomock.Any()).
@@ -80,6 +86,33 @@ func TestAdminPostPayment(t *testing.T) {
 			WithJSON(req).
 			WithHeader("X-Forwarded-User", adminUserID).
 			Expect().Status(http.StatusInternalServerError)
+	})
+
+	t.Run("Camp not found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := random.PositiveInt(t)
+		req := api.AdminPostPaymentJSONRequestBody{
+			Amount:     random.PositiveInt(t),
+			AmountPaid: random.PositiveInt(t),
+			UserId:     random.AlphaNumericString(t, 32),
+		}
+		adminUserID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), adminUserID).
+			Return(&model.User{
+				IsStaff: true,
+			}, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound)
+
+		h.expect.POST("/api/admin/camps/{campId}/payments", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", adminUserID).
+			Expect().Status(http.StatusNotFound)
 	})
 }
 
