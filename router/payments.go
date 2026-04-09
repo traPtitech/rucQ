@@ -64,6 +64,15 @@ func (s *Server) AdminPostPayment(
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
 	}
 
+	if _, err := s.repo.GetCampByID(e.Request().Context(), uint(campID)); err != nil {
+		if errors.Is(err, repository.ErrCampNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get camp: %w", err))
+	}
+
 	var req api.AdminPostPaymentJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
