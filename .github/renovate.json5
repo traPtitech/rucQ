@@ -20,5 +20,8 @@
         "# renovate: datasource=(?<datasource>[^\\s]+) depName=(?<depName>[^\\s]+)\n\\s*version:\\s*(?<currentValue>[^\\s]+)"
       ]
     }
+  ],
+  "postUpdateOptions": [
+    "gomodTidy"
   ]
 }
