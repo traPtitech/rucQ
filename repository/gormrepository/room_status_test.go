@@ -127,6 +127,33 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 		}
 	})
 
+	t.Run("同じ内容で更新しても履歴は増えない", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+
+		operator := mustCreateUser(t, r)
+		operatorID := operator.ID
+		topic := random.AlphaNumericString(t, roomStatusTopicMaxLength)
+		statusType := random.SelectFrom(t, "active", "inactive")
+		status := model.RoomStatus{
+			Type:  &statusType,
+			Topic: topic,
+		}
+
+		mustSetRoomStatus(t, r, room.ID, status, operatorID)
+
+		err := r.SetRoomStatus(t.Context(), room.ID, status, operatorID)
+		assert.NoError(t, err)
+
+		logs, err := r.GetRoomStatusLogs(t.Context(), room.ID)
+		assert.NoError(t, err)
+		assert.Len(t, logs, 1)
+	})
+
 	t.Run("マルチバイト文字でも64文字までは保存できる", func(t *testing.T) {
 		t.Parallel()
 
