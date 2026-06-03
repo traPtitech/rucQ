@@ -26,7 +26,7 @@ services:
           path: .
 
   mariadb:
-    image: mariadb:11.8.6-noble
+    image: mariadb:11.8.6-noble@sha256:78a5047d3ba33975f183f183c2464cc7f1eab13ec8667e57cc9a5821d6da7577
     ports:
       - "${MARIADB_PORT:-3306}:3306"
     environment:
@@ -57,7 +57,7 @@ services:
         target: /openapi/
 
   adminer:
-    image: adminer:5.4.2
+    image: adminer:5.4.2@sha256:cc64d253db4f016cbcff2ff2f01e60ed07e74f38b4398f84d3c4fae4b5ce0e07
     ports:
       - "${ADMINER_PORT:-8082}:8080"
     environment:
@@ -67,7 +67,7 @@ services:
         condition: service_healthy
 
   caddy:
-    image: caddy:2.11.2-alpine
+    image: caddy:2.11.2-alpine@sha256:834468128c7696cec0ceea6172f7d692daf645ae51983ca76e39da54a97c570d
     env_file:
       - path: .env
         required: false
@@ -86,17 +86,17 @@ services:
       - traq_ui
 
   rucq_ui:
-    image: ghcr.io/traptitech/rucq-ui:1.2.5
+    image: ghcr.io/traptitech/rucq-ui:1.2.5@sha256:5a0b617d766094caf41575855119a97286728f6b02a02f7f7873e01e679bb320
     expose:
       - 80
 
   rucq_admin:
-    image: ghcr.io/traptitech/rucq-admin:1.0.0
+    image: ghcr.io/traptitech/rucq-admin:1.0.0@sha256:5fb98cd1c3e48a5eb01dd52e64de9e66a934f757988c836b6b0721b51dff3509
     expose:
       - 80
 
   traq_server:
-    image: ghcr.io/traptitech/traq:3.28.0
+    image: ghcr.io/traptitech/traq:3.28.0@sha256:a5349a4f93e262093dbed54a1de02210aab64d9912b9a7217ac6a808067fb5f2
     environment:
       TRAQ_ALLOWSIGNUP: true
       TRAQ_MARIADB_HOST: mariadb
@@ -114,7 +114,7 @@ services:
         condition: service_healthy
 
   traq_ui:
-    image: ghcr.io/traptitech/traq-ui:3.31.3
+    image: ghcr.io/traptitech/traq-ui:3.31.3@sha256:4e65f52fb792ae9907711bb7084875f3bbab77f806a95278c9379cb3abf75671
     volumes:
       - type: volume
         source: traq_override
