@@ -55,6 +55,17 @@ func TestGetQuestionGroups(t *testing.T) {
 		assert.Equal(t, camp.ID, questionGroups[1].CampID)
 		assert.Len(t, questionGroups[1].Questions, 0)
 	})
+	t.Run("Non-existent Camp", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentCampID := uint(random.PositiveInt(t))
+
+		questionGroups, err := r.GetQuestionGroups(t.Context(), nonExistentCampID)
+
+		assert.ErrorIs(t, err, repository.ErrCampNotFound)
+		assert.Nil(t, questionGroups)
+	})
 }
 
 func TestCreateQuestionGroup(t *testing.T) {
@@ -162,6 +173,19 @@ func TestCreateQuestionGroup(t *testing.T) {
 			}
 		}
 	})
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentID := uint(random.PositiveInt(t))
+
+		result, err := r.GetQuestionGroup(t.Context(), nonExistentID)
+
+		if assert.Error(t, err) {
+			assert.ErrorIs(t, err, model.ErrNotFound)
+			assert.Nil(t, result)
+		}
+	})
 }
 
 func TestGetQuestionGroup(t *testing.T) {
@@ -214,18 +238,6 @@ func TestGetQuestionGroup(t *testing.T) {
 			assert.ErrorIs(t, err, model.ErrNotFound)
 			assert.Nil(t, result)
 		}
-	})
-
-	t.Run("Non-existent Camp", func(t *testing.T) {
-		t.Parallel()
-
-		r := setup(t)
-		nonExistentCampID := uint(random.PositiveInt(t))
-
-		questionGroups, err := r.GetQuestionGroups(t.Context(), nonExistentCampID)
-
-		assert.ErrorIs(t, err, repository.ErrCampNotFound)
-		assert.Nil(t, questionGroups)
 	})
 }
 
