@@ -42,9 +42,6 @@ func (s *Server) AdminPostQuestionGroup(
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
-		if errors.Is(err, repository.ErrCampNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
-		}
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
 	}
