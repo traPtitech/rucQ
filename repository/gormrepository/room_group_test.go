@@ -386,6 +386,36 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 		}
 	})
 
+	t.Run("Deregistered users are not included in room members", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		activeUser := mustCreateUser(t, r)
+		removedUser := mustCreateUser(t, r)
+
+		require.NoError(t, r.AddCampParticipant(t.Context(), camp.ID, &activeUser))
+		require.NoError(t, r.AddCampParticipant(t.Context(), camp.ID, &removedUser))
+		require.NoError(t, r.RemoveCampParticipant(t.Context(), camp.ID, &removedUser))
+
+		room := &model.Room{
+			Name:        random.AlphaNumericString(t, 10),
+			RoomGroupID: roomGroup.ID,
+			Members:     []model.User{activeUser, removedUser},
+		}
+		require.NoError(t, r.CreateRoom(t.Context(), room))
+
+		roomGroups, err := r.GetRoomGroups(t.Context(), camp.ID)
+
+		assert.NoError(t, err)
+		if assert.Len(t, roomGroups, 1) &&
+			assert.Len(t, roomGroups[0].Rooms, 1) &&
+			assert.Len(t, roomGroups[0].Rooms[0].Members, 1) {
+			assert.Equal(t, activeUser.ID, roomGroups[0].Rooms[0].Members[0].ID)
+		}
+	})
+
 	t.Run("最新のステータスが含まれる", func(t *testing.T) {
 		t.Parallel()
 
