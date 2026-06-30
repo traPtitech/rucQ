@@ -398,7 +398,7 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			GetQuestionGroups(gomock.Any(), uint(campID)).
 			Return(nil, repository.ErrCampNotFound)
 
-		h.expect.POST("/api/camps/{campId}/question-groups", campID).
+		h.expect.POST("/api/admin/camps/{campId}/question-groups", campID).
 			Expect().
 			Status(http.StatusNotFound).JSON().Object().
 			Value("message").String().IsEqual("Camp not found")
