@@ -222,10 +222,10 @@ func TestGetQuestionGroup(t *testing.T) {
 		r := setup(t)
 		nonExistentCampID := uint(random.PositiveInt(t))
 
-		roomGroups, err := r.GetRoomGroups(t.Context(), nonExistentCampID)
+		questionGroups, err := r.GetQuestionGroups(t.Context(), nonExistentCampID)
 
 		assert.ErrorIs(t, err, repository.ErrCampNotFound)
-		assert.Nil(t, roomGroups)
+		assert.Nil(t, questionGroups)
 	})
 }
 

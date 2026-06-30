@@ -12,6 +12,9 @@ import (
 
 func (r *Repository) CreateQuestionGroup(questionGroup *model.QuestionGroup) error {
 	if err := r.db.Create(questionGroup).Error; err != nil {
+		if errors.Is(err, gorm.ErrForeignKeyViolated) {
+			return repository.ErrCampNotFound
+		}
 		return err
 	}
 

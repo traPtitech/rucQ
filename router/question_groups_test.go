@@ -145,11 +145,11 @@ func TestGetQuestionGroups(t *testing.T) {
 
 		campID := random.PositiveInt(t)
 
-		h.repo.MockRoomGroupRepository.EXPECT().
-			GetRoomGroups(gomock.Any(), uint(campID)).
+		h.repo.MockQuestionGroupRepository.EXPECT().
+			GetQuestionGroups(gomock.Any(), uint(campID)).
 			Return(nil, repository.ErrCampNotFound)
 
-		h.expect.GET("/api/camps/{campId}/room-groups", campID).
+		h.expect.GET("/api/camps/{campId}/question-groups", campID).
 			Expect().
 			Status(http.StatusNotFound).JSON().Object().
 			Value("message").String().IsEqual("Camp not found")
