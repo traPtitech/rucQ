@@ -387,6 +387,23 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			IsEqual(multipleChoiceQuestion.Options[2].Content)
 	})
 
+	t.Run("Camp Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+
+		campID := random.PositiveInt(t)
+
+		h.repo.MockQuestionGroupRepository.EXPECT().
+			GetQuestionGroups(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound)
+
+		h.expect.GET("/api/camps/{campId}/question-groups", campID).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Camp not found")
+	})
+
 	t.Run("Activity service error", func(t *testing.T) {
 		t.Parallel()
 
