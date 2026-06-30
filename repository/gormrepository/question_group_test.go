@@ -177,71 +177,15 @@ func TestCreateQuestionGroup(t *testing.T) {
 		t.Parallel()
 
 		r := setup(t)
-		name := random.AlphaNumericString(t, 20)
-		description := random.PtrOrNil(t, random.AlphaNumericString(t, 100))
-		due := random.Time(t)
-		questions := []model.Question{
-			{
-				Type:        model.FreeTextQuestion,
-				Title:       random.AlphaNumericString(t, 20),
-				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
-				IsPublic:    random.Bool(t),
-				IsOpen:      random.Bool(t),
-				IsRequired:  random.Bool(t),
-			},
-			{
-				Type:        model.FreeNumberQuestion,
-				Title:       random.AlphaNumericString(t, 20),
-				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
-				IsPublic:    random.Bool(t),
-				IsOpen:      random.Bool(t),
-				IsRequired:  random.Bool(t),
-			},
-			{
-				Type:        model.SingleChoiceQuestion,
-				Title:       random.AlphaNumericString(t, 20),
-				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
-				IsPublic:    random.Bool(t),
-				IsOpen:      random.Bool(t),
-				IsRequired:  random.Bool(t),
-				Options: []model.Option{
-					{
-						Content: random.AlphaNumericString(t, 20),
-					},
-				},
-			},
-			{
-				Type:        model.MultipleChoiceQuestion,
-				Title:       random.AlphaNumericString(t, 20),
-				Description: random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
-				IsPublic:    random.Bool(t),
-				IsOpen:      random.Bool(t),
-				IsRequired:  random.Bool(t),
-				Options: []model.Option{
-					{
-						Content: random.AlphaNumericString(t, 20),
-					},
-					{
-						Content: random.AlphaNumericString(t, 20),
-					},
-				},
-			},
-		}
-		camp := mustCreateCamp(t, r)
 		questionGroup := model.QuestionGroup{
-			Name:        name,
-			Description: description,
-			Due:         due,
-			Questions:   questions,
-			CampID:      camp.ID,
+			Name:   random.AlphaNumericString(t, 20),
+			Due:    random.Time(t),
+			CampID: uint(random.PositiveInt(t)),
 		}
-		
 
 		err := r.CreateQuestionGroup(&questionGroup)
 
-		if assert.Error(t, err) {
-			assert.ErrorIs(t, err, model.ErrNotFound)
-		}
+		assert.ErrorIs(t, err, repository.ErrCampNotFound)
 	})
 }
 
