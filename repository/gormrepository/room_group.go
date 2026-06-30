@@ -98,7 +98,16 @@ func (r *Repository) GetRoomGroupByID(
 
 func (r *Repository) GetRoomGroups(ctx context.Context, campID uint) ([]model.RoomGroup, error) {
 	roomGroups, err := gorm.G[model.RoomGroup](r.db).
-		Preload("Rooms.Members", nil).
+		Preload("Rooms.Members", func(db gorm.PreloadBuilder) error {
+			subQuery := r.db.Table("camp_participants").
+				Select("1").
+				Where("camp_participants.camp_id = ?", campID).
+				Where("camp_participants.user_id = users.id")
+
+			db.Where("EXISTS (?)", subQuery)
+
+			return nil
+		}).
 		Preload("Rooms.Status", nil).
 		Where("camp_id = ?", campID).
 		Find(ctx)
