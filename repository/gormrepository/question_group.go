@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (r *Repository) CreateQuestionGroup(questionGroup *model.QuestionGroup) error {
@@ -28,6 +29,19 @@ func (r *Repository) GetQuestionGroups(
 
 	if err != nil {
 		return nil, err
+	}
+
+	// questionGroupsが見つからなかった場合、Campが存在しない可能性を考慮してCampの存在確認を行う
+	if len(questionGroups) == 0 {
+		campExists, err := r.campExists(ctx, campID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if !campExists {
+			return nil, repository.ErrCampNotFound
+		}
 	}
 
 	return questionGroups, nil

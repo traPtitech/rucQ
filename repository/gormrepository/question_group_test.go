@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -213,6 +214,18 @@ func TestGetQuestionGroup(t *testing.T) {
 			assert.ErrorIs(t, err, model.ErrNotFound)
 			assert.Nil(t, result)
 		}
+	})
+
+	t.Run("Non-existent Camp", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentCampID := uint(random.PositiveInt(t))
+
+		roomGroups, err := r.GetRoomGroups(t.Context(), nonExistentCampID)
+
+		assert.ErrorIs(t, err, repository.ErrCampNotFound)
+		assert.Nil(t, roomGroups)
 	})
 }
 

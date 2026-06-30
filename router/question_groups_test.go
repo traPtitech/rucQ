@@ -13,6 +13,7 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -135,6 +136,23 @@ func TestGetQuestionGroups(t *testing.T) {
 		}
 
 		res2.Value("due").String().IsEqual(questionGroup2.Due.Format(time.DateOnly))
+	})
+
+	t.Run("Camp Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+
+		campID := random.PositiveInt(t)
+
+		h.repo.MockRoomGroupRepository.EXPECT().
+			GetRoomGroups(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound)
+
+		h.expect.GET("/api/camps/{campId}/room-groups", campID).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Camp not found")
 	})
 }
 
