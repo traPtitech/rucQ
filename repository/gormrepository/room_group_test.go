@@ -328,6 +328,8 @@ func TestRepository_GetRoomGroups(t *testing.T) {
 		_ = mustCreateRoomGroup(t, r, camp2.ID)
 		user1 := mustCreateUser(t, r)
 		user2 := mustCreateUser(t, r)
+		require.NoError(t, r.AddCampParticipant(t.Context(), camp1.ID, &user1))
+		require.NoError(t, r.AddCampParticipant(t.Context(), camp1.ID, &user2))
 		// room group1に部屋を作成
 		room1 := &model.Room{
 			Name:        random.AlphaNumericString(t, 10),
