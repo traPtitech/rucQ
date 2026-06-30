@@ -77,6 +77,9 @@ func (s *Server) AdminPostQuestionGroup(
 
 		return s.activityService.RecordQuestionCreated(ctx, tx, questionGroup)
 	}); err != nil {
+		if errors.Is(err, repository.ErrCampNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(err)
 	}
