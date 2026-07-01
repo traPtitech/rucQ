@@ -392,13 +392,25 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 
 		h := setup(t)
 
+		req := api.AdminPostRoomGroupJSONRequestBody{
+			Name: random.AlphaNumericString(t, 20),
+		}
+		username := random.AlphaNumericString(t, 32)
 		campID := random.PositiveInt(t)
+		userID := random.AlphaNumericString(t, 32)
 
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+			
 		h.repo.MockQuestionGroupRepository.EXPECT().
-			GetQuestionGroups(gomock.Any(), uint(campID)).
+			CreateQuestionGroup(gomock.Any()).
 			Return(nil, repository.ErrCampNotFound)
 
 		h.expect.POST("/api/admin/camps/{campId}/question-groups", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
 			Expect().
 			Status(http.StatusNotFound).JSON().Object().
 			Value("message").String().IsEqual("Camp not found")
