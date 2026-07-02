@@ -13,6 +13,7 @@ import (
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -135,6 +136,23 @@ func TestGetQuestionGroups(t *testing.T) {
 		}
 
 		res2.Value("due").String().IsEqual(questionGroup2.Due.Format(time.DateOnly))
+	})
+
+	t.Run("Camp Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+
+		campID := random.PositiveInt(t)
+
+		h.repo.MockQuestionGroupRepository.EXPECT().
+			GetQuestionGroups(gomock.Any(), uint(campID)).
+			Return(nil, repository.ErrCampNotFound)
+
+		h.expect.GET("/api/camps/{campId}/question-groups", campID).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Camp not found")
 	})
 }
 
@@ -367,6 +385,34 @@ func TestAdminPostQuestionGroup(t *testing.T) {
 			Value("content").
 			String().
 			IsEqual(multipleChoiceQuestion.Options[2].Content)
+	})
+
+	t.Run("Camp Not Found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+
+		req := api.AdminPostQuestionGroupJSONRequestBody{
+			Name: random.AlphaNumericString(t, 20),
+		}
+		username := random.AlphaNumericString(t, 32)
+		campID := random.PositiveInt(t)
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), username).
+			Return(&model.User{IsStaff: true}, nil).
+			Times(1)
+
+		h.repo.MockQuestionGroupRepository.EXPECT().
+			CreateQuestionGroup(gomock.Any()).
+			Return(repository.ErrCampNotFound)
+
+		h.expect.POST("/api/admin/camps/{campId}/question-groups", campID).
+			WithJSON(req).
+			WithHeader("X-Forwarded-User", username).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Camp not found")
 	})
 
 	t.Run("Activity service error", func(t *testing.T) {

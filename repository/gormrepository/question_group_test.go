@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 	"github.com/traPtitech/rucQ/testutil/random"
 )
 
@@ -53,6 +54,17 @@ func TestGetQuestionGroups(t *testing.T) {
 		assert.Equal(t, questionGroup2.Due, questionGroups[1].Due)
 		assert.Equal(t, camp.ID, questionGroups[1].CampID)
 		assert.Len(t, questionGroups[1].Questions, 0)
+	})
+	t.Run("Non-existent Camp", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		nonExistentCampID := uint(random.PositiveInt(t))
+
+		questionGroups, err := r.GetQuestionGroups(t.Context(), nonExistentCampID)
+
+		assert.ErrorIs(t, err, repository.ErrCampNotFound)
+		assert.Nil(t, questionGroups)
 	})
 }
 
@@ -160,6 +172,20 @@ func TestCreateQuestionGroup(t *testing.T) {
 				assert.Equal(t, createdQuestion.ID, createdOption.QuestionID)
 			}
 		}
+	})
+	t.Run("NotFound", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		questionGroup := model.QuestionGroup{
+			Name:   random.AlphaNumericString(t, 20),
+			Due:    random.Time(t),
+			CampID: uint(random.PositiveInt(t)),
+		}
+
+		err := r.CreateQuestionGroup(&questionGroup)
+
+		assert.ErrorIs(t, err, repository.ErrCampNotFound)
 	})
 }
 

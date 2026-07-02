@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -16,6 +17,9 @@ func (s *Server) GetQuestionGroups(e echo.Context, campID api.CampId) error {
 	questionGroups, err := s.repo.GetQuestionGroups(e.Request().Context(), uint(campID))
 
 	if err != nil {
+		if errors.Is(err, repository.ErrCampNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to get question groups: %w", err))
 	}
@@ -70,6 +74,9 @@ func (s *Server) AdminPostQuestionGroup(
 
 		return s.activityService.RecordQuestionCreated(ctx, tx, questionGroup)
 	}); err != nil {
+		if errors.Is(err, repository.ErrCampNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(err)
 	}
