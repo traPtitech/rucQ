@@ -156,6 +156,14 @@ func main() {
 
 	go func() {
 		if err := e.StartServer(srv); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			if errors.Is(err, context.Canceled) {
+				if cause := context.Cause(ctx); cause != nil {
+					slog.Info("server stopped", slog.String("cause", cause.Error()))
+				} else {
+					slog.Info("server stopped")
+				}
+				return
+			}
 			slog.Error("server error", slog.String("error", err.Error()))
 		}
 	}()
