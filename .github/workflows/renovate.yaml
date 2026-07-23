@@ -7,9 +7,8 @@ on:
       - main
 
   schedule:
-    # RenovateがPRを作成できるのは1日の午前0時から4時までなので（schedule:monthly）、
-    # 毎月1日の午前2時に実行する
-    - cron: "0 2 1 * *"
+    # セキュリティ系のアップデートを確認するため毎日実行する
+    - cron: "0 2 * * *"
 
   workflow_dispatch:
     inputs:
