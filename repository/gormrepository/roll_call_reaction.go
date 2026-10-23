@@ -16,8 +16,8 @@ func (r *Repository) CreateRollCallReaction(
 ) error {
 	if err := gorm.G[model.RollCallReaction](r.db).Create(ctx, reaction); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-        	return repository.ErrRollCallReactionAlreadyExists
-    	}
+			return repository.ErrRollCallReactionAlreadyExists
+		}
 
 		if errors.Is(err, gorm.ErrForeignKeyViolated) {
 			userExists, err := r.userExists(ctx, reaction.UserID)
@@ -115,10 +115,10 @@ func (r *Repository) UpdateRollCallReaction(
 }
 
 func (r *Repository) DeleteRollCallReaction(ctx context.Context, reactionID uint) error {
-    result := r.db.WithContext(ctx).
-        Unscoped().
-        Where("id = ?", reactionID).
-        Delete(&model.RollCallReaction{})
+	result := r.db.WithContext(ctx).
+		Unscoped().
+		Where("id = ?", reactionID).
+		Delete(&model.RollCallReaction{})
 
 	if result.Error != nil {
 		return result.Error

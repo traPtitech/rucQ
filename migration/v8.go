@@ -1,6 +1,6 @@
 package migration
 
-import(
+import (
 	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/gorm"
 )
@@ -8,16 +8,16 @@ import(
 type v8RollCallReaction struct {
 	gorm.Model
 	Content string
-	UserID  string`gorm:"uniqueIndex:roll_call_reaction"` 
+	UserID  string `gorm:"uniqueIndex:roll_call_reaction"`
 
-	RollCallID uint `gorm:"index;uniqueIndex:roll_call_reaction"` 
+	RollCallID uint `gorm:"index;uniqueIndex:roll_call_reaction"`
 }
 
-func (v8RollCallReaction) TableName() string{
+func (v8RollCallReaction) TableName() string {
 	return "roll_call_reactions"
 }
 
-func v8() *gormigrate.Migration{
+func v8() *gormigrate.Migration {
 	return &gormigrate.Migration{
 		ID: "8",
 		Migrate: func(db *gorm.DB) error {
@@ -45,18 +45,18 @@ func v8() *gormigrate.Migration{
                 WHERE ranked.rn > 1;
             `
 
-            if err := db.Exec(duplicateCleanerQuery).Error; err != nil {
-                return err
-            }
+			if err := db.Exec(duplicateCleanerQuery).Error; err != nil {
+				return err
+			}
 
-            // 重複が解消された後に、ユニークインデックスを追加する
-            return db.Migrator().CreateIndex(&v8RollCallReaction{},"roll_call_reaction",)
-        },
+			// 重複が解消された後に、ユニークインデックスを追加する
+			return db.Migrator().CreateIndex(&v8RollCallReaction{}, "roll_call_reaction")
+		},
 		Rollback: func(db *gorm.DB) error {
 			return db.Migrator().DropIndex(
 				&v8RollCallReaction{},
 				"roll_call_reaction",
 			)
 		},
-    }
+	}
 }
