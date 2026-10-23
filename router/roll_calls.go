@@ -159,6 +159,9 @@ func (s *Server) PostRollCallReaction(
 		if errors.Is(err, repository.ErrRollCallNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Roll call not found")
 		}
+		if errors.Is(err, repository.ErrRollCallReactionAlreadyExists) {
+			return echo.NewHTTPError(http.StatusConflict, "Roll call reaction already exists")
+		}
 
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to create roll call reaction: %w", err))
