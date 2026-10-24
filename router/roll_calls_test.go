@@ -639,6 +639,39 @@ func TestServer_PostRollCallReaction(t *testing.T) {
 			Value("message").String().IsEqual("Roll call not found")
 	})
 
+	t.Run("Roll call reaction already exists", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		rollCallID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		user := model.User{ID: userID}
+
+		requestBody := api.PostRollCallReactionJSONRequestBody{
+			Content: random.AlphaNumericString(t, 20),
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil).
+			Times(1)
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			CreateRollCallReaction(gomock.Any(), gomock.Any()).
+			Return(repository.ErrRollCallReactionAlreadyExists).
+			Times(1)
+
+		h.expect.POST("/api/roll-calls/{rollCallId}/reactions", rollCallID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(requestBody).
+			Expect().
+			Status(http.StatusConflict).
+			JSON().
+			Object().
+			Value("message").String().
+			IsEqual("Roll call reaction already exists")
+	})
+
 	t.Run("GetOrCreateUser Error", func(t *testing.T) {
 		t.Parallel()
 
@@ -690,6 +723,7 @@ func TestServer_PostRollCallReaction(t *testing.T) {
 			Expect().
 			Status(http.StatusInternalServerError)
 	})
+
 }
 
 func TestServer_PutReaction(t *testing.T) {

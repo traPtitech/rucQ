@@ -8,9 +8,9 @@ import (
 type v8RollCallReaction struct {
 	gorm.Model
 	Content string
-	UserID  string `gorm:"uniqueIndex:roll_call_reaction"`
+	UserID  string `gorm:"uniqueIndex:idx_user_id_roll_call_id"`
 
-	RollCallID uint `gorm:"index;uniqueIndex:roll_call_reaction"`
+	RollCallID uint `gorm:"index;uniqueIndex:idx_user_id_roll_call_id"`
 }
 
 func (v8RollCallReaction) TableName() string {
@@ -28,7 +28,7 @@ func v8() *gormigrate.Migration {
 				return err
 			}
 
-			if db.Migrator().HasIndex(&v8RollCallReaction{}, "roll_call_reaction") {
+			if db.Migrator().HasIndex(&v8RollCallReaction{}, "idx_user_id_roll_call_id") {
 				return nil
 			}
 
@@ -50,12 +50,12 @@ func v8() *gormigrate.Migration {
 			}
 
 			// 重複が解消された後に、ユニークインデックスを追加する
-			return db.Migrator().CreateIndex(&v8RollCallReaction{}, "roll_call_reaction")
+			return db.Migrator().CreateIndex(&v8RollCallReaction{}, "idx_user_id_roll_call_id")
 		},
 		Rollback: func(db *gorm.DB) error {
 			return db.Migrator().DropIndex(
 				&v8RollCallReaction{},
-				"roll_call_reaction",
+				"idx_user_id_roll_call_id",
 			)
 		},
 	}
