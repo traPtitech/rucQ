@@ -9,6 +9,7 @@ import (
 )
 
 var ErrRollCallReactionNotFound = errors.New("roll call reaction not found")
+var ErrRollCallReactionAlreadyExists = errors.New("roll call reaction already exists")
 
 type RollCallReactionRepository interface {
 	CreateRollCallReaction(ctx context.Context, reaction *model.RollCallReaction) error

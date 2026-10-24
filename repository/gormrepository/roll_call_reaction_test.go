@@ -52,6 +52,33 @@ func TestRepository_CreateRollCallReaction(t *testing.T) {
 
 		assert.ErrorIs(t, err, repository.ErrRollCallNotFound)
 	})
+
+	t.Run("Roll call reaction already exists", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		user := mustCreateUser(t, r)
+		rollCall := mustCreateRollCall(t, r, camp.ID, []model.User{user})
+
+		existing := mustCreateRollCallReaction(t, r, rollCall.ID, user.ID)
+
+		duplicate := model.RollCallReaction{
+			Content:    "duplicate",
+			UserID:     user.ID,
+			RollCallID: rollCall.ID,
+		}
+
+		err := r.CreateRollCallReaction(t.Context(), &duplicate)
+		assert.ErrorIs(t, err, repository.ErrRollCallReactionAlreadyExists)
+
+		// 元の回答だけが残っていることも確認する
+		reactions, err := r.GetRollCallReactions(t.Context(), rollCall.ID)
+		require.NoError(t, err)
+		require.Len(t, reactions, 1)
+		assert.Equal(t, existing.ID, reactions[0].ID)
+		assert.Equal(t, existing.Content, reactions[0].Content)
+	})
 }
 
 func TestRepository_GetRollCallReactions(t *testing.T) {
