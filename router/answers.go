@@ -99,8 +99,35 @@ func (s *Server) PostAnswers(
 			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
 	}
 
+	// 回答先の質問が属する合宿の参加者であることを確認する
+	checkedCampIDs := make(map[uint]struct{})
+
 	for i := range answers {
 		answers[i].UserID = *params.XForwardedUser
+
+		campID, err := s.repo.GetQuestionCampID(e.Request().Context(), answers[i].QuestionID)
+		if err != nil {
+			if errors.Is(err, model.ErrNotFound) {
+				return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+			}
+
+			return echo.NewHTTPError(http.StatusInternalServerError).
+				SetInternal(fmt.Errorf("failed to get question camp id: %w", err))
+		}
+
+		if _, ok := checkedCampIDs[campID]; ok {
+			continue
+		}
+
+		if err := s.requireCampParticipant(
+			e.Request().Context(),
+			campID,
+			*params.XForwardedUser,
+		); err != nil {
+			return err
+		}
+
+		checkedCampIDs[campID] = struct{}{}
 	}
 
 	if err := s.repo.CreateAnswers(e.Request().Context(), &answers); err != nil {
@@ -158,6 +185,24 @@ func (s *Server) PutAnswer(
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to convert request body: %w", err))
+	}
+
+	campID, err := s.repo.GetQuestionCampID(e.Request().Context(), answer.QuestionID)
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Question not found")
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get question camp id: %w", err))
+	}
+
+	if err := s.requireCampParticipant(
+		e.Request().Context(),
+		campID,
+		*params.XForwardedUser,
+	); err != nil {
+		return err
 	}
 
 	if err := s.repo.UpdateAnswer(e.Request().Context(), uint(answerID), &answer); err != nil {

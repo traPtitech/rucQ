@@ -75,3 +75,20 @@ func (r *Repository) rollCallExists(ctx context.Context, rollCallID uint) (bool,
 
 	return count > 0, nil
 }
+
+func (r *Repository) GetRollCallCampID(ctx context.Context, rollCallID uint) (uint, error) {
+	rollCall, err := gorm.G[model.RollCall](r.db).
+		Select("camp_id").
+		Where("id = ?", rollCallID).
+		Take(ctx)
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, repository.ErrRollCallNotFound
+		}
+
+		return 0, err
+	}
+
+	return rollCall.CampID, nil
+}

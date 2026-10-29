@@ -51,6 +51,17 @@ func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEve
 			SetInternal(fmt.Errorf("failed to get or create user: %w", err))
 	}
 
+	// スタッフは合宿に参加していなくても操作できる
+	if !user.IsStaff {
+		if err := s.requireCampParticipant(
+			e.Request().Context(),
+			uint(campID),
+			*params.XForwardedUser,
+		); err != nil {
+			return err
+		}
+	}
+
 	if (eventModel.Type == model.EventTypeOfficial || eventModel.Type == model.EventTypeMoment) &&
 		!user.IsStaff {
 		return echo.NewHTTPError(http.StatusForbidden, "Forbidden")
@@ -119,6 +130,17 @@ func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEve
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to get event (eventId: %d): %w", eventID, err))
+	}
+
+	// スタッフは合宿に参加していなくても操作できる
+	if !user.IsStaff {
+		if err := s.requireCampParticipant(
+			e.Request().Context(),
+			existingEvent.CampID,
+			*params.XForwardedUser,
+		); err != nil {
+			return err
+		}
 	}
 
 	if (existingEvent.Type == model.EventTypeOfficial || existingEvent.Type == model.EventTypeMoment) &&
@@ -196,6 +218,17 @@ func (s *Server) DeleteEvent(
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to get event (eventId: %d): %w", eventID, err))
+	}
+
+	// スタッフは合宿に参加していなくても操作できる
+	if !user.IsStaff {
+		if err := s.requireCampParticipant(
+			e.Request().Context(),
+			deleteEvent.CampID,
+			*params.XForwardedUser,
+		); err != nil {
+			return err
+		}
 	}
 
 	if (deleteEvent.Type == model.EventTypeOfficial || deleteEvent.Type == model.EventTypeMoment) &&

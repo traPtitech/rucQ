@@ -181,6 +181,9 @@ func TestServer_PostEvent(t *testing.T) {
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
 		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil)
+		h.repo.MockCampRepository.EXPECT().
 			IsCampParticipant(gomock.Any(), campID, organizerID).
 			Return(true, nil)
 		h.repo.MockEventRepository.EXPECT().
@@ -243,6 +246,9 @@ func TestServer_PostEvent(t *testing.T) {
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil)
 
 		h.repo.MockCampRepository.EXPECT().
 			IsCampParticipant(gomock.Any(), campID, organizerID).
@@ -348,6 +354,9 @@ func TestServer_PostEvent(t *testing.T) {
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil)
 
 		var eventRequest api.EventRequest
 
@@ -360,6 +369,48 @@ func TestServer_PostEvent(t *testing.T) {
 			WithJSON(eventRequest).
 			Expect().
 			Status(http.StatusForbidden)
+	})
+
+	t.Run("Failure - Non-staff user is not camp participant", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		reqBody := api.DurationEventRequest{
+			Type:        api.DurationEventRequestTypeDuration,
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.AlphaNumericString(t, 100),
+			Location:    random.AlphaNumericString(t, 50),
+			TimeStart:   random.Time(t),
+			OrganizerId: userID,
+		}
+		user := model.User{
+			ID:      userID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(false, nil)
+
+		var eventRequest api.EventRequest
+
+		err := eventRequest.FromDurationEventRequest(reqBody)
+
+		require.NoError(t, err)
+
+		h.expect.POST("/api/camps/{campId}/events", campID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(eventRequest).
+			Expect().
+			Status(http.StatusForbidden).
+			JSON().
+			Object().
+			Value("message").String().IsEqual("Forbidden")
 	})
 }
 
@@ -411,6 +462,9 @@ func TestServer_PutEvent(t *testing.T) {
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil)
 		h.repo.MockEventRepository.EXPECT().
 			GetEventByID(eventID).
 			Return(&existingEvent, nil)
@@ -481,6 +535,9 @@ func TestServer_PutEvent(t *testing.T) {
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil)
 		h.repo.MockEventRepository.EXPECT().
 			GetEventByID(eventID).
 			Return(&existingEvent, nil)
@@ -592,6 +649,9 @@ func TestServer_PutEvent(t *testing.T) {
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil)
 		h.repo.MockEventRepository.EXPECT().
 			GetEventByID(eventID).
 			Return(&existingEvent, nil)
@@ -607,5 +667,165 @@ func TestServer_PutEvent(t *testing.T) {
 			WithJSON(eventRequest).
 			Expect().
 			Status(http.StatusForbidden)
+	})
+
+	t.Run("Failure - Non-staff user is not camp participant", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		eventID := uint(random.PositiveInt(t))
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		existingEvent := model.Event{
+			Model:  gorm.Model{ID: eventID},
+			Type:   model.EventTypeDuration,
+			Name:   random.AlphaNumericString(t, 20),
+			CampID: campID,
+		}
+		reqBody := api.DurationEventRequest{
+			Type:        api.DurationEventRequestTypeDuration,
+			Name:        random.AlphaNumericString(t, 20),
+			Description: random.AlphaNumericString(t, 100),
+			Location:    random.AlphaNumericString(t, 50),
+			TimeStart:   random.Time(t),
+			OrganizerId: userID,
+		}
+		user := model.User{
+			ID:      userID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil)
+		h.repo.MockEventRepository.EXPECT().
+			GetEventByID(eventID).
+			Return(&existingEvent, nil)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(false, nil)
+
+		var eventRequest api.EventRequest
+
+		err := eventRequest.FromDurationEventRequest(reqBody)
+
+		require.NoError(t, err)
+
+		h.expect.PUT("/api/events/{eventId}", eventID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(eventRequest).
+			Expect().
+			Status(http.StatusForbidden).
+			JSON().
+			Object().
+			Value("message").String().IsEqual("Forbidden")
+	})
+}
+
+func TestServer_DeleteEvent(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Success - Non-staff camp participant deletes duration event", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		eventID := uint(random.PositiveInt(t))
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		existingEvent := model.Event{
+			Model:  gorm.Model{ID: eventID},
+			Type:   model.EventTypeDuration,
+			CampID: campID,
+		}
+		user := model.User{
+			ID:      userID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil)
+		h.repo.MockEventRepository.EXPECT().
+			GetEventByID(eventID).
+			Return(&existingEvent, nil)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil)
+		h.repo.MockEventRepository.EXPECT().
+			DeleteEvent(eventID).
+			Return(nil)
+
+		h.expect.DELETE("/api/events/{eventId}", eventID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusNoContent)
+	})
+
+	t.Run("Success - Staff user deletes official event without participating", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		eventID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		existingEvent := model.Event{
+			Model:  gorm.Model{ID: eventID},
+			Type:   model.EventTypeOfficial,
+			CampID: uint(random.PositiveInt(t)),
+		}
+		user := model.User{
+			ID:      userID,
+			IsStaff: true,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil)
+		h.repo.MockEventRepository.EXPECT().
+			GetEventByID(eventID).
+			Return(&existingEvent, nil)
+		h.repo.MockEventRepository.EXPECT().
+			DeleteEvent(eventID).
+			Return(nil)
+
+		h.expect.DELETE("/api/events/{eventId}", eventID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusNoContent)
+	})
+
+	t.Run("Failure - Non-staff user is not camp participant", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		eventID := uint(random.PositiveInt(t))
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+		existingEvent := model.Event{
+			Model:  gorm.Model{ID: eventID},
+			Type:   model.EventTypeDuration,
+			CampID: campID,
+		}
+		user := model.User{
+			ID:      userID,
+			IsStaff: false,
+		}
+
+		h.repo.MockUserRepository.EXPECT().
+			GetOrCreateUser(gomock.Any(), userID).
+			Return(&user, nil)
+		h.repo.MockEventRepository.EXPECT().
+			GetEventByID(eventID).
+			Return(&existingEvent, nil)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(false, nil)
+
+		h.expect.DELETE("/api/events/{eventId}", eventID).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusForbidden).
+			JSON().
+			Object().
+			Value("message").String().IsEqual("Forbidden")
 	})
 }

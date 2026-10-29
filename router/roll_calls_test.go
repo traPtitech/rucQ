@@ -561,6 +561,17 @@ func TestServer_PostRollCallReaction(t *testing.T) {
 			RollCallID: rollCallID,
 		}
 
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), rollCallID).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
+			Times(1)
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil).
@@ -619,6 +630,17 @@ func TestServer_PostRollCallReaction(t *testing.T) {
 			Content: random.AlphaNumericString(t, 20),
 		}
 
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), rollCallID).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
+			Times(1)
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil).
@@ -650,6 +672,17 @@ func TestServer_PostRollCallReaction(t *testing.T) {
 			Content: random.AlphaNumericString(t, 20),
 		}
 
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), rollCallID).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
+			Times(1)
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(nil, errors.New("user repository error")).
@@ -674,6 +707,17 @@ func TestServer_PostRollCallReaction(t *testing.T) {
 			Content: random.AlphaNumericString(t, 20),
 		}
 
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), rollCallID).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
+			Times(1)
+
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil).
@@ -689,6 +733,59 @@ func TestServer_PostRollCallReaction(t *testing.T) {
 			WithJSON(requestBody).
 			Expect().
 			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("Roll call not found before participant check", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		rollCallID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), rollCallID).
+			Return(uint(0), repository.ErrRollCallNotFound).
+			Times(1)
+
+		h.expect.POST("/api/roll-calls/{rollCallId}/reactions", rollCallID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(api.PostRollCallReactionJSONRequestBody{
+				Content: random.AlphaNumericString(t, 20),
+			}).
+			Expect().
+			Status(http.StatusNotFound).
+			JSON().
+			Object().
+			Value("message").String().IsEqual("Roll call not found")
+	})
+
+	t.Run("Forbidden - not camp participant", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		rollCallID := uint(random.PositiveInt(t))
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), rollCallID).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(false, nil).
+			Times(1)
+
+		h.expect.POST("/api/roll-calls/{rollCallId}/reactions", rollCallID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(api.PostRollCallReactionJSONRequestBody{
+				Content: random.AlphaNumericString(t, 20),
+			}).
+			Expect().
+			Status(http.StatusForbidden).
+			JSON().
+			Object().
+			Value("message").String().IsEqual("Forbidden")
 	})
 }
 
@@ -720,6 +817,17 @@ func TestServer_PutReaction(t *testing.T) {
 			GetRollCallReactionByID(gomock.Any(), reactionID).
 			Return(&existingReaction, nil).
 			Times(1) // 最初の確認のみ
+
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), existingReaction.RollCallID).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
+			Times(1)
 
 		h.repo.MockRollCallReactionRepository.EXPECT().
 			UpdateRollCallReaction(gomock.Any(), reactionID, gomock.Any()).
@@ -851,6 +959,17 @@ func TestServer_PutReaction(t *testing.T) {
 			Return(&existingReaction, nil).
 			Times(1)
 
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), existingReaction.RollCallID).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
+			Times(1)
+
 		h.repo.MockRollCallReactionRepository.EXPECT().
 			UpdateRollCallReaction(gomock.Any(), reactionID, gomock.Any()).
 			Return(errors.New("update reaction error")).
@@ -886,6 +1005,17 @@ func TestServer_PutReaction(t *testing.T) {
 			Return(&existingReaction, nil).
 			Times(1)
 
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), existingReaction.RollCallID).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
+			Times(1)
+
 		h.repo.MockRollCallReactionRepository.EXPECT().
 			UpdateRollCallReaction(gomock.Any(), reactionID, gomock.Any()).
 			Return(nil).
@@ -901,6 +1031,46 @@ func TestServer_PutReaction(t *testing.T) {
 			WithJSON(requestBody).
 			Expect().
 			Status(http.StatusInternalServerError)
+	})
+
+	t.Run("Forbidden - not camp participant", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		reactionID := uint(random.PositiveInt(t))
+		campID := uint(random.PositiveInt(t))
+		userID := random.AlphaNumericString(t, 32)
+
+		existingReaction := model.RollCallReaction{
+			Model:      gorm.Model{ID: reactionID},
+			Content:    random.AlphaNumericString(t, 10),
+			UserID:     userID,
+			RollCallID: uint(random.PositiveInt(t)),
+		}
+
+		h.repo.MockRollCallReactionRepository.EXPECT().
+			GetRollCallReactionByID(gomock.Any(), reactionID).
+			Return(&existingReaction, nil).
+			Times(1)
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), existingReaction.RollCallID).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(false, nil).
+			Times(1)
+
+		h.expect.PUT("/api/reactions/{reactionId}", reactionID).
+			WithHeader("X-Forwarded-User", userID).
+			WithJSON(api.PutReactionJSONRequestBody{
+				Content: random.AlphaNumericString(t, 20),
+			}).
+			Expect().
+			Status(http.StatusForbidden).
+			JSON().
+			Object().
+			Value("message").String().IsEqual("Forbidden")
 	})
 }
 
@@ -1046,6 +1216,16 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 		t.Parallel()
 
 		h := setup(t)
+
+		// リアクション操作時の参加者チェックは常に通す
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), gomock.Any()).
+			Return(uint(random.PositiveInt(t)), nil).
+			AnyTimes()
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(true, nil).
+			AnyTimes()
 		rollCallID := uint(random.PositiveInt(t))
 		userID := random.AlphaNumericString(t, 32)
 		user := model.User{ID: userID}
@@ -1230,6 +1410,16 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 	t.Run("Filtering", func(t *testing.T) {
 		t.Parallel()
 		h := setup(t)
+
+		// リアクション操作時の参加者チェックは常に通す
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), gomock.Any()).
+			Return(uint(random.PositiveInt(t)), nil).
+			AnyTimes()
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(true, nil).
+			AnyTimes()
 		rollCallID1 := uint(random.PositiveInt(t))
 		rollCallID2 := uint(random.PositiveInt(t))
 		userID := random.AlphaNumericString(t, 32)
@@ -1294,6 +1484,16 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 	t.Run("Context Cancellation", func(t *testing.T) {
 		t.Parallel()
 		h := setup(t)
+
+		// リアクション操作時の参加者チェックは常に通す
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), gomock.Any()).
+			Return(uint(random.PositiveInt(t)), nil).
+			AnyTimes()
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(true, nil).
+			AnyTimes()
 		rollCallID := uint(random.PositiveInt(t))
 
 		ctx, cancel := context.WithCancel(t.Context())
@@ -1333,6 +1533,16 @@ func TestServer_StreamRollCallReactions(t *testing.T) {
 	t.Run("Multiple Clients", func(t *testing.T) {
 		t.Parallel()
 		h := setup(t)
+
+		// リアクション操作時の参加者チェックは常に通す
+		h.repo.MockRollCallRepository.EXPECT().
+			GetRollCallCampID(gomock.Any(), gomock.Any()).
+			Return(uint(random.PositiveInt(t)), nil).
+			AnyTimes()
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), gomock.Any(), gomock.Any()).
+			Return(true, nil).
+			AnyTimes()
 		rollCallID := uint(random.PositiveInt(t))
 		userID := random.AlphaNumericString(t, 32)
 		user := model.User{ID: userID}

@@ -40,21 +40,12 @@ func (s *Server) PutRoomStatus(
 			SetInternal(fmt.Errorf("failed to get room camp id: %w", err))
 	}
 
-	isParticipant, err := s.repo.IsCampParticipant(
+	if err := s.requireCampParticipant(
 		e.Request().Context(),
 		campID,
 		*params.XForwardedUser,
-	)
-	if err != nil {
-		if errors.Is(err, repository.ErrCampNotFound) {
-			return echo.ErrNotFound
-		}
-		return echo.NewHTTPError(http.StatusInternalServerError).
-			SetInternal(fmt.Errorf("failed to check camp participation: %w", err))
-	}
-
-	if !isParticipant {
-		return echo.ErrForbidden
+	); err != nil {
+		return err
 	}
 
 	_, err = s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)

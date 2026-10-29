@@ -124,3 +124,42 @@ func TestUpdateQuestion(t *testing.T) {
 		assert.WithinDuration(t, question.CreatedAt, retrievedQuestion.CreatedAt, time.Second)
 	})
 }
+
+func TestRepository_GetQuestionCampID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("成功", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
+
+		campID, err := r.GetQuestionCampID(t.Context(), question.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, camp.ID, campID)
+	})
+
+	t.Run("質問が存在しない", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		_, err := r.GetQuestionCampID(t.Context(), uint(random.PositiveInt(t)))
+		assert.ErrorIs(t, err, model.ErrNotFound)
+	})
+
+	t.Run("削除済みの質問", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		questionGroup := mustCreateQuestionGroup(t, r, camp.ID)
+		question := mustCreateQuestion(t, r, questionGroup.ID, model.FreeTextQuestion, nil)
+
+		require.NoError(t, r.DeleteQuestionByID(question.ID))
+
+		_, err := r.GetQuestionCampID(t.Context(), question.ID)
+		assert.ErrorIs(t, err, model.ErrNotFound)
+	})
+}

@@ -168,3 +168,27 @@ func mustCreateRollCall(
 
 	return rollCall
 }
+
+func TestRepository_GetRollCallCampID(t *testing.T) {
+	t.Parallel()
+
+	t.Run("成功", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		rollCall := mustCreateRollCall(t, r, camp.ID, []model.User{})
+
+		campID, err := r.GetRollCallCampID(t.Context(), rollCall.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, camp.ID, campID)
+	})
+
+	t.Run("点呼が存在しない", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		_, err := r.GetRollCallCampID(t.Context(), uint(random.PositiveInt(t)))
+		assert.ErrorIs(t, err, repository.ErrRollCallNotFound)
+	})
+}

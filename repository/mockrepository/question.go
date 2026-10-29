@@ -84,6 +84,21 @@ func (mr *MockQuestionRepositoryMockRecorder) GetQuestionByID(id any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuestionByID", reflect.TypeOf((*MockQuestionRepository)(nil).GetQuestionByID), id)
 }
 
+// GetQuestionCampID mocks base method.
+func (m *MockQuestionRepository) GetQuestionCampID(ctx context.Context, questionID uint) (uint, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetQuestionCampID", ctx, questionID)
+	ret0, _ := ret[0].(uint)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetQuestionCampID indicates an expected call of GetQuestionCampID.
+func (mr *MockQuestionRepositoryMockRecorder) GetQuestionCampID(ctx, questionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuestionCampID", reflect.TypeOf((*MockQuestionRepository)(nil).GetQuestionCampID), ctx, questionID)
+}
+
 // GetQuestions mocks base method.
 func (m *MockQuestionRepository) GetQuestions() ([]model.Question, error) {
 	m.ctrl.T.Helper()

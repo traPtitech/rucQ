@@ -70,6 +70,18 @@ func TestPostAnswers(t *testing.T) {
 			multipleChoiceReq,
 		}
 
+		campID := uint(random.PositiveInt(t))
+
+		// 同じ合宿の質問なので参加者チェックは1回だけ
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionCampID(gomock.Any(), gomock.Any()).
+			Return(campID, nil).
+			Times(len(req))
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			CreateAnswers(gomock.Any(), gomock.Any()).
 			Return(nil).
@@ -128,6 +140,69 @@ func TestPostAnswers(t *testing.T) {
 			option.Keys().ContainsOnly("id", "content")
 			option.Value("id").Number().IsEqual(optionID)
 		}
+	})
+
+	t.Run("Forbidden - not camp participant", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		campID := uint(random.PositiveInt(t))
+		questionGroupID := random.PositiveInt(t)
+
+		freeTextAnswer := api.FreeTextAnswerRequest{
+			Type:       api.FreeTextAnswerRequestTypeFreeText,
+			QuestionId: random.PositiveInt(t),
+			Content:    random.AlphaNumericString(t, 50),
+		}
+		var req api.AnswerRequest
+		err := req.FromFreeTextAnswerRequest(freeTextAnswer)
+		require.NoError(t, err)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionCampID(gomock.Any(), uint(freeTextAnswer.QuestionId)).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(false, nil).
+			Times(1)
+
+		h.expect.POST("/api/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithJSON(api.PostAnswersJSONRequestBody{req}).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusForbidden).JSON().Object().
+			Value("message").String().IsEqual("Forbidden")
+	})
+
+	t.Run("NotFound - Question not found", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		questionGroupID := random.PositiveInt(t)
+
+		freeTextAnswer := api.FreeTextAnswerRequest{
+			Type:       api.FreeTextAnswerRequestTypeFreeText,
+			QuestionId: random.PositiveInt(t),
+			Content:    random.AlphaNumericString(t, 50),
+		}
+		var req api.AnswerRequest
+		err := req.FromFreeTextAnswerRequest(freeTextAnswer)
+		require.NoError(t, err)
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionCampID(gomock.Any(), uint(freeTextAnswer.QuestionId)).
+			Return(uint(0), model.ErrNotFound).
+			Times(1)
+
+		h.expect.POST("/api/question-groups/{questionGroupId}/answers", questionGroupID).
+			WithJSON(api.PostAnswersJSONRequestBody{req}).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusNotFound).JSON().Object().
+			Value("message").String().IsEqual("Question not found")
 	})
 }
 
@@ -247,6 +322,17 @@ func TestPutAnswer(t *testing.T) {
 			Return(oldAnswer, nil).
 			Times(1)
 
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionCampID(gomock.Any(), uint(freeTextAnswer.QuestionId)).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
+			Times(1)
+
 		h.repo.MockAnswerRepository.EXPECT().
 			UpdateAnswer(gomock.Any(), answerID, gomock.Any()).
 			DoAndReturn(func(_ any, id uint, answer *model.Answer) error {
@@ -295,6 +381,17 @@ func TestPutAnswer(t *testing.T) {
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswerByID(gomock.Any(), answerID).
 			Return(oldAnswer, nil).
+			Times(1)
+
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionCampID(gomock.Any(), uint(freeNumberAnswer.QuestionId)).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
@@ -348,6 +445,17 @@ func TestPutAnswer(t *testing.T) {
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswerByID(gomock.Any(), answerID).
 			Return(oldAnswer, nil).
+			Times(1)
+
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionCampID(gomock.Any(), uint(singleChoiceAnswer.QuestionId)).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
@@ -412,6 +520,17 @@ func TestPutAnswer(t *testing.T) {
 		h.repo.MockAnswerRepository.EXPECT().
 			GetAnswerByID(gomock.Any(), answerID).
 			Return(oldAnswer, nil).
+			Times(1)
+
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionCampID(gomock.Any(), uint(multipleChoiceAnswer.QuestionId)).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(true, nil).
 			Times(1)
 
 		h.repo.MockAnswerRepository.EXPECT().
@@ -494,6 +613,50 @@ func TestPutAnswer(t *testing.T) {
 			Expect().
 			Status(http.StatusForbidden).JSON().Object().
 			Value("message").String().IsEqual("You don't have permission to edit this answer")
+	})
+
+	t.Run("Forbidden - not camp participant", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		userID := random.AlphaNumericString(t, 32)
+		campID := uint(random.PositiveInt(t))
+		answerID := uint(random.PositiveInt(t))
+
+		freeTextAnswer := api.FreeTextAnswerRequest{
+			Type:       api.FreeTextAnswerRequestTypeFreeText,
+			QuestionId: random.PositiveInt(t),
+			Content:    random.AlphaNumericString(t, 50),
+		}
+		var req api.AnswerRequest
+		err := req.FromFreeTextAnswerRequest(freeTextAnswer)
+		require.NoError(t, err)
+
+		oldAnswer := &model.Answer{
+			Model:      gorm.Model{ID: answerID},
+			UserID:     userID,
+			QuestionID: uint(freeTextAnswer.QuestionId),
+		}
+
+		h.repo.MockAnswerRepository.EXPECT().
+			GetAnswerByID(gomock.Any(), answerID).
+			Return(oldAnswer, nil).
+			Times(1)
+		h.repo.MockQuestionRepository.EXPECT().
+			GetQuestionCampID(gomock.Any(), uint(freeTextAnswer.QuestionId)).
+			Return(campID, nil).
+			Times(1)
+		h.repo.MockCampRepository.EXPECT().
+			IsCampParticipant(gomock.Any(), campID, userID).
+			Return(false, nil).
+			Times(1)
+
+		h.expect.PUT("/api/answers/{answerId}", answerID).
+			WithJSON(api.PutAnswerJSONRequestBody(req)).
+			WithHeader("X-Forwarded-User", userID).
+			Expect().
+			Status(http.StatusForbidden).JSON().Object().
+			Value("message").String().IsEqual("Forbidden")
 	})
 }
 

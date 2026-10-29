@@ -132,6 +132,25 @@ func (s *Server) PostRollCallReaction(
 		return echo.NewHTTPError(http.StatusBadRequest, "X-Forwarded-User header is required")
 	}
 
+	campID, err := s.repo.GetRollCallCampID(e.Request().Context(), uint(rollCallID))
+
+	if err != nil {
+		if errors.Is(err, repository.ErrRollCallNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Roll call not found")
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get roll call camp id: %w", err))
+	}
+
+	if err := s.requireCampParticipant(
+		e.Request().Context(),
+		campID,
+		*params.XForwardedUser,
+	); err != nil {
+		return err
+	}
+
 	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
 
 	if err != nil {
@@ -215,6 +234,25 @@ func (s *Server) PutReaction(
 	// ユーザーの所有者チェック
 	if existingReaction.UserID != *params.XForwardedUser {
 		return echo.NewHTTPError(http.StatusForbidden, "You can only edit your own reactions")
+	}
+
+	campID, err := s.repo.GetRollCallCampID(e.Request().Context(), existingReaction.RollCallID)
+
+	if err != nil {
+		if errors.Is(err, repository.ErrRollCallNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Roll call not found")
+		}
+
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get roll call camp id: %w", err))
+	}
+
+	if err := s.requireCampParticipant(
+		e.Request().Context(),
+		campID,
+		*params.XForwardedUser,
+	); err != nil {
+		return err
 	}
 
 	var req api.PutReactionJSONRequestBody
