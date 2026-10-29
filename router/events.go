@@ -1,14 +1,17 @@
 package router
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/converter"
 	"github.com/traPtitech/rucQ/model"
+	"github.com/traPtitech/rucQ/repository"
 )
 
 func (s *Server) GetEvents(e echo.Context, campID api.CampId) error {
@@ -30,6 +33,19 @@ func (s *Server) GetEvents(e echo.Context, campID api.CampId) error {
 }
 
 func (s *Server) PostEvent(e echo.Context, campID api.CampId, params api.PostEventParams) error {
+	camp, err := s.repo.GetCampByID(e.Request().Context(), uint(campID))
+	if err != nil {
+		if errors.Is(err, repository.ErrCampNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get camp: %w", err))
+	}
+
+	if time.Now().After(camp.DateEnd) {
+		return echo.NewHTTPError(http.StatusBadRequest, "Camp has already ended")
+	}
+
 	var req api.PostEventJSONRequestBody
 
 	if err := e.Bind(&req); err != nil {
@@ -109,16 +125,29 @@ func (s *Server) GetEvent(e echo.Context, eventID api.EventId) error {
 }
 
 func (s *Server) PutEvent(e echo.Context, eventID api.EventId, params api.PutEventParams) error {
-	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError).
-			SetInternal(fmt.Errorf("failed to get or create user (userId: %s): %w", *params.XForwardedUser, err))
-	}
-
 	existingEvent, err := s.repo.GetEventByID(uint(eventID))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to get event (eventId: %d): %w", eventID, err))
+	}
+
+	camp, err := s.repo.GetCampByID(e.Request().Context(), existingEvent.CampID)
+	if err != nil {
+		if errors.Is(err, repository.ErrCampNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get camp: %w", err))
+	}
+
+	if time.Now().After(camp.DateEnd) {
+		return echo.NewHTTPError(http.StatusBadRequest, "Camp has already ended")
+	}
+
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user (userId: %s): %w", *params.XForwardedUser, err))
 	}
 
 	if (existingEvent.Type == model.EventTypeOfficial || existingEvent.Type == model.EventTypeMoment) &&
@@ -186,16 +215,29 @@ func (s *Server) DeleteEvent(
 	eventID api.EventId,
 	params api.DeleteEventParams,
 ) error {
-	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError).
-			SetInternal(fmt.Errorf("failed to get or create user (userId: %s): %w", *params.XForwardedUser, err))
-	}
-
 	deleteEvent, err := s.repo.GetEventByID(uint(eventID))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to get event (eventId: %d): %w", eventID, err))
+	}
+
+	camp, err := s.repo.GetCampByID(e.Request().Context(), deleteEvent.CampID)
+	if err != nil {
+		if errors.Is(err, repository.ErrCampNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Camp not found")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get camp: %w", err))
+	}
+
+	if time.Now().After(camp.DateEnd) {
+		return echo.NewHTTPError(http.StatusBadRequest, "Camp has already ended")
+	}
+
+	user, err := s.repo.GetOrCreateUser(e.Request().Context(), *params.XForwardedUser)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError).
+			SetInternal(fmt.Errorf("failed to get or create user (userId: %s): %w", *params.XForwardedUser, err))
 	}
 
 	if (deleteEvent.Type == model.EventTypeOfficial || deleteEvent.Type == model.EventTypeMoment) &&
