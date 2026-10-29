@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
@@ -125,6 +126,57 @@ func TestRepository_SetRoomStatus(t *testing.T) {
 			assert.Nil(t, retrievedRoom.Status.Type)
 			assert.Equal(t, updatedTopic, retrievedRoom.Status.Topic)
 		}
+	})
+
+	t.Run("同じ内容で更新しても履歴は増えない", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+
+		operator := mustCreateUser(t, r)
+		operatorID := operator.ID
+		topic := random.AlphaNumericString(t, roomStatusTopicMaxLength)
+		statusType := random.SelectFrom(t, "active", "inactive")
+		status := model.RoomStatus{
+			Type:  &statusType,
+			Topic: topic,
+		}
+
+		mustSetRoomStatus(t, r, room.ID, status, operatorID)
+
+		err := r.SetRoomStatus(t.Context(), room.ID, status, operatorID)
+		assert.NoError(t, err)
+
+		logs, err := r.GetRoomStatusLogs(t.Context(), room.ID)
+		require.NoError(t, err)
+		assert.Len(t, logs, 1)
+	})
+
+	t.Run("Typeがnullの同じ内容で更新しても履歴は増えない", func(t *testing.T) {
+		t.Parallel()
+
+		r := setup(t)
+		camp := mustCreateCamp(t, r)
+		roomGroup := mustCreateRoomGroup(t, r, camp.ID)
+		room := mustCreateRoom(t, r, roomGroup.ID, []model.User{})
+
+		operator := mustCreateUser(t, r)
+		status := model.RoomStatus{
+			Type:  nil,
+			Topic: random.AlphaNumericString(t, roomStatusTopicMaxLength),
+		}
+
+		mustSetRoomStatus(t, r, room.ID, status, operator.ID)
+
+		err := r.SetRoomStatus(t.Context(), room.ID, status, operator.ID)
+		require.NoError(t, err)
+
+		logs, err := r.GetRoomStatusLogs(t.Context(), room.ID)
+		require.NoError(t, err)
+		assert.Len(t, logs, 1)
 	})
 
 	t.Run("マルチバイト文字でも64文字までは保存できる", func(t *testing.T) {

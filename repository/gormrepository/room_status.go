@@ -19,6 +19,28 @@ func (r *Repository) SetRoomStatus(
 	operatorID string,
 ) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if _, err := gorm.G[model.Room](tx, clause.Locking{Strength: "UPDATE"}).
+			Where("id = ?", roomID).
+			Take(ctx); err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return repository.ErrRoomNotFound
+			}
+
+			return err
+		}
+
+		currentStatus, err := gorm.G[model.RoomStatus](tx).
+			Where("room_id = ?", roomID).
+			Take(ctx)
+
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
+		if err == nil && roomStatusContentEquals(currentStatus, status) {
+			return nil
+		}
+
 		newStatus := status
 		newStatus.RoomID = roomID
 		newStatus.UpdatedAt = time.Now()
@@ -62,6 +84,18 @@ func (r *Repository) SetRoomStatus(
 
 		return nil
 	})
+}
+
+func roomStatusContentEquals(a, b model.RoomStatus) bool {
+	if a.Topic != b.Topic {
+		return false
+	}
+
+	if a.Type == nil || b.Type == nil {
+		return a.Type == nil && b.Type == nil
+	}
+
+	return *a.Type == *b.Type
 }
 
 func (r *Repository) GetRoomStatusLogs(
