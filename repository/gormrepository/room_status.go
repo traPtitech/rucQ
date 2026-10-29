@@ -19,6 +19,16 @@ func (r *Repository) SetRoomStatus(
 	operatorID string,
 ) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if _, err := gorm.G[model.Room](tx, clause.Locking{Strength: "UPDATE"}).
+			Where("id = ?", roomID).
+			Take(ctx); err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return repository.ErrRoomNotFound
+			}
+
+			return err
+		}
+
 		currentStatus, err := gorm.G[model.RoomStatus](tx).
 			Where("room_id = ?", roomID).
 			Take(ctx)
