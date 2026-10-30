@@ -3,6 +3,7 @@ package gormrepository
 import (
 	"context"
 	"errors"
+	"slices"
 
 	"gorm.io/gorm"
 
@@ -37,6 +38,17 @@ func (r *Repository) CreateAnswers(ctx context.Context, answers *[]model.Answer)
 	}
 
 	return nil
+}
+func (r *Repository) ValidateAnswer(ctx context.Context, answers []model.Answer) error{
+	
+	var questionIDs [len(answers)]uint
+	for i,answer := range answers{
+		if questionIDs.Contains(answer.QuestionID){
+			return gorm.ErrDuplicatedKey
+		}
+		questionIDs.append(answer.QuestionID)
+	}
+
 }
 
 func (r *Repository) GetAnswerByID(ctx context.Context, id uint) (*model.Answer, error) {
