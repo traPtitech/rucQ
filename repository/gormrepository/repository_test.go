@@ -308,7 +308,7 @@ func mustCreateQuestion(
 		Title:           random.AlphaNumericString(t, 20),
 		Description:     random.PtrOrNil(t, random.AlphaNumericString(t, 100)),
 		IsPublic:        publicValue,
-		IsOpen:          random.Bool(t),
+		IsOpen:          true,
 		QuestionGroupID: questionGroupID,
 	}
 

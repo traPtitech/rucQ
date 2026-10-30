@@ -762,8 +762,12 @@ paths:
                   $ref: "#/components/schemas/AnswerResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -795,6 +799,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -831,7 +837,7 @@ paths:
   /api/admin/answers/{answerId}:
     put:
       summary: 管理者が回答を更新
-      description: QuestionのisOpenがfalseの場合でも回答を更新できます。更新するとユーザーにtraQでDMが送信されます。
+      description: QuestionのisOpenがfalseの場合は回答を更新できません。更新するとユーザーにtraQでDMが送信されます。
       tags:
         - Questions
       operationId: adminPutAnswer
