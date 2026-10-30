@@ -1081,3 +1081,124 @@ func TestUpdateAnswer(t *testing.T) {
 		)
 	})
 }
+
+func TestValidateAnswer(t *testing.T) {
+	t.Parallel()
+	r := setup(t)
+	camp := mustCreateCamp(t, r)
+	group := mustCreateQuestionGroup(t, r, camp.ID)
+	question := mustCreateQuestion(t, r, group.ID, model.FreeTextQuestion, nil)
+	answers := []model.Answer{{QuestionID: question.ID}, {QuestionID: question.ID}}
+	require.NoError(t, r.ValidateAnswer(t.Context(), nil))
+	require.NoError(t, r.ValidateAnswer(t.Context(), answers))
+	require.ErrorIs(
+		t,
+		r.ValidateAnswer(t.Context(), []model.Answer{{QuestionID: 0}}),
+		model.ErrNotFound,
+	)
+	require.NoError(
+		t,
+		r.db.Model(&model.Question{}).Where("id = ?", question.ID).Update("is_open", false).Error,
+	)
+	require.ErrorIs(t, r.ValidateAnswer(t.Context(), answers), repository.ErrQuestionClosed)
+	require.NoError(t, r.db.Delete(&question).Error)
+	require.ErrorIs(t, r.ValidateAnswer(t.Context(), answers), model.ErrNotFound)
+}
+
+func TestAnswerWritesRejectClosedQuestion(t *testing.T) {
+	t.Parallel()
+	for _, operation := range []string{"create", "batch", "update"} {
+		t.Run(operation, func(t *testing.T) {
+			t.Parallel()
+			r := setup(t)
+			camp := mustCreateCamp(t, r)
+			user := mustCreateUser(t, r)
+			group := mustCreateQuestionGroup(t, r, camp.ID)
+			question := mustCreateQuestion(t, r, group.ID, model.SingleChoiceQuestion, nil)
+			other := mustCreateQuestion(t, r, group.ID, model.SingleChoiceQuestion, nil)
+			original := model.Answer{
+				QuestionID:      question.ID,
+				UserID:          user.ID,
+				Type:            model.SingleChoiceQuestion,
+				SelectedOptions: question.Options[:1],
+			}
+			if operation == "update" {
+				require.NoError(t, r.CreateAnswer(t.Context(), &original))
+			}
+			require.NoError(
+				t,
+				r.db.Model(&model.Question{}).
+					Where("id = ?", question.ID).
+					Update("is_open", false).
+					Error,
+			)
+			var err error
+			switch operation {
+			case "create":
+				candidate := model.Answer{
+					QuestionID: question.ID,
+					UserID:     user.ID,
+					Type:       model.SingleChoiceQuestion,
+				}
+				err = r.CreateAnswer(t.Context(), &candidate)
+			case "batch":
+				candidates := []model.Answer{
+					{
+						QuestionID:      other.ID,
+						UserID:          user.ID,
+						Type:            model.SingleChoiceQuestion,
+						SelectedOptions: other.Options[:1],
+					},
+					{QuestionID: question.ID, UserID: user.ID, Type: model.SingleChoiceQuestion},
+				}
+				err = r.CreateAnswers(t.Context(), &candidates)
+			case "update":
+				// A different, open question in the request must not bypass the stored question's status.
+				candidate := model.Answer{
+					QuestionID:      other.ID,
+					Type:            model.SingleChoiceQuestion,
+					SelectedOptions: other.Options[:1],
+				}
+				err = r.UpdateAnswer(t.Context(), original.ID, &candidate)
+			}
+			require.ErrorIs(t, err, repository.ErrQuestionClosed)
+			var count int64
+			require.NoError(t, r.db.Model(&model.Answer{}).Count(&count).Error)
+			if operation == "update" {
+				require.EqualValues(t, 1, count)
+				actual, err := r.GetAnswerByID(t.Context(), original.ID)
+				require.NoError(t, err)
+				require.Equal(t, question.ID, actual.QuestionID)
+				require.Len(t, actual.SelectedOptions, 1)
+				require.Equal(t, original.SelectedOptions[0].ID, actual.SelectedOptions[0].ID)
+			} else {
+				require.Zero(t, count)
+				require.NoError(t, r.db.Table("answer_options").Count(&count).Error)
+				require.Zero(t, count)
+			}
+		})
+	}
+}
+
+func TestUpdateAnswerUsesStoredQuestion(t *testing.T) {
+	t.Parallel()
+	r := setup(t)
+	camp := mustCreateCamp(t, r)
+	user := mustCreateUser(t, r)
+	group := mustCreateQuestionGroup(t, r, camp.ID)
+	question := mustCreateQuestion(t, r, group.ID, model.FreeTextQuestion, nil)
+	originalText := "before"
+	answer := model.Answer{
+		QuestionID:      question.ID,
+		UserID:          user.ID,
+		Type:            model.FreeTextQuestion,
+		FreeTextContent: &originalText,
+	}
+	require.NoError(t, r.CreateAnswer(t.Context(), &answer))
+	updatedText := "after"
+	update := model.Answer{FreeTextContent: &updatedText}
+	require.NoError(t, r.UpdateAnswer(t.Context(), answer.ID, &update))
+	require.Equal(t, question.ID, update.QuestionID)
+	require.Equal(t, user.ID, update.UserID)
+	require.Equal(t, updatedText, *update.FreeTextContent)
+}

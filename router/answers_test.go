@@ -2336,3 +2336,69 @@ func TestAdminGetAnswersForQuestionGroup(t *testing.T) {
 			Value("message").String().IsEqual("Question group not found")
 	})
 }
+
+func TestAnswerWritesQuestionErrors(t *testing.T) {
+	t.Parallel()
+	for _, operation := range []string{"create", "update", "admin create", "admin update"} {
+		for _, failure := range []struct {
+			name   string
+			err    error
+			status int
+		}{
+			{"closed", repository.ErrQuestionClosed, http.StatusForbidden},
+			{"missing", model.ErrNotFound, http.StatusNotFound},
+		} {
+			t.Run(operation+"/"+failure.name, func(t *testing.T) {
+				t.Parallel()
+				h := setup(t)
+				body := map[string]any{"type": "free_text", "questionId": 1, "content": "answer"}
+				actor := model.User{ID: "actor", IsStaff: true}
+				if operation == "admin create" || operation == "admin update" {
+					h.repo.MockUserRepository.EXPECT().
+						GetOrCreateUser(gomock.Any(), actor.ID).
+						Return(&actor, nil)
+				}
+				var method, path string
+				var requestBody any = body
+				switch operation {
+				case "create":
+					method, path = http.MethodPost, "/api/question-groups/1/answers"
+					requestBody = []map[string]any{body}
+					h.repo.MockAnswerRepository.EXPECT().
+						CreateAnswers(gomock.Any(), gomock.Any()).
+						Return(failure.err)
+				case "admin create":
+					method, path = http.MethodPost, "/api/admin/users/target/answers"
+					target := model.User{ID: "target"}
+					h.repo.MockUserRepository.EXPECT().
+						GetOrCreateUser(gomock.Any(), target.ID).
+						Return(&target, nil)
+					h.repo.MockAnswerRepository.EXPECT().
+						CreateAnswer(gomock.Any(), gomock.Any()).
+						Return(failure.err)
+				default:
+					method, path = http.MethodPut, "/api/answers/1"
+					if operation == "admin update" {
+						path = "/api/admin/answers/1"
+					}
+					existing := model.Answer{
+						Model:      gorm.Model{ID: 1},
+						UserID:     actor.ID,
+						QuestionID: 1,
+					}
+					h.repo.MockAnswerRepository.EXPECT().
+						GetAnswerByID(gomock.Any(), uint(1)).
+						Return(&existing, nil)
+					h.repo.MockAnswerRepository.EXPECT().
+						UpdateAnswer(gomock.Any(), uint(1), gomock.Any()).
+						Return(failure.err)
+				}
+				response := h.expect.Request(method, path).WithHeader("X-Forwarded-User", actor.ID).
+					WithJSON(requestBody).Expect().Status(failure.status)
+				if failure.err == repository.ErrQuestionClosed {
+					response.JSON().Object().Value("message").String().IsEqual("Question is closed")
+				}
+			})
+		}
+	}
+}

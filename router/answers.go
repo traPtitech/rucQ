@@ -104,6 +104,14 @@ func (s *Server) PostAnswers(
 	}
 
 	if err := s.repo.CreateAnswers(e.Request().Context(), &answers); err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Answer or question not found")
+		}
+
+		if errors.Is(err, repository.ErrQuestionClosed) {
+			return echo.NewHTTPError(http.StatusForbidden, "Question is closed")
+		}
+
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to create answers: %w", err))
 	}
@@ -161,6 +169,14 @@ func (s *Server) PutAnswer(
 	}
 
 	if err := s.repo.UpdateAnswer(e.Request().Context(), uint(answerID), &answer); err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Answer or question not found")
+		}
+
+		if errors.Is(err, repository.ErrQuestionClosed) {
+			return echo.NewHTTPError(http.StatusForbidden, "Question is closed")
+		}
+
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to update answer: %w", err))
 	}
@@ -330,6 +346,10 @@ func (s *Server) AdminPostAnswer(
 
 	// 回答を作成
 	if err := s.repo.CreateAnswer(e.Request().Context(), &answer); err != nil {
+		if errors.Is(err, repository.ErrQuestionClosed) {
+			return echo.NewHTTPError(http.StatusForbidden, "Question is closed")
+		}
+
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Question or option not found")
 		}
@@ -416,6 +436,14 @@ func (s *Server) AdminPutAnswer(
 	}
 
 	if err := s.repo.UpdateAnswer(e.Request().Context(), uint(answerID), &answer); err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "Answer or question not found")
+		}
+
+		if errors.Is(err, repository.ErrQuestionClosed) {
+			return echo.NewHTTPError(http.StatusForbidden, "Question is closed")
+		}
+
 		return echo.NewHTTPError(http.StatusInternalServerError).
 			SetInternal(fmt.Errorf("failed to update answer: %w", err))
 	}

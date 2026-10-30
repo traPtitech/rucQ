@@ -3,9 +3,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/traPtitech/rucQ/model"
 )
+
+var ErrQuestionClosed = errors.New("question is closed")
 
 type GetAnswersQuery struct {
 	UserID                 *string
