@@ -104,6 +104,10 @@ func (s *Server) PostAnswers(
 	}
 
 	if err := s.repo.CreateAnswers(e.Request().Context(), &answers); err != nil {
+		if errors.Is(err, repository.ErrAnswerAlreadyExists) {
+			return echo.NewHTTPError(http.StatusConflict, "Answer already exists")
+		}
+
 		if errors.Is(err, model.ErrNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "Answer or question not found")
 		}
@@ -346,6 +350,10 @@ func (s *Server) AdminPostAnswer(
 
 	// 回答を作成
 	if err := s.repo.CreateAnswer(e.Request().Context(), &answer); err != nil {
+		if errors.Is(err, repository.ErrAnswerAlreadyExists) {
+			return echo.NewHTTPError(http.StatusConflict, "Answer already exists")
+		}
+
 		if errors.Is(err, repository.ErrQuestionClosed) {
 			return echo.NewHTTPError(http.StatusForbidden, "Question is closed")
 		}

@@ -19,6 +19,9 @@ func (r *Repository) CreateAnswer(ctx context.Context, answer *model.Answer) err
 			return err
 		}
 		if err := gorm.G[model.Answer](tx).Create(ctx, answer); err != nil {
+			if errors.Is(err, gorm.ErrDuplicatedKey) {
+				return repository.ErrAnswerAlreadyExists
+			}
 			if errors.Is(err, gorm.ErrForeignKeyViolated) {
 				return model.ErrNotFound
 			}
@@ -42,7 +45,13 @@ func (r *Repository) CreateAnswers(ctx context.Context, answers *[]model.Answer)
 		if err := repo.ValidateAnswer(ctx, *answers); err != nil {
 			return err
 		}
-		return gorm.G[[]model.Answer](tx).Create(ctx, answers)
+		if err := gorm.G[[]model.Answer](tx).Create(ctx, answers); err != nil {
+			if errors.Is(err, gorm.ErrDuplicatedKey) {
+				return repository.ErrAnswerAlreadyExists
+			}
+			return err
+		}
+		return nil
 	})
 }
 

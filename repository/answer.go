@@ -8,7 +8,10 @@ import (
 	"github.com/traPtitech/rucQ/model"
 )
 
-var ErrQuestionClosed = errors.New("question is closed")
+var (
+	ErrAnswerAlreadyExists = errors.New("answer already exists")
+	ErrQuestionClosed      = errors.New("question is closed")
+)
 
 type GetAnswersQuery struct {
 	UserID                 *string

@@ -1202,3 +1202,83 @@ func TestUpdateAnswerUsesStoredQuestion(t *testing.T) {
 	require.Equal(t, user.ID, update.UserID)
 	require.Equal(t, updatedText, *update.FreeTextContent)
 }
+
+func TestCreateAnswerDuplicates(t *testing.T) {
+	t.Parallel()
+	for _, mode := range []string{"single", "batch existing", "batch repeated", "different users"} {
+		t.Run(mode, func(t *testing.T) {
+			t.Parallel()
+			r := setup(t)
+			camp := mustCreateCamp(t, r)
+			user := mustCreateUser(t, r)
+			group := mustCreateQuestionGroup(t, r, camp.ID)
+			question := mustCreateQuestion(t, r, group.ID, model.FreeTextQuestion, nil)
+			require.NoError(
+				t,
+				r.db.Model(&model.Question{}).
+					Where("id = ?", question.ID).
+					Update("is_open", true).
+					Error,
+			)
+			originalText := "original"
+			original := model.Answer{
+				QuestionID:      question.ID,
+				UserID:          user.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &originalText,
+			}
+			if mode != "batch repeated" {
+				require.NoError(t, r.CreateAnswer(t.Context(), &original))
+			}
+			newText := "new"
+			duplicate := model.Answer{
+				QuestionID:      question.ID,
+				UserID:          user.ID,
+				Type:            model.FreeTextQuestion,
+				FreeTextContent: &newText,
+			}
+			var err error
+			switch mode {
+			case "single":
+				err = r.CreateAnswer(t.Context(), &duplicate)
+			case "batch existing":
+				other := mustCreateQuestion(t, r, group.ID, model.FreeTextQuestion, nil)
+				require.NoError(
+					t,
+					r.db.Model(&model.Question{}).
+						Where("id = ?", other.ID).
+						Update("is_open", true).
+						Error,
+				)
+				answers := []model.Answer{
+					{QuestionID: other.ID, UserID: user.ID, Type: model.FreeTextQuestion},
+					duplicate,
+				}
+				err = r.CreateAnswers(t.Context(), &answers)
+			case "batch repeated":
+				answers := []model.Answer{duplicate, duplicate}
+				err = r.CreateAnswers(t.Context(), &answers)
+			case "different users":
+				other := mustCreateUser(t, r)
+				duplicate.UserID = other.ID
+				err = r.CreateAnswer(t.Context(), &duplicate)
+			}
+			var count int64
+			require.NoError(t, r.db.Model(&model.Answer{}).Count(&count).Error)
+			if mode == "different users" {
+				require.NoError(t, err)
+				require.EqualValues(t, 2, count)
+			} else {
+				require.ErrorIs(t, err, repository.ErrAnswerAlreadyExists)
+				if mode == "batch repeated" {
+					require.Zero(t, count)
+				} else {
+					require.EqualValues(t, 1, count)
+					actual, err := r.GetAnswerByID(t.Context(), original.ID)
+					require.NoError(t, err)
+					require.Equal(t, originalText, *actual.FreeTextContent)
+				}
+			}
+		})
+	}
+}

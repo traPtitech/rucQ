@@ -2402,3 +2402,42 @@ func TestAnswerWritesQuestionErrors(t *testing.T) {
 		}
 	}
 }
+func TestCreateAnswerConflict(t *testing.T) {
+	t.Parallel()
+	for _, admin := range []bool{false, true} {
+		name := "user"
+		if admin {
+			name = "admin"
+		}
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			h := setup(t)
+			body := map[string]any{"type": "free_text", "questionId": 1, "content": "answer"}
+			actor := model.User{ID: "actor", IsStaff: true}
+			path := "/api/question-groups/1/answers"
+			var requestBody any = []map[string]any{body}
+			if admin {
+				path = "/api/admin/users/target/answers"
+				requestBody = body
+				target := model.User{ID: "target"}
+				h.repo.MockUserRepository.EXPECT().
+					GetOrCreateUser(gomock.Any(), actor.ID).
+					Return(&actor, nil)
+				h.repo.MockUserRepository.EXPECT().
+					GetOrCreateUser(gomock.Any(), target.ID).
+					Return(&target, nil)
+				h.repo.MockAnswerRepository.EXPECT().
+					CreateAnswer(gomock.Any(), gomock.Any()).
+					Return(repository.ErrAnswerAlreadyExists)
+			} else {
+				h.repo.MockAnswerRepository.EXPECT().
+					CreateAnswers(gomock.Any(), gomock.Any()).
+					Return(repository.ErrAnswerAlreadyExists)
+			}
+			h.expect.POST(path).WithHeader("X-Forwarded-User", actor.ID).WithJSON(requestBody).
+				Expect().
+				Status(http.StatusConflict).
+				JSON().Object().Value("message").String().IsEqual("Answer already exists")
+		})
+	}
+}
