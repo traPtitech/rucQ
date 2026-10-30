@@ -176,6 +176,9 @@ func TestServer_PostEvent(t *testing.T) {
 			DisplayColor: (*string)(&reqBody.DisplayColor),
 			CampID:       campID,
 		}
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(time.Hour)}, nil)
 
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
@@ -240,6 +243,9 @@ func TestServer_PostEvent(t *testing.T) {
 			IsStaff: false,
 		}
 
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(time.Hour)}, nil)
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
@@ -295,6 +301,9 @@ func TestServer_PostEvent(t *testing.T) {
 			CampID:      campID,
 		}
 
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(time.Hour)}, nil)
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
@@ -345,6 +354,9 @@ func TestServer_PostEvent(t *testing.T) {
 			IsStaff: false, // Non-staff user
 		}
 
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(time.Hour)}, nil)
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
@@ -360,6 +372,25 @@ func TestServer_PostEvent(t *testing.T) {
 			WithJSON(eventRequest).
 			Expect().
 			Status(http.StatusForbidden)
+	})
+
+	t.Run("Failure - Create event for ended camp", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		campID := uint(random.PositiveInt(t))
+
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(-time.Hour)}, nil)
+
+		h.expect.POST("/api/camps/{campId}/events", campID).
+			WithJSON(map[string]any{}).
+			Expect().
+			Status(http.StatusBadRequest).
+			JSON().
+			Object().
+			Value("message").String().Contains("Camp has already ended")
 	})
 }
 
@@ -408,6 +439,9 @@ func TestServer_PutEvent(t *testing.T) {
 			IsStaff: false,
 		}
 
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(time.Hour)}, nil)
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
@@ -478,6 +512,9 @@ func TestServer_PutEvent(t *testing.T) {
 			IsStaff: false,
 		}
 
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(time.Hour)}, nil)
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
@@ -532,6 +569,9 @@ func TestServer_PutEvent(t *testing.T) {
 			IsStaff: true, // Staff user
 		}
 
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(time.Hour)}, nil)
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
@@ -589,6 +629,9 @@ func TestServer_PutEvent(t *testing.T) {
 			IsStaff: false, // Non-staff user
 		}
 
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(time.Hour)}, nil)
 		h.repo.MockUserRepository.EXPECT().
 			GetOrCreateUser(gomock.Any(), userID).
 			Return(&user, nil)
@@ -607,5 +650,62 @@ func TestServer_PutEvent(t *testing.T) {
 			WithJSON(eventRequest).
 			Expect().
 			Status(http.StatusForbidden)
+	})
+
+	t.Run("Failure - Update event for ended camp", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		eventID := uint(random.PositiveInt(t))
+		campID := uint(random.PositiveInt(t))
+		existingEvent := model.Event{
+			Model:  gorm.Model{ID: eventID},
+			CampID: campID,
+		}
+
+		h.repo.MockEventRepository.EXPECT().
+			GetEventByID(eventID).
+			Return(&existingEvent, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(-time.Hour)}, nil)
+
+		h.expect.PUT("/api/events/{eventId}", eventID).
+			WithJSON(map[string]any{}).
+			Expect().
+			Status(http.StatusBadRequest).
+			JSON().
+			Object().
+			Value("message").String().Contains("Camp has already ended")
+	})
+}
+
+func TestServer_DeleteEvent(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Failure - Delete event for ended camp", func(t *testing.T) {
+		t.Parallel()
+
+		h := setup(t)
+		eventID := uint(random.PositiveInt(t))
+		campID := uint(random.PositiveInt(t))
+		event := model.Event{
+			Model:  gorm.Model{ID: eventID},
+			CampID: campID,
+		}
+
+		h.repo.MockEventRepository.EXPECT().
+			GetEventByID(eventID).
+			Return(&event, nil)
+		h.repo.MockCampRepository.EXPECT().
+			GetCampByID(gomock.Any(), campID).
+			Return(&model.Camp{DateEnd: time.Now().Add(-time.Hour)}, nil)
+
+		h.expect.DELETE("/api/events/{eventId}", eventID).
+			Expect().
+			Status(http.StatusBadRequest).
+			JSON().
+			Object().
+			Value("message").String().Contains("Camp has already ended")
 	})
 }
