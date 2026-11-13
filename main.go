@@ -19,6 +19,7 @@ import (
 	gormMysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"tangled.org/akimo.dev/etag"
 
 	"github.com/traPtitech/rucQ/api"
 	"github.com/traPtitech/rucQ/repository/gormrepository"
@@ -125,6 +126,8 @@ func main() {
 			AllowOrigins: allowOrigins,
 		}))
 	}
+
+	e.Use(echo.WrapMiddleware(etag.NewMiddleware()))
 
 	// botがtraQからのイベントを受け取るエンドポイントを設定
 	e.POST("/api/traq-events", router.TraqEventHandler)
