@@ -337,7 +337,9 @@ func (s *Server) StreamRollCallReactions(e echo.Context, rollCallID api.RollCall
 
 	sub := s.reactionPubSub.Subscribe(e.Request().Context(), maxReactionEventBuffer)
 
-	ping := time.NewTicker(20 * time.Second)
+	const pingInterval = 20 * time.Second
+
+	ping := time.NewTicker(pingInterval)
 	defer ping.Stop()
 
 	for {
