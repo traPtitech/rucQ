@@ -3,39 +3,87 @@ package gormrepository
 import (
 	"context"
 	"errors"
+	"slices"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/traPtitech/rucQ/model"
 	"github.com/traPtitech/rucQ/repository"
 )
 
 func (r *Repository) CreateAnswer(ctx context.Context, answer *model.Answer) error {
-	if err := gorm.G[model.Answer](r.db).Create(ctx, answer); err != nil {
-		if errors.Is(err, gorm.ErrForeignKeyViolated) {
-			return model.ErrNotFound
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		repo := &Repository{db: tx}
+		if err := repo.ValidateAnswer(ctx, []model.Answer{*answer}); err != nil {
+			return err
+		}
+		if err := gorm.G[model.Answer](tx).Create(ctx, answer); err != nil {
+			if errors.Is(err, gorm.ErrDuplicatedKey) {
+				return repository.ErrAnswerAlreadyExists
+			}
+			if errors.Is(err, gorm.ErrForeignKeyViolated) {
+				return model.ErrNotFound
+			}
+			return err
+		}
+		// 選択肢を反映するため再取得する
+		newAnswer, err := repo.GetAnswerByID(ctx, answer.ID)
+		if err != nil {
+			return err
 		}
 
-		return err
-	}
+		*answer = *newAnswer
 
-	// 選択肢を反映するため再取得する
-	newAnswer, err := r.GetAnswerByID(ctx, answer.ID)
-
-	if err != nil {
-		return err
-	}
-
-	*answer = *newAnswer
-
-	return nil
+		return nil
+	})
 }
 
 func (r *Repository) CreateAnswers(ctx context.Context, answers *[]model.Answer) error {
-	if err := gorm.G[[]model.Answer](r.db).Create(ctx, answers); err != nil {
-		return err
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		repo := &Repository{db: tx}
+		if err := repo.ValidateAnswer(ctx, *answers); err != nil {
+			return err
+		}
+		if err := gorm.G[[]model.Answer](tx).Create(ctx, answers); err != nil {
+			if errors.Is(err, gorm.ErrDuplicatedKey) {
+				return repository.ErrAnswerAlreadyExists
+			}
+			return err
+		}
+		return nil
+	})
+}
+
+func (r *Repository) ValidateAnswer(ctx context.Context, answers []model.Answer) error {
+	if len(answers) == 0 {
+		return nil
+	}
+	questionIDs := make([]uint, 0, len(answers))
+	seen := make(map[uint]struct{}, len(answers))
+	for _, answer := range answers {
+		if _, ok := seen[answer.QuestionID]; !ok {
+			seen[answer.QuestionID] = struct{}{}
+			questionIDs = append(questionIDs, answer.QuestionID)
+		}
 	}
 
+	slices.Sort(questionIDs)
+	var questions []model.Question
+	if err := r.db.WithContext(ctx).
+		Clauses(clause.Locking{Strength: "SHARE"}).
+		Select("id", "is_open").Where("id IN ?", questionIDs).
+		Order("id").Find(&questions).Error; err != nil {
+		return err
+	}
+	if len(questions) != len(questionIDs) {
+		return model.ErrNotFound
+	}
+	for _, question := range questions {
+		if !question.IsOpen {
+			return repository.ErrQuestionClosed
+		}
+	}
 	return nil
 }
 
@@ -167,30 +215,34 @@ func (r *Repository) GetAnswers(
 }
 
 func (r *Repository) UpdateAnswer(ctx context.Context, answerID uint, answer *model.Answer) error {
-	answer.ID = answerID
-
-	if _, err := gorm.G[*model.Answer](
-		r.db,
-	).Omit("SelectedOptions").
-		Where("id = ?", answerID).
-		Updates(ctx, answer); err != nil {
-		return err
-	}
-
-	if err := r.db.WithContext(ctx).
-		Model(answer).
-		Association("SelectedOptions").
-		Replace(answer.SelectedOptions); err != nil {
-		return err
-	}
-
-	// 更新後のデータを取得してanswerに反映
-	updatedAnswer, err := r.GetAnswerByID(ctx, answerID)
-	if err != nil {
-		return err
-	}
-
-	*answer = *updatedAnswer
-
-	return nil
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		repo := &Repository{db: tx}
+		existing, err := repo.GetAnswerByID(ctx, answerID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return model.ErrNotFound
+			}
+			return err
+		}
+		// Validate the stored question, not the question ID supplied by the client.
+		if err := repo.ValidateAnswer(ctx, []model.Answer{*existing}); err != nil {
+			return err
+		}
+		answer.ID = answerID
+		if _, err := gorm.G[*model.Answer](tx).
+			Omit("SelectedOptions", "QuestionID", "UserID").
+			Where("id = ?", answerID).Updates(ctx, answer); err != nil {
+			return err
+		}
+		if err := tx.WithContext(ctx).Model(answer).
+			Association("SelectedOptions").Replace(answer.SelectedOptions); err != nil {
+			return err
+		}
+		updatedAnswer, err := repo.GetAnswerByID(ctx, answerID)
+		if err != nil {
+			return err
+		}
+		*answer = *updatedAnswer
+		return nil
+	})
 }
