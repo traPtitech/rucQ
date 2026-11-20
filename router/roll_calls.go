@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 
@@ -336,10 +337,22 @@ func (s *Server) StreamRollCallReactions(e echo.Context, rollCallID api.RollCall
 
 	sub := s.reactionPubSub.Subscribe(e.Request().Context(), maxReactionEventBuffer)
 
+	const pingInterval = 20 * time.Second
+
+	ping := time.NewTicker(pingInterval)
+	defer ping.Stop()
+
 	for {
 		select {
 		case <-e.Request().Context().Done():
 			return nil
+
+		case <-ping.C:
+			if _, err := fmt.Fprint(res, ": ping\n\n"); err != nil {
+				return nil
+			}
+
+			res.Flush()
 
 		case event, ok := <-sub:
 			if !ok {
