@@ -26,6 +26,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/CampResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -163,6 +165,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/UserResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -237,6 +241,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/EventResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "500":
           $ref: "#/components/responses/InternalServerError"
     post:
@@ -328,6 +334,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/camps/{campId}/me:
@@ -346,6 +354,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DashboardResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -365,6 +375,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/UserResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /api/admin/users/{userId}:
@@ -383,6 +395,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -461,6 +475,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/QuestionGroupResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -648,6 +664,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/AnswerResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "403":
           $ref: "#/components/responses/Forbidden"
         "500":
@@ -677,6 +695,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/AnswerResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "403":
           $ref: "#/components/responses/Forbidden"
         "404":
@@ -704,6 +724,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/AnswerResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -729,6 +751,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/AnswerResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -877,6 +901,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/PaymentResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "403":
           $ref: "#/components/responses/Forbidden"
         "500":
@@ -957,6 +983,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/RoomGroupResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1162,6 +1190,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/RoomStatusLog"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1185,6 +1215,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ActivityResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -1205,6 +1237,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ImageResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -1260,6 +1294,8 @@ paths:
               schema:
                 type: string
                 format: binary
+        "304":
+          $ref: "#/components/responses/NotModified"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1302,6 +1338,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/RollCallResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1354,6 +1392,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/RollCallReactionResponse"
+        "304":
+          $ref: "#/components/responses/NotModified"
         "404":
           $ref: "#/components/responses/NotFound"
         "500":
@@ -1570,6 +1610,8 @@ components:
       description: Accepted
     NoContent:
       description: No Content
+    NotModified:
+      description: Not Modified
     BadRequest:
       description: Bad Request
       content:
