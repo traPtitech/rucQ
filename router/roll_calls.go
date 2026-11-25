@@ -337,18 +337,18 @@ func (s *Server) StreamRollCallReactions(e echo.Context, rollCallID api.RollCall
 
 	sub := s.reactionPubSub.Subscribe(e.Request().Context(), maxReactionEventBuffer)
 
-	const pingInterval = 20 * time.Second
+	const keepAliveInterval = 20 * time.Second
 
-	ping := time.NewTicker(pingInterval)
-	defer ping.Stop()
+	keepAlive := time.NewTicker(keepAliveInterval)
+	defer keepAlive.Stop()
 
 	for {
 		select {
 		case <-e.Request().Context().Done():
 			return nil
 
-		case <-ping.C:
-			if _, err := fmt.Fprint(res, ": ping\n\n"); err != nil {
+		case <-keepAlive.C:
+			if _, err := fmt.Fprint(res, ": keep-alive\n\n"); err != nil {
 				return nil
 			}
 
