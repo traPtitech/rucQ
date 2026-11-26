@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 
@@ -336,10 +337,22 @@ func (s *Server) StreamRollCallReactions(e echo.Context, rollCallID api.RollCall
 
 	sub := s.reactionPubSub.Subscribe(e.Request().Context(), maxReactionEventBuffer)
 
+	const keepAliveInterval = 20 * time.Second
+
+	keepAlive := time.NewTicker(keepAliveInterval)
+	defer keepAlive.Stop()
+
 	for {
 		select {
 		case <-e.Request().Context().Done():
 			return nil
+
+		case <-keepAlive.C:
+			if _, err := fmt.Fprint(res, ": keep-alive\n\n"); err != nil {
+				return nil
+			}
+
+			res.Flush()
 
 		case event, ok := <-sub:
 			if !ok {
