@@ -17,6 +17,7 @@ require (
 	go.uber.org/mock v0.6.0
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.1
+	tangled.org/akimo.dev/etag v0.1.1
 )
 
 require (
